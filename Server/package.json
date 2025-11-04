@@ -2,6 +2,7 @@
   "name": "server",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -9,11 +10,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
-<<<<<<< HEAD
-    "mongodb": "^6.20.0"
-=======
     "mongoose": "^8.19.2"
->>>>>>> f9a1b136defade2049ab6765114c9f2e07f1a19f
   }
 }
