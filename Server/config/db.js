@@ -13,7 +13,7 @@ if (!DB_CONNECTION) {
 
 const connectDB = async () => {
     try {
-        console.log("Connecting to MongoDB:", process.env.DB_CONNECTION);
+        console.log("Connecting to MongoDB");
         await mongoose.connect(process.env.DB_CONNECTION);
         console.log("MongoDB Connected");
     } catch (err) {
@@ -22,6 +22,7 @@ const connectDB = async () => {
         process.exit(1);
     }
 };
-connectDB();
+
+connectDB()
 
 export default connectDB;
