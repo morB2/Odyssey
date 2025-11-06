@@ -4,6 +4,7 @@ import { googleLogin } from '../controller/googleLoginController.js';
 const router = express.Router();
 
 router.post("/google", async (req, res) => {
+    console.log("Google login attempt");
     try {
         const { token } = req.body;
         const result = await googleLogin(token);
