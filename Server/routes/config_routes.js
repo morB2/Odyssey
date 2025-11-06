@@ -1,10 +1,5 @@
-const siteR = require('./site');
-const userR = require('./users');
-const countryR = require('./country');
+import googleLoginR from './googleLoginRoute.js';
 
-
-exports.routesInit = (app) => {
-   app.use("/site", siteR);
-   app.use("/user", userR);
-   app.use("/country", countryR);
+export function routesInit(app) {
+    app.use("/googleLogin", googleLoginR);
 }
