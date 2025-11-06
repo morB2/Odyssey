@@ -1,5 +1,5 @@
-import googleLoginR from './googleLoginRoute.js';
+import LoginR from './loginRoute.js';
 
 export function routesInit(app) {
-    app.use("/googleLogin", googleLoginR);
+    app.use("/login", LoginR);
 }

@@ -2,6 +2,7 @@ import react from 'react'
 import Home from './components/Home'
 import GLogin  from './components/GoogleLogin'
 import { GoogleOAuthProvider } from '@react-oauth/google'
+import Login from './components/Login';
 
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID!;
 console.log("Google Client ID:", clientId);
@@ -17,7 +18,10 @@ function App() {
           <GLogin  />
         </div>
       </GoogleOAuthProvider> */}
+
       <Home />
+
+      {/* <Login /> */}
     </>
   )
 }
