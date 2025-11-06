@@ -1,6 +1,6 @@
-import { googleLogin } from '../services/googleLoginService.js';
 import client from '../config/googleClient.js';
-import { config } from './config/secret.js';
+import { config } from '../config/secret.js';
+import { googleLoginS } from '../services/googleLoginService.js';
 
 
 export async function googleLogin(token) {
@@ -9,5 +9,5 @@ export async function googleLogin(token) {
     audience: config.GOOGLE_CLIENT_ID,
   });
 
-  return await googleLogin(ticket);
+  return await googleLoginS(ticket);
 }
