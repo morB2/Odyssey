@@ -47,7 +47,7 @@ const TripCard: React.FC<Trip> = ({ image, title, location, likes, comments }) =
   </Card>
 );
 
-export default function App() {
+export default function Profile() {
   const [tab, setTab] = React.useState(0);
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => setTab(newValue);
 
