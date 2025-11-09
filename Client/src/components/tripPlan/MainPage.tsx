@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Box, Button, Card, CardContent, CardHeader, TextField, Typography, Chip, Stack, Paper } from '@mui/material';
 import { Sparkles, Send, Calendar, DollarSign, MapPin } from 'lucide-react';
 import Navbar from '../general/Navbar';
+import { ItinerarySummary } from './ItinerarySummary';
 
 interface Message { id: number; text: string; sender: 'user' | 'ai'; timestamp: Date; }
 const aiMessages: string[] = [
@@ -11,24 +12,130 @@ const aiMessages: string[] = [
 ];
 export default function App() {
   const [numAiMessages, setNumAiMessages] = useState(0);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [selectedItinerary, setSelectedItinerary] = useState<any | null>(null);
+  const [travelMode, setTravelMode] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([{ id: 1, text: "Hi there! 👋 I'm your AI travel assistant. Tell me about your dream vacation and I'll create a personalized itinerary just for you. Where would you like to go?", sender: 'ai', timestamp: new Date() }]);
   const [inputMessage, setInputMessage] = useState(''); const [isTyping, setIsTyping] = useState(false); const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => { if (scrollAreaRef.current) scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight; };
   useEffect(() => { scrollToBottom(); }, [messages]);
 
-  const handleSendMessage = (text?: string) => {
-    const messageText = text || inputMessage.trim(); if (!messageText) return;
-    const userMessage: Message = { id: messages.length + 1, text: messageText, sender: 'user', timestamp: new Date() };
-    setMessages((prev) => [...prev, userMessage]); setInputMessage(''); setIsTyping(true);
-    setTimeout(() => { const aiMessage: Message = { id: messages.length + 2+numAiMessages, text: aiMessages[numAiMessages], sender: 'ai', timestamp: new Date() }; setMessages((prev) => [...prev, aiMessage]); setIsTyping(false);setNumAiMessages(numAiMessages+1); }, 1500);
+  const handleSendMessage = async (text?: string) => {
+    const messageText = text || inputMessage.trim();
+    if (!messageText) return;
+
+    const userMessage: Message = {
+      id: messages.length + 1,
+      text: messageText,
+      sender: 'user',
+      timestamp: new Date()
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInputMessage('');
+    setIsTyping(true);
+
+    try {
+      // only call backend on first prompt (you can customize this condition)
+      if (numAiMessages === 0) {
+        const response = await fetch('http://localhost:3000/createTrip/suggestions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: messageText }),
+        });
+        const data = await response.json();
+
+        if (data.success && data.suggestions) {
+          setSuggestions(data.suggestions);
+
+          const aiMessage: Message = {
+            id: messages.length + 2,
+            text: "Here are some amazing itineraries I found for you 🌍",
+            sender: 'ai',
+            timestamp: new Date(),
+          };
+          setMessages((prev) => [...prev, aiMessage]);
+        }
+      } else {
+        // otherwise continue with your pre-defined ai messages
+        setTimeout(() => {
+          const aiMessage: Message = {
+            id: messages.length + 2 + numAiMessages,
+            text: aiMessages[numAiMessages] || "Sounds great! 😊",
+            sender: 'ai',
+            timestamp: new Date()
+          };
+          setMessages((prev) => [...prev, aiMessage]);
+          setIsTyping(false);
+          setNumAiMessages(numAiMessages + 1);
+        }, 1500);
+      }
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+      setMessages((prev) => [...prev, {
+        id: messages.length + 2,
+        text: "Sorry, something went wrong fetching your itinerary 😢",
+        sender: 'ai',
+        timestamp: new Date()
+      }]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+  const handleSelectTravelMode = (mode: string) => {
+    setTravelMode(mode);
+
+    // Add user message
+    const userMessage: Message = {
+      id: messages.length + 1,
+      text: `I prefer ${mode.toLowerCase()}`,
+      sender: 'user',
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+
+    // Add AI confirmation (you can later trigger a backend call here)
+    setTimeout(() => {
+      const aiMessage: Message = {
+        id: messages.length + 2,
+        text: `Perfect! 🌍 I’ll plan the best ${mode.toLowerCase()} route for your "${selectedItinerary.title}" trip.`,
+        sender: 'ai',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, aiMessage]);
+    }, 800);
+  };
+
+  const handleSelectItinerary = (itinerary: any) => {
+    setSelectedItinerary(itinerary);
+
+    // Add a new user message ("I choose...")
+    const userMessage: Message = {
+      id: messages.length + 1,
+      text: `I choose: ${itinerary.title}`,
+      sender: 'user',
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+
+    // Add an AI follow-up message asking for travel mode
+    setTimeout(() => {
+      const aiMessage: Message = {
+        id: messages.length + 2,
+        text: "Got it! 🚗 How would you like to travel?",
+        sender: 'ai',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, aiMessage]);
+    }, 800);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } };
   const handleQuickAction = (action: string) => { handleSendMessage(action); };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#fff',width: '100%' ,overflowX: 'hidden', margin:'auto 0'}}>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#fff', width: '100%', overflowX: 'hidden', margin: 'auto 0' }}>
       {/* Hero Section */}
       <Navbar></Navbar>
       <Box sx={{ position: 'relative', height: 500, overflow: 'hidden', mb: -25 }}>
@@ -56,8 +163,55 @@ export default function App() {
                   </Paper>
                 </Box>
               ))}
-              {isTyping && <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}><Paper sx={{ bgcolor: '#fff7ed', border: '1px solid #ffe4cc', p: 2, borderRadius: 3 }}><Stack direction="row" spacing={0.5}>{[0,150,300].map((delay)=><Box key={delay} sx={{ width: 8, height: 8, bgcolor: '#ff6b35', borderRadius: '50%', animation: `bounce 1s infinite`, animationDelay: `${delay}ms` }} />)}</Stack></Paper></Box>}
+              {suggestions.length > 0 && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+                  {suggestions.map((s, index) => (
+                    <Box
+                      key={index}
+                      onClick={() => handleSelectItinerary(s)}
+                      sx={{ cursor: 'pointer', '&:hover': { transform: 'scale(1.02)', transition: '0.2s' } }}
+                    >
+                      <ItinerarySummary
+                        title={s.title}
+                        discription={s.description}
+                        items={s.destinations.map((d: any) => ({
+                          name: d.name,
+                          notes: d.note
+                        }))}
+                      />
+                    </Box>
+                  ))}
+
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mt: 2, textAlign: 'center', fontStyle: 'italic' }}
+                  >
+                    Click on the itinerary that speaks to you, and I’ll find you the best route! 🗺️
+                  </Typography>
+                </Box>
+              )}
+              {isTyping && <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}><Paper sx={{ bgcolor: '#fff7ed', border: '1px solid #ffe4cc', p: 2, borderRadius: 3 }}><Stack direction="row" spacing={0.5}>{[0, 150, 300].map((delay) => <Box key={delay} sx={{ width: 8, height: 8, bgcolor: '#ff6b35', borderRadius: '50%', animation: `bounce 1s infinite`, animationDelay: `${delay}ms` }} />)}</Stack></Paper></Box>}
             </Box>
+            {/* Travel mode selection after itinerary choice */}
+            {selectedItinerary && !travelMode && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2 }}>
+                {['Driving 🚗', 'Walking 🚶‍♀️', 'Public Transport 🚌'].map((mode) => (
+                  <Button
+                    key={mode}
+                    variant="outlined"
+                    onClick={() => handleSelectTravelMode(mode)}
+                    sx={{
+                      borderColor: '#ffccaa',
+                      color: '#ff6b35',
+                      '&:hover': { bgcolor: '#fff2e6' },
+                    }}
+                  >
+                    {mode}
+                  </Button>
+                ))}
+              </Box>
+            )}
 
             {/* Quick Actions */}
             <Box sx={{ px: 3, py: 2, borderTop: '1px solid #f5f5f5', bgcolor: '#fffaf5' }}>

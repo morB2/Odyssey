@@ -78,7 +78,7 @@ export function ItinerarySummary({
                     variant="h6"
                     sx={{
                         position: "absolute",
-                        bottom: 30,
+                        top: 10,
                         left: 16,
                         color: "white",
                         fontWeight: 600,
