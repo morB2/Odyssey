@@ -17,6 +17,7 @@ import type { User } from '../models/user.model';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import GLogin from './GoogleLogin';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { useUserStore } from '../store/userStore';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -58,12 +59,19 @@ const Login = () => {
     try {
       const response = await loginUser(loginData);
       setSuccess('Login successful!');
-      console.log('Login response:', response);
 
-      setTimeout(() => {
-        // setOpen(false);
-        setLoginData({ email: '', password: '' });
-      }, 1500);
+      const userInfo = {
+        _id: response.user._id,
+        firstName: response.user.firstName,
+        googleId: response.user.googleId,
+        avatar: response.user.avatar,
+      };
+
+      useUserStore.getState().setUser(userInfo);
+      setOpen(false);
+      setTimeout(() => navigate(-1), 200);
+      console.log("User saved in store after login:", useUserStore.getState().user);
+
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
       console.error('Login error:', err);
@@ -92,11 +100,18 @@ const Login = () => {
       setSuccess('Account created successfully!');
       console.log('Signup response:', response);
 
-      setTimeout(() => {
-        setActiveTab(0);
-        setSignupData({ firstName: '', lastName: '', email: '', password: '', birthday: '' });
-        setConfirmPassword('');
-      }, 1500);
+      const userInfo = {
+        _id: response.user._id,
+        firstName: response.user.firstName,
+        googleId: response.user.googleId,
+        avatar: response.user.avatar,
+      };
+
+      useUserStore.getState().setUser(userInfo);
+      setOpen(false);
+      setTimeout(() => navigate(-1), 200);
+      console.log("User saved in store after signup:", useUserStore.getState().user);
+
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
       console.error('Signup error:', err);
@@ -129,7 +144,7 @@ const Login = () => {
         <Box sx={{ height: 4, background: 'linear-gradient(to right, #fb923c, #f97316, #ea580c)' }} />
 
         <DialogTitle sx={{ textAlign: 'center', pt: 4 }}>
-          <Typography variant="h5" fontWeight="bold">Welcome</Typography>
+          <Typography component="div" variant="h5" fontWeight="bold">Welcome</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
             {activeTab === 0 ? 'Sign in to your account' : 'Create a new account'}
           </Typography>
@@ -255,6 +270,7 @@ const Login = () => {
                 onChange={(e) => setSignupData({ ...signupData, birthday: e.target.value })}
               />
 
+              {/* מאשר את תנאי השימוש */}
               {/* <FormControlLabel
                 control={<Checkbox required sx={{ color: '#ea580c', '&.Mui-checked': { color: '#ea580c' } }} />}
                 label={
