@@ -52,8 +52,8 @@ Task:
 "title": "<Trip Title>",
 "description": "<Trip Description>",
   "ordered_route": [
-    {"name": "Place A", "lat": ..., "lon": ...},
-    {"name": "Place B", "lat": ..., "lon": ...},
+    {"name": "Place A", "lat": ..., "lon": ..., "note":...},
+    {"name": "Place B", "lat": ..., "lon": ..., "note":...},
     ...
   ],
   "mode": "<driving|walking|transit>",
