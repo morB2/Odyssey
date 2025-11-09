@@ -25,6 +25,8 @@ import {
   Globe,
   Award,
 } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
+
 
 interface Feature {
   icon: React.ReactNode;
@@ -33,6 +35,8 @@ interface Feature {
 }
 
 const Home: React.FC = () => {
+  const navigate = useNavigate();
+  
   const features: Feature[] = [
     { icon: <Route style={{ color: '#b45309', width: 32, height: 32 }} />, title: "Smart Route Planning", description: "Our AI algorithm calculates the most efficient routes between destinations, saving you time and maximizing your adventure." },
     { icon: <Cloud style={{ color: '#b45309', width: 32, height: 32 }} />, title: "Real-Time Weather", description: "Get accurate weather forecasts for your destinations so you can pack right and plan activities accordingly." },
@@ -57,8 +61,8 @@ const Home: React.FC = () => {
               <Link href="#features" underline="none" sx={{ color: 'white', '&:hover': { color: '#fcd34d' }, transition: 'color 0.3s' }}>Features</Link>
               <Link href="#about" underline="none" sx={{ color: 'white', '&:hover': { color: '#fcd34d' }, transition: 'color 0.3s' }}>About</Link>
             </Box>
-            <Button variant="text" sx={{ color: 'white', mr: 1, '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}>Log In</Button>
-            <Button variant="contained" sx={{ bgcolor: '#d97706', '&:hover': { bgcolor: '#b45309' }, fontWeight: 600 }}>Sign Up</Button>
+            <Button variant="text" onClick={() => navigate("/login?tab=login", { state: { backgroundLocation: location.pathname } })} sx={{ color: 'white', mr: 1, '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}>Log In</Button>
+            <Button variant="contained" onClick={() => navigate("/login?tab=signup", { state: { backgroundLocation: location.pathname } })} sx={{ bgcolor: '#d97706', '&:hover': { bgcolor: '#b45309' }, fontWeight: 600 }}>Sign Up</Button>
           </Box>
 
         </Toolbar>
