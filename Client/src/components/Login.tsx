@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import {
   Box,
   Button,
@@ -9,21 +9,30 @@ import {
   Tabs,
   Tab,
   Typography,
-  Checkbox,
-  FormControlLabel,
   Divider,
   Link
 } from '@mui/material';
-import { Login as LoginIcon } from '@mui/icons-material';
 import { loginUser, registerUser } from "../services/login.service";
 import type { User } from '../models/user.model';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import GLogin from './GoogleLogin';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
-export default function App() {
-  const [open, setOpen] = useState(false);
+const Login = () => {
+  const navigate = useNavigate();
+
+  const [searchParams] = useSearchParams();
+  const [open, setOpen] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam === "signup") setActiveTab(1);
+    else setActiveTab(0);
+  }, [searchParams]);
 
   const [loginData, setLoginData] = useState<Pick<User, 'email' | 'password'>>({
     email: '',
@@ -50,9 +59,9 @@ export default function App() {
       const response = await loginUser(loginData);
       setSuccess('Login successful!');
       console.log('Login response:', response);
-      
+
       setTimeout(() => {
-        setOpen(false);
+        // setOpen(false);
         setLoginData({ email: '', password: '' });
       }, 1500);
     } catch (err: any) {
@@ -82,7 +91,7 @@ export default function App() {
 
       setSuccess('Account created successfully!');
       console.log('Signup response:', response);
-      
+
       setTimeout(() => {
         setActiveTab(0);
         setSignupData({ firstName: '', lastName: '', email: '', password: '', birthday: '' });
@@ -107,32 +116,18 @@ export default function App() {
         p: 2
       }}
     >
-      <Button
-        variant="contained"
-        startIcon={<LoginIcon />}
-        onClick={() => setOpen(true)}
-        sx={{
-          bgcolor: 'black',
-          color: 'white',
-          px: 4,
-          py: 1.5,
-          borderRadius: 3,
-          boxShadow: 3,
-          '&:hover': { bgcolor: '#1f2937' }
-        }}
-      >
-        Sign In
-      </Button>
-
       <Dialog
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={() => {
+          setOpen(false);
+          setTimeout(() => navigate(-1), 200); // חזרה לעמוד הקודם לאחר סגירת הדיאלוג
+        }}
         maxWidth="sm"
         fullWidth
         PaperProps={{ sx: { borderRadius: 4, maxHeight: '90vh', overflow: 'hidden' } }}
       >
         <Box sx={{ height: 4, background: 'linear-gradient(to right, #fb923c, #f97316, #ea580c)' }} />
-        
+
         <DialogTitle sx={{ textAlign: 'center', pt: 4 }}>
           <Typography variant="h5" fontWeight="bold">Welcome</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
@@ -195,8 +190,12 @@ export default function App() {
                 <Typography variant="body2" color="text.secondary">Or continue with</Typography>
               </Divider>
 
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
-                {/* כפתורי Google / Facebook */}
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 1.5 }}>
+                <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID!}>
+                  <div>
+                    <GLogin />
+                  </div>
+                </GoogleOAuthProvider>
               </Box>
             </Box>
           ) : (
@@ -256,7 +255,7 @@ export default function App() {
                 onChange={(e) => setSignupData({ ...signupData, birthday: e.target.value })}
               />
 
-              <FormControlLabel
+              {/* <FormControlLabel
                 control={<Checkbox required sx={{ color: '#ea580c', '&.Mui-checked': { color: '#ea580c' } }} />}
                 label={
                   <Typography variant="body2" color="text.secondary">
@@ -266,7 +265,7 @@ export default function App() {
                     <Link href="#" sx={{ color: '#ea580c' }}>Privacy Policy</Link>
                   </Typography>
                 }
-              />
+              /> */}
 
               <Button type="submit" variant="contained" fullWidth sx={{ bgcolor: 'black', color: 'white', py: 1.5, borderRadius: 2, mt: 1, '&:hover': { bgcolor: '#1f2937' } }}>
                 Create Account
@@ -276,8 +275,12 @@ export default function App() {
                 <Typography variant="body2" color="text.secondary">Or continue with</Typography>
               </Divider>
 
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
-                {/* כפתורי Google / Facebook */}
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 1.5 }}>
+                <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID!}>
+                  <div>
+                    <GLogin />
+                  </div>
+                </GoogleOAuthProvider>
               </Box>
             </Box>
           )}
@@ -286,3 +289,6 @@ export default function App() {
     </Box>
   );
 }
+
+export default Login;
+
