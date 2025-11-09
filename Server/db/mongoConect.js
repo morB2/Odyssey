@@ -3,7 +3,6 @@ import { config } from '../config/secret.js';
 
 async function main() {
   try {
-    console.log('Connecting to Mongo...',config.dbConnection);
      await mongoose.connect(config.dbConnection, {
       useNewUrlParser: true,
       useUnifiedTopology: true,

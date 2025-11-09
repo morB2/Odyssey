@@ -1,11 +1,8 @@
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
-import googleLoginService from "../services/googleLogin.service";
-import { Dialog, DialogContent, DialogTitle } from "@mui/material";
+import googleLoginService from "../services/login.service";
 import { useState } from "react";
-// import { User } from "../../models/user.model";
-// import { useUser } from "../../hooks/UserProvider";
-// import { Product } from "../../models/product.model";
+
 
 
 const GLogin = () => {
