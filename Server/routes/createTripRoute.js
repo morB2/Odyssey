@@ -55,11 +55,10 @@ router.post("/findOptimalRoute", async (req, res) => {
 router.post("/save", async (req, res) => {
   try {
     const body = req.body || {};
-    const { userId, chosenTrip, optimizedRoute, activities, notes } =
+    const { userId, optimizedRoute, activities, notes } =
       body;
     const saved = await saveTrip({
       user: userId,
-      chosenTrip,
       optimizedRoute,
       activities,
       notes,

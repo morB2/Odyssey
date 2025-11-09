@@ -132,21 +132,12 @@ export async function optimizeRoute(destinations, mode = "driving") {
 
 export async function saveTrip({
   user,
-  chosenTrip,
   optimizedRoute,
   activities = [],
   notes = "",
 }) {
-  if (
-    !chosenTrip ||
-    !Array.isArray(chosenTrip.destinations) ||
-    chosenTrip.destinations.length === 0
-  ) {
-    throw new Error("chosenTrip with destinations is required to save");
-  }
   const doc = await Trip.create({
     user: user || null,
-    chosenTrip,
     optimizedRoute: optimizedRoute || {},
     activities: activities || [],
     notes: notes || "",
