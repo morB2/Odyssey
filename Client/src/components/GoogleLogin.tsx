@@ -7,17 +7,12 @@ import { useUserStore } from "../store/userStore";
 
 
 const GLogin = () => {
-  // const [showAdditionalForm, setShowAdditionalForm] = useState(false);
-  // const [userData, setUserData] = useState<User>(new User('', '', '', ''));
-  // const { setUserInfo } = useUser()
-
   const handleSuccess = async (credentialResponse: any) => {
     if (!credentialResponse.credential) return;
 
     const token = credentialResponse.credential;
 
     const decoded: any = jwtDecode(token);
-    console.log("User info:", decoded);
 
     try {
       const response = await googleLoginService.googleLogin(token);
@@ -29,7 +24,6 @@ const GLogin = () => {
       };
 
       useUserStore.getState().setUser(userInfo); 
-      console.log("User saved in store:", useUserStore.getState().user);
     } catch (err) {
       console.error("Google login failed:", err);
     }
