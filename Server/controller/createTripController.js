@@ -1,0 +1,146 @@
+import dotenv from "dotenv";
+import { GoogleGenAI } from "@google/genai";
+dotenv.config();
+
+import Trip from "../models/tripModel.js";
+
+const GEMINI_API_KEY = process.env.GEMINI_KEY;
+if (!GEMINI_API_KEY) console.warn("GEMINI_KEY not set - AI calls will fail");
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+
+const oneDaySuggestInstruction = `
+You are a one-day trip planner.
+The user will describe the kind of one-day trip they want (region, interests, style).
+
+Task:
+1. Suggest exactly 3 different one-day trip options that match the user's request.
+2. Each option must contain:
+   - "title": short descriptive name
+   - "description": short summary
+   - "destinations": array of exactly 3 locations (each with name and brief note)
+3. Each destination must also include approximate coordinates (latitude, longitude).
+4. Output strictly a JSON array of 3 objects, nothing else.
+
+Example:
+[
+  {
+    "title": "Cultural and Food Tour in Tel Aviv",
+    "description": "A relaxed day exploring food, art, and beach life in Tel Aviv.",
+    "destinations": [
+      {"name": "Carmel Market", "lat": 32.068, "lon": 34.768, "note": "Local street food"},
+      {"name": "Rothschild Boulevard", "lat": 32.063, "lon": 34.776, "note": "Bauhaus architecture"},
+      {"name": "Tel Aviv Museum of Art", "lat": 32.077, "lon": 34.786, "note": "Modern art collection"},
+      {"name": "Gordon Beach", "lat": 32.081, "lon": 34.769, "note": "Beautiful sunset view"}
+    ]
+  },
+  ...
+]
+`;
+const oneDayRouteInstruction = `
+You are a travel route optimizer.
+Given a list of destinations (each with coordinates), plan an efficient one-day route.
+
+Task:
+- Reorder the destinations for optimal travel.
+- Describe how to travel between each destination based on the user’s chosen mode ("driving", "walking", or "public_transport").
+- Return estimated travel times and short route instructions.
+- Include the Google Maps URL that shows the entire route in the correct order.
+- Output strictly in this JSON format:
+
+{
+  "ordered_route": [
+    {"name": "Place A", "lat": ..., "lon": ...},
+    {"name": "Place B", "lat": ..., "lon": ...},
+    ...
+  ],
+  "mode": "<driving|walking|transit>",
+  "instructions": ["Go from A to B via ...", "Then continue to ..."],
+  "google_maps_url": "https://www.google.com/maps/dir/?api=1&origin=<lat1>,<lon1>&destination=<lat4>,<lon4>&waypoints=<lat2>,<lon2>|<lat3>,<lon3>&travelmode=driving"
+}
+`;
+
+async function askGemini(systemInstruction, userPrompt) {
+  for (let i = 0; i < 3; i++) {
+    try {
+      const r = await ai.models.generateContent({
+        model: "gemini-2.5-pro",
+        contents: [{ text: userPrompt }],
+        config: { systemInstruction },
+      });
+      const txt =
+        r?.text ??
+        (r.outputs
+          ? r.outputs.map((o) => o.text).join("\n")
+          : JSON.stringify(r));
+      return txt.trim();
+    } catch (e) {
+      if (e?.status === 503 && i < 2)
+        await new Promise((s) => setTimeout(s, 1000 * (i + 1)));
+      else throw e;
+    }
+  }
+}
+
+const sanitizeAIOutput = (t) => {
+  if (!t || typeof t !== "string") return t;
+  const s = t
+    .trim()
+    .replace(/```\w*\n?|```/g, "")
+    .trim();
+  try {
+    JSON.parse(s);
+    return s;
+  } catch {
+    const m = s.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
+    return m ? m[0] : s;
+  }
+};
+
+export async function getSuggestions(prompt) {
+  const out = await askGemini(oneDaySuggestInstruction, prompt);
+  const sanitized = sanitizeAIOutput(out);
+  try {
+    return JSON.parse(sanitized);
+  } catch (e) {
+    const err = new Error("AI returned non-JSON");
+    err.type = "ai_non_json";
+    err.raw = out;
+    err.sanitized = sanitized;
+    throw err;
+  }
+}
+
+export async function optimizeRoute(destinations, mode = "driving") {
+  if (!Array.isArray(destinations) || destinations.length === 0) {
+    throw new Error("destinations (array) required");
+  }
+  const prompt = `Plan an optimized one-day route for the following destinations: ${JSON.stringify(
+    destinations
+  )}. Use mode: ${mode}.`;
+  const out = await askGemini(oneDayRouteInstruction, prompt);
+  const sanitized = sanitizeAIOutput(out);
+  try {
+    return JSON.parse(sanitized);
+  } catch (e) {
+    const err = new Error("AI returned non-JSON");
+    err.type = "ai_non_json";
+    err.raw = out;
+    err.sanitized = sanitized;
+    throw err;
+  }
+}
+
+export async function saveTrip({
+  user,
+  optimizedRoute,
+  activities = [],
+  notes = "",
+}) {
+  const doc = await Trip.create({
+    user: user || null,
+    optimizedRoute: optimizedRoute || {},
+    activities: activities || [],
+    notes: notes || "",
+  });
+  return doc;
+}
