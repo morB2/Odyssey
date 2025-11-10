@@ -128,7 +128,8 @@ export default function MainPage() {
         data: data, // The updated trip route
       },
     };
-
+    console.log(data);
+    
     setMessages((prev) => [...prev, aiUpdateConfirm, aiUpdatedTrip]);
   } else {
     setMessages((prev) => [...prev, {
