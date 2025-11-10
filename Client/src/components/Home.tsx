@@ -25,6 +25,7 @@ import {
   Globe,
   Award,
 } from 'lucide-react';
+import Navbar from './general/Navbar';
 import { useNavigate } from "react-router-dom";
 import { useUserStore } from '../store/userStore';
 
