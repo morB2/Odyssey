@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -14,8 +14,12 @@ import {
   List,
   ListItem,
   ListItemText,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
-import { MapPin, Navigation, ExternalLink } from "lucide-react";
+import { MapPin, Navigation, ExternalLink, Save } from "lucide-react";
 
 interface Location {
   name: string;
@@ -49,6 +53,31 @@ export function TripDisplay({ data }: TripDisplayProps) {
   const orange = "#ff9800";
   const lightOrange = "#fff3e0";
   const borderOrange = "#ffe0b2";
+
+  // Dialog state
+  const [openDialog, setOpenDialog] = useState(false);
+
+  const handleSaveClick = () => setOpenDialog(true);
+  const handleCloseDialog = () => setOpenDialog(false);
+
+  const handleSaveOption = async (type: "private" | "public") => {
+    setOpenDialog(false);
+    alert(`Trip saved ${type === "private" ? "privately" : "publicly"}!`);
+    const response = await fetch('http://localhost:3000/createTrip/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(
+        { userId: '690c8a7c5e5fd174dbcacd5e', title, description, optimizedRoute: { ordered_route, mode, instructions, google_maps_url }, activities, visabilityStatus: type }
+      ),
+    });
+    const result = await response.json();
+    console.log('Trip save response:', result);
+    if (result.success) {
+      alert('Trip saved successfully!');
+    } else {
+      alert('Failed to save trip.');
+    }
+  };
 
   return (
     <Card
@@ -196,7 +225,7 @@ export function TripDisplay({ data }: TripDisplayProps) {
 
       {/* Footer */}
       <Divider sx={{ borderColor: borderOrange }} />
-      <CardActions sx={{ justifyContent: "center", p: 2, bgcolor: lightOrange }}>
+      <CardActions sx={{ justifyContent: "space-between", p: 2, bgcolor: lightOrange }}>
         <Button
           variant="contained"
           href={google_maps_url}
@@ -212,7 +241,37 @@ export function TripDisplay({ data }: TripDisplayProps) {
         >
           Open in Google Maps
         </Button>
+        <Button
+          variant="outlined"
+          startIcon={<Save size={18} />}
+          onClick={handleSaveClick}
+          sx={{
+            borderColor: orange,
+            color: orange,
+            "&:hover": { borderColor: "#fb8c00", color: "#fb8c00" },
+            textTransform: "none",
+            fontWeight: 600,
+          }}
+        >
+          Save
+        </Button>
       </CardActions>
+
+      {/* Save Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle sx={{ color: orange, fontWeight: "bold" }}>Save Trip</DialogTitle>
+        <DialogContent>
+          <Typography>Would you like to save your trip privately or publicly?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => handleSaveOption("private")} variant="contained" sx={{ bgcolor: orange }}>
+            Save Privately
+          </Button>
+          <Button onClick={() => handleSaveOption("public")} variant="outlined" sx={{ borderColor: orange, color: orange }}>
+            Save Publicly
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 }

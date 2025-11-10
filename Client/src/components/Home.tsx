@@ -123,8 +123,8 @@ const Home: React.FC = () => {
           </Typography>
 
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, justifyContent: 'center', mb: 10 }}>
-            <Button variant="contained" size="large" startIcon={<Sparkles style={{ width: 20, height: 20 }} />} sx={{ bgcolor: '#d97706', '&:hover': { bgcolor: '#b45309' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600 }}>Plan Your Trip</Button>
-            <Button variant="outlined" size="large" sx={{ borderColor: 'white', color: 'white', '&:hover': { bgcolor: 'white', color: 'black', borderColor: 'white' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600, borderWidth: 2 }}>How It Works</Button>
+            <Button  onClick={() => navigate('/createtrip')}  variant="contained" size="large" startIcon={<Sparkles style={{ width: 20, height: 20 }} />} sx={{ bgcolor: '#d97706', '&:hover': { bgcolor: '#b45309' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600 }}>Plan Your Trip</Button>
+            <Button  variant="outlined" size="large" sx={{ borderColor: 'white', color: 'white', '&:hover': { bgcolor: 'white', color: 'black', borderColor: 'white' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600, borderWidth: 2 }}>How It Works</Button>
           </Box>
 
           {/* Hero Stats */}
@@ -230,7 +230,7 @@ const Home: React.FC = () => {
           <Typography variant="h2" sx={{ color: 'white', mb: 3, fontWeight: 700, fontSize: { xs: '2rem', md: '3rem' } }}>Ready to Start Your Adventure?</Typography>
           <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.9)', mb: 5, fontWeight: 400, lineHeight: 1.6 }}>Join thousands of travelers who have discovered their perfect journeys with Odyssey. Start planning your next trip today—it only takes a few minutes.</Typography>
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, justifyContent: 'center' }}>
-            <Button variant="contained" size="large" startIcon={<Sparkles style={{ width: 20, height: 20 }} />} sx={{ bgcolor: 'white', color: '#b45309', '&:hover': { bgcolor: '#f3f4f6' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600 }}>Plan Your Trip Now</Button>
+            <Button onClick={() => navigate('/createtrip')}  variant="contained" size="large" startIcon={<Sparkles style={{ width: 20, height: 20 }} />} sx={{ bgcolor: 'white', color: '#b45309', '&:hover': { bgcolor: '#f3f4f6' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600 }}>Plan Your Trip Now</Button>
             <Button variant="outlined" size="large" sx={{ borderColor: 'white', color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)', borderColor: 'white' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600, borderWidth: 2 }}>Learn More</Button>
           </Box>
         </Container>
