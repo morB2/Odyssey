@@ -24,6 +24,7 @@ function App() {
     <>
       <Routes location={background}>
         <Route path="/" element={<Home />} />
+        <Route path="/createtrip" element={<MainPage />} />
       </Routes>
 
       {state?.backgroundLocation && (

@@ -70,14 +70,14 @@ export default function MainPage() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [selectedItinerary, setSelectedItinerary] = useState<any | null>(null);
   const [travelMode, setTravelMode] = useState<string | null>(null);
-
+   const [route,setRoute]=useState<any>(null);
   const initialMessage: Message = { id: 1, text: "Hi there! 👋 I'm your AI travel assistant. Tell me about your dream vacation and I'll create a personalized itinerary just for you. Where would you like to go?", sender: 'ai', timestamp: new Date() };
   const [messages, setMessages] = useState<Message[]>([initialMessage]);
 
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-
+  const [isCustomizing, setIsCustomizing] = useState(false);
   const scrollToBottom = () => { if (scrollAreaRef.current) scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight; };
   useEffect(() => { scrollToBottom(); }, [messages]);
 
@@ -97,6 +97,52 @@ export default function MainPage() {
     setIsTyping(true);
 
     try {
+      if (isCustomizing && selectedItinerary && travelMode) {
+  // Customization logic
+  const response = await fetch('http://localhost:3000/createTrip/customize', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      prompt: messageText,
+      trip: route, // You can adjust structure as needed
+    }),
+  });
+
+  const data = await response.json();
+
+  if (data.success) {
+    const aiUpdateConfirm: Message = {
+      id: messages.length + 2,
+      text: "Got it! ✏️ I’ve updated your itinerary based on your feedback.",
+      sender: 'ai',
+      timestamp: new Date(),
+    };
+
+    const aiUpdatedTrip: Message = {
+      id: messages.length + 3,
+      text: null,
+      sender: 'ai',
+      timestamp: new Date(),
+      content: {
+        type: 'tripDisplay',
+        data: data, // The updated trip route
+      },
+    };
+
+    setMessages((prev) => [...prev, aiUpdateConfirm, aiUpdatedTrip]);
+  } else {
+    setMessages((prev) => [...prev, {
+      id: messages.length + 2,
+      text: "Hmm… I couldn’t apply those changes right now. Try again in a moment.",
+      sender: 'ai',
+      timestamp: new Date(),
+    }]);
+  }
+
+  setIsTyping(false);
+  return; // Stop here so it doesn't fall into the normal flow
+}
+
       if (numAiMessages === 0) {
         const response = await fetch('http://localhost:3000/createTrip/suggestions', {
           method: 'POST',
@@ -223,18 +269,18 @@ export default function MainPage() {
           mode: mode.toLowerCase(),
         }),
       });
-
+      const aiConfirm: Message = {
+        id: messages.length + 2,
+        text: `Perfect! 🌍 I’ll plan the best ${mode.toLowerCase()} route for your "${selectedItinerary?.title}" trip.`,
+        sender: 'ai',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, aiConfirm]);
       const data = await response.json();
       console.log(data);
-      
+
       if (data.success) {
         // Add AI confirmation
-        const aiConfirm: Message = {
-          id: messages.length + 2,
-          text: `Perfect! 🌍 I’ll plan the best ${mode.toLowerCase()} route for your "${selectedItinerary?.title}" trip.`,
-          sender: 'ai',
-          timestamp: new Date(),
-        };
 
         // Add the TripDisplay component
         const aiTripDisplay: Message = {
@@ -244,11 +290,20 @@ export default function MainPage() {
           timestamp: new Date(),
           content: {
             type: 'tripDisplay',
-            data: data.route, // Whatever your backend returns
+            data: data, // Whatever your backend returns
           },
         };
 
-        setMessages((prev) => [...prev, aiConfirm, aiTripDisplay]);
+        const aiCustomize: Message = {
+          id: messages.length + 2,
+          text: "If there’s anything you’d like me to change, just let me know and I’ll adjust it for you!",
+          sender: "ai",
+          timestamp: new Date(),
+        };
+
+        setMessages((prev) => [...prev, aiTripDisplay, aiCustomize]);
+        setIsCustomizing(true);
+        setRoute(data.route); // Save the route data for potential customization
       } else {
         console.error('Error fetching optimal route');
       }
