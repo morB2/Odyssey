@@ -62,7 +62,7 @@ router.post("/save", async (req, res) => {
       activities,
       notes,
     });
-    return res.status(201).json({ success: true, trip: saved });
+    return res.status(201).json({ success: true, route: saved });
   } catch (err) {
     console.error("save trip error", err);
     return res.status(500).json({ success: false, error: String(err) });
@@ -80,7 +80,7 @@ router.post("/customize", async (req, res) => {
         .status(400)
         .json({ success: false, error: "prompt and trip required" });
     const customized = await customizeTrip(prompt, trip);
-    return res.json(Object.assign({ success: true }, customized));
+    return res.json(Object.assign({ success: true }, {route:customized}));
   } catch (err) {
     console.error("customize error", err);
     if (err.type === "ai_non_json")
