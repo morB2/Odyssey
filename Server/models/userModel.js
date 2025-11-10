@@ -10,9 +10,9 @@ const userSchema = new mongoose.Schema(
     preferences: { type: [mongoose.Schema.Types.Mixed], default: [] },
     googleId: { type: String, unique: true, sparse: true },
     avatar: { type: String },
-    password: { type: String }, // אופציונלי אם בעתיד תרצי התחברות רגילה
+    password: { type: String }, 
   },
-  { timestamps: true } // מוסיף createdAt ו-updatedAt אוטומטית
+  { timestamps: true } 
 );
 
 export default mongoose.model("User", userSchema);

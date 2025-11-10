@@ -2,38 +2,28 @@ import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import googleLoginService from "../services/login.service";
 import { useState } from "react";
+import { useUserStore } from "../store/userStore";
 
 
 
 const GLogin = () => {
-  // const [showAdditionalForm, setShowAdditionalForm] = useState(false);
-  // const [userData, setUserData] = useState<User>(new User('', '', '', ''));
-  // const { setUserInfo } = useUser()
-
   const handleSuccess = async (credentialResponse: any) => {
     if (!credentialResponse.credential) return;
 
-    // מפענחים את המידע שהגיע מטוקן גוגל
     const token = credentialResponse.credential;
 
     const decoded: any = jwtDecode(token);
-    console.log("User info:", decoded);
-
-    // const newUser = new User('', '', decoded.email || '', decoded.name || '');
-    // setUserData(newUser);
 
     try {
       const response = await googleLoginService.googleLogin(token);
-      console.log("Server response:", response.isNewUser);
-      if (response.isNewUser) {
-        console.log("New user detected, showing additional form");
-        // setShowAdditionalForm(true);
-      } else {
-        // משתמש קיים → שמירה ב־Context והמשך רגיל
-        console.log("Existing user:", response.data);
-        console.log("User ID:", response.user);
-        // setUserInfo(response.user.ID, response.user.fullName, response.user.role)
-      }
+      const userInfo = {
+        _id: response.user._id,
+        firstName: response.user.firstName,
+        googleId: decoded.sub || response.user.googleId,
+        avatar: response.user.avatar,
+      };
+
+      useUserStore.getState().setUser(userInfo); 
     } catch (err) {
       console.error("Google login failed:", err);
     }
