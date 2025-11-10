@@ -134,13 +134,28 @@ export async function optimizeRoute(destinations, mode = "driving") {
   }
 }
 
-const customizeInstruction = `You are a trip customizer. You will receive a user prompt describing desired customizations and a trip object in JSON (title, description, ordered_route, mode, instructions, google_maps_url, activities). Apply the customizations to the trip and return ONLY the modified trip object in the exact same format (JSON object). Do not include any explanations, notes, or extra text.`;
+const customizeInstruction = `You are a trip customizer. You will receive a user prompt describing desired customizations and trip detailes: title, description, ordered_route, mode, instructions, google_maps_url, activities. Apply the customizations to the trip and the trip in this format (JSON object):
+{
+"title": "<Trip Title>",
+"description": "<Trip Description>",
+  "ordered_route": [
+    {"name": "Place A", "lat": ..., "lon": ..., "note":...},
+    {"name": "Place B", "lat": ..., "lon": ..., "note":...},
+    ...
+  ],
+  "mode": "<driving|walking|transit>",
+  "instructions": ["Go from A to B via ...", "Then continue to ..."],
+  "google_maps_url": "https://www.google.com/maps/dir/?api=1&origin=<lat1>,<lon1>&destination=<lat4>,<lon4>&waypoints=<lat2>,<lon2>|<lat3>,<lon3>&travelmode=driving"
+  "activities": ["<activity 1>", "<activity 2>", "...","<activity 5>"]
+}
+Do not include any explanations, notes, or extra text.`;
 
 export async function customizeTrip(prompt, tripObj) {
   if (!tripObj || typeof tripObj !== 'object') {
     throw new Error('trip object required');
   }
-  const userPrompt = `Prompt: ${prompt}\n\nTrip: ${JSON.stringify(tripObj)}`;
+  const { title, description, ordered_route, mode, instructions, google_maps_url, activities } = tripObj;
+  const userPrompt = `Prompt: ${prompt}\n\nTitle: ${title}\nDescription: ${description}\nOrdered_route: ${JSON.stringify(ordered_route)}\nMode: ${mode}\nInstructions: ${JSON.stringify(instructions)}\nGoogle_maps_url: ${google_maps_url}\nActivities: ${JSON.stringify(activities)}`;
   const out = await askGemini(customizeInstruction, userPrompt);
   const sanitized = sanitizeAIOutput(out);
   try {
