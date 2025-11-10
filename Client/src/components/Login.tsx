@@ -67,10 +67,10 @@ const Login = () => {
         avatar: response.user.avatar,
       };
 
-      useUserStore.getState().setUser(userInfo);
+      useUserStore.getState().setUser(userInfo, response.token);
       setOpen(false);
       setTimeout(() => navigate(-1), 200);
-      console.log("User saved in store after login:", useUserStore.getState().user);
+      console.log("User saved in store after login:", useUserStore.getState().user,"token", response.token);
 
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
@@ -107,7 +107,7 @@ const Login = () => {
         avatar: response.user.avatar,
       };
 
-      useUserStore.getState().setUser(userInfo);
+      useUserStore.getState().setUser(userInfo, response.token);
       setOpen(false);
       setTimeout(() => navigate(-1), 200);
       console.log("User saved in store after signup:", useUserStore.getState().user);

@@ -23,7 +23,7 @@ const GLogin = () => {
         avatar: response.user.avatar,
       };
 
-      useUserStore.getState().setUser(userInfo); 
+      useUserStore.getState().setUser(userInfo, response.token); 
     } catch (err) {
       console.error("Google login failed:", err);
     }
