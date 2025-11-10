@@ -55,7 +55,7 @@ router.post("/findOptimalRoute", async (req, res) => {
 router.post("/save", async (req, res) => {
   try {
     const body = req.body || {};
-    const { userId, title, description, optimizedRoute, activities, notes } =
+    const { userId, title, description, optimizedRoute, activities, notes,visabilityStatus } =
       body;
     const saved = await saveTrip({
       user: userId,
@@ -64,6 +64,7 @@ router.post("/save", async (req, res) => {
       optimizedRoute,
       activities,
       notes,
+      visabilityStatus,
     });
     return res.status(201).json({ success: true, route: saved });
   } catch (err) {

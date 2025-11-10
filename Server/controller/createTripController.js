@@ -176,6 +176,7 @@ export async function saveTrip({
   optimizedRoute,
   activities = [],
   notes = "",
+  visabilityStatus,
 }) {
   const doc = await Trip.create({
     user: user || null,
@@ -184,6 +185,7 @@ export async function saveTrip({
     optimizedRoute: optimizedRoute || {},
     activities: activities || [],
     notes: notes || "",
+    visabilityStatus: visabilityStatus || "private",
   });
   return doc;
 }
