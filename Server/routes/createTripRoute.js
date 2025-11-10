@@ -55,9 +55,12 @@ router.post("/findOptimalRoute", async (req, res) => {
 router.post("/save", async (req, res) => {
   try {
     const body = req.body || {};
-    const { userId, optimizedRoute, activities, notes } = body;
+    const { userId, title, description, optimizedRoute, activities, notes } =
+      body;
     const saved = await saveTrip({
       user: userId,
+      title,
+      description,
       optimizedRoute,
       activities,
       notes,
@@ -80,7 +83,7 @@ router.post("/customize", async (req, res) => {
         .status(400)
         .json({ success: false, error: "prompt and trip required" });
     const customized = await customizeTrip(prompt, trip);
-    return res.json(Object.assign({ success: true }, {route:customized}));
+    return res.json(Object.assign({ success: true }, { route: customized }));
   } catch (err) {
     console.error("customize error", err);
     if (err.type === "ai_non_json")
