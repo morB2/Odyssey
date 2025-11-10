@@ -80,7 +80,7 @@ router.post("/customize", async (req, res) => {
         .status(400)
         .json({ success: false, error: "prompt and trip required" });
     const customized = await customizeTrip(prompt, trip);
-    return res.json(Object.assign({ success: true }, customized));
+    return res.json(Object.assign({ success: true }, {route:customized}));
   } catch (err) {
     console.error("customize error", err);
     if (err.type === "ai_non_json")
