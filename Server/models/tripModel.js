@@ -26,6 +26,11 @@ const TripSchema = new mongoose.Schema(
     },
     activities: { type: [String], default: [] },
     notes: { type: String },
+    visabilityStatus: {
+      type: String,
+      enum: ["private", "public"],
+      default: "private",
+    },
   },
   { timestamps: true }
 );
