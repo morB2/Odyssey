@@ -45,17 +45,21 @@ Task:
 - Describe how to travel between each destination based on the user’s chosen mode ("driving", "walking", or "public_transport").
 - Return estimated travel times and short route instructions.
 - Include the Google Maps URL that shows the entire route in the correct order.
+- Return activities array with 5 most relevant categories related to the trip.(e.g.,<name of the place></name>, "museum", "hiking", "food tour", "historical sites", "beach")
 - Output strictly in this JSON format:
 
 {
+"title": "<Trip Title>",
+"description": "<Trip Description>",
   "ordered_route": [
-    {"name": "Place A", "lat": ..., "lon": ...},
-    {"name": "Place B", "lat": ..., "lon": ...},
+    {"name": "Place A", "lat": ..., "lon": ..., "note":...},
+    {"name": "Place B", "lat": ..., "lon": ..., "note":...},
     ...
   ],
   "mode": "<driving|walking|transit>",
   "instructions": ["Go from A to B via ...", "Then continue to ..."],
   "google_maps_url": "https://www.google.com/maps/dir/?api=1&origin=<lat1>,<lon1>&destination=<lat4>,<lon4>&waypoints=<lat2>,<lon2>|<lat3>,<lon3>&travelmode=driving"
+  "activities": ["<activity 1>", "<activity 2>", "...","<activity 5>"]
 }
 `;
 
@@ -130,23 +134,34 @@ export async function optimizeRoute(destinations, mode = "driving") {
   }
 }
 
+const customizeInstruction = `You are a trip customizer. You will receive a user prompt describing desired customizations and a trip object in JSON (title, description, ordered_route, mode, instructions, google_maps_url, activities). Apply the customizations to the trip and return ONLY the modified trip object in the exact same format (JSON object). Do not include any explanations, notes, or extra text.`;
+
+export async function customizeTrip(prompt, tripObj) {
+  if (!tripObj || typeof tripObj !== 'object') {
+    throw new Error('trip object required');
+  }
+  const userPrompt = `Prompt: ${prompt}\n\nTrip: ${JSON.stringify(tripObj)}`;
+  const out = await askGemini(customizeInstruction, userPrompt);
+  const sanitized = sanitizeAIOutput(out);
+  try {
+    return JSON.parse(sanitized);
+  } catch (e) {
+    const err = new Error('AI returned non-JSON');
+    err.type = 'ai_non_json';
+    err.raw = out;
+    err.sanitized = sanitized;
+    throw err;
+  }
+}
+
 export async function saveTrip({
   user,
-  chosenTrip,
   optimizedRoute,
   activities = [],
   notes = "",
 }) {
-  if (
-    !chosenTrip ||
-    !Array.isArray(chosenTrip.destinations) ||
-    chosenTrip.destinations.length === 0
-  ) {
-    throw new Error("chosenTrip with destinations is required to save");
-  }
   const doc = await Trip.create({
     user: user || null,
-    chosenTrip,
     optimizedRoute: optimizedRoute || {},
     activities: activities || [],
     notes: notes || "",

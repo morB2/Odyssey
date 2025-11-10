@@ -5,6 +5,7 @@ import cors from 'cors';
 import { routesInit } from './routes/config_routes.js';
 import './db/mongoConect.js';
 import { config } from './config/secret.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
 
@@ -12,6 +13,8 @@ app.use(cors());
 app.use(express.json());
 
 routesInit(app);
+
+app.use(errorHandler);
 
 const server = http.createServer(app);
 

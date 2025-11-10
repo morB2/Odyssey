@@ -26,6 +26,9 @@ import {
   Award,
 } from 'lucide-react';
 import Navbar from './general/Navbar';
+import { useNavigate } from "react-router-dom";
+import { useUserStore } from '../store/userStore';
+
 
 interface Feature {
   icon: React.ReactNode;
@@ -34,6 +37,9 @@ interface Feature {
 }
 
 const Home: React.FC = () => {
+  const navigate = useNavigate();
+  const user = useUserStore(state => state.user);
+
   const features: Feature[] = [
     { icon: <Route style={{ color: '#b45309', width: 32, height: 32 }} />, title: "Smart Route Planning", description: "Our AI algorithm calculates the most efficient routes between destinations, saving you time and maximizing your adventure." },
     { icon: <Cloud style={{ color: '#b45309', width: 32, height: 32 }} />, title: "Real-Time Weather", description: "Get accurate weather forecasts for your destinations so you can pack right and plan activities accordingly." },
@@ -46,7 +52,43 @@ const Home: React.FC = () => {
   return (
     <Box sx={{ minHeight: '100vh', width: '100vw', overflowX: 'hidden' }}>
       {/* Header */}
-     <Navbar></Navbar>
+      <AppBar position="absolute" elevation={0} sx={{ background: 'transparent' }}>
+        <Toolbar sx={{ px: { xs: 2, md: 6 }, py: 2, justifyContent: 'space-between' }}>
+
+          {/* Left side: Logo */}
+          <Box component="img" src="/logo-white.png" alt="Odyssey Logo" sx={{ height: { xs: 90, md: 110 }, objectFit: 'contain' }} />
+
+          {/* Right side: Links + Buttons */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 3, mr: 3 }}>
+              <Link href="#features" underline="none" sx={{ color: 'white', '&:hover': { color: '#fcd34d' }, transition: 'color 0.3s' }}>Features</Link>
+              <Link href="#about" underline="none" sx={{ color: 'white', '&:hover': { color: '#fcd34d' }, transition: 'color 0.3s' }}>About</Link>
+            </Box>
+            {user ? (
+              <p>Welcome, {user.firstName}!</p>
+            ) : (
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button
+                  variant="text"
+                  onClick={() => navigate("/login?tab=login", { state: { backgroundLocation: location.pathname } })}
+                  sx={{ color: 'white', mr: 1, '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+                >
+                  Log In
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => navigate("/login?tab=signup", { state: { backgroundLocation: location.pathname } })}
+                  sx={{ bgcolor: '#d97706', '&:hover': { bgcolor: '#b45309' }, fontWeight: 600 }}
+                >
+                  Sign Up
+                </Button>
+              </Box>
+            )}
+          </Box>
+        </Toolbar>
+      </AppBar>
+
+
       {/* Hero Section */}
       <Box sx={{
         position: 'relative',
@@ -59,7 +101,7 @@ const Home: React.FC = () => {
         backgroundPosition: 'center',
         '&::before': { content: '""', position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0.5), rgba(0,0,0,0.8))' }
       }}>
-        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 10, textAlign: 'center', px: 3, top:'10%' }}>
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 10, textAlign: 'center', px: 3, top: '10%' }}>
           <Typography
             variant="h1"
             sx={{
@@ -107,7 +149,7 @@ const Home: React.FC = () => {
       <Box id="features" sx={{ py: 12, px: { xs: 3, md: 6 }, bgcolor: 'white' }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 8 }}>
-           <Chip label="What We Offer" sx={{ mb: 2, bgcolor: '#fef3c7', color: '#92400e', fontWeight: 600, fontSize: '1.25rem', px: 3, py: 1.5, borderRadius: '12px' }} />
+            <Chip label="What We Offer" sx={{ mb: 2, bgcolor: '#fef3c7', color: '#92400e', fontWeight: 600, fontSize: '1.25rem', px: 3, py: 1.5, borderRadius: '12px' }} />
             <Typography variant="h2" sx={{ mb: 2, fontWeight: 700, fontSize: { xs: '2rem', md: '3rem' } }}>Everything You Need for the Perfect Trip</Typography>
             <Typography variant="h6" sx={{ color: 'text.secondary', maxWidth: '800px', mx: 'auto', fontWeight: 400 }}>From route optimization to real-time updates, Odyssey brings together all the tools you need to plan, customize, and enjoy unforgettable journeys.</Typography>
           </Box>
@@ -133,7 +175,7 @@ const Home: React.FC = () => {
         <Container maxWidth="lg">
           <Grid container spacing={8} alignItems="center">
             <Grid size={{ xs: 12, lg: 6 }}>
-              <Chip label="Our Mission" sx={{   mb: 2,  bgcolor: '#fef3c7',  color: '#92400e', fontWeight: 600, fontSize: '1.1rem',  py: 1,  }} />
+              <Chip label="Our Mission" sx={{ mb: 2, bgcolor: '#fef3c7', color: '#92400e', fontWeight: 600, fontSize: '1.1rem', py: 1, }} />
               <Typography variant="h2" sx={{ mb: 3, fontWeight: 700, fontSize: { xs: '2rem', md: '2.5rem' }, lineHeight: 1.2 }}>Making Travel Planning Simple and Accessible for Everyone</Typography>
               <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3, fontSize: '1.125rem', lineHeight: 1.7 }}>At Odyssey, we believe that everyone deserves to explore the world without the stress of complicated planning. Our platform combines cutting-edge AI technology with real-world travel expertise to deliver personalized itineraries that match your unique preferences.</Typography>
               <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4, fontSize: '1.125rem', lineHeight: 1.7 }}>Whether you're a solo adventurer, a family seeking new experiences, or a couple looking for romance, Odyssey helps you discover destinations, optimize routes, find accommodations, and create memories that last a lifetime.</Typography>
