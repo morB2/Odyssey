@@ -171,12 +171,16 @@ export async function customizeTrip(prompt, tripObj) {
 
 export async function saveTrip({
   user,
+  title,
+  description,
   optimizedRoute,
   activities = [],
   notes = "",
 }) {
   const doc = await Trip.create({
     user: user || null,
+    title: title || "",
+    description: description || "",
     optimizedRoute: optimizedRoute || {},
     activities: activities || [],
     notes: notes || "",
