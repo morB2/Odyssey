@@ -10,7 +10,8 @@ interface UserMinimal {
 
 interface UserStore {
   user: UserMinimal | null;
-  setUser: (user: UserMinimal) => void;
+  token: string | null;
+  setUser: (user: UserMinimal, token?: string) => void;
   clearUser: () => void;
 }
 
@@ -18,8 +19,10 @@ export const useUserStore = create<UserStore>()(
   persist(
     (set) => ({
       user: null,
-      setUser: (user: UserMinimal) => set({ user }),
-      clearUser: () => set({ user: null }),
+      token: null,
+      setUser: (user: UserMinimal, token?: string) =>
+        set({ user, token: token || null }),
+      clearUser: () => set({ user: null, token: null }),
     }),
     {
       name: 'user-storage',
