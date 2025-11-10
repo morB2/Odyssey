@@ -4,9 +4,11 @@ import googleLoginService from "../services/login.service";
 import { useState } from "react";
 import { useUserStore } from "../store/userStore";
 
+interface GLoginProps {
+  onSuccess?: () => void;
+}
 
-
-const GLogin = () => {
+const GLogin = ({ onSuccess }: GLoginProps) => {
   const handleSuccess = async (credentialResponse: any) => {
     if (!credentialResponse.credential) return;
 
@@ -24,6 +26,8 @@ const GLogin = () => {
       };
 
       useUserStore.getState().setUser(userInfo, response.token); 
+      if (onSuccess) onSuccess();
+      
     } catch (err) {
       console.error("Google login failed:", err);
     }
