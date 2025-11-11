@@ -6,7 +6,7 @@ import bcrypt from 'bcrypt';
 const SECRET_KEY = config.jwtSecret;
 const SALT_ROUNDS = config.saltRounds;
 
-export async function loginUserS(email) {
+export async function loginUserS(email, password) {
     const user = await usersModel.findOne({ email });
     console.log("user", user)
     if (!user) {
