@@ -1,8 +1,10 @@
 import usersModel from '../models/userModel.js';
 import { config } from '../config/secret.js';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
 const SECRET_KEY = config.jwtSecret;
+const SALT_ROUNDS = config.saltRounds;
 
 export async function loginUserS(email) {
     const user = await usersModel.findOne({ email });
@@ -13,13 +15,23 @@ export async function loginUserS(email) {
         throw error;
     }
 
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+        const error = new Error('Invalid password');
+        error.status = 401;
+        throw error;
+    }
+
     const token = jwt.sign(
         { userId: user._id, email: user.email, role: user.role },
         SECRET_KEY,
         { expiresIn: '1h' }
     );
 
-    return { success: true, user, token }; 
+    const userToReturn = user.toObject();
+    delete userToReturn.password;
+console.log("userToReturn", userToReturn)
+    return { success: true, user:userToReturn, token };
 };
 
 export async function registerUserS(firstName, lastName, email, password, birthdate) {
@@ -29,7 +41,10 @@ export async function registerUserS(firstName, lastName, email, password, birthd
         error.status = 409;
         throw error;
     }
-    const newUser = new usersModel({ firstName, lastName, email, password, birthdate });
+
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+    const newUser = new usersModel({ firstName, lastName, email, password: hashedPassword, birthdate });
     await newUser.save();
 
     const token = jwt.sign(
@@ -38,7 +53,10 @@ export async function registerUserS(firstName, lastName, email, password, birthd
         { expiresIn: '1h' }
     );
 
-    return { success: true, user: newUser, token };
+    const userToReturn = newUser.toObject();
+    delete userToReturn.password;
+
+    return { success: true, user: userToReturn, token };
 }
 
 export async function googleLoginS(ticket) {
@@ -71,11 +89,14 @@ export async function googleLoginS(ticket) {
 
     }
 
-        const token = jwt.sign(
+    const token = jwt.sign(
         { userId: user._id, email: user.email, role: user.role },
         SECRET_KEY,
-        { expiresIn: '1h' } 
+        { expiresIn: '1h' }
     );
 
-    return { success: true, user, token };
+    const userToReturn = user.toObject();
+    delete userToReturn.password;
+
+    return { success: true, user: userToReturn, token };
 }
