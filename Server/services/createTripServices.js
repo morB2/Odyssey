@@ -116,18 +116,19 @@ export async function customizeTrip(prompt, tripObj) {
   }
 }
 
-export async function saveUserTrip(params) {  
-  const { userId, title, description, optimizedRoute, activities, notes,visabilityStatus } =
-        params;
-      return await saveTripToDB({
-        user: userId,
-        title,
-        description,
-        optimizedRoute,
-        activities,
-        notes,
-        visabilityStatus,
-      });
+export async function saveUserTrip(params) {
+  const { userId, title, description, optimizedRoute, activities, notes, visabilityStatus, image } =
+    params;
+  return await saveTripToDB({
+    user: userId,
+    title,
+    description,
+    optimizedRoute,
+    activities,
+    notes,
+    visabilityStatus,
+    image
+  });
 }
 
 async function saveTripToDB({
@@ -138,6 +139,7 @@ async function saveTripToDB({
   activities = [],
   notes = "",
   visabilityStatus,
+  image
 }) {
   const doc = await Trip.create({
     user: user || null,
@@ -147,6 +149,9 @@ async function saveTripToDB({
     activities: activities || [],
     notes: notes || "",
     visabilityStatus: visabilityStatus,
+    likes: 0,
+    comments: [],
+    images: [image] || [],
   });
   return doc;
 }

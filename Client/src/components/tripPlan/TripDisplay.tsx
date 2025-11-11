@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -44,12 +44,42 @@ interface TripDisplayProps {
     route: RouteData;
   };
 }
+interface StoredUser {
+  state: {
+    user: {
+      _id: string;
+      // add other properties if needed
+    };
+  };
+}
 
 export function TripDisplay({ data }: TripDisplayProps) {
   if (!data?.route) return <Typography>No route data to display</Typography>;
-
+const [imageUrl, setImageUrl] = useState<string>("");
   const { title, description, ordered_route, mode, instructions = [], google_maps_url, activities = [] } = data.route;
+  useEffect(() => {
+    const fetchImage = async () => {
+      const query = title ? title : "Travel";
+      try {
+        const response = await fetch(
+          `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)} travel landscape&orientation=landscape&per_page=1`,
+          {
+            headers: {
+              Authorization: import.meta.env.VITE_PEXELS_KEY
+            }
+          }
+        );
+        const data = await response.json();
+        if (data.photos && data.photos.length > 0) {
+          setImageUrl(data.photos[0].src.large);
+        }
+      } catch (error) {
+        console.error("Failed to fetch image:", error);
+      }
+    };
 
+    fetchImage();
+  }, [ title]);
   const orange = "#ff9800";
   const lightOrange = "#fff3e0";
   const borderOrange = "#ffe0b2";
@@ -62,12 +92,15 @@ export function TripDisplay({ data }: TripDisplayProps) {
 
   const handleSaveOption = async (type: "private" | "public") => {
     setOpenDialog(false);
-    alert(`Trip saved ${type === "private" ? "privately" : "publicly"}!`);
+     const userStorage = localStorage.getItem('user-storage');
+        const id: string | undefined = userStorage
+          ? (JSON.parse(userStorage) as StoredUser).state.user._id
+          : undefined;
     const response = await fetch('http://localhost:3000/createTrip/save', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(
-        { userId: '690c8a7c5e5fd174dbcacd5e', title, description, optimizedRoute: { ordered_route, mode, instructions, google_maps_url }, activities, visabilityStatus: type }
+        { userId: id, title, description, optimizedRoute: { ordered_route, mode, instructions, google_maps_url }, activities, visabilityStatus: type ,image: imageUrl}
       ),
     });
     const result = await response.json();
@@ -94,7 +127,7 @@ export function TripDisplay({ data }: TripDisplayProps) {
       <CardMedia
         component="img"
         height="240"
-        image="https://images.unsplash.com/photo-1627853585647-55e46555d259?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+        image={imageUrl}
         alt="Trip Cover"
         sx={{ objectFit: "cover" }}
       />
