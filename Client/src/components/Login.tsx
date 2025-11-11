@@ -67,10 +67,10 @@ const Login = () => {
         avatar: response.user.avatar,
       };
 
-      useUserStore.getState().setUser(userInfo);
+      useUserStore.getState().setUser(userInfo, response.token);
       setOpen(false);
       setTimeout(() => navigate(-1), 200);
-      console.log("User saved in store after login:", useUserStore.getState().user);
+      console.log("User saved in store after login:", useUserStore.getState().user, "token", response.token);
 
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
@@ -107,7 +107,7 @@ const Login = () => {
         avatar: response.user.avatar,
       };
 
-      useUserStore.getState().setUser(userInfo);
+      useUserStore.getState().setUser(userInfo, response.token);
       setOpen(false);
       setTimeout(() => navigate(-1), 200);
       console.log("User saved in store after signup:", useUserStore.getState().user);
@@ -208,7 +208,10 @@ const Login = () => {
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 1.5 }}>
                 <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID!}>
                   <div>
-                    <GLogin />
+                    <GLogin onSuccess={() => {
+                      setOpen(false);  
+                      setTimeout(() => navigate(-1), 200); 
+                    }} />
                   </div>
                 </GoogleOAuthProvider>
               </Box>

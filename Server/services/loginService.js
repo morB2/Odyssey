@@ -1,5 +1,8 @@
 import usersModel from '../models/userModel.js';
+import { config } from '../config/secret.js';
+import jwt from 'jsonwebtoken';
 
+const SECRET_KEY = config.jwtSecret;
 
 export async function loginUserS(email) {
     const user = await usersModel.findOne({ email });
@@ -9,13 +12,14 @@ export async function loginUserS(email) {
         error.status = 404;
         throw error;
     }
-    // const validPassword = await bcrypt.compare(password, user.password);
-    // if (!validPassword) {
-    //   throw new Error('Invalid password');
-    // }
 
-    // const token = jwt.sign({ userId: user._id }, this.secretKey, { expiresIn: '1h' });
-    return { success: true, user };
+    const token = jwt.sign(
+        { userId: user._id, email: user.email, role: user.role },
+        SECRET_KEY,
+        { expiresIn: '1h' }
+    );
+
+    return { success: true, user, token }; 
 };
 
 export async function registerUserS(firstName, lastName, email, password, birthdate) {
@@ -27,10 +31,14 @@ export async function registerUserS(firstName, lastName, email, password, birthd
     }
     const newUser = new usersModel({ firstName, lastName, email, password, birthdate });
     await newUser.save();
-    //לבקש פה תוקן ולשלוח 
-    // const token = jwt.sign({ userId: user._id }, this.secretKey, { expiresIn: '1h' });
-    // return { success: true, token: token, user: newUser };
-    return { success: true, user: newUser };
+
+    const token = jwt.sign(
+        { userId: newUser._id, email: newUser.email, role: newUser.role },
+        SECRET_KEY,
+        { expiresIn: '1h' }
+    );
+
+    return { success: true, user: newUser, token };
 }
 
 export async function googleLoginS(ticket) {
@@ -61,8 +69,13 @@ export async function googleLoginS(ticket) {
 
         await user.save();
 
-        return { isNewUser: true, user };
     }
 
-    return { isNewUser: false, user };
+        const token = jwt.sign(
+        { userId: user._id, email: user.email, role: user.role },
+        SECRET_KEY,
+        { expiresIn: '1h' } 
+    );
+
+    return { success: true, user, token };
 }

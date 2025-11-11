@@ -6,6 +6,7 @@ import {
   getUserTrip,
   updateUserTrip,
   deleteUserTrip,
+  updatePassword,
 } from "../controller/profileController.js";
 
 const router = express.Router();
@@ -30,6 +31,24 @@ router.put("/:userId", async (req, res) => {
     res.json({ success: true, user: updated });
   } catch (err) {
     console.error("update profile error", err);
+    return res
+      .status(err.status || 500)
+      .json({ success: false, error: String(err) });
+  }
+});
+
+// POST /profile/:userId/changePassword - change user password
+router.post("/:userId/changePassword", async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body || {};
+    const result = await updatePassword(
+      req.params.userId,
+      currentPassword,
+      newPassword
+    );
+    res.json({ success: true, ...result });
+  } catch (err) {
+    console.error("change password error", err);
     return res
       .status(err.status || 500)
       .json({ success: false, error: String(err) });

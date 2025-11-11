@@ -25,6 +25,7 @@ function App() {
       <Routes location={background}>
         <Route path="/" element={<Home />} />
         <Route path="/createtrip" element={<MainPage />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
 
       {state?.backgroundLocation && (
