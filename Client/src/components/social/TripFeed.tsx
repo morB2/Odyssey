@@ -1,6 +1,6 @@
 // TripFeed.tsx
 import { useState } from 'react';
-import { TripPost } from './TripPost';
+import TripPost from './TripPost';
 import { AppBar, Toolbar, Typography, Container, Box } from '@mui/material';
 import { Explore } from '@mui/icons-material';
 

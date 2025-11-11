@@ -7,6 +7,7 @@ import GLogin from './components/GoogleLogin'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import Profile from './components/user/Profile';
 import MainPage from './components/tripPlan/MainPage';
+import { TripFeed } from './components/social/TripFeed';
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID!;
 
 
@@ -26,6 +27,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/createtrip" element={<MainPage />} />
         <Route path="/profile" element={<Profile />} />
+          <Route path="/feed" element={<TripFeed />} />
       </Routes>
 
       {state?.backgroundLocation && (
