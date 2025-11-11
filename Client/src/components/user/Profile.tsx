@@ -1,489 +1,231 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
-  Tabs,
-  Tab,
-  Box,
   Container,
-  Typography,
-  Snackbar,
-  Alert,
+  Box,
+  Paper,
 } from "@mui/material";
-import ProfileHeader from "./ProfileHeader";
-import TripCard from "./TripCard";
-import EditProfileDialog from "./EditProfileDialog";
-import ChangePasswordDialog from "./ChangePasswordDialog";
-import TripEditDialog from "./TripEditDialog";
+import { ProfileHeader } from "./ProfileHeader";
+import { TripsList } from "./TripsList";
+import { EditProfileModal } from "./EditProfileModal";
+import { TripDetailsModal } from "./TripDetailsModal";
+import { EditTripModal } from "./EditTripModal";
+import type { Trip, UserProfile } from "./types";
 
-const BASE_URL = "http://localhost:3000";
+// Mock user data
+const mockUser: UserProfile = {
+  id: "1",
+  fullName: "Sarah Mitchell",
+  username: "@sarahtravels",
+  email: "sarah.mitchell@example.com",
+  profilePicture:
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
+};
 
-export interface UserProfile {
-  _id?: string;
-  avatar?: string;
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  role?: "user" | "admin";
-  birthday?: string | null;
-  preferences?: string[];
-  createdAt?: string;
-  bio?: string;
-  location?: string;
-  tripsCount?: number;
-  followersCount?: number;
-  followingCount?: number;
-}
+// Mock trips data
+const mockTrips: Trip[] = [
+  {
+    id: "1",
+    title: "Mediterranean Coast Adventure",
+    description:
+      "A stunning journey along the coast with amazing views and local cuisine",
+    images: [
+      "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800",
+      "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800",
+      "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
+    ],
+    route: ["Tel Aviv", "Haifa", "Akko", "Rosh Hanikra"],
+    routeInstructions: [
+      {
+        step: 1,
+        instruction:
+          "Start your journey in Tel Aviv. Visit the beach and old Jaffa port.",
+        mode: "car",
+        distance: "0 km",
+      },
+      {
+        step: 2,
+        instruction: "Drive north on Highway 2 towards Haifa.",
+        mode: "car",
+        distance: "95 km",
+      },
+    ],
+    mode: "car",
+    visibility: "public",
+    activities: [
+      "Beach visit",
+      "Historical sites",
+      "Local food tour",
+      "Sunset watching",
+    ],
+    notes:
+      "Best time to visit is during spring or fall. Don’t miss the sunset at Rosh Hanikra!",
+  },
+  {
+    id: "2",
+    title: "Mountain Hiking Expedition",
+    description: "Three days of hiking through breathtaking mountain trails",
+    images: [
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800",
+    ],
+    route: ["Base Camp", "Alpine Lake", "Summit Peak"],
+    routeInstructions: [
+      {
+        step: 1,
+        instruction:
+          "Begin at Base Camp. Check your equipment and weather conditions.",
+        mode: "walk",
+        distance: "0 km",
+      },
+    ],
+    mode: "walk",
+    visibility: "private",
+    activities: ["Hiking", "Camping", "Photography", "Wildlife watching"],
+    notes: "Pack warm clothes even in summer. The weather changes quickly.",
+  },
+];
 
-export interface TripItem {
-  _id: string;
-  title?: string;
-  description?: string;
-  image?: string;
-  location?: string;
-  likes?: number;
-  comments?: number;
-  optimizedRoute?: Record<string, unknown>;
-  chosenTrip?: Record<string, unknown>;
-  notes?: string;
-  activities?: string[];
-  visabilityStatus?: "private" | "public";
-}
+const mockLikedTrips: Trip[] = [
+  {
+    id: "4",
+    title: "Coastal Road Trip",
+    description: "Epic drive along the scenic coastline",
+    images: [
+      "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800",
+    ],
+    route: ["Monterey", "Big Sur", "San Luis Obispo"],
+    routeInstructions: [
+      {
+        step: 1,
+        instruction: "Begin in Monterey. Visit the famous aquarium.",
+        mode: "car",
+        distance: "0 km",
+      },
+    ],
+    mode: "car",
+    visibility: "public",
+    activities: ["Scenic drives", "Beach stops", "Wine tasting"],
+    notes: "Take your time and enjoy the views!",
+  },
+];
 
-export interface OptimizedRoute {
-  mode?: string;
-  google_maps_url?: string;
-  instructions?: string[];
-  [key: string]: unknown;
-}
+const mockSavedTrips: Trip[] = [
+  {
+    id: "5",
+    title: "Island Paradise Getaway",
+    description: "Relax and unwind in tropical paradise",
+    images: [
+      "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
+      "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=800",
+    ],
+    route: ["Main Island", "North Bay", "Secret Beach"],
+    routeInstructions: [
+      {
+        step: 1,
+        instruction:
+          "Arrive at Main Island port. Check into beachfront hotel.",
+        mode: "walk",
+        distance: "0 km",
+      },
+    ],
+    mode: "walk",
+    visibility: "public",
+    activities: ["Snorkeling", "Beach relaxation", "Local cuisine"],
+    notes: "Book accommodation in advance during peak season.",
+  },
+];
 
-export default function Profile({ userIdProp }: { userIdProp?: string }) {
-  const [tab, setTab] = useState(0);
-  const [user, setUser] = useState<UserProfile>({});
-  const [trips, setTrips] = useState<TripItem[]>([]);
-
-  // profile edit dialog state
-  const [openEditDialog, setOpenEditDialog] = useState(false);
-  const [formFirstName, setFormFirstName] = useState("");
-  const [formLastName, setFormLastName] = useState("");
-  const [formBirthday, setFormBirthday] = useState<string | null>(null);
-  const [formAvatar, setFormAvatar] = useState("");
-
-  // change password
-  const [openChangePwd, setOpenChangePwd] = useState(false);
-  const [currentPwd, setCurrentPwd] = useState("");
-  const [newPwd, setNewPwd] = useState("");
-  const [confirmPwd, setConfirmPwd] = useState("");
-
-  // trip edit dialog
-  const [openTripDialog, setOpenTripDialog] = useState(false);
-  const [editingTrip, setEditingTrip] = useState<TripItem | null>(null);
-  const [tripTitle, setTripTitle] = useState("");
-  const [tripDescription, setTripDescription] = useState("");
-  const [tripActivities, setTripActivities] = useState("");
-  const [tripNotes, setTripNotes] = useState("");
-  const [tripVisibility, setTripVisibility] = useState<"private" | "public">(
-    "private"
+export default function Profile() {
+  const [user, setUser] = useState<UserProfile>(mockUser);
+  const [trips, setTrips] = useState<Trip[]>(mockTrips);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
+  const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
+  const [activeTab, setActiveTab] = useState<"my-trips" | "liked" | "saved">(
+    "my-trips"
   );
-  const [tripOptimizedRouteText, setTripOptimizedRouteText] = useState("");
-  const [tripMode, setTripMode] = useState<"driving" | "walking" | "transit">(
-    "driving"
-  );
-  const [tripGoogleMapsUrl, setTripGoogleMapsUrl] = useState("");
-  const [tripInstructionsText, setTripInstructionsText] = useState("");
 
-  const [snack, setSnack] = useState<{
-    open: boolean;
-    message: string;
-    severity?: "success" | "error";
-  }>({ open: false, message: "", severity: "success" });
-
-  const globalWindow = window as unknown as { __USER_ID?: string };
-  const userId =
-    userIdProp ||
-    globalWindow.__USER_ID ||
-    user._id ||
-    "690c8a7c5e5fd174dbcacd5e";
-
-  useEffect(() => {
-    if (!userId) return;
-    async function init() {
-      try {
-        const res = await fetch(`${BASE_URL}/profile/${userId}`);
-        const data = await res.json();
-        if (data.success) setUser(data.user || {});
-      } catch (e) {
-        console.error("loadProfile", e);
-      }
-      try {
-        const res = await fetch(`${BASE_URL}/profile/${userId}/trips`);
-        const data = await res.json();
-        if (data.success) setTrips(data.trips || []);
-      } catch (e) {
-        console.error("loadTrips", e);
-      }
+  const getCurrentTrips = () => {
+    switch (activeTab) {
+      case "my-trips":
+        return trips;
+      case "liked":
+        return mockLikedTrips;
+      case "saved":
+        return mockSavedTrips;
+      default:
+        return trips;
     }
-    init();
-  }, [userId]);
+  };
 
-  useEffect(() => {
-    setFormFirstName(user.firstName || "");
-    setFormLastName(user.lastName || "");
-    setFormBirthday(user.birthday || null);
-    setFormAvatar(user.avatar || "");
-  }, [user]);
+  const handleSaveProfile = (updatedUser: UserProfile) => {
+    setUser(updatedUser);
+    setIsEditModalOpen(false);
+  };
 
-  async function saveProfile(updates: Partial<UserProfile>) {
-    try {
-      const res = await fetch(`${BASE_URL}/profile/${userId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updates),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setUser(data.user);
-        setOpenEditDialog(false);
-        setSnack({
-          open: true,
-          message: "Profile updated",
-          severity: "success",
-        });
-      } else
-        setSnack({
-          open: true,
-          message: data.error || "Failed",
-          severity: "error",
-        });
-    } catch (e) {
-      console.error("saveProfile", e);
-      setSnack({
-        open: true,
-        message: "Error saving profile",
-        severity: "error",
-      });
-    }
-  }
+  const handleSaveTrip = (updatedTrip: Trip) => {
+    setTrips(trips.map((t) => (t.id === updatedTrip.id ? updatedTrip : t)));
+    setEditingTrip(null);
+    setSelectedTrip(updatedTrip);
+  };
 
-  async function handleChangePassword() {
-    if (!newPwd)
-      return setSnack({
-        open: true,
-        message: "Enter a new password",
-        severity: "error",
-      });
-    if (newPwd !== confirmPwd)
-      return setSnack({
-        open: true,
-        message: "Passwords do not match",
-        severity: "error",
-      });
-    try {
-      const res = await fetch(`${BASE_URL}/profile/${userId}/changePassword`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          currentPassword: currentPwd,
-          newPassword: newPwd,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setOpenChangePwd(false);
-        setCurrentPwd("");
-        setNewPwd("");
-        setConfirmPwd("");
-        setSnack({
-          open: true,
-          message: "Password changed",
-          severity: "success",
-        });
-      } else
-        setSnack({
-          open: true,
-          message: data.error || "Failed to change password",
-          severity: "error",
-        });
-    } catch (e) {
-      console.error("change password", e);
-      setSnack({
-        open: true,
-        message: "Error changing password",
-        severity: "error",
-      });
-    }
-  }
-
-  function openTripEditor(trip: TripItem) {
-    setEditingTrip(trip);
-    setTripTitle(trip.title || "");
-    setTripDescription(trip.description || "");
-    setTripActivities((trip.activities || []).join(", "));
-    setTripNotes(trip.notes || "");
-    setTripVisibility(trip.visabilityStatus || "private");
-    try {
-      setTripOptimizedRouteText(
-        JSON.stringify(trip.optimizedRoute || {}, null, 2)
-      );
-    } catch {
-      setTripOptimizedRouteText("");
-    }
-    const rawMode = (trip.optimizedRoute as OptimizedRoute)?.mode as
-      | string
-      | undefined;
-    const safeMode =
-      rawMode === "walking" || rawMode === "transit" ? rawMode : "driving";
-    setTripMode(safeMode);
-    setTripGoogleMapsUrl(
-      (trip.optimizedRoute as OptimizedRoute)?.google_maps_url || ""
-    );
-    setTripInstructionsText(
-      ((trip.optimizedRoute as OptimizedRoute)?.instructions || []).join("\n")
-    );
-    setOpenTripDialog(true);
-  }
-
-  async function saveTripEdits() {
-    if (!editingTrip) return;
-    const payload: Partial<TripItem> & { optimizedRoute?: OptimizedRoute } = {
-      title: tripTitle,
-      description: tripDescription,
-      activities: tripActivities
-        ? tripActivities
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
-        : [],
-      notes: tripNotes,
-      visabilityStatus: tripVisibility,
-    };
-    try {
-      const parsed = tripOptimizedRouteText
-        ? JSON.parse(tripOptimizedRouteText)
-        : null;
-      if (parsed) payload.optimizedRoute = parsed;
-      else
-        payload.optimizedRoute = {
-          mode: tripMode,
-          google_maps_url: tripGoogleMapsUrl,
-          instructions: tripInstructionsText
-            ? tripInstructionsText
-                .split("\n")
-                .map((s) => s.trim())
-                .filter(Boolean)
-            : [],
-        };
-    } catch {
-      payload.optimizedRoute = {
-        mode: tripMode,
-        google_maps_url: tripGoogleMapsUrl,
-        instructions: tripInstructionsText
-          ? tripInstructionsText
-              .split("\n")
-              .map((s) => s.trim())
-              .filter(Boolean)
-          : [],
-      };
-    }
-
-    try {
-      const res = await fetch(
-        `${BASE_URL}/profile/${userId}/trips/${editingTrip._id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
-      const data = await res.json();
-      if (data.success) {
-        setTrips((t) =>
-          t.map((x) => (x._id === editingTrip._id ? data.trip : x))
-        );
-        setOpenTripDialog(false);
-        setEditingTrip(null);
-        setSnack({ open: true, message: "Trip updated", severity: "success" });
-      } else
-        setSnack({
-          open: true,
-          message: data.error || "Failed to update trip",
-          severity: "error",
-        });
-    } catch (e) {
-      console.error("saveTripEdits", e);
-      setSnack({
-        open: true,
-        message: "Error updating trip",
-        severity: "error",
-      });
-    }
-  }
-
-  async function deleteTrip(id: string) {
-    if (!confirm("Delete this trip?")) return;
-    try {
-      const res = await fetch(`${BASE_URL}/profile/${userId}/trips/${id}`, {
-        method: "DELETE",
-      });
-      const data = await res.json();
-      if (data.success) setTrips((t) => t.filter((x) => x._id !== id));
-      else
-        setSnack({
-          open: true,
-          message: data.error || "Failed to delete",
-          severity: "error",
-        });
-    } catch (e) {
-      console.error("deleteTrip", e);
-      setSnack({
-        open: true,
-        message: "Error deleting trip",
-        severity: "error",
-      });
-    }
-  }
+  const handleDeleteTrip = (tripId: string) => {
+    setTrips(trips.filter((t) => t.id !== tripId));
+    setSelectedTrip(null);
+  };
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "background.default", py: 6 }}>
-      <Container maxWidth="lg">
-        <ProfileHeader
-          user={user}
-          tripsCount={trips.length}
-          onEdit={() => setOpenEditDialog(true)}
-        />
-
-        <EditProfileDialog
-          open={openEditDialog}
-          onClose={() => setOpenEditDialog(false)}
-          firstName={formFirstName}
-          lastName={formLastName}
-          email={user.email}
-          birthday={formBirthday}
-          avatar={formAvatar}
-          setFirstName={setFormFirstName}
-          setLastName={setFormLastName}
-          setBirthday={setFormBirthday}
-          setAvatar={setFormAvatar}
-          onSave={() =>
-            saveProfile({
-              firstName: formFirstName,
-              lastName: formLastName,
-              birthday: formBirthday || undefined,
-              avatar: formAvatar || undefined,
-            })
-          }
-        />
-
-        <ChangePasswordDialog
-          open={openChangePwd}
-          onClose={() => setOpenChangePwd(false)}
-          currentPwd={currentPwd}
-          setCurrentPwd={setCurrentPwd}
-          newPwd={newPwd}
-          setNewPwd={setNewPwd}
-          confirmPwd={confirmPwd}
-          setConfirmPwd={setConfirmPwd}
-          onChange={handleChangePassword}
-        />
-
-        <TripEditDialog
-          open={openTripDialog}
-          onClose={() => {
-            setOpenTripDialog(false);
-            setEditingTrip(null);
-          }}
-          title={tripTitle}
-          setTitle={setTripTitle}
-          description={tripDescription}
-          setDescription={setTripDescription}
-          activities={tripActivities}
-          setActivities={setTripActivities}
-          notes={tripNotes}
-          setNotes={setTripNotes}
-          visibility={tripVisibility}
-          setVisibility={setTripVisibility}
-          optimizedRouteText={tripOptimizedRouteText}
-          setOptimizedRouteText={setTripOptimizedRouteText}
-          mode={tripMode}
-          setMode={setTripMode}
-          googleMapsUrl={tripGoogleMapsUrl}
-          setGoogleMapsUrl={setTripGoogleMapsUrl}
-          instructionsText={tripInstructionsText}
-          setInstructionsText={setTripInstructionsText}
-          onSave={saveTripEdits}
-        />
-
-        <Box sx={{ mt: 5 }}>
-          <Tabs value={tab} onChange={(_, v) => setTab(v)} centered>
-            <Tab label="Trips" />
-            <Tab label="Saved" />
-            <Tab label="Map" />
-            <Tab label="Liked" />
-          </Tabs>
-
-          {tab === 0 && (
-            <Box
-              sx={{
-                mt: 2,
-                display: "grid",
-                gap: 3,
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-              }}
-            >
-              {trips.map((trip) => (
-                <Box key={trip._id}>
-                  <TripCard
-                    trip={trip}
-                    onEdit={openTripEditor}
-                    onDelete={deleteTrip}
-                  />
-                </Box>
-              ))}
-            </Box>
-          )}
-
-          {tab === 1 && (
-            <Box sx={{ mt: 2 }}>
-              {" "}
-              <Typography>Saved (coming)</Typography>{" "}
-            </Box>
-          )}
-
-          {tab === 2 && (
-            <Box
-              sx={{
-                mt: 4,
-                height: 400,
-                borderRadius: 3,
-                bgcolor: "grey.100",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Typography color="text.secondary" fontWeight={500}>
-                Map view coming soon
-              </Typography>
-            </Box>
-          )}
-
-          {tab === 3 && (
-            <Box sx={{ mt: 2 }}>
-              {" "}
-              <Typography>Liked (coming)</Typography>{" "}
-            </Box>
-          )}
-        </Box>
-
-        <Snackbar
-          open={snack.open}
-          autoHideDuration={4000}
-          onClose={() => setSnack({ ...snack, open: false })}
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bgcolor: "background.default",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <Container maxWidth="lg" sx={{ py: 6 }}>
+        <Paper
+          elevation={3}
+          sx={{ p: 4, borderRadius: 4, bgcolor: "background.paper" }}
         >
-          <Alert severity={snack.severity || "success"} sx={{ width: "100%" }}>
-            {snack.message}
-          </Alert>
-        </Snackbar>
+          <ProfileHeader user={user} onEditClick={() => setIsEditModalOpen(true)} />
+
+          <Box sx={{ mt: 4 }}>
+
+            <Box sx={{ mt: 3 }}>
+              <TripsList
+                trips={getCurrentTrips()}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                onTripClick={setSelectedTrip}
+              />
+            </Box>
+          </Box>
+        </Paper>
       </Container>
+
+      {/* Modals */}
+      <EditProfileModal
+        user={user}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={handleSaveProfile}
+      />
+
+      <TripDetailsModal
+        trip={selectedTrip}
+        isOpen={!!selectedTrip}
+        onClose={() => setSelectedTrip(null)}
+        onEdit={() => setEditingTrip(selectedTrip)}
+        onDelete={() => selectedTrip && handleDeleteTrip(selectedTrip.id)}
+      />
+
+      <EditTripModal
+        trip={editingTrip}
+        isOpen={!!editingTrip}
+        onClose={() => setEditingTrip(null)}
+        onSave={handleSaveTrip}
+      />
     </Box>
   );
 }
