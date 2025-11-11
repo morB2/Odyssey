@@ -16,7 +16,7 @@ async function askGemini(systemInstruction, userPrompt) {
   for (let i = 0; i < 3; i++) {
     try {
       const r = await ai.models.generateContent({
-        model: "gemini-2.5-pro",
+        model: "gemini-2.5-flash",
         contents: [{ text: userPrompt }],
         config: { systemInstruction },
       });
@@ -116,18 +116,19 @@ export async function customizeTrip(prompt, tripObj) {
   }
 }
 
-export async function saveUserTrip(params) {  
-  const { userId, title, description, optimizedRoute, activities, notes,visabilityStatus } =
-        params;
-      return await saveTripToDB({
-        user: userId,
-        title,
-        description,
-        optimizedRoute,
-        activities,
-        notes,
-        visabilityStatus,
-      });
+export async function saveUserTrip(params) {
+  const { userId, title, description, optimizedRoute, activities, notes, visabilityStatus, image } =
+    params;
+  return await saveTripToDB({
+    user: userId,
+    title,
+    description,
+    optimizedRoute,
+    activities,
+    notes,
+    visabilityStatus,
+    image
+  });
 }
 
 async function saveTripToDB({
@@ -138,6 +139,7 @@ async function saveTripToDB({
   activities = [],
   notes = "",
   visabilityStatus,
+  image
 }) {
   const doc = await Trip.create({
     user: user || null,
@@ -147,6 +149,9 @@ async function saveTripToDB({
     activities: activities || [],
     notes: notes || "",
     visabilityStatus: visabilityStatus,
+    likes: 0,
+    comments: [],
+    images: [image] || [],
   });
   return doc;
 }
