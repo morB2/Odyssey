@@ -6,7 +6,16 @@ import bcrypt from 'bcrypt';
 const SECRET_KEY = config.jwtSecret;
 const SALT_ROUNDS = config.saltRounds;
 
-export async function loginUserS(email, password) {
+
+function generateToken(user) {
+    return jwt.sign(
+        { userId: user._id, email: user.email, role: user.role },
+        SECRET_KEY,
+        { expiresIn: '1h' }
+    );
+}
+
+export async function loginUserS(email) {
     const user = await usersModel.findOne({ email });
     console.log("user", user)
     if (!user) {
@@ -22,24 +31,28 @@ export async function loginUserS(email, password) {
         throw error;
     }
 
-    const token = jwt.sign(
-        { userId: user._id, email: user.email, role: user.role },
-        SECRET_KEY,
-        { expiresIn: '1h' }
-    );
+    const token = generateToken(user);
 
     const userToReturn = user.toObject();
     delete userToReturn.password;
-console.log("userToReturn", userToReturn)
-    return { success: true, user:userToReturn, token };
+    console.log("userToReturn", userToReturn)
+    return { success: true, user: userToReturn, token };
 };
 
 export async function registerUserS(firstName, lastName, email, password, birthdate) {
     const existingUser = await usersModel.findOne({ email });
+
     if (existingUser) {
-        const error = new Error('User already exists');
-        error.status = 409;
-        throw error;
+        console.log("existingUser", existingUser)
+        if (existingUser.googleId && !existingUser.password) {
+            existingUser.password = await bcrypt.hash(password, SALT_ROUNDS);
+            await existingUser.save();
+            return { success: true, user: existingUser, token: generateToken(existingUser) };
+        } else {
+            const error = new Error('User already exists');
+            error.status = 409;
+            throw error;
+        }
     }
 
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
@@ -47,11 +60,7 @@ export async function registerUserS(firstName, lastName, email, password, birthd
     const newUser = new usersModel({ firstName, lastName, email, password: hashedPassword, birthdate });
     await newUser.save();
 
-    const token = jwt.sign(
-        { userId: newUser._id, email: newUser.email, role: newUser.role },
-        SECRET_KEY,
-        { expiresIn: '1h' }
-    );
+    const token = generateToken(newUser);
 
     const userToReturn = newUser.toObject();
     delete userToReturn.password;
@@ -69,9 +78,15 @@ export async function googleLoginS(ticket) {
 
     const { sub: googleId, email, name, picture } = payload;
 
-    let user = await usersModel.findOne({ $or: [{ email }, { googleId }] });
+    let user = await usersModel.findOne({ email });
 
-    if (!user) {
+    if (user) {
+        if (!user.googleId) {
+            user.googleId = googleId;
+            user.avatar = picture;
+            await user.save();
+        }
+    } else {
         const nameParts = name ? name.split(' ') : [];
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || '';
@@ -89,11 +104,7 @@ export async function googleLoginS(ticket) {
 
     }
 
-    const token = jwt.sign(
-        { userId: user._id, email: user.email, role: user.role },
-        SECRET_KEY,
-        { expiresIn: '1h' }
-    );
+    const token = generateToken(user);
 
     const userToReturn = user.toObject();
     delete userToReturn.password;
