@@ -19,7 +19,6 @@
     "google-auth-library": "^10.5.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.2",
-    "bcryptjs": "^2.4.3"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
