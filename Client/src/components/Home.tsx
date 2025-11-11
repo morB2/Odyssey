@@ -49,6 +49,13 @@ const Home: React.FC = () => {
     { icon: <Calendar style={{ color: '#b45309', width: 32, height: 32 }} />, title: "Flexible Scheduling", description: "Create day-by-day itineraries that adapt to your pace, with the flexibility to adjust plans on the go." },
   ];
 
+const handleLogout = () => {
+  const clearUser = useUserStore.getState().clearUser; 
+  clearUser();
+  navigate("/");
+};
+
+
   return (
     <Box sx={{ minHeight: '100vh', width: '100vw', overflowX: 'hidden' }}>
       {/* Header */}
@@ -65,7 +72,20 @@ const Home: React.FC = () => {
               <Link href="#about" underline="none" sx={{ color: 'white', '&:hover': { color: '#fcd34d' }, transition: 'color 0.3s' }}>About</Link>
             </Box>
             {user ? (
-              <p>Welcome, {user.firstName}!</p>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography sx={{ color: 'white' }}>Welcome, {user.firstName}!</Typography>
+                <Button
+                  variant="outlined"
+                  onClick={handleLogout}
+                  sx={{
+                    color: 'white',
+                    borderColor: 'white',
+                    '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)', bgcolor: '#d97706' },
+                  }}
+                >
+                  Log Out
+                </Button>
+              </Box>
             ) : (
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Button

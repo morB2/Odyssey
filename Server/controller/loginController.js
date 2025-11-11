@@ -3,8 +3,8 @@ import { config } from '../config/secret.js';
 import { googleLoginS, loginUserS, registerUserS } from '../services/loginService.js';
 
 export async function loginUser(userData) {
-    const { email } = userData;
-    return await loginUserS(email);
+    const { email, password } = userData;
+    return await loginUserS(email, password);
 }
 
 export async function registerUser(userData) {

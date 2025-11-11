@@ -1,6 +1,6 @@
 import User from "../models/userModel.js";
 import Trip from "../models/tripModel.js";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 
 export async function getProfile(userId) {
   if (!userId) throw new Error("userId required");
