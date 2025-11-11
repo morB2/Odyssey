@@ -1,12 +1,4 @@
 import Trip from "../models/tripModel.js";
-import {
-  getSuggestions,
-  optimizeRoute,
-  customizeTrip,
-} from "../services/createTripServices.js";
-
-// re-export service helpers so routes/controllers can import from this controller
-export { getSuggestions, optimizeRoute, customizeTrip };
 
 export async function saveTrip({
   user,
