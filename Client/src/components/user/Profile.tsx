@@ -1,143 +1,21 @@
-import { useState } from "react";
-import {
-  Container,
-  Box,
-  Paper,
-} from "@mui/material";
+import { useState, useEffect } from "react";
+import { Container, Box, Paper, Typography } from "@mui/material";
 import { ProfileHeader } from "./ProfileHeader";
 import { TripsList } from "./TripsList";
 import { EditProfileModal } from "./EditProfileModal";
 import { TripDetailsModal } from "./TripDetailsModal";
 import { EditTripModal } from "./EditTripModal";
 import type { Trip, UserProfile } from "./types";
+import { useUserStore } from "../../store/userStore";
 
-// Mock user data
-const mockUser: UserProfile = {
-  id: "1",
-  fullName: "Sarah Mitchell",
-  username: "@sarahtravels",
-  email: "sarah.mitchell@example.com",
-  profilePicture:
-    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
-};
-
-// Mock trips data
-const mockTrips: Trip[] = [
-  {
-    id: "1",
-    title: "Mediterranean Coast Adventure",
-    description:
-      "A stunning journey along the coast with amazing views and local cuisine",
-    images: [
-      "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800",
-      "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800",
-      "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
-    ],
-    route: ["Tel Aviv", "Haifa", "Akko", "Rosh Hanikra"],
-    routeInstructions: [
-      {
-        step: 1,
-        instruction:
-          "Start your journey in Tel Aviv. Visit the beach and old Jaffa port.",
-        mode: "car",
-        distance: "0 km",
-      },
-      {
-        step: 2,
-        instruction: "Drive north on Highway 2 towards Haifa.",
-        mode: "car",
-        distance: "95 km",
-      },
-    ],
-    mode: "car",
-    visibility: "public",
-    activities: [
-      "Beach visit",
-      "Historical sites",
-      "Local food tour",
-      "Sunset watching",
-    ],
-    notes:
-      "Best time to visit is during spring or fall. Don’t miss the sunset at Rosh Hanikra!",
-  },
-  {
-    id: "2",
-    title: "Mountain Hiking Expedition",
-    description: "Three days of hiking through breathtaking mountain trails",
-    images: [
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
-      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800",
-    ],
-    route: ["Base Camp", "Alpine Lake", "Summit Peak"],
-    routeInstructions: [
-      {
-        step: 1,
-        instruction:
-          "Begin at Base Camp. Check your equipment and weather conditions.",
-        mode: "walk",
-        distance: "0 km",
-      },
-    ],
-    mode: "walk",
-    visibility: "private",
-    activities: ["Hiking", "Camping", "Photography", "Wildlife watching"],
-    notes: "Pack warm clothes even in summer. The weather changes quickly.",
-  },
-];
-
-const mockLikedTrips: Trip[] = [
-  {
-    id: "4",
-    title: "Coastal Road Trip",
-    description: "Epic drive along the scenic coastline",
-    images: [
-      "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800",
-    ],
-    route: ["Monterey", "Big Sur", "San Luis Obispo"],
-    routeInstructions: [
-      {
-        step: 1,
-        instruction: "Begin in Monterey. Visit the famous aquarium.",
-        mode: "car",
-        distance: "0 km",
-      },
-    ],
-    mode: "car",
-    visibility: "public",
-    activities: ["Scenic drives", "Beach stops", "Wine tasting"],
-    notes: "Take your time and enjoy the views!",
-  },
-];
-
-const mockSavedTrips: Trip[] = [
-  {
-    id: "5",
-    title: "Island Paradise Getaway",
-    description: "Relax and unwind in tropical paradise",
-    images: [
-      "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
-      "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=800",
-    ],
-    route: ["Main Island", "North Bay", "Secret Beach"],
-    routeInstructions: [
-      {
-        step: 1,
-        instruction:
-          "Arrive at Main Island port. Check into beachfront hotel.",
-        mode: "walk",
-        distance: "0 km",
-      },
-    ],
-    mode: "walk",
-    visibility: "public",
-    activities: ["Snorkeling", "Beach relaxation", "Local cuisine"],
-    notes: "Book accommodation in advance during peak season.",
-  },
-];
+// We'll fetch the real user and trips from the server using the profile APIs.
+// If no logged-in user is available in the store, the component falls back to a guest view.
 
 export default function Profile() {
-  const [user, setUser] = useState<UserProfile>(mockUser);
-  const [trips, setTrips] = useState<Trip[]>(mockTrips);
+  const storeUser = useUserStore((s) => s.user);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
@@ -145,14 +23,111 @@ export default function Profile() {
     "my-trips"
   );
 
+  // load profile and trips from server
+  useEffect(() => {
+    let mounted = true;
+    async function loadData() {
+      try {
+        const userId = storeUser?._id;
+        if (!userId) {
+          setError("Not signed in");
+          return;
+        }
+
+        const [userRes, tripsRes] = await Promise.all([
+          fetch(`/profile/${userId}`).then((r) => r.json()),
+          fetch(`/profile/${userId}/trips`).then((r) => r.json()),
+        ]);
+
+        if (!mounted) return;
+        if (!userRes.success)
+          throw new Error(userRes.error || "Failed to load user");
+        if (!tripsRes.success)
+          throw new Error(tripsRes.error || "Failed to load trips");
+
+        setUser(userRes.user);
+        const serverTrips = tripsRes.trips || [];
+        // Map server Trip schema to client Trip shape used by the UI
+        type ServerTrip = {
+          _id?: string;
+          id?: string;
+          title?: string;
+          description?: string;
+          images?: string[];
+          optimizedRoute?: {
+            ordered_route?: Array<{ name?: string }>;
+            instructions?: string[];
+            mode?: string;
+          };
+          route?: string[];
+          routeInstructions?: Array<{
+            step?: number;
+            instruction?: string;
+            mode?: string;
+            distance?: string;
+          }>;
+          mode?: string;
+          visabilityStatus?: string;
+          activities?: string[];
+          notes?: string;
+        };
+
+        const mapTrip = (t: ServerTrip): Trip => {
+          const ordered = t.optimizedRoute?.ordered_route || [];
+          const modeFromOptimized = t.optimizedRoute?.mode;
+          return {
+            id: t._id || t.id || "",
+            title: t.title || "",
+            description: t.description || "",
+            images: t.images || [],
+            route: ordered.length
+              ? ordered.map((r) => r.name || "")
+              : t.route || [],
+            routeInstructions: t.optimizedRoute?.instructions
+              ? t.optimizedRoute.instructions.map((ins, i) => ({
+                  step: i + 1,
+                  instruction: ins,
+                  mode:
+                    modeFromOptimized === "driving"
+                      ? "car"
+                      : modeFromOptimized === "walking"
+                      ? "walk"
+                      : "train",
+                  distance: "",
+                }))
+              : t.routeInstructions || [],
+            mode: modeFromOptimized
+              ? modeFromOptimized === "driving"
+                ? "car"
+                : modeFromOptimized === "walking"
+                ? "walk"
+                : "train"
+              : t.mode || "car",
+            visibility: t.visabilityStatus === "public" ? "public" : "private",
+            activities: t.activities || [],
+            notes: t.notes || "",
+          } as Trip;
+        };
+
+        setTrips(serverTrips.map(mapTrip));
+      } catch (e) {
+        setError(String(e instanceof Error ? e.message : e));
+      }
+    }
+    loadData();
+    return () => {
+      mounted = false;
+    };
+  }, [storeUser]);
+
   const getCurrentTrips = () => {
     switch (activeTab) {
       case "my-trips":
         return trips;
       case "liked":
-        return mockLikedTrips;
+        return [];
       case "saved":
-        return mockSavedTrips;
+        return [];
       default:
         return trips;
     }
@@ -188,10 +163,36 @@ export default function Profile() {
           elevation={3}
           sx={{ p: 4, borderRadius: 4, bgcolor: "background.paper" }}
         >
-          <ProfileHeader user={user} onEditClick={() => setIsEditModalOpen(true)} />
+          <ProfileHeader
+            user={
+              user
+                ? user
+                : {
+                    id: "",
+                    fullName: "Guest",
+                    username: "guest",
+                    email: "",
+                    profilePicture: "",
+                  }
+            }
+            onEditClick={() => setIsEditModalOpen(true)}
+          />
+
+          {error && (
+            <Box
+              sx={{
+                mb: 2,
+                p: 2,
+                border: "1px solid #fdecea",
+                backgroundColor: "#fff5f5",
+                borderRadius: 1,
+              }}
+            >
+              <Typography color="error">{error}</Typography>
+            </Box>
+          )}
 
           <Box sx={{ mt: 4 }}>
-
             <Box sx={{ mt: 3 }}>
               <TripsList
                 trips={getCurrentTrips()}
@@ -206,7 +207,15 @@ export default function Profile() {
 
       {/* Modals */}
       <EditProfileModal
-        user={user}
+        user={
+          user ?? {
+            id: "",
+            fullName: "",
+            username: "",
+            email: "",
+            profilePicture: "",
+          }
+        }
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSave={handleSaveProfile}

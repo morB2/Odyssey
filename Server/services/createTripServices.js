@@ -16,7 +16,7 @@ async function askGemini(systemInstruction, userPrompt) {
   for (let i = 0; i < 3; i++) {
     try {
       const r = await ai.models.generateContent({
-        model: "gemini-2.5-pro",
+        model: "gemini-2.5-flash",
         contents: [{ text: userPrompt }],
         config: { systemInstruction },
       });
