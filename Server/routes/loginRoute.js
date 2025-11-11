@@ -8,7 +8,7 @@ router.post('/login', async (req, res, next) => {
         const result = await loginUser(req.body);
         res.json(result);
     } catch (err) {
-        next(err); 
+        next(err);
     }
 });
 

@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
-import { saveTrip } from "../controller/createTripController.js";
+import Trip from "../models/tripModel.js";
 import {
   oneDaySuggestInstruction,
   oneDayRouteInstruction,
@@ -119,7 +119,7 @@ export async function customizeTrip(prompt, tripObj) {
 export async function saveUserTrip(params) {  
   const { userId, title, description, optimizedRoute, activities, notes,visabilityStatus } =
         params;
-      return await saveTrip({
+      return await saveTripToDB({
         user: userId,
         title,
         description,
@@ -128,4 +128,25 @@ export async function saveUserTrip(params) {
         notes,
         visabilityStatus,
       });
+}
+
+async function saveTripToDB({
+  user,
+  title,
+  description,
+  optimizedRoute,
+  activities = [],
+  notes = "",
+  visabilityStatus,
+}) {
+  const doc = await Trip.create({
+    user: user || null,
+    title: title || "",
+    description: description || "",
+    optimizedRoute: optimizedRoute || {},
+    activities: activities || [],
+    notes: notes || "",
+    visabilityStatus: visabilityStatus,
+  });
+  return doc;
 }
