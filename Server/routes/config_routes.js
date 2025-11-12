@@ -2,10 +2,16 @@ import LoginR from "./loginRoute.js";
 import createTrip from "./createTripRoute.js";
 import profile from "./profileRoute.js";
 import trip from "./tripRoutes.js";
+import like from "./likeRoutes.js"
+import save from "./saveRoutes.js";
+import follow from './followRoutes.js';
 
 export function routesInit(app) {
   app.use("/login", LoginR);
   app.use("/createTrip", createTrip);
   app.use("/profile", profile);
   app.use('/trips', trip);
+  app.use('/likes', like);
+  app.use('/saves', save);
+  app.use('/follow',follow);
 }
