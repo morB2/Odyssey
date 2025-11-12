@@ -28,7 +28,7 @@ import {
     Close,
 } from '@mui/icons-material';
 import { useState } from 'react';
-
+import axios from 'axios';
 const theme = createTheme({
     palette: {
         primary: {
@@ -55,6 +55,8 @@ interface Trip {
     isLiked: boolean;
     isSaved: boolean;
     detailedData?: any;
+    optimizedRoute?: any;
+    currentUserId?: string;
 }
 
 interface TripPostProps {
@@ -68,7 +70,7 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogImageIndex, setDialogImageIndex] = useState(0);
-
+    console.log(trip);
     const handleCardClick = (e: any) => {
         // Don't open dialog if clicking on interactive elements
         if (e.target.closest('button') || e.target.closest('a')) {
@@ -91,6 +93,48 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
         setDialogImageIndex((prev) =>
             prev === 0 ? trip.images.length - 1 : prev - 1
         );
+    };
+    const postLike = async () => {
+        // Implement like functionality here
+        let response;
+        try {
+            if (!trip.isLiked) {
+                response = await axios.post(`http://localhost:3000/likes/${trip.id}/like`, {
+                    userId: trip.currentUserId, // Replace with actual user ID
+
+                });
+            }
+            else {
+                response = await axios.post(`http://localhost:3000/likes/${trip.id}/unlike`, {
+                    userId: trip.currentUserId, // Replace with actual user ID
+                });
+            }
+            console.log('Like toggled:', response.data);
+        }
+        catch (error) {
+            console.error('Error toggling like:', error);
+        }
+    };
+    const postSave = async () => {
+        // Implement like functionality here
+        let response;
+        try {
+            if (!trip.isSaved) {
+                response = await axios.post(`http://localhost:3000/saves/${trip.id}/save`, {
+                    userId: trip.currentUserId, // Replace with actual user ID
+
+                });
+            }
+            else {
+                response = await axios.post(`http://localhost:3000/saves/${trip.id}/unsave`, {
+                    userId: trip.currentUserId, // Replace with actual user ID
+                });
+            }
+            console.log('save toggled:', response.data);
+        }
+        catch (error) {
+            console.error('Error toggling save:', error);
+        }
     };
 
     return (
@@ -217,6 +261,7 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
                                 <IconButton
                                     onClick={(e) => {
                                         e.stopPropagation();
+                                        postLike();
                                         onLike(trip.id);
                                     }}
                                     aria-label={trip.isLiked ? 'Unlike' : 'Like'}
@@ -237,6 +282,7 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onSave(trip.id);
+                                postSave();
                             }}
                             aria-label={trip.isSaved ? 'Unsave' : 'Save'}
                             color={trip.isSaved ? 'primary' : 'default'}
@@ -368,18 +414,18 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
                             <Grid size={{ xs: 12, md: 6 }}>
                                 <Box>
                                     <Typography variant="body1" paragraph>
-                                        {trip.detailedData?.description || trip.description}
+                                        {trip.description || trip.description}
                                     </Typography>
 
                                     <Divider sx={{ my: 2 }} />
 
                                     {/* Optimized Route */}
-                                    {trip.detailedData?.optimizedRoute && (
+                                    {trip.optimizedRoute && (
                                         <>
                                             <Typography variant="h6" gutterBottom fontWeight={600}>
                                                 Itinerary
                                             </Typography>
-                                            {trip.detailedData.optimizedRoute.ordered_route?.map((stop: any, index: number) => (
+                                            {trip.optimizedRoute.ordered_route?.map((stop: any, index: number) => (
                                                 <Box key={index} sx={{ mb: 2, pl: 2, borderLeft: '3px solid #ff6b35' }}>
                                                     <Typography variant="subtitle1" fontWeight={600}>
                                                         {index + 1}. {stop.name}
@@ -393,12 +439,12 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
                                             <Divider sx={{ my: 2 }} />
 
                                             {/* Instructions */}
-                                            {trip.detailedData.optimizedRoute.instructions && (
+                                            {trip.optimizedRoute.instructions && (
                                                 <>
                                                     <Typography variant="h6" gutterBottom fontWeight={600}>
                                                         Directions
                                                     </Typography>
-                                                    {trip.detailedData.optimizedRoute.instructions.map((instruction: string, index: number) => (
+                                                    {trip.optimizedRoute.instructions.map((instruction: string, index: number) => (
                                                         <Typography key={index} variant="body2" paragraph>
                                                             • {instruction}
                                                         </Typography>
@@ -414,7 +460,7 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
                                         Activities
                                     </Typography>
                                     <Box display="flex" flexWrap="wrap" gap={1} mb={2}>
-                                        {(trip.detailedData?.activities || trip.activities).map((activity: string, index: number) => (
+                                        {(trip.activities || trip.activities).map((activity: string, index: number) => (
                                             <Chip
                                                 key={index}
                                                 label={activity}
@@ -426,11 +472,11 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
                                     </Box>
 
                                     {/* Google Maps Link */}
-                                    {trip.detailedData?.optimizedRoute?.google_maps_url && (
+                                    {trip.optimizedRoute?.google_maps_url && (
                                         <Button
                                             variant="contained"
                                             fullWidth
-                                            href={trip.detailedData.optimizedRoute.google_maps_url}
+                                            href={trip.optimizedRoute.google_maps_url}
                                             target="_blank"
                                             sx={{ mt: 2 }}
                                         >
