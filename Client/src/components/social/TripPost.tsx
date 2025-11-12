@@ -40,6 +40,7 @@ const theme = createTheme({
 interface Trip {
     id: string;
     user: {
+        id:string,
         name: string;
         username: string;
         avatar: string;
@@ -136,6 +137,19 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
             console.error('Error toggling save:', error);
         }
     };
+    const postFollow = async () => {
+        // Implement follow functionality here
+        let response;   
+        try{
+              response = await axios.post(`http://localhost:3000/follow/${trip.user.id}/follow`, {
+                    userId: trip.currentUserId, // Replace with actual user ID
+
+                }); 
+        }
+        catch(error){
+            console.log(error);
+        }
+    }
 
     return (
         <>
@@ -179,6 +193,7 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onFollow(trip.user.username);
+                                    postFollow();
                                 }}
                             >
                                 {trip.user.isFollowing ? 'Following' : 'Follow'}

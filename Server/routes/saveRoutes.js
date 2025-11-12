@@ -1,5 +1,5 @@
 import express from "express";
-import { saveTripController, unSaveTripController,getSavedTripsController } from "../controller/saveController.js";
+import { saveTripController, unSaveTripController, getSavedTripsController } from "../controller/saveController.js";
 
 const router = express.Router();
 
