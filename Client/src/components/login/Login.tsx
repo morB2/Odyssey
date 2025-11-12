@@ -12,12 +12,13 @@ import {
   Divider,
   Link
 } from '@mui/material';
-import { loginUser, registerUser } from "../services/login.service";
-import type { User } from '../models/user.model';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { loginUser, registerUser } from "../../services/login.service";
+import type { User } from '../../models/user.model';
+import { useNavigate, useSearchParams, Link as RouterLink } from 'react-router-dom';
 import GLogin from './GoogleLogin';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { useUserStore } from '../store/userStore';
+import { useUserStore } from '../../store/userStore';
+
 
 const Login = () => {
   const navigate = useNavigate();
@@ -135,7 +136,7 @@ const Login = () => {
         open={open}
         onClose={() => {
           setOpen(false);
-          setTimeout(() => navigate(-1), 200); // חזרה לעמוד הקודם לאחר סגירת הדיאלוג
+          setTimeout(() => navigate(-1), 200);
         }}
         maxWidth="sm"
         fullWidth
@@ -192,7 +193,12 @@ const Login = () => {
                   value={loginData.password}
                   onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                 />
-                <Link href="#" variant="body2" sx={{ color: '#ea580c', mt: 1, display: 'block' }}>
+                <Link
+                  component={RouterLink}
+                  to="/forgotPassword"
+                  variant="body2"
+                  sx={{ color: '#ea580c', mt: 1, display: 'block' }}
+                >
                   Forgot password?
                 </Link>
               </Box>
@@ -209,8 +215,8 @@ const Login = () => {
                 <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID!}>
                   <div>
                     <GLogin onSuccess={() => {
-                      setOpen(false);  
-                      setTimeout(() => navigate(-1), 200); 
+                      setOpen(false);
+                      setTimeout(() => navigate(-1), 200);
                     }} />
                   </div>
                 </GoogleOAuthProvider>
