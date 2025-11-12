@@ -5,14 +5,17 @@ import { TripsList } from "./TripsList";
 import { EditProfileModal } from "./EditProfileModal";
 import { TripDetailsModal } from "./TripDetailsModal";
 import { EditTripModal } from "./EditTripModal";
-import type { Trip, UserProfile } from "./types";
+import type { Trip, UserProfile, ServerTrip } from "./types";
 import { useUserStore } from "../../store/userStore";
+
+const BASE_URL = "http://localhost:3000";
 
 // We'll fetch the real user and trips from the server using the profile APIs.
 // If no logged-in user is available in the store, the component falls back to a guest view.
 
 export default function Profile() {
   const storeUser = useUserStore((s) => s.user);
+  const storeToken = useUserStore((s) => s.token);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -35,8 +38,20 @@ export default function Profile() {
         }
 
         const [userRes, tripsRes] = await Promise.all([
-          fetch(`/profile/${userId}`).then((r) => r.json()),
-          fetch(`/profile/${userId}/trips`).then((r) => r.json()),
+          fetch(`${BASE_URL}/profile/${userId}`, {
+            headers: {
+              Authorization: `Bearer ${storeToken}`,
+            },
+          })
+            .then((r) => r.json())
+            .catch((e) => ({ success: false, error: String(e) })),
+          fetch(`${BASE_URL}/profile/${userId}/trips`, {
+            headers: {
+              Authorization: `Bearer ${storeToken}`,
+            },
+          })
+            .then((r) => r.json())
+            .catch((e) => ({ success: false, error: String(e) })),
         ]);
 
         if (!mounted) return;
@@ -48,30 +63,6 @@ export default function Profile() {
         setUser(userRes.user);
         const serverTrips = tripsRes.trips || [];
         // Map server Trip schema to client Trip shape used by the UI
-        type ServerTrip = {
-          _id?: string;
-          id?: string;
-          title?: string;
-          description?: string;
-          images?: string[];
-          optimizedRoute?: {
-            ordered_route?: Array<{ name?: string }>;
-            instructions?: string[];
-            mode?: string;
-          };
-          route?: string[];
-          routeInstructions?: Array<{
-            step?: number;
-            instruction?: string;
-            mode?: string;
-            distance?: string;
-          }>;
-          mode?: string;
-          visabilityStatus?: string;
-          activities?: string[];
-          notes?: string;
-        };
-
         const mapTrip = (t: ServerTrip): Trip => {
           const ordered = t.optimizedRoute?.ordered_route || [];
           const modeFromOptimized = t.optimizedRoute?.mode;
@@ -92,7 +83,7 @@ export default function Profile() {
                       ? "car"
                       : modeFromOptimized === "walking"
                       ? "walk"
-                      : "train",
+                      : "transit",
                   distance: "",
                 }))
               : t.routeInstructions || [],
@@ -101,7 +92,7 @@ export default function Profile() {
                 ? "car"
                 : modeFromOptimized === "walking"
                 ? "walk"
-                : "train"
+                : "transit"
               : t.mode || "car",
             visibility: t.visabilityStatus === "public" ? "public" : "private",
             activities: t.activities || [],
@@ -145,8 +136,36 @@ export default function Profile() {
   };
 
   const handleDeleteTrip = (tripId: string) => {
-    setTrips(trips.filter((t) => t.id !== tripId));
-    setSelectedTrip(null);
+    (async () => {
+      try {
+        const userId = storeUser?._id;
+        const token = storeToken;
+        if (!userId) throw new Error("Not authenticated");
+
+        const res = await fetch(
+          `${BASE_URL}/profile/${userId}/trips/${tripId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok)
+          throw new Error(
+            body?.error || body?.message || "Failed to delete trip"
+          );
+
+        // remove locally on success
+        setTrips((prev) => prev.filter((t) => t.id !== tripId));
+        setSelectedTrip(null);
+      } catch (e) {
+        console.error("Failed to delete trip", e);
+        alert(String(e instanceof Error ? e.message : e));
+      }
+    })();
   };
 
   return (
@@ -169,10 +188,10 @@ export default function Profile() {
                 ? user
                 : {
                     id: "",
-                    fullName: "Guest",
-                    username: "guest",
+                    firstName: "Guest",
+                    lastName: "guest",
                     email: "",
-                    profilePicture: "",
+                    avatar: "",
                   }
             }
             onEditClick={() => setIsEditModalOpen(true)}
@@ -210,10 +229,10 @@ export default function Profile() {
         user={
           user ?? {
             id: "",
-            fullName: "",
-            username: "",
+            firstName: "",
+            lastName: "",
             email: "",
-            profilePicture: "",
+            avatar: "",
           }
         }
         isOpen={isEditModalOpen}

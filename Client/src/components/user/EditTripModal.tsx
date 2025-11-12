@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import type { Trip } from "./types";
+import type { Trip, ServerTrip } from "./types";
 import { Modal } from "./Modal";
 import {
   Box,
@@ -12,6 +12,8 @@ import {
 } from "@mui/material";
 import { Save, X, Upload, Trash2, Lock, Globe, Plus } from "lucide-react";
 import { ConfirmDialog } from "./ConfirmDialog";
+const BASE_URL = "http://localhost:3000";
+import { useUserStore } from "../../store/userStore";
 
 interface EditTripModalProps {
   trip: Trip | null;
@@ -66,17 +68,103 @@ export function EditTripModal({
   }, [trip]);
 
   const handleSave = () => {
-    if (!trip) return;
+    // Save to server instead of only local
+    (async () => {
+      if (!trip) return;
+      try {
+        const storeUser = useUserStore.getState().user;
+        const storeToken = useUserStore.getState().token;
+        const userId = storeUser?._id;
+        if (!userId) throw new Error("Not authenticated");
 
-    onSave({
-      ...trip,
-      title,
-      description,
-      notes,
-      images,
-      activities,
-      visibility,
-    });
+        // Build a minimal payload that contains ONLY the fields that changed.
+        // IMPORTANT: do NOT send optimizedRoute.instructions or route summary here
+        // because the UI doesn't allow editing them and sending empty/partial
+        // values would overwrite server data.
+        const payload: Partial<ServerTrip> = {};
+
+        if (title !== trip.title) payload.title = title;
+        if (description !== trip.description) payload.description = description;
+        if (notes !== trip.notes) payload.notes = notes;
+        // compare activities arrays shallowly
+        if (
+          JSON.stringify(activities || []) !==
+          JSON.stringify(trip.activities || [])
+        )
+          payload.activities = activities;
+        // images
+        if (JSON.stringify(images || []) !== JSON.stringify(trip.images || []))
+          payload.images = images;
+        // visibility -> server expects visabilityStatus
+        if (visibility !== trip.visibility)
+          payload.visabilityStatus = visibility;
+
+        // If nothing changed, just close without calling the server
+        if (Object.keys(payload).length === 0) {
+          onClose();
+          return;
+        }
+
+        const res = await fetch(
+          `${BASE_URL}/profile/${userId}/trips/${trip.id}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${storeToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+          }
+        );
+
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok)
+          throw new Error(
+            body?.error || body?.message || "Failed to save trip"
+          );
+
+        const serverTrip: ServerTrip = body.trip || body;
+
+        // map serverTrip to client Trip shape (small mapping)
+        const ordered = serverTrip.optimizedRoute?.ordered_route || [];
+        const modeFromOptimized = serverTrip.optimizedRoute?.mode;
+        const mapModeTansit = (m?: string): "car" | "walk" | "tansit" =>
+          m === "driving" ? "car" : m === "walking" ? "walk" : "tansit";
+        const mapModeTransit = (m?: string): "car" | "walk" | "transit" =>
+          m === "driving" ? "car" : m === "walking" ? "walk" : "transit";
+
+        const mapped: Trip = {
+          id: serverTrip._id || serverTrip.id || trip.id,
+          title: serverTrip.title || title,
+          description: serverTrip.description || description,
+          images: serverTrip.images || images,
+          route: ordered.length
+            ? ordered.map((r: { name?: string }) => r.name || "")
+            : serverTrip.route || [],
+          routeInstructions: (
+            ((serverTrip.optimizedRoute?.instructions as string[]) ||
+              (serverTrip.routeInstructions as string[]) ||
+              []) as string[]
+          ).map((ins: string, i: number) => ({
+            step: i + 1,
+            instruction: ins || "",
+            mode: mapModeTansit(modeFromOptimized),
+            distance: "",
+          })),
+          mode: mapModeTransit(modeFromOptimized || serverTrip.mode),
+          visibility:
+            serverTrip.visabilityStatus === "public" ? "public" : "private",
+          activities: serverTrip.activities || activities,
+          notes: serverTrip.notes || notes,
+        };
+
+        onSave(mapped);
+        onClose();
+      } catch (e) {
+        console.error("Failed to save trip", e);
+        alert(String(e instanceof Error ? e.message : e));
+      }
+    })();
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

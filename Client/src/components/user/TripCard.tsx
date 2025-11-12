@@ -6,9 +6,7 @@ import {
   FootprintsIcon,
   Lock,
   Globe,
-  Bike,
-  Train,
-  Plane,
+  Bus,
   Heart,
   Bookmark,
 } from "lucide-react";
@@ -59,12 +57,8 @@ export function TripCard({
         return <Car size={16} />;
       case "walk":
         return <FootprintsIcon size={16} />;
-      case "bike":
-        return <Bike size={16} />;
-      case "train":
-        return <Train size={16} />;
-      case "plane":
-        return <Plane size={16} />;
+      case "transit":
+        return <Bus size={16} />;
       default:
         return <Car size={16} />;
     }

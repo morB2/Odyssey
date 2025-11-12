@@ -18,6 +18,8 @@ import {
 } from '@mui/material';
 import { Edit, Users, UserPlus } from 'lucide-react';
 
+const BASE_URL = 'http://localhost:3000';
+
 interface ProfileHeaderProps {
   user: UserProfile;
   onEditClick: () => void;
@@ -32,7 +34,7 @@ export function ProfileHeader({ user, onEditClick }: ProfileHeaderProps) {
   const loadFollowers = async () => {
     if (!followers.length) {
       try {
-        const res = await fetch(`/profile/${user.id}/followers`);
+        const res = await fetch(`${BASE_URL}/profile/${user.id}/followers`);
         const data = await res.json();
         if (data.success && Array.isArray(data.followers)) setFollowers(data.followers);
       } catch (e) {
@@ -45,7 +47,7 @@ export function ProfileHeader({ user, onEditClick }: ProfileHeaderProps) {
   const loadFollowing = async () => {
     if (!following.length) {
       try {
-        const res = await fetch(`/profile/${user.id}/following`);
+        const res = await fetch(`${BASE_URL}/profile/${user.id}/following`);
         const data = await res.json();
         if (data.success && Array.isArray(data.following)) setFollowing(data.following);
       } catch (e) {
@@ -55,11 +57,11 @@ export function ProfileHeader({ user, onEditClick }: ProfileHeaderProps) {
     setOpenFollowing(true);
   };
 
-  const initials = user.fullName
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase();
+  // const initials = user.fullName
+  //   .split(' ')
+  //   .map((n) => n[0])
+  //   .join('')
+  //   .toUpperCase();
 
   return (
     <>
@@ -91,8 +93,8 @@ export function ProfileHeader({ user, onEditClick }: ProfileHeaderProps) {
               }}
             >
               <Avatar
-                src={user.profilePicture}
-                alt={user.fullName}
+                src={user.avatar}
+                alt={user.firstName + " " + user.lastName}
                 sx={{
                   width: 80,
                   height: 80,
@@ -104,18 +106,15 @@ export function ProfileHeader({ user, onEditClick }: ProfileHeaderProps) {
                   fontWeight: 600,
                 }}
               >
-                {initials}
               </Avatar>
               <Box sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
                 <Typography
                   variant="h4"
                   sx={{ mb: 0.5, fontSize: '1.875rem', fontWeight: 700, color: '#171717' }}
                 >
-                  {user.fullName}
+                  {user.firstName + " " + user.lastName}
                 </Typography>
-                <Typography sx={{ fontSize: '1rem', color: '#525252' }}>{user.username}</Typography>
 
-                {/* מספר עוקבים ונעקבים עם אייקונים */}
                 <Box sx={{ mt: 1, display: 'flex', gap: 3, justifyContent: { xs: 'center', sm: 'flex-start' } }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <IconButton onClick={loadFollowers} size="small" aria-label="followers">
@@ -146,7 +145,7 @@ export function ProfileHeader({ user, onEditClick }: ProfileHeaderProps) {
               }}
             >
               <Edit size={16} style={{ marginRight: '8px' }} />
-              Edit Profile
+              Change Password
             </Button>
           </Box>
         </Box>

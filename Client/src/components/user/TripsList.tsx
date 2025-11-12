@@ -1,25 +1,34 @@
-import type { Trip } from './types';
-import { TripCard } from './TripCard';
-import { Box, Tabs, Tab, Typography } from '@mui/material';
-import Grid from  '@mui/material/Grid';
-import { User, Heart, Bookmark } from 'lucide-react';
+import type { Trip } from "./types";
+import { TripCard } from "./TripCard";
+import { Box, Tabs, Tab, Typography } from "@mui/material";
+import { Grid } from '@mui/material';
+import { User, Heart, Bookmark } from "lucide-react";
 
 interface TripsListProps {
   trips: Trip[];
-  activeTab: 'my-trips' | 'liked' | 'saved';
-  onTabChange: (tab: 'my-trips' | 'liked' | 'saved') => void;
+  activeTab: "my-trips" | "liked" | "saved";
+  onTabChange: (tab: "my-trips" | "liked" | "saved") => void;
   onTripClick: (trip: Trip) => void;
 }
 
-export function TripsList({ trips, activeTab, onTabChange, onTripClick }: TripsListProps) {
+export function TripsList({
+  trips,
+  activeTab,
+  onTabChange,
+  onTripClick,
+}: TripsListProps) {
   const tabsMap = {
-    'my-trips': 0,
-    'liked': 1,
-    'saved': 2,
+    "my-trips": 0,
+    liked: 1,
+    saved: 2,
   };
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    const tabs: ('my-trips' | 'liked' | 'saved')[] = ['my-trips', 'liked', 'saved'];
+    const tabs: ("my-trips" | "liked" | "saved")[] = [
+      "my-trips",
+      "liked",
+      "saved",
+    ];
     onTabChange(tabs[newValue]);
   };
 
@@ -29,7 +38,7 @@ export function TripsList({ trips, activeTab, onTabChange, onTripClick }: TripsL
       <Box
         sx={{
           mb: 5,
-          borderBottom: '1px solid #e5e5e5',
+          borderBottom: "1px solid #e5e5e5",
         }}
       >
         <Tabs
@@ -37,11 +46,11 @@ export function TripsList({ trips, activeTab, onTabChange, onTripClick }: TripsL
           onChange={handleTabChange}
           centered
           sx={{
-            '& .MuiTabs-indicator': {
-              backgroundColor: '#f97316',
-              height: '2px',
+            "& .MuiTabs-indicator": {
+              backgroundColor: "#f97316",
+              height: "2px",
             },
-            minHeight: 'auto',
+            minHeight: "auto",
           }}
         >
           <Tab
@@ -49,20 +58,20 @@ export function TripsList({ trips, activeTab, onTabChange, onTripClick }: TripsL
             iconPosition="start"
             label="My Trips"
             sx={{
-              textTransform: 'none',
-              fontSize: '1rem',
+              textTransform: "none",
+              fontSize: "1rem",
               px: 3,
               py: 1.5,
-              minHeight: 'auto',
-              color: '#525252',
-              transition: 'color 0.2s',
-              '&:hover': {
-                color: '#171717',
+              minHeight: "auto",
+              color: "#525252",
+              transition: "color 0.2s",
+              "&:hover": {
+                color: "#171717",
               },
-              '&.Mui-selected': {
-                color: '#f97316',
+              "&.Mui-selected": {
+                color: "#f97316",
               },
-              '& .MuiTab-iconWrapper': {
+              "& .MuiTab-iconWrapper": {
                 mr: 1,
               },
             }}
@@ -72,20 +81,20 @@ export function TripsList({ trips, activeTab, onTabChange, onTripClick }: TripsL
             iconPosition="start"
             label="Liked"
             sx={{
-              textTransform: 'none',
-              fontSize: '1rem',
+              textTransform: "none",
+              fontSize: "1rem",
               px: 3,
               py: 1.5,
-              minHeight: 'auto',
-              color: '#525252',
-              transition: 'color 0.2s',
-              '&:hover': {
-                color: '#171717',
+              minHeight: "auto",
+              color: "#525252",
+              transition: "color 0.2s",
+              "&:hover": {
+                color: "#171717",
               },
-              '&.Mui-selected': {
-                color: '#f97316',
+              "&.Mui-selected": {
+                color: "#f97316",
               },
-              '& .MuiTab-iconWrapper': {
+              "& .MuiTab-iconWrapper": {
                 mr: 1,
               },
             }}
@@ -95,20 +104,20 @@ export function TripsList({ trips, activeTab, onTabChange, onTripClick }: TripsL
             iconPosition="start"
             label="Saved"
             sx={{
-              textTransform: 'none',
-              fontSize: '1rem',
+              textTransform: "none",
+              fontSize: "1rem",
               px: 3,
               py: 1.5,
-              minHeight: 'auto',
-              color: '#525252',
-              transition: 'color 0.2s',
-              '&:hover': {
-                color: '#171717',
+              minHeight: "auto",
+              color: "#525252",
+              transition: "color 0.2s",
+              "&:hover": {
+                color: "#171717",
               },
-              '&.Mui-selected': {
-                color: '#f97316',
+              "&.Mui-selected": {
+                color: "#f97316",
               },
-              '& .MuiTab-iconWrapper': {
+              "& .MuiTab-iconWrapper": {
                 mr: 1,
               },
             }}
@@ -119,20 +128,20 @@ export function TripsList({ trips, activeTab, onTabChange, onTripClick }: TripsL
       {trips.length === 0 ? (
         <Box
           sx={{
-            border: '1px solid #e5e5e5',
-            backgroundColor: '#ffffff',
+            border: "1px solid #e5e5e5",
+            backgroundColor: "#ffffff",
             p: 6,
-            textAlign: 'center',
+            textAlign: "center",
           }}
         >
-          <Typography sx={{ color: '#737373', fontSize: '1rem' }}>
+          <Typography sx={{ color: "#737373", fontSize: "1rem" }}>
             No trips to display yet.
           </Typography>
         </Box>
       ) : (
         <Grid container spacing={3}>
           {trips.map((trip) => (
-            <Grid item xs={12} sm={6} lg={4} key={trip.id}>
+            <Grid size={{xs:12,sm:6,md:4}} key={trip.id}>
               <TripCard trip={trip} onClick={() => onTripClick(trip)} />
             </Grid>
           ))}
