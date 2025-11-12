@@ -1,13 +1,14 @@
 import react from 'react'
-import Home from './components/Home'
-import Login from './components/Login';
+import Home from './components/general/Home'
+import Login from './components/login/Login';
 import { Route, Routes, useLocation } from 'react-router-dom';
 
-import GLogin from './components/GoogleLogin'
+import GLogin from './components/login/GoogleLogin'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import Profile from './components/user/Profile';
 import MainPage from './components/tripPlan/MainPage';
 import { TripFeed } from './components/social/TripFeed';
+import ForgotPassword from './components/login/ForgotPassword';
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID!;
 
 
@@ -27,7 +28,9 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/createtrip" element={<MainPage />} />
         <Route path="/profile" element={<Profile />} />
-          <Route path="/feed" element={<TripFeed />} />
+        <Route path="/feed" element={<TripFeed />} />
+        <Route path="/forgotPassword" element={<ForgotPassword />} />
+
       </Routes>
 
       {state?.backgroundLocation && (
@@ -35,7 +38,7 @@ function App() {
           <Route path="/login" element={<Login />} />
         </Routes>
       )}
- 
+
     </>
   )
 }

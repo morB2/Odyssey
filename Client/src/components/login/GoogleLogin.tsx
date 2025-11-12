@@ -1,8 +1,8 @@
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
-import googleLoginService from "../services/login.service";
+import googleLoginService from "../../services/login.service";
 import { useState } from "react";
-import { useUserStore } from "../store/userStore";
+import { useUserStore } from "../../store/userStore";
 
 interface GLoginProps {
   onSuccess?: () => void;
