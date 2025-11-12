@@ -192,6 +192,7 @@ import TripPost from './TripPost';
 import { AppBar, Toolbar, Typography, Container, Box } from '@mui/material';
 import { Explore } from '@mui/icons-material';
 import axios from 'axios';
+import Navbar from '../general/Navbar';
 
 interface Trip {
   _id: string;
@@ -286,27 +287,7 @@ export function TripFeed() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      {/* Header */}
-      <AppBar
-        position="sticky"
-        color="default"
-        elevation={1}
-        sx={{
-          bgcolor: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)'
-        }}
-      >
-        <Container maxWidth="md">
-          <Toolbar sx={{ gap: 1.5 }}>
-            <Explore color="primary" sx={{ fontSize: 32 }} />
-            <Typography variant="h6" component="h1">
-              TripShare
-            </Typography>
-          </Toolbar>
-        </Container>
-      </AppBar>
-
-      {/* Feed */}
+     <Navbar />
       <Container maxWidth="md" sx={{ py: 3 }}>
         {trips.map((trip) => (
           <TripPost
