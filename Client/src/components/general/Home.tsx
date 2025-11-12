@@ -25,9 +25,9 @@ import {
   Globe,
   Award,
 } from 'lucide-react';
-import Navbar from './general/Navbar';
+import Navbar from './Navbar';
 import { useNavigate } from "react-router-dom";
-import { useUserStore } from '../store/userStore';
+import { useUserStore } from '../../store/userStore';
 
 
 interface Feature {
@@ -49,66 +49,9 @@ const Home: React.FC = () => {
     { icon: <Calendar style={{ color: '#b45309', width: 32, height: 32 }} />, title: "Flexible Scheduling", description: "Create day-by-day itineraries that adapt to your pace, with the flexibility to adjust plans on the go." },
   ];
 
-const handleLogout = () => {
-  const clearUser = useUserStore.getState().clearUser; 
-  clearUser();
-  navigate("/");
-};
-
-
   return (
     <Box sx={{ minHeight: '100vh', width: '100vw', overflowX: 'hidden' }}>
-      {/* Header */}
-      <AppBar position="absolute" elevation={0} sx={{ background: 'transparent' }}>
-        <Toolbar sx={{ px: { xs: 2, md: 6 }, py: 2, justifyContent: 'space-between' }}>
-
-          {/* Left side: Logo */}
-          <Box component="img" src="/logo-white.png" alt="Odyssey Logo" sx={{ height: { xs: 90, md: 110 }, objectFit: 'contain' }} />
-
-          {/* Right side: Links + Buttons */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 3, mr: 3 }}>
-              <Link href="#features" underline="none" sx={{ color: 'white', '&:hover': { color: '#fcd34d' }, transition: 'color 0.3s' }}>Features</Link>
-              <Link href="#about" underline="none" sx={{ color: 'white', '&:hover': { color: '#fcd34d' }, transition: 'color 0.3s' }}>About</Link>
-            </Box>
-            {user ? (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Typography sx={{ color: 'white' }}>Welcome, {user.firstName}!</Typography>
-                <Button
-                  variant="outlined"
-                  onClick={handleLogout}
-                  sx={{
-                    color: 'white',
-                    borderColor: 'white',
-                    '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)', bgcolor: '#d97706' },
-                  }}
-                >
-                  Log Out
-                </Button>
-              </Box>
-            ) : (
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button
-                  variant="text"
-                  onClick={() => navigate("/login?tab=login", { state: { backgroundLocation: location.pathname } })}
-                  sx={{ color: 'white', mr: 1, '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
-                >
-                  Log In
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={() => navigate("/login?tab=signup", { state: { backgroundLocation: location.pathname } })}
-                  sx={{ bgcolor: '#d97706', '&:hover': { bgcolor: '#b45309' }, fontWeight: 600 }}
-                >
-                  Sign Up
-                </Button>
-              </Box>
-            )}
-          </Box>
-        </Toolbar>
-      </AppBar>
-
-
+      <Navbar />
       {/* Hero Section */}
       <Box sx={{
         position: 'relative',
@@ -143,8 +86,8 @@ const handleLogout = () => {
           </Typography>
 
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, justifyContent: 'center', mb: 10 }}>
-            <Button  onClick={() => navigate('/createtrip')}  variant="contained" size="large" startIcon={<Sparkles style={{ width: 20, height: 20 }} />} sx={{ bgcolor: '#d97706', '&:hover': { bgcolor: '#b45309' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600 }}>Plan Your Trip</Button>
-            <Button  variant="outlined" size="large" sx={{ borderColor: 'white', color: 'white', '&:hover': { bgcolor: 'white', color: 'black', borderColor: 'white' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600, borderWidth: 2 }}>How It Works</Button>
+            <Button onClick={() => navigate('/createtrip')} variant="contained" size="large" startIcon={<Sparkles style={{ width: 20, height: 20 }} />} sx={{ bgcolor: '#d97706', '&:hover': { bgcolor: '#b45309' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600 }}>Plan Your Trip</Button>
+            <Button variant="outlined" size="large" sx={{ borderColor: 'white', color: 'white', '&:hover': { bgcolor: 'white', color: 'black', borderColor: 'white' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600, borderWidth: 2 }}>How It Works</Button>
           </Box>
 
           {/* Hero Stats */}
@@ -250,7 +193,7 @@ const handleLogout = () => {
           <Typography variant="h2" sx={{ color: 'white', mb: 3, fontWeight: 700, fontSize: { xs: '2rem', md: '3rem' } }}>Ready to Start Your Adventure?</Typography>
           <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.9)', mb: 5, fontWeight: 400, lineHeight: 1.6 }}>Join thousands of travelers who have discovered their perfect journeys with Odyssey. Start planning your next trip today—it only takes a few minutes.</Typography>
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, justifyContent: 'center' }}>
-            <Button onClick={() => navigate('/createtrip')}  variant="contained" size="large" startIcon={<Sparkles style={{ width: 20, height: 20 }} />} sx={{ bgcolor: 'white', color: '#b45309', '&:hover': { bgcolor: '#f3f4f6' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600 }}>Plan Your Trip Now</Button>
+            <Button onClick={() => navigate('/createtrip')} variant="contained" size="large" startIcon={<Sparkles style={{ width: 20, height: 20 }} />} sx={{ bgcolor: 'white', color: '#b45309', '&:hover': { bgcolor: '#f3f4f6' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600 }}>Plan Your Trip Now</Button>
             <Button variant="outlined" size="large" sx={{ borderColor: 'white', color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)', borderColor: 'white' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600, borderWidth: 2 }}>Learn More</Button>
           </Box>
         </Container>
