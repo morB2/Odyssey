@@ -7,6 +7,7 @@ import { TripDetailsModal } from "./TripDetailsModal";
 import { EditTripModal } from "./EditTripModal";
 import type { Trip, UserProfile, ServerTrip } from "./types";
 import { useUserStore } from "../../store/userStore";
+import Navbar from "../general/Navbar";
 
 const BASE_URL = "http://localhost:3000";
 
@@ -26,29 +27,28 @@ export default function Profile() {
     "my-trips"
   );
 
-  // load profile and trips from server
   useEffect(() => {
+    // When the logged-in user changes, load their profile and initial trips.
     let mounted = true;
     async function loadData() {
+      if (!storeUser) {
+        if (mounted) {
+          setUser(null);
+          setTrips([]);
+        }
+        return;
+      }
+
       try {
         const userId = storeUser?._id;
-        if (!userId) {
-          setError("Not signed in");
-          return;
-        }
-
         const [userRes, tripsRes] = await Promise.all([
           fetch(`${BASE_URL}/profile/${userId}`, {
-            headers: {
-              Authorization: `Bearer ${storeToken}`,
-            },
+            headers: { Authorization: `Bearer ${storeToken}` },
           })
             .then((r) => r.json())
             .catch((e) => ({ success: false, error: String(e) })),
           fetch(`${BASE_URL}/profile/${userId}/trips`, {
-            headers: {
-              Authorization: `Bearer ${storeToken}`,
-            },
+            headers: { Authorization: `Bearer ${storeToken}` },
           })
             .then((r) => r.json())
             .catch((e) => ({ success: false, error: String(e) })),
@@ -57,71 +57,109 @@ export default function Profile() {
         if (!mounted) return;
         if (!userRes.success)
           throw new Error(userRes.error || "Failed to load user");
-        if (!tripsRes.success)
-          throw new Error(tripsRes.error || "Failed to load trips");
 
         setUser(userRes.user);
-        const serverTrips = tripsRes.trips || [];
-        // Map server Trip schema to client Trip shape used by the UI
-        const mapTrip = (t: ServerTrip): Trip => {
-          const ordered = t.optimizedRoute?.ordered_route || [];
-          const modeFromOptimized = t.optimizedRoute?.mode;
-          return {
-            id: t._id || t.id || "",
-            title: t.title || "",
-            description: t.description || "",
-            images: t.images || [],
-            route: ordered.length
-              ? ordered.map((r) => r.name || "")
-              : t.route || [],
-            routeInstructions: t.optimizedRoute?.instructions
-              ? t.optimizedRoute.instructions.map((ins, i) => ({
-                  step: i + 1,
-                  instruction: ins,
-                  mode:
-                    modeFromOptimized === "driving"
-                      ? "car"
-                      : modeFromOptimized === "walking"
-                      ? "walk"
-                      : "transit",
-                  distance: "",
-                }))
-              : t.routeInstructions || [],
-            mode: modeFromOptimized
-              ? modeFromOptimized === "driving"
-                ? "car"
-                : modeFromOptimized === "walking"
-                ? "walk"
-                : "transit"
-              : t.mode || "car",
-            visibility: t.visabilityStatus === "public" ? "public" : "private",
-            activities: t.activities || [],
-            notes: t.notes || "",
-          } as Trip;
-        };
+        const serverTrips = Array.isArray(tripsRes)
+          ? tripsRes
+          : Array.isArray(tripsRes?.trips)
+          ? tripsRes.trips
+          : [];
 
         setTrips(serverTrips.map(mapTrip));
       } catch (e) {
+        if (!mounted) return;
         setError(String(e instanceof Error ? e.message : e));
       }
     }
+
     loadData();
     return () => {
       mounted = false;
     };
-  }, [storeUser]);
+  }, [storeUser, storeToken]);
 
-  const getCurrentTrips = () => {
-    switch (activeTab) {
-      case "my-trips":
-        return trips;
-      case "liked":
-        return [];
-      case "saved":
-        return [];
-      default:
-        return trips;
+  useEffect(() => {
+    // Fetch trips for the currently active tab (my-trips / liked / saved)
+    let mounted = true;
+    async function fetchForTab() {
+      if (!storeUser) {
+        if (mounted) setTrips([]);
+        return;
+      }
+
+      let url = "";
+      switch (activeTab) {
+        case "my-trips":
+          url = `${BASE_URL}/profile/${storeUser?._id}/trips`;
+          break;
+        case "liked":
+          url = `${BASE_URL}/likes/${storeUser?._id}`;
+          break;
+        case "saved":
+          url = `${BASE_URL}/saves/${storeUser?._id}`;
+          break;
+        default:
+          url = `${BASE_URL}/profile/${storeUser?._id}/trips`;
+          break;
+      }
+
+      try {
+        const res = await fetch(url, {
+          headers: { Authorization: `Bearer ${storeToken}` },
+        });
+        const data = await res.json();
+
+        const serverTrips = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.trips)
+          ? data.trips
+          : [];
+
+        if (mounted) setTrips(serverTrips.map(mapTrip));
+      } catch (e) {
+        console.error("failed to load trips", e);
+      }
     }
+
+    fetchForTab();
+    return () => {
+      mounted = false;
+    };
+  }, [activeTab, storeUser, storeToken]);
+
+  const mapTrip = (t: ServerTrip): Trip => {
+    const ordered = t.optimizedRoute?.ordered_route || [];
+    const modeFromOptimized = t.optimizedRoute?.mode;
+    return {
+      id: t._id || t.id || "",
+      title: t.title || "",
+      description: t.description || "",
+      images: t.images || [],
+      route: ordered.length ? ordered.map((r) => r.name || "") : t.route || [],
+      routeInstructions: t.optimizedRoute?.instructions
+        ? t.optimizedRoute.instructions.map((ins, i) => ({
+            step: i + 1,
+            instruction: ins,
+            mode:
+              modeFromOptimized === "driving"
+                ? "car"
+                : modeFromOptimized === "walking"
+                ? "walk"
+                : "transit",
+            distance: "",
+          }))
+        : t.routeInstructions || [],
+      mode: modeFromOptimized
+        ? modeFromOptimized === "driving"
+          ? "car"
+          : modeFromOptimized === "walking"
+          ? "walk"
+          : "transit"
+        : t.mode || "car",
+      visibility: t.visabilityStatus === "public" ? "public" : "private",
+      activities: t.activities || [],
+      notes: t.notes || "",
+    } as Trip;
   };
 
   const handleSaveProfile = (updatedUser: UserProfile) => {
@@ -177,6 +215,7 @@ export default function Profile() {
         flexDirection: "column",
       }}
     >
+      <Navbar />
       <Container maxWidth="lg" sx={{ py: 6 }}>
         <Paper
           elevation={3}
@@ -214,7 +253,7 @@ export default function Profile() {
           <Box sx={{ mt: 4 }}>
             <Box sx={{ mt: 3 }}>
               <TripsList
-                trips={getCurrentTrips()}
+                trips={trips}
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
                 onTripClick={setSelectedTrip}

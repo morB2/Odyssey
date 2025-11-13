@@ -466,6 +466,7 @@ export function TripDetailsModal({
           >
             Close
           </Button>
+          {}
           <Box sx={{ display: "flex", gap: 1.5 }}>
             <Button
               variant="outlined"

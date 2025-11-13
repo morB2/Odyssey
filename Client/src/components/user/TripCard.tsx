@@ -10,6 +10,8 @@ import {
   Heart,
   Bookmark,
 } from "lucide-react";
+import { useUserStore } from "../../store/userStore";
+const BASE_URL = "http://localhost:3000";
 
 interface TripCardProps {
   trip: Trip;
@@ -25,7 +27,6 @@ interface TripCardPropsExt extends TripCardProps {
 export function TripCard({
   trip,
   onClick,
-  onLike,
   onSave,
   currentUserId,
 }: TripCardPropsExt) {
@@ -33,6 +34,8 @@ export function TripCard({
   const [liked, setLiked] = useState<boolean>(!!trip.liked);
   const [saved, setSaved] = useState<boolean>(!!trip.saved);
   const [likesCount, setLikesCount] = useState<number>(trip.likes || 0);
+  const storeUser = useUserStore((s) => s.user);
+  const storeToken = useUserStore((s) => s.token);
 
   useEffect(() => {
     if (trip.images.length <= 1) return;
@@ -46,6 +49,25 @@ export function TripCard({
 
   // sync social state when trip changes
   useEffect(() => {
+    // get fresh like/save status from the server
+    /*scema of likes:
+    
+import mongoose from "mongoose";
+
+const LikeSchema = new mongoose.Schema(
+  {
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    trip: { type: mongoose.Schema.Types.ObjectId, ref: "Trip", required: true },
+  },
+  { timestamps: true }
+);
+
+// Optional: ensure a user can like a trip only once
+LikeSchema.index({ user: 1, trip: 1 }, { unique: true });
+
+export default mongoose.model("Like", LikeSchema);
+*/
+
     setLiked(!!trip.liked);
     setSaved(!!trip.saved);
     setLikesCount(trip.likes || 0);
@@ -70,9 +92,32 @@ export function TripCard({
     e.stopPropagation();
     const newLiked = !liked;
     setLiked(newLiked);
+    // optimistic update
     setLikesCount((c) => (newLiked ? c + 1 : Math.max(0, c - 1)));
     try {
-      if (onLike) await onLike(trip.id, newLiked);
+      const url = `${BASE_URL}/likes/${trip.id}/${
+        newLiked ? "like" : "unlike"
+      }`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${storeToken}`,
+        },
+        body: JSON.stringify({
+          userId: storeUser?._id,
+        }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok)
+        throw new Error(
+          body?.error || body?.message || "Failed to update like status"
+        );
+
+      // if server returned the updated likes count, sync to authoritative value
+      if (typeof body?.likes === "number") {
+        setLikesCount(body.likes);
+      }
     } catch (err) {
       // rollback on error
       setLiked(!newLiked);

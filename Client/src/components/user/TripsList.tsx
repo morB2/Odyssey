@@ -1,7 +1,7 @@
 import type { Trip } from "./types";
 import { TripCard } from "./TripCard";
 import { Box, Tabs, Tab, Typography } from "@mui/material";
-import { Grid } from '@mui/material';
+import { Grid } from "@mui/material";
 import { User, Heart, Bookmark } from "lucide-react";
 
 interface TripsListProps {
@@ -17,6 +17,8 @@ export function TripsList({
   onTabChange,
   onTripClick,
 }: TripsListProps) {
+  // defensive: ensure we always work with an array
+  const list = Array.isArray(trips) ? trips : [];
   const tabsMap = {
     "my-trips": 0,
     liked: 1,
@@ -125,7 +127,7 @@ export function TripsList({
         </Tabs>
       </Box>
 
-      {trips.length === 0 ? (
+      {list.length === 0 ? (
         <Box
           sx={{
             border: "1px solid #e5e5e5",
@@ -140,8 +142,11 @@ export function TripsList({
         </Box>
       ) : (
         <Grid container spacing={3}>
-          {trips.map((trip) => (
-            <Grid size={{xs:12,sm:6,md:4}} key={trip.id}>
+          {list.map((trip) => (
+            <Grid
+              key={trip.id}
+              sx={{ width: { xs: "100%", sm: "50%", md: "33.333%" } }}
+            >
               <TripCard trip={trip} onClick={() => onTripClick(trip)} />
             </Grid>
           ))}
