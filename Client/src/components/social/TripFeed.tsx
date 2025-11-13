@@ -5,6 +5,16 @@ import { Explore } from '@mui/icons-material';
 import axios from 'axios';
 import Navbar from '../general/Navbar';
 
+interface Comment {
+  id: string;
+  user: {
+    name: string;
+    username: string;
+    avatar: string;
+  };
+  text: string;
+  timestamp: string;
+}
 interface Trip {
   _id: string;
   user: {
@@ -19,7 +29,7 @@ interface Trip {
   activities: string[];
   images: string[];
   likes: number;
-  comments?: object[];
+  comments?: Comment[];
   isLiked: boolean;
   isSaved: boolean;
   optimizedRoute?: any;
@@ -29,10 +39,36 @@ interface StoredUser {
   state: {
     user: {
       _id: string;
+      avatar: string;
       // add other properties if needed
     };
   };
 }
+
+function adaptComments(apiComments: any[]): Comment[] {
+  return apiComments.map((c) => {
+    const date = new Date(c.createdAt);
+    const time = date.toLocaleString([], {
+      year: "numeric",
+      month: "short", 
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    return {
+      id: c._id,
+      user: {
+        name: `${c.user.firstName} ${c.user.lastName}`,
+        username: ` @${c.user.firstName.toLowerCase()}${c.user.lastName.toLowerCase()}`,
+        avatar: c.user.avatar || "/default-avatar.png",
+      },
+      text: c.comment,
+      timestamp: time, // use formatted time instead of raw timestamp
+    };
+  });
+}
+
 
 export function TripFeed() {
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -45,14 +81,10 @@ export function TripFeed() {
   useEffect(() => {
     const fetchTrips = async () => {
       try {
-        // const userStorage = localStorage.getItem('user-storage');
-        // const id: string | undefined = userStorage
-        //   ? (JSON.parse(userStorage) as StoredUser).state.user._id
-        //   : undefined;
         const res = await axios.get(`http://localhost:3000/trips/${id}`); // Your API endpoint
         const tripsData: Trip[] = res.data.map((trip: any) => ({
           ...trip,
-          comments: trip.comments?.length || 0, // Convert comments array to number
+          comments: adaptComments(trip.comments || []),
         }));
         setTrips(tripsData);
       } catch (err) {
@@ -101,7 +133,7 @@ export function TripFeed() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-     <Navbar />
+      <Navbar />
       <Container maxWidth="md" sx={{ py: 3 }}>
         {trips.map((trip) => (
           <TripPost
@@ -110,6 +142,7 @@ export function TripFeed() {
               currentUserId: id || '',
               id: trip._id,
               user: {
+                id: trip.user._id,
                 name: `${trip.user.firstName} ${trip.user.lastName}`,
                 username: trip.user.firstName.toLowerCase() + trip.user.lastName.toLowerCase(),
                 avatar: trip.user.avatar,

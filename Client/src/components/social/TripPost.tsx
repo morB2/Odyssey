@@ -1,4 +1,3 @@
-
 import {
     Avatar,
     Button,
@@ -15,7 +14,8 @@ import {
     DialogTitle,
     Grid,
     Divider,
-    ThemeProvider
+    ThemeProvider,
+    TextField,
 } from '@mui/material';
 import {
     Favorite,
@@ -26,9 +26,11 @@ import {
     ChevronLeft,
     ChevronRight,
     Close,
+    Send,
 } from '@mui/icons-material';
 import { useState } from 'react';
 import axios from 'axios';
+
 const theme = createTheme({
     palette: {
         primary: {
@@ -37,9 +39,21 @@ const theme = createTheme({
     },
 });
 
+interface Comment {
+    id: string;
+    user: {
+        name: string;
+        username: string;
+        avatar: string;
+    };
+    text: string;
+    timestamp: string;
+}
+
 interface Trip {
     id: string;
     user: {
+        id: string;
         name: string;
         username: string;
         avatar: string;
@@ -51,7 +65,7 @@ interface Trip {
     activities: string[];
     images: string[];
     likes: number;
-    comments?: object[];
+    comments?: Comment[]; // now typed
     isLiked: boolean;
     isSaved: boolean;
     detailedData?: any;
@@ -70,10 +84,23 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogImageIndex, setDialogImageIndex] = useState(0);
+
+    // Comments state
+    const [showComments, setShowComments] = useState(false);
+    const [commentText, setCommentText] = useState('');
+    const [comments, setComments] = useState<Comment[]>(trip.comments || []);
+
     console.log(trip);
+
     const handleCardClick = (e: any) => {
         // Don't open dialog if clicking on interactive elements
-        if (e.target.closest('button') || e.target.closest('a')) {
+        if (
+            e.target.closest('button') ||
+            e.target.closest('a') ||
+            e.target.closest('input') ||
+            e.target.closest('textarea') ||
+            e.target.getAttribute?.('role') === 'button'
+        ) {
             return;
         }
         setDialogOpen(true);
@@ -85,55 +112,98 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
 
     const nextDialogImage = () => {
         setDialogImageIndex((prev) =>
-            prev === trip.images.length - 1 ? 0 : prev + 1
+            prev === (trip.images?.length ?? 1) - 1 ? 0 : prev + 1
         );
     };
 
     const prevDialogImage = () => {
         setDialogImageIndex((prev) =>
-            prev === 0 ? trip.images.length - 1 : prev - 1
+            prev === 0 ? (trip.images?.length ?? 1) - 1 : prev - 1
         );
     };
+
     const postLike = async () => {
-        // Implement like functionality here
         let response;
         try {
             if (!trip.isLiked) {
                 response = await axios.post(`http://localhost:3000/likes/${trip.id}/like`, {
-                    userId: trip.currentUserId, // Replace with actual user ID
-
+                    userId: trip.currentUserId,
                 });
-            }
-            else {
+            } else {
                 response = await axios.post(`http://localhost:3000/likes/${trip.id}/unlike`, {
-                    userId: trip.currentUserId, // Replace with actual user ID
+                    userId: trip.currentUserId,
                 });
             }
-            console.log('Like toggled:', response.data);
-        }
-        catch (error) {
+            console.log('Like toggled:', response?.data);
+        } catch (error) {
             console.error('Error toggling like:', error);
         }
     };
+
     const postSave = async () => {
-        // Implement like functionality here
         let response;
         try {
             if (!trip.isSaved) {
                 response = await axios.post(`http://localhost:3000/saves/${trip.id}/save`, {
-                    userId: trip.currentUserId, // Replace with actual user ID
-
+                    userId: trip.currentUserId,
                 });
-            }
-            else {
+            } else {
                 response = await axios.post(`http://localhost:3000/saves/${trip.id}/unsave`, {
-                    userId: trip.currentUserId, // Replace with actual user ID
+                    userId: trip.currentUserId,
                 });
             }
-            console.log('save toggled:', response.data);
-        }
-        catch (error) {
+            console.log('save toggled:', response?.data);
+        } catch (error) {
             console.error('Error toggling save:', error);
+        }
+    };
+
+    const postFollow = async () => {
+        try {
+            const response = await axios.post(`http://localhost:3000/follow/${trip.user.id}/follow`, {
+                userId: trip.currentUserId,
+            });
+            console.log('follow response:', response?.data);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    // Add comment handler (optimistic update)
+    const handleAddComment = async () => {
+        if (!commentText.trim()) return;
+        const response = await axios.post(`http://localhost:3000/trips/${trip.id}/comment`, {
+            userId: trip.currentUserId,
+            comment: commentText.trim()
+        });
+
+        // create optimistic comment
+        const newComment: Comment = {
+            id: response.data._id,
+            user: {
+                name: response.data.user.firstName + " " + response.data.user.lastName,
+                username: '@' + response.data.user.firstName + response.data.user.lastName,
+                avatar: 'https://i.pravatar.cc/150?img=33',
+            },
+            text: commentText.trim(),
+            timestamp: response.data.createdAt,
+        };
+
+        // optimistic UI
+        setComments((prev) => [newComment, ...prev]);
+        setCommentText('');
+
+        try {
+            // example endpoint — adjust to your backend
+            await axios.post(`http://localhost:3000/comments/${trip.id}/add`, {
+                userId: trip.currentUserId,
+                text: newComment.text,
+            });
+            // if backend returns new id/timestamp you could patch it here
+        } catch (error) {
+            console.error('Error adding comment:', error);
+            // optionally roll back optimistic update on failure:
+            // setComments((prev) => prev.filter(c => c.id !== newComment.id));
         }
     };
 
@@ -153,7 +223,7 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
                         '&:hover': {
                             transform: 'translateY(-4px)',
                             boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                        }
+                        },
                     }}
                     onClick={handleCardClick}
                 >
@@ -179,6 +249,7 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onFollow(trip.user.username);
+                                    postFollow();
                                 }}
                             >
                                 {trip.user.isFollowing ? 'Following' : 'Follow'}
@@ -272,10 +343,16 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
                                 <Typography variant="body2">{trip.likes}</Typography>
                             </Box>
                             <Box display="flex" alignItems="center">
-                                <IconButton aria-label="Comments">
-                                    <ChatBubbleOutline />
+                                <IconButton
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowComments((prev) => !prev);
+                                    }}
+                                    aria-label="Comments"
+                                >
+                                    <ChatBubbleOutline color={showComments ? 'primary' : undefined} />
                                 </IconButton>
-                                <Typography variant="body2">{trip.comments?.length}</Typography>
+                                <Typography variant="body2">{comments.length}</Typography>
                             </Box>
                         </Box>
                         <IconButton
@@ -319,6 +396,76 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
                             ))}
                         </Box>
                     </CardContent>
+
+                    {/* Comments Section (togglable) */}
+                    {showComments && (
+                        <Box
+                            sx={{
+                                borderTop: '1px solid',
+                                borderColor: 'divider',
+                                bgcolor: 'background.default',
+                                px: 2,
+                                pb: 2,
+                            }}
+                        >
+                            <Box sx={{ maxHeight: 300, overflowY: 'auto', my: 1 }}>
+                                {comments.length > 0 ? (
+                                    comments.map((comment) => (
+                                        <Box
+                                            key={comment.id}
+                                            sx={{ display: 'flex', gap: 1.5, py: 1, alignItems: 'flex-start' }}
+                                        >
+                                            <Avatar src={comment.user.avatar} sx={{ width: 30, height: 30 }}>
+                                                {comment.user.name}
+                                            </Avatar>
+                                            <Box>
+                                                <Typography variant="subtitle2"> {comment.user.name}</Typography>
+                                                <Typography variant="body2">{comment.text}</Typography>
+                                                <Typography variant="caption" color="text.secondary">
+                                                    {comment.timestamp}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                    ))
+                                ) : (
+                                    <Typography variant="body2" color="text.secondary" textAlign="center" py={3}>
+                                        No comments yet. Be the first to comment!
+                                    </Typography>
+                                )}
+                            </Box>
+
+                            {/* Add Comment */}
+                            <Box display="flex" alignItems="center" gap={1}>
+                                <Avatar src="https://i.pravatar.cc/150?img=33" sx={{ width: 30, height: 30 }}>
+                                    Y
+                                </Avatar>
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    placeholder="Add a comment..."
+                                    value={commentText}
+                                    onChange={(e) => setCommentText(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            handleAddComment();
+                                        }
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                                <IconButton
+                                    color="primary"
+                                    disabled={!commentText.trim()}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAddComment();
+                                    }}
+                                >
+                                    <Send />
+                                </IconButton>
+                            </Box>
+                        </Box>
+                    )}
                 </Card>
 
                 {/* Detailed Trip Dialog */}
