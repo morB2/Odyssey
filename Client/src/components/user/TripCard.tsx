@@ -28,7 +28,6 @@ export function TripCard({
   trip,
   onClick,
   onSave,
-  currentUserId,
 }: TripCardPropsExt) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [liked, setLiked] = useState<boolean>(!!trip.liked);
@@ -36,6 +35,7 @@ export function TripCard({
   const [likesCount, setLikesCount] = useState<number>(trip.likes || 0);
   const storeUser = useUserStore((s) => s.user);
   const storeToken = useUserStore((s) => s.token);
+  const currentUserId = storeUser?._id;
 
   useEffect(() => {
     if (trip.images.length <= 1) return;
@@ -72,6 +72,41 @@ export default mongoose.model("Like", LikeSchema);
     setSaved(!!trip.saved);
     setLikesCount(trip.likes || 0);
   }, [trip]);
+
+  // Ensure we show whether the current logged-in user has liked this trip.
+  useEffect(() => {
+    let mounted = true;
+    async function fetchLiked() {
+      const uid = currentUserId || storeUser?._id;
+      if (!uid) return;
+      try {
+        const res = await fetch(`${BASE_URL}/likes/${uid}`, {
+          headers: { authorization: `Bearer ${storeToken}` },
+        });
+        const data = await res.json();
+        const serverTrips = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.trips)
+          ? data.trips
+          : [];
+
+        if (!mounted) return;
+        const found = serverTrips.some((t: { _id?: string; id?: string }) => {
+          // server trip may use _id or id
+          const sid = (t._id as string) || (t.id as string);
+          return String(sid) === String(trip.id);
+        });
+        setLiked(found);
+      } catch (err) {
+        console.error("failed to fetch liked trips", err);
+      }
+    }
+
+    fetchLiked();
+    return () => {
+      mounted = false;
+    };
+  }, [trip.id, currentUserId, storeUser, storeToken]);
 
   const getModeIcon = () => {
     switch (trip.mode) {
