@@ -6,11 +6,12 @@ import sendEmail from "./sendEmailRoute.js";
 import like from "./likeRoutes.js"
 import save from "./saveRoutes.js";
 import follow from './followRoutes.js';
+import {authMiddleware as autoM} from '../middleware/authMiddleware.js';
 
 export function routesInit(app) {
   app.use("/login", LoginR);
   app.use("/createTrip", createTrip);
-  app.use("/profile", profile);
+  app.use("/profile",autoM, profile);
   app.use('/trips', trip);
   app.use("/sendEmail", sendEmail);
 
