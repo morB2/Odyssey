@@ -19,11 +19,10 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
-  Bike,
-  Train,
-  Plane,
+  Bus,
   Navigation,
 } from "lucide-react";
+import { useUserStore } from "../../store/userStore";
 
 interface TripDetailsModalProps {
   trip: Trip | null;
@@ -41,6 +40,7 @@ export function TripDetailsModal({
   onDelete,
 }: TripDetailsModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const storeUser = useUserStore((s) => s.user);
 
   if (!trip) return null;
 
@@ -50,12 +50,8 @@ export function TripDetailsModal({
         return <Car size={16} />;
       case "walk":
         return <FootprintsIcon size={16} />;
-      case "bike":
-        return <Bike size={16} />;
-      case "train":
-        return <Train size={16} />;
-      case "plane":
-        return <Plane size={16} />;
+      case "transit":
+        return <Bus size={16} />;
       default:
         return <Car size={16} />;
     }
@@ -466,42 +462,43 @@ export function TripDetailsModal({
           >
             Close
           </Button>
-          {}
-          <Box sx={{ display: "flex", gap: 1.5 }}>
-            <Button
-              variant="outlined"
-              onClick={() => {
-                onDelete();
-              }}
-              sx={{
-                borderColor: "#fca5a5",
-                color: "#dc2626",
-                textTransform: "none",
-                "&:hover": {
-                  borderColor: "#f87171",
-                  backgroundColor: "#fef2f2",
-                  color: "#b91c1c",
-                },
-              }}
-            >
-              <Trash2 size={16} style={{ marginRight: "8px" }} />
-              Delete
-            </Button>
-            <Button
-              onClick={onEdit}
-              variant="contained"
-              sx={{
-                backgroundColor: "#f97316",
-                textTransform: "none",
-                "&:hover": {
-                  backgroundColor: "#ea580c",
-                },
-              }}
-            >
-              <Edit size={16} style={{ marginRight: "8px" }} />
-              Edit Trip
-            </Button>
-          </Box>
+          {storeUser?._id === trip.ownerId && (
+            <Box sx={{ display: "flex", gap: 1.5 }}>
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  onDelete();
+                }}
+                sx={{
+                  borderColor: "#fca5a5",
+                  color: "#dc2626",
+                  textTransform: "none",
+                  "&:hover": {
+                    borderColor: "#f87171",
+                    backgroundColor: "#fef2f2",
+                    color: "#b91c1c",
+                  },
+                }}
+              >
+                <Trash2 size={16} style={{ marginRight: "8px" }} />
+                Delete
+              </Button>
+              <Button
+                onClick={onEdit}
+                variant="contained"
+                sx={{
+                  backgroundColor: "#f97316",
+                  textTransform: "none",
+                  "&:hover": {
+                    backgroundColor: "#ea580c",
+                  },
+                }}
+              >
+                <Edit size={16} style={{ marginRight: "8px" }} />
+                Edit Trip
+              </Button>
+            </Box>
+          )}
         </Box>
       </Box>
     </Modal>

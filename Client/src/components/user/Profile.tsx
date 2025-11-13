@@ -130,6 +130,7 @@ export default function Profile() {
   const mapTrip = (t: ServerTrip): Trip => {
     const ordered = t.optimizedRoute?.ordered_route || [];
     const modeFromOptimized = t.optimizedRoute?.mode;
+    
     return {
       id: t._id || t.id || "",
       title: t.title || "",
