@@ -9,6 +9,7 @@ import Profile from './components/user/Profile';
 import MainPage from './components/tripPlan/MainPage';
 import { TripFeed } from './components/social/TripFeed';
 import ForgotPassword from './components/login/ForgotPassword';
+import Dashboard from './components/admin/Dashboard';
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID!;
 
 
@@ -30,6 +31,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/feed" element={<TripFeed />} />
         <Route path="/forgotPassword" element={<ForgotPassword />} />
+        <Route path="/admin" element={<Dashboard />} />
 
       </Routes>
 
