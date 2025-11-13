@@ -3,10 +3,8 @@ import mongoose from "mongoose";
 const TripSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", index: true },
-    // The chosen/selected trip (can be the AI suggestion the user picked)
     title: { type: String },
     description: { type: String },
-    // Final optimized route (optional)
     optimizedRoute: {
       ordered_route: [
         {
@@ -31,8 +29,26 @@ const TripSchema = new mongoose.Schema(
       enum: ["private", "public"],
       default: "private",
     },
+    // New fields
+    comments: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        comment: { type: String },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
+    likes: { type: Number, default: 0 },
+    images: {
+      type: [String],
+      validate: [arrayLimit, "{PATH} exceeds the limit of 3"],
+    },
   },
   { timestamps: true }
 );
+
+// Custom validator for images array
+function arrayLimit(val) {
+  return val.length <= 3;
+}
 
 export default mongoose.model("Trip", TripSchema);

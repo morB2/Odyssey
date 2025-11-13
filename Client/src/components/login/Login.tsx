@@ -12,12 +12,13 @@ import {
   Divider,
   Link
 } from '@mui/material';
-import { loginUser, registerUser } from "../services/login.service";
-import type { User } from '../models/user.model';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { loginUser, registerUser } from "../../services/login.service";
+import type { User } from '../../models/user.model';
+import { useNavigate, useSearchParams, Link as RouterLink } from 'react-router-dom';
 import GLogin from './GoogleLogin';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { useUserStore } from '../store/userStore';
+import { useUserStore } from '../../store/userStore';
+
 
 const Login = () => {
   const navigate = useNavigate();
@@ -67,10 +68,10 @@ const Login = () => {
         avatar: response.user.avatar,
       };
 
-      useUserStore.getState().setUser(userInfo);
+      useUserStore.getState().setUser(userInfo, response.token);
       setOpen(false);
       setTimeout(() => navigate(-1), 200);
-      console.log("User saved in store after login:", useUserStore.getState().user);
+      console.log("User saved in store after login:", useUserStore.getState().user, "token", response.token);
 
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
@@ -107,7 +108,7 @@ const Login = () => {
         avatar: response.user.avatar,
       };
 
-      useUserStore.getState().setUser(userInfo);
+      useUserStore.getState().setUser(userInfo, response.token);
       setOpen(false);
       setTimeout(() => navigate(-1), 200);
       console.log("User saved in store after signup:", useUserStore.getState().user);
@@ -135,7 +136,7 @@ const Login = () => {
         open={open}
         onClose={() => {
           setOpen(false);
-          setTimeout(() => navigate(-1), 200); // חזרה לעמוד הקודם לאחר סגירת הדיאלוג
+          setTimeout(() => navigate(-1), 200);
         }}
         maxWidth="sm"
         fullWidth
@@ -192,7 +193,12 @@ const Login = () => {
                   value={loginData.password}
                   onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                 />
-                <Link href="#" variant="body2" sx={{ color: '#ea580c', mt: 1, display: 'block' }}>
+                <Link
+                  component={RouterLink}
+                  to="/forgotPassword"
+                  variant="body2"
+                  sx={{ color: '#ea580c', mt: 1, display: 'block' }}
+                >
                   Forgot password?
                 </Link>
               </Box>
@@ -208,7 +214,10 @@ const Login = () => {
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 1.5 }}>
                 <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID!}>
                   <div>
-                    <GLogin />
+                    <GLogin onSuccess={() => {
+                      setOpen(false);
+                      setTimeout(() => navigate(-1), 200);
+                    }} />
                   </div>
                 </GoogleOAuthProvider>
               </Box>

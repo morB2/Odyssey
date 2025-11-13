@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -14,8 +14,12 @@ import {
   List,
   ListItem,
   ListItemText,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
-import { MapPin, Navigation, ExternalLink } from "lucide-react";
+import { MapPin, Navigation, ExternalLink, Save } from "lucide-react";
 
 interface Location {
   name: string;
@@ -40,15 +44,73 @@ interface TripDisplayProps {
     route: RouteData;
   };
 }
+interface StoredUser {
+  state: {
+    user: {
+      _id: string;
+      // add other properties if needed
+    };
+  };
+}
 
 export function TripDisplay({ data }: TripDisplayProps) {
   if (!data?.route) return <Typography>No route data to display</Typography>;
-
+const [imageUrl, setImageUrl] = useState<string>("");
   const { title, description, ordered_route, mode, instructions = [], google_maps_url, activities = [] } = data.route;
+  useEffect(() => {
+    const fetchImage = async () => {
+      const query = title ? title : "Travel";
+      try {
+        const response = await fetch(
+          `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)} travel landscape&orientation=landscape&per_page=1`,
+          {
+            headers: {
+              Authorization: import.meta.env.VITE_PEXELS_KEY
+            }
+          }
+        );
+        const data = await response.json();
+        if (data.photos && data.photos.length > 0) {
+          setImageUrl(data.photos[0].src.large);
+        }
+      } catch (error) {
+        console.error("Failed to fetch image:", error);
+      }
+    };
 
+    fetchImage();
+  }, [ title]);
   const orange = "#ff9800";
   const lightOrange = "#fff3e0";
   const borderOrange = "#ffe0b2";
+
+  // Dialog state
+  const [openDialog, setOpenDialog] = useState(false);
+
+  const handleSaveClick = () => setOpenDialog(true);
+  const handleCloseDialog = () => setOpenDialog(false);
+
+  const handleSaveOption = async (type: "private" | "public") => {
+    setOpenDialog(false);
+     const userStorage = localStorage.getItem('user-storage');
+        const id: string | undefined = userStorage
+          ? (JSON.parse(userStorage) as StoredUser).state.user._id
+          : undefined;
+    const response = await fetch('http://localhost:3000/createTrip/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(
+        { userId: id, title, description, optimizedRoute: { ordered_route, mode, instructions, google_maps_url }, activities, visabilityStatus: type ,image: imageUrl}
+      ),
+    });
+    const result = await response.json();
+    console.log('Trip save response:', result);
+    if (result.success) {
+      alert('Trip saved successfully!');
+    } else {
+      alert('Failed to save trip.');
+    }
+  };
 
   return (
     <Card
@@ -65,7 +127,7 @@ export function TripDisplay({ data }: TripDisplayProps) {
       <CardMedia
         component="img"
         height="240"
-        image="https://images.unsplash.com/photo-1627853585647-55e46555d259?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+        image={imageUrl}
         alt="Trip Cover"
         sx={{ objectFit: "cover" }}
       />
@@ -196,7 +258,7 @@ export function TripDisplay({ data }: TripDisplayProps) {
 
       {/* Footer */}
       <Divider sx={{ borderColor: borderOrange }} />
-      <CardActions sx={{ justifyContent: "center", p: 2, bgcolor: lightOrange }}>
+      <CardActions sx={{ justifyContent: "space-between", p: 2, bgcolor: lightOrange }}>
         <Button
           variant="contained"
           href={google_maps_url}
@@ -212,7 +274,37 @@ export function TripDisplay({ data }: TripDisplayProps) {
         >
           Open in Google Maps
         </Button>
+        <Button
+          variant="outlined"
+          startIcon={<Save size={18} />}
+          onClick={handleSaveClick}
+          sx={{
+            borderColor: orange,
+            color: orange,
+            "&:hover": { borderColor: "#fb8c00", color: "#fb8c00" },
+            textTransform: "none",
+            fontWeight: 600,
+          }}
+        >
+          Save
+        </Button>
       </CardActions>
+
+      {/* Save Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle sx={{ color: orange, fontWeight: "bold" }}>Save Trip</DialogTitle>
+        <DialogContent>
+          <Typography>Would you like to save your trip privately or publicly?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => handleSaveOption("private")} variant="contained" sx={{ bgcolor: orange }}>
+            Save Privately
+          </Button>
+          <Button onClick={() => handleSaveOption("public")} variant="outlined" sx={{ borderColor: orange, color: orange }}>
+            Save Publicly
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 }

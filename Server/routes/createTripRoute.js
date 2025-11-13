@@ -2,9 +2,9 @@ import express from "express";
 import {
   getSuggestions,
   optimizeRoute,
-  saveTrip,
   customizeTrip,
-} from "../controller/createTripController.js";
+  saveUserTrip,
+} from "../services/createTripServices.js";
 
 const router = express.Router();
 
@@ -52,27 +52,6 @@ router.post("/findOptimalRoute", async (req, res) => {
   }
 });
 
-router.post("/save", async (req, res) => {
-  try {
-    const body = req.body || {};
-    const { userId, title, description, optimizedRoute, activities, notes,visabilityStatus } =
-      body;
-    const saved = await saveTrip({
-      user: userId,
-      title,
-      description,
-      optimizedRoute,
-      activities,
-      notes,
-      visabilityStatus,
-    });
-    return res.status(201).json({ success: true, route: saved });
-  } catch (err) {
-    console.error("save trip error", err);
-    return res.status(500).json({ success: false, error: String(err) });
-  }
-});
-
 router.post("/customize", async (req, res) => {
   try {
     const body = req.body || {};
@@ -94,6 +73,17 @@ router.post("/customize", async (req, res) => {
         raw: err.raw,
         sanitized: err.sanitized,
       });
+    return res.status(500).json({ success: false, error: String(err) });
+  }
+});
+
+router.post("/save", async (req, res) => {
+  try {
+    const body = req.body || {};
+    const saved = await saveUserTrip({ ...body });
+    return res.status(201).json({ success: true, route: saved });
+  } catch (err) {
+    console.error("save trip error", err);
     return res.status(500).json({ success: false, error: String(err) });
   }
 });

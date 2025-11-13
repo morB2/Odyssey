@@ -1,5 +1,19 @@
 import usersModel from '../models/userModel.js';
+import { config } from '../config/secret.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
+const SECRET_KEY = config.jwtSecret;
+const SALT_ROUNDS = config.saltRounds;
+
+
+function generateToken(user) {
+    return jwt.sign(
+        { userId: user._id, email: user.email, role: user.role },
+        SECRET_KEY,
+        { expiresIn: '10h' }
+    );
+}
 
 export async function loginUserS(email) {
     const user = await usersModel.findOne({ email });
@@ -9,28 +23,49 @@ export async function loginUserS(email) {
         error.status = 404;
         throw error;
     }
-    // const validPassword = await bcrypt.compare(password, user.password);
-    // if (!validPassword) {
-    //   throw new Error('Invalid password');
-    // }
 
-    // const token = jwt.sign({ userId: user._id }, this.secretKey, { expiresIn: '1h' });
-    return { success: true, user };
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+        const error = new Error('Invalid password');
+        error.status = 401;
+        throw error;
+    }
+
+    const token = generateToken(user);
+
+    const userToReturn = user.toObject();
+    delete userToReturn.password;
+    console.log("userToReturn", userToReturn)
+    return { success: true, user: userToReturn, token };
 };
 
 export async function registerUserS(firstName, lastName, email, password, birthdate) {
     const existingUser = await usersModel.findOne({ email });
+
     if (existingUser) {
-        const error = new Error('User already exists');
-        error.status = 409;
-        throw error;
+        console.log("existingUser", existingUser)
+        if (existingUser.googleId && !existingUser.password) {
+            existingUser.password = await bcrypt.hash(password, SALT_ROUNDS);
+            await existingUser.save();
+            return { success: true, user: existingUser, token: generateToken(existingUser) };
+        } else {
+            const error = new Error('User already exists');
+            error.status = 409;
+            throw error;
+        }
     }
-    const newUser = new usersModel({ firstName, lastName, email, password, birthdate });
+
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+    const newUser = new usersModel({ firstName, lastName, email, password: hashedPassword, birthdate });
     await newUser.save();
-    //לבקש פה תוקן ולשלוח 
-    // const token = jwt.sign({ userId: user._id }, this.secretKey, { expiresIn: '1h' });
-    // return { success: true, token: token, user: newUser };
-    return { success: true, user: newUser };
+
+    const token = generateToken(newUser);
+
+    const userToReturn = newUser.toObject();
+    delete userToReturn.password;
+
+    return { success: true, user: userToReturn, token };
 }
 
 export async function googleLoginS(ticket) {
@@ -43,9 +78,15 @@ export async function googleLoginS(ticket) {
 
     const { sub: googleId, email, name, picture } = payload;
 
-    let user = await usersModel.findOne({ $or: [{ email }, { googleId }] });
+    let user = await usersModel.findOne({ email });
 
-    if (!user) {
+    if (user) {
+        if (!user.googleId) {
+            user.googleId = googleId;
+            user.avatar = picture;
+            await user.save();
+        }
+    } else {
         const nameParts = name ? name.split(' ') : [];
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || '';
@@ -61,8 +102,12 @@ export async function googleLoginS(ticket) {
 
         await user.save();
 
-        return { isNewUser: true, user };
     }
 
-    return { isNewUser: false, user };
+    const token = generateToken(user);
+
+    const userToReturn = user.toObject();
+    delete userToReturn.password;
+
+    return { success: true, user: userToReturn, token };
 }

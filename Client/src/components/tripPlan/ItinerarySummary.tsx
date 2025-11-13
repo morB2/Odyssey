@@ -44,6 +44,29 @@ export function ItinerarySummary({
 
     //     fetchImage();
     // }, [items, title]);
+    useEffect(() => {
+        const fetchImage = async () => {
+            const query = items.length > 0 ? items[0].name : title;
+            try {
+                const response = await fetch(
+                    `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)} travel landscape&orientation=landscape&per_page=1`,
+                    {
+                        headers: {
+                            Authorization: import.meta.env.VITE_PEXELS_KEY
+                        }
+                    }
+                );
+                const data = await response.json();
+                if (data.photos && data.photos.length > 0) {
+                    setImageUrl(data.photos[0].src.large);
+                }
+            } catch (error) {
+                console.error("Failed to fetch image:", error);
+            }
+        };
+
+        fetchImage();
+    }, [items, title]);
 
     return (
         <Card

@@ -1,11 +1,10 @@
 import express from "express";
 import {
   getProfile,
-  updateProfile,
   listUserTrips,
-  getUserTrip,
   updateUserTrip,
   deleteUserTrip,
+  updatePassword,
 } from "../controller/profileController.js";
 
 const router = express.Router();
@@ -23,13 +22,31 @@ router.get("/:userId", async (req, res) => {
   }
 });
 
-// PUT /profile/:userId - update user details
-router.put("/:userId", async (req, res) => {
+// PUT /profile/:userId - update user details (protected)
+// router.put("/:userId", async (req, res) => {
+//   try {
+//     const updated = await updateProfile(req.params.userId, req.body || {});
+//     res.json({ success: true, user: updated });
+//   } catch (err) {
+//     console.error("update profile error", err);
+//     return res
+//       .status(err.status || 500)
+//       .json({ success: false, error: String(err) });
+//   }
+// });
+
+// POST /profile/:userId/changePassword - change user password (protected)
+router.post("/:userId/changePassword", async (req, res) => {
   try {
-    const updated = await updateProfile(req.params.userId, req.body || {});
-    res.json({ success: true, user: updated });
+    const { currentPassword, newPassword } = req.body || {};
+    const result = await updatePassword(
+      req.params.userId,
+      currentPassword,
+      newPassword
+    );
+    res.json({ success: true, ...result });
   } catch (err) {
-    console.error("update profile error", err);
+    console.error("change password error", err);
     return res
       .status(err.status || 500)
       .json({ success: false, error: String(err) });
@@ -50,17 +67,17 @@ router.get("/:userId/trips", async (req, res) => {
 });
 
 // GET single trip
-router.get("/:userId/trips/:tripId", async (req, res) => {
-  try {
-    const trip = await getUserTrip(req.params.userId, req.params.tripId);
-    res.json({ success: true, trip });
-  } catch (err) {
-    console.error("get user trip error", err);
-    return res
-      .status(err.status || 500)
-      .json({ success: false, error: String(err) });
-  }
-});
+// router.get("/:userId/trips/:tripId", async (req, res) => {
+//   try {
+//     const trip = await getUserTrip(req.params.userId, req.params.tripId);
+//     res.json({ success: true, trip });
+//   } catch (err) {
+//     console.error("get user trip error", err);
+//     return res
+//       .status(err.status || 500)
+//       .json({ success: false, error: String(err) });
+//   }
+// });
 
 // PUT update trip
 router.put("/:userId/trips/:tripId", async (req, res) => {

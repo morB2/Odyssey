@@ -1,74 +1,259 @@
-import React from "react";
-import { GridView as GridIcon, Bookmark, Map as MapIcon, FavoriteBorder as Heart } from "@mui/icons-material";
-import { Avatar, Box, Container, Grid, Tab, Tabs, Typography, Card, CardMedia, CardContent, CardActions } from "@mui/material";
+import { useState, useEffect } from "react";
+import { Container, Box, Paper, Typography } from "@mui/material";
+import { ProfileHeader } from "./ProfileHeader";
+import { TripsList } from "./TripsList";
+import { EditProfileModal } from "./EditProfileModal";
+import { TripDetailsModal } from "./TripDetailsModal";
+import { EditTripModal } from "./EditTripModal";
+import type { Trip, UserProfile, ServerTrip } from "./types";
+import { useUserStore } from "../../store/userStore";
 
-interface UserProfile { avatar: string; firstName: string; lastName: string; email: string; role: "user" | "admin"; birthday: Date; preferences: string[]; createdAt: Date; bio: string; location: string; tripsCount: number; followersCount: number; followingCount: number; }
-interface Trip { id: string; image: string; title: string; location: string; likes: number; comments: number; }
+const BASE_URL = "http://localhost:3000";
 
-const userProfile: UserProfile = { avatar: "https://images.unsplash.com/photo-1664312572933-0563f14484a1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", firstName: "Alex", lastName: "Johnson", email: "alex.johnson@example.com", role: "user", birthday: new Date("1995-06-15"), preferences: ["🌍 Adventure Seeker", "📸 Travel Blogger", "🏔️ Mountain Lover", "🏖️ Beach Explorer"], createdAt: new Date("2023-03-15"), bio: "✈️ Full-time traveler | 📍 45 countries & counting | Sharing my adventures around the globe 🌎", location: "Currently in Bali, Indonesia", tripsCount: 127, followersCount: 12453, followingCount: 892 };
-
-const trips: Trip[] = [
-  { id: "1", image: "https://images.unsplash.com/photo-1431274172761-fca41d930114?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", title: "Romantic Evening in Paris", location: "Paris, France", likes: 1234, comments: 56 },
-  { id: "2", image: "https://images.unsplash.com/photo-1577717903315-1691ae25ab3f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", title: "Beach Paradise", location: "Bali, Indonesia", likes: 2341, comments: 89 },
-  { id: "3", image: "https://images.unsplash.com/photo-1587653263995-422546a7a569?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", title: "Neon Nights", location: "Tokyo, Japan", likes: 3456, comments: 134 },
-  { id: "4", image: "https://images.unsplash.com/photo-1610123598147-f632aa18b275?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", title: "Land of Fire and Ice", location: "Iceland", likes: 4567, comments: 201 },
-];
-
-const ProfileHeader: React.FC<UserProfile> = ({ avatar, firstName, lastName, bio, location, preferences, followersCount, followingCount, tripsCount }) => (
-  <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} alignItems="center" gap={3}>
-    <Avatar src={avatar} sx={{ width: 120, height: 120 }} />
-    <Box textAlign={{ xs: "center", sm: "left" }}>
-      <Typography variant="h5" fontWeight={600}>{firstName} {lastName}</Typography>
-      <Typography variant="body2" color="text.secondary">{location}</Typography>
-      <Typography variant="body1" sx={{ mt: 1 }}>{bio}</Typography>
-      <Box display="flex" justifyContent={{ xs: "center", sm: "flex-start" }} gap={2} mt={1}>
-        <Typography variant="body2">Trips: {tripsCount}</Typography>
-        <Typography variant="body2">Followers: {followersCount}</Typography>
-        <Typography variant="body2">Following: {followingCount}</Typography>
-      </Box>
-      <Box mt={1} display="flex" flexWrap="wrap" gap={1} justifyContent={{ xs: "center", sm: "flex-start" }}>
-        {preferences.map((p, i) => (<Typography key={i} variant="caption" sx={{ px: 1, py: 0.5, borderRadius: 1, bgcolor: "grey.200", color: "text.secondary" }}>{p}</Typography>))}
-      </Box>
-    </Box>
-  </Box>
-);
-
-const TripCard: React.FC<Trip> = ({ image, title, location, likes, comments }) => (
-  <Card sx={{ borderRadius: 3 }}>
-    <CardMedia component="img" height="180" image={image} alt={title} />
-    <CardContent>
-      <Typography variant="h6" fontWeight={600}>{title}</Typography>
-      <Typography variant="body2" color="text.secondary">{location}</Typography>
-    </CardContent>
-    <CardActions sx={{ justifyContent: "space-between" }}>
-      <Typography variant="caption">❤️ {likes}</Typography>
-      <Typography variant="caption">💬 {comments}</Typography>
-    </CardActions>
-  </Card>
-);
+// We'll fetch the real user and trips from the server using the profile APIs.
+// If no logged-in user is available in the store, the component falls back to a guest view.
 
 export default function Profile() {
-  const [tab, setTab] = React.useState(0);
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => setTab(newValue);
+  const storeUser = useUserStore((s) => s.user);
+  const storeToken = useUserStore((s) => s.token);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
+  const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
+  const [activeTab, setActiveTab] = useState<"my-trips" | "liked" | "saved">(
+    "my-trips"
+  );
+
+  // load profile and trips from server
+  useEffect(() => {
+    let mounted = true;
+    async function loadData() {
+      try {
+        const userId = storeUser?._id;
+        if (!userId) {
+          setError("Not signed in");
+          return;
+        }
+
+        const [userRes, tripsRes] = await Promise.all([
+          fetch(`${BASE_URL}/profile/${userId}`, {
+            headers: {
+              Authorization: `Bearer ${storeToken}`,
+            },
+          })
+            .then((r) => r.json())
+            .catch((e) => ({ success: false, error: String(e) })),
+          fetch(`${BASE_URL}/profile/${userId}/trips`, {
+            headers: {
+              Authorization: `Bearer ${storeToken}`,
+            },
+          })
+            .then((r) => r.json())
+            .catch((e) => ({ success: false, error: String(e) })),
+        ]);
+
+        if (!mounted) return;
+        if (!userRes.success)
+          throw new Error(userRes.error || "Failed to load user");
+        if (!tripsRes.success)
+          throw new Error(tripsRes.error || "Failed to load trips");
+
+        setUser(userRes.user);
+        const serverTrips = tripsRes.trips || [];
+        // Map server Trip schema to client Trip shape used by the UI
+        const mapTrip = (t: ServerTrip): Trip => {
+          const ordered = t.optimizedRoute?.ordered_route || [];
+          const modeFromOptimized = t.optimizedRoute?.mode;
+          return {
+            id: t._id || t.id || "",
+            title: t.title || "",
+            description: t.description || "",
+            images: t.images || [],
+            route: ordered.length
+              ? ordered.map((r) => r.name || "")
+              : t.route || [],
+            routeInstructions: t.optimizedRoute?.instructions
+              ? t.optimizedRoute.instructions.map((ins, i) => ({
+                  step: i + 1,
+                  instruction: ins,
+                  mode:
+                    modeFromOptimized === "driving"
+                      ? "car"
+                      : modeFromOptimized === "walking"
+                      ? "walk"
+                      : "transit",
+                  distance: "",
+                }))
+              : t.routeInstructions || [],
+            mode: modeFromOptimized
+              ? modeFromOptimized === "driving"
+                ? "car"
+                : modeFromOptimized === "walking"
+                ? "walk"
+                : "transit"
+              : t.mode || "car",
+            visibility: t.visabilityStatus === "public" ? "public" : "private",
+            activities: t.activities || [],
+            notes: t.notes || "",
+          } as Trip;
+        };
+
+        setTrips(serverTrips.map(mapTrip));
+      } catch (e) {
+        setError(String(e instanceof Error ? e.message : e));
+      }
+    }
+    loadData();
+    return () => {
+      mounted = false;
+    };
+  }, [storeUser]);
+
+  const getCurrentTrips = () => {
+    switch (activeTab) {
+      case "my-trips":
+        return trips;
+      case "liked":
+        return [];
+      case "saved":
+        return [];
+      default:
+        return trips;
+    }
+  };
+
+  const handleSaveProfile = (updatedUser: UserProfile) => {
+    setUser(updatedUser);
+    setIsEditModalOpen(false);
+  };
+
+  const handleSaveTrip = (updatedTrip: Trip) => {
+    setTrips(trips.map((t) => (t.id === updatedTrip.id ? updatedTrip : t)));
+    setEditingTrip(null);
+    setSelectedTrip(updatedTrip);
+  };
+
+  const handleDeleteTrip = (tripId: string) => {
+    (async () => {
+      try {
+        const userId = storeUser?._id;
+        const token = storeToken;
+        if (!userId) throw new Error("Not authenticated");
+
+        const res = await fetch(
+          `${BASE_URL}/profile/${userId}/trips/${tripId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok)
+          throw new Error(
+            body?.error || body?.message || "Failed to delete trip"
+          );
+
+        // remove locally on success
+        setTrips((prev) => prev.filter((t) => t.id !== tripId));
+        setSelectedTrip(null);
+      } catch (e) {
+        console.error("Failed to delete trip", e);
+        alert(String(e instanceof Error ? e.message : e));
+      }
+    })();
+  };
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "background.default", py: 6 }}>
-      <Container maxWidth="lg">
-        <ProfileHeader {...userProfile} />
-        <Box sx={{ mt: 5 }}>
-          <Tabs value={tab} onChange={handleTabChange} centered>
-            <Tab icon={<GridIcon />} label="Trips" />
-            <Tab icon={<Bookmark />} label="Saved" />
-            <Tab icon={<MapIcon />} label="Map" />
-            <Tab icon={<Heart />} label="Liked" />
-          </Tabs>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bgcolor: "background.default",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <Container maxWidth="lg" sx={{ py: 6 }}>
+        <Paper
+          elevation={3}
+          sx={{ p: 4, borderRadius: 4, bgcolor: "background.paper" }}
+        >
+          <ProfileHeader
+            user={
+              user
+                ? user
+                : {
+                    id: "",
+                    firstName: "Guest",
+                    lastName: "guest",
+                    email: "",
+                    avatar: "",
+                  }
+            }
+            onEditClick={() => setIsEditModalOpen(true)}
+          />
 
-          {tab === 0 && (<Grid container spacing={3} sx={{ mt: 2 }}>{trips.map((trip) => (<Grid size={{ xs:12, sm:6, md:4}} key={trip.id}><TripCard {...trip} /></Grid>))}</Grid>)}
-          {tab === 1 && (<Grid container spacing={3} sx={{ mt: 2 }}>{trips.slice(0, 2).map((trip) => (<Grid size={{ xs:12, sm:6, md:4}} key={trip.id}><TripCard {...trip} /></Grid>))}</Grid>)}
-          {tab === 2 && (<Box sx={{ mt: 4, height: 400, borderRadius: 3, bgcolor: "grey.100", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}><MapIcon sx={{ fontSize: 60, color: "grey.500" }} /><Typography color="text.secondary" fontWeight={500}>Map view coming soon</Typography><Typography variant="body2" color="text.secondary">See all your trips on an interactive world map</Typography></Box>)}
-          {tab === 3 && (<Grid container spacing={3} sx={{ mt: 2 }}>{trips.slice(0, 3).map((trip) => (<Grid size={{ xs:12, sm:6, md:4}} key={trip.id}><TripCard {...trip} /></Grid>))}</Grid>)}
-        </Box>
+          {error && (
+            <Box
+              sx={{
+                mb: 2,
+                p: 2,
+                border: "1px solid #fdecea",
+                backgroundColor: "#fff5f5",
+                borderRadius: 1,
+              }}
+            >
+              <Typography color="error">{error}</Typography>
+            </Box>
+          )}
+
+          <Box sx={{ mt: 4 }}>
+            <Box sx={{ mt: 3 }}>
+              <TripsList
+                trips={getCurrentTrips()}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                onTripClick={setSelectedTrip}
+              />
+            </Box>
+          </Box>
+        </Paper>
       </Container>
+
+      {/* Modals */}
+      <EditProfileModal
+        user={
+          user ?? {
+            id: "",
+            firstName: "",
+            lastName: "",
+            email: "",
+            avatar: "",
+          }
+        }
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={handleSaveProfile}
+      />
+
+      <TripDetailsModal
+        trip={selectedTrip}
+        isOpen={!!selectedTrip}
+        onClose={() => setSelectedTrip(null)}
+        onEdit={() => setEditingTrip(selectedTrip)}
+        onDelete={() => selectedTrip && handleDeleteTrip(selectedTrip.id)}
+      />
+
+      <EditTripModal
+        trip={editingTrip}
+        isOpen={!!editingTrip}
+        onClose={() => setEditingTrip(null)}
+        onSave={handleSaveTrip}
+      />
     </Box>
   );
 }
