@@ -140,6 +140,7 @@ const Login = () => {
         }}
         maxWidth="sm"
         fullWidth
+        disableScrollLock={true}
         PaperProps={{ sx: { borderRadius: 4, maxHeight: '90vh', overflow: 'hidden' } }}
       >
         <Box sx={{ height: 4, background: 'linear-gradient(to right, #fb923c, #f97316, #ea580c)' }} />

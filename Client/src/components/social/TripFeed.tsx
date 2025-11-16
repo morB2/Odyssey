@@ -14,6 +14,7 @@ interface Comment {
   };
   text: string;
   timestamp: string;
+  reactionsAggregated?: Record<string, number>;
 }
 interface Trip {
   _id: string;
@@ -65,6 +66,7 @@ function adaptComments(apiComments: any[]): Comment[] {
       },
       text: c.comment,
       timestamp: time, // use formatted time instead of raw timestamp
+      reactionsAggregated: c.reactionsAggregated || {}, // Include aggregated reactions
     };
   });
 }

@@ -1,4 +1,4 @@
-import { getTripsForUser ,postCommentForUser} from "../services/crudTripService.js";
+import { getTripsForUser ,postCommentForUser,addReactionToComment} from "../services/crudTripService.js";
 
 
 export async function fetchTrips(req, res) {
@@ -23,3 +23,17 @@ export async function postComment(req, res) {
     res.status(400).json({ error: err.message });
   }
 }
+
+export async function addReaction(req, res) {
+  try {
+    const { tripId,commentId } = req.params;
+    const { userId, emoji } = req.body;
+    // This logic assumes you have a function addReactionToComment in your service layer
+    const updatedReaction = await addReactionToComment(tripId,commentId, userId, emoji);
+    res.status(200).json(updatedReaction);
+  } catch (err) {
+    console.error("Error adding reaction:", err);
+    res.status(400).json({ error: err.message });
+  }
+}
+

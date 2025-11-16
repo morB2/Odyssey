@@ -28,7 +28,7 @@ import {
     Close,
     Send,
 } from '@mui/icons-material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const theme = createTheme({
@@ -48,6 +48,7 @@ interface Comment {
     };
     text: string;
     timestamp: string;
+    reactionsAggregated?: Record<string, number>;
 }
 
 interface Trip {
@@ -90,6 +91,28 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
     const [showComments, setShowComments] = useState(false);
     const [commentText, setCommentText] = useState('');
     const [comments, setComments] = useState<Comment[]>(trip.comments || []);
+    const [hoveredCommentId, setHoveredCommentId] = useState<string | null>(null);
+    
+    // Initialize reactions from trip comments
+    const initializeReactions = (comments: Comment[]) => {
+        const reactions: Record<string, Record<string, number>> = {};
+        comments.forEach((comment) => {
+            if (comment.id && comment.reactionsAggregated) {
+                reactions[comment.id] = comment.reactionsAggregated;
+            }
+        });
+        return reactions;
+    };
+    
+    const [commentReactions, setCommentReactions] = useState<Record<string, Record<string, number>>>(
+        initializeReactions(trip.comments || [])
+    );
+    
+    // Update reactions when comments change (e.g., when trip data is updated)
+    useEffect(() => {
+        setCommentReactions(initializeReactions(trip.comments || []));
+        setComments(trip.comments || []);
+    }, [trip.comments]);
 
     const handleCardClick = (e: any) => {
         // Don't open dialog if clicking on interactive elements
@@ -191,18 +214,34 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
         // optimistic UI
         setComments((prev) => [newComment, ...prev]);
         setCommentText('');
+    };
+
+    // Emoji reactions
+    const emojiOptions = ['👍', '❤️', '🤣', '😮', '🔥'];
+    
+    const handleEmojiReaction = async (commentId: string, emoji: string) => {
+        // Optimistic UI update
+        setCommentReactions((prev) => {
+            const commentReacts = prev[commentId] || {};
+            const currentCount = commentReacts[emoji] || 0;
+            return {
+                ...prev,
+                [commentId]: {
+                    ...commentReacts,
+                    [emoji]: currentCount + 1,
+                },
+            };
+        });
 
         try {
-            // example endpoint — adjust to your backend
-            await axios.post(`http://localhost:3000/comments/${trip.id}/add`, {
+            // You can add an API call here to save the reaction
+            await axios.post(`http://localhost:3000/trips/${trip.id}/comment/${commentId}/react`, {
                 userId: trip.currentUserId,
-                text: newComment.text,
+                emoji,
             });
-            // if backend returns new id/timestamp you could patch it here
         } catch (error) {
-            console.error('Error adding comment:', error);
-            // optionally roll back optimistic update on failure:
-            // setComments((prev) => prev.filter(c => c.id !== newComment.id));
+            console.error('Error adding reaction:', error);
+            // Rollback on error if needed
         }
     };
 
@@ -444,17 +483,95 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
                                     comments.map((comment) => (
                                         <Box
                                             key={comment.id}
-                                            sx={{ display: 'flex', gap: 1.5, py: 1, alignItems: 'flex-start' }}
+                                            onMouseEnter={() => setHoveredCommentId(comment.id)}
+                                            onMouseLeave={() => setHoveredCommentId(null)}
+                                            sx={{ 
+                                                position: 'relative',
+                                                display: 'flex', 
+                                                gap: 1.5, 
+                                                py: 1, 
+                                                alignItems: 'flex-start',
+                                                '&:hover': {
+                                                    bgcolor: 'rgba(0, 0, 0, 0.02)',
+                                                    borderRadius: 1,
+                                                },
+                                            }}
                                         >
                                             <Avatar src={comment.user.avatar} sx={{ width: 30, height: 30 }}>
                                                 {comment.user.name}
                                             </Avatar>
-                                            <Box>
+                                            <Box sx={{ flex: 1, position: 'relative' }}>
                                                 <Typography variant="subtitle2"> {comment.user.name}</Typography>
                                                 <Typography variant="body2">{comment.text}</Typography>
                                                 <Typography variant="caption" color="text.secondary">
                                                     {comment.timestamp}
                                                 </Typography>
+                                                
+                                                {/* Display reactions */}
+                                                {commentReactions[comment.id] && Object.keys(commentReactions[comment.id]).length > 0 && (
+                                                    <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, flexWrap: 'wrap' }}>
+                                                        {Object.entries(commentReactions[comment.id]).map(([emoji, count]) => (
+                                                            <Box
+                                                                key={emoji}
+                                                                sx={{
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: 0.3,
+                                                                    px: 0.75,
+                                                                    py: 0.25,
+                                                                    borderRadius: 1,
+                                                                    bgcolor: 'rgba(0, 0, 0, 0.05)',
+                                                                    fontSize: '0.75rem',
+                                                                }}
+                                                            >
+                                                                <span>{emoji}</span>
+                                                                {count > 0 && <span>{count}</span>}
+                                                            </Box>
+                                                        ))}
+                                                    </Box>
+                                                )}
+
+                                                {/* Emoji reaction bar on hover */}
+                                                {hoveredCommentId === comment.id && (
+                                                    <Box
+                                                        sx={{
+                                                            position: 'absolute',
+                                                            top: '100%',
+                                                            left: 0,
+                                                            mt: 0.5,
+                                                            display: 'flex',
+                                                            gap: 0.5,
+                                                            bgcolor: 'white',
+                                                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                                                            borderRadius: 2,
+                                                            p: 0.5,
+                                                            zIndex: 10,
+                                                        }}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onMouseEnter={(e) => e.stopPropagation()}
+                                                    >
+                                                        {emojiOptions.map((emoji) => (
+                                                            <Box
+                                                                key={emoji}
+                                                                onClick={() => handleEmojiReaction(comment.id, emoji)}
+                                                                sx={{
+                                                                    cursor: 'pointer',
+                                                                    fontSize: '1.25rem',
+                                                                    px: 0.5,
+                                                                    py: 0.25,
+                                                                    borderRadius: 1,
+                                                                    transition: 'transform 0.15s, background-color 0.15s',
+                                                                    '&:hover': {
+                                                                        transform: 'scale(1.3)',
+                                                                        bgcolor: 'rgba(0, 0, 0, 0.05)',
+                                                                    },
+                                                                }}
+                                                            >
+                                                                {emoji}
+                                                            </Box>
+                                                        ))}
+                                                    </Box>
+                                                )}
                                             </Box>
                                         </Box>
                                     ))
