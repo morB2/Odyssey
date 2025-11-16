@@ -22,9 +22,11 @@ export default function TripPostAdapter({
 
   // Map our client-side Trip to the shape expected by TripPost
   const mapped = {
+    _id: String(trip._id || trip.id || ""),
     currentUserId,
     id: trip.id,
     user: {
+      _id: String(trip.user?._id || trip.user?.id || ""),
       id: trip.user?.id || "",
       name: trip.user?.name || `${trip.user?.id || ""}`,
       username:

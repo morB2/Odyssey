@@ -39,26 +39,28 @@ export interface Comment {
 }
 
 export interface Trip {
-    id: string;
-    user: {
-        id: string;
-        name: string;
-        username: string;
-        avatar: string;
-        isFollowing: boolean;
-    };
-    location: string;
-    duration: string;
-    description: string;
-    activities: string[];
-    images: string[];
-    likes: number;
-    comments?: Comment[]; // now typed
-    isLiked: boolean;
-    isSaved: boolean;
-    detailedData?: any;
-    optimizedRoute?: any;
-    currentUserId?: string;
+  id?: string;
+  _id: string;
+  user: {
+    id?: string;
+    _id: string;
+    name: string;
+    username: string;
+    avatar: string;
+    isFollowing: boolean;
+  };
+  location: string;
+  duration: string;
+  description: string;
+  activities: string[];
+  images: string[];
+  likes: number;
+  comments?: Comment[]; // now typed
+  isLiked: boolean;
+  isSaved: boolean;
+  detailedData?: any;
+  optimizedRoute?: any;
+  currentUserId?: string;
 }
 
 export type ServerTrip = {

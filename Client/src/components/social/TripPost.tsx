@@ -52,9 +52,9 @@ interface Comment {
 }
 
 interface Trip {
-    id: string;
+    _id: string;
     user: {
-        id: string;
+        _id: string;
         name: string;
         username: string;
         avatar: string;
@@ -80,9 +80,7 @@ interface TripPostProps {
 
 }
 
-export default function TripPost({ trip, setTrips }: TripPostProps) {
-    console.log("trip\n",trip);
-    
+export default function TripPost({ trip, setTrips }: TripPostProps) {    
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogImageIndex, setDialogImageIndex] = useState(0);

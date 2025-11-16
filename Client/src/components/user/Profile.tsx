@@ -11,11 +11,6 @@ import Navbar from "../general/Navbar";
 
 const BASE_URL = "http://localhost:3000";
 
-// (server raw trip helper removed; we normalize responses with normalizeServerTrip)
-
-// We'll fetch the real user and trips from the server using the profile APIs.
-// If no logged-in user is available in the store, the component falls back to a guest view.
-
 export default function Profile() {
   const storeUser = useUserStore((s) => s.user);
   const storeToken = useUserStore((s) => s.token);
@@ -29,12 +24,31 @@ export default function Profile() {
     "my-trips"
   );
 
-  const adaptComments = useCallback((apiComments: any[]): Comment[] => {
-    // eslint-disable-next-line no-console
-    console.log("in comments:\n", apiComments);
+  const adaptComments = useCallback((apiComments: unknown[]): Comment[] => {
+    const list = Array.isArray(apiComments) ? apiComments : [];
+    return list.map((item) => {
+      const c = (item as Record<string, unknown>) || {};
+      const createdAt =
+        typeof c.createdAt === "string"
+          ? c.createdAt
+          : String(c.createdAt ?? "");
 
-    return (Array.isArray(apiComments) ? apiComments : []).map((c: any) => {
-      const date = new Date(c.createdAt);
+      const userObj = (c.user as Record<string, unknown>) || {};
+      const firstName =
+        typeof userObj.firstName === "string" ? userObj.firstName : "";
+      const lastName =
+        typeof userObj.lastName === "string" ? userObj.lastName : "";
+      const avatar =
+        typeof userObj.avatar === "string"
+          ? userObj.avatar
+          : "/default-avatar.png";
+      const username =
+        (typeof userObj.username === "string" && userObj.username) ||
+        (firstName || lastName
+          ? `@${(firstName + lastName).toLowerCase().replace(/\s+/g, "")}`
+          : "");
+
+      const date = new Date(createdAt);
       const time = date.toLocaleString([], {
         year: "numeric",
         month: "short",
@@ -44,60 +58,18 @@ export default function Profile() {
       });
 
       return {
-        id: c._id,
+        id: typeof c._id === "string" ? c._id : String(c.id ?? ""),
         user: {
-          name: `${c.user.firstName} ${c.user.lastName}`,
-          username: ` @${c.user.firstName.toLowerCase()}${c.user.lastName.toLowerCase()}`,
-          avatar: c.user.avatar || "/default-avatar.png",
+          name: `${firstName} ${lastName}`.trim() || String(userObj.name ?? ""),
+          username: String(username),
+          avatar,
         },
-        text: c.comment,
+        text: typeof c.comment === "string" ? c.comment : String(c.text ?? ""),
         timestamp: time,
       };
     });
   }, []);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const normalizeServerTrip = useCallback(
-    (raw: any): Trip => {
-      const userRaw = raw?.user || {};
-      const userId =
-        userRaw._id ||
-        userRaw.id ||
-        (typeof userRaw === "string" ? userRaw : "");
-      const userName =
-        userRaw.firstName && userRaw.lastName
-          ? `${userRaw.firstName} ${userRaw.lastName}`
-          : userRaw.fullName || userRaw.name || "";
-
-      return {
-        id: raw._id || raw.id || "",
-        title: raw.title || raw.location || "",
-        user: {
-          id: userId,
-          name: userName || String(userId),
-          username: (userRaw.username || userName || "")
-            .toLowerCase()
-            .replace(/\s+/g, ""),
-          avatar: userRaw.avatar || "/default-avatar.png",
-          isFollowing: !!userRaw.isFollowing,
-        },
-        location: raw.title || raw.location || "",
-        duration: raw.duration || "",
-        description: raw.description || raw.summary || "",
-        activities: Array.isArray(raw.activities) ? raw.activities : [],
-        images: Array.isArray(raw.images) ? raw.images : [],
-        likes: typeof raw.likes === "number" ? raw.likes : 0,
-        comments: Array.isArray(raw.comments)
-          ? adaptComments(raw.comments)
-          : [],
-        isLiked: !!raw.isLiked || !!raw.liked,
-        isSaved: !!raw.isSaved,
-        detailedData: raw.detailedData || null,
-        optimizedRoute: raw.optimizedRoute || raw.optimized_route || null,
-      } as Trip;
-    },
-    [adaptComments]
-  );
   useEffect(() => {
     // When the logged-in user changes, load their profile and initial trips.
     let mounted = true;
@@ -130,7 +102,6 @@ export default function Profile() {
           throw new Error(userRes.error || "Failed to load user");
 
         setUser(userRes.user);
-        console.log("in profile: \n", tripsRes);
 
         const rawTrips = Array.isArray(tripsRes)
           ? tripsRes
@@ -139,10 +110,10 @@ export default function Profile() {
           : [];
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const tripsData: Trip[] = rawTrips.map((t: any) =>
-          normalizeServerTrip(t)
-        );
-        setTrips(tripsData);
+        // const tripsData: Trip[] = rawTrips.map((t: any) =>
+        //   normalizeServerTrip(t)
+        // );
+        setTrips(rawTrips);
       } catch (e) {
         if (!mounted) return;
         setError(String(e instanceof Error ? e.message : e));
@@ -153,7 +124,7 @@ export default function Profile() {
     return () => {
       mounted = false;
     };
-  }, [storeUser, storeToken, normalizeServerTrip]);
+  }, [storeUser, storeToken]);
 
   useEffect(() => {
     // Fetch trips for the currently active tab (my-trips / liked / saved)
@@ -192,8 +163,8 @@ export default function Profile() {
           ? data.trips
           : [];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mapped = rawTrips.map((t: any) => normalizeServerTrip(t));
-        if (mounted) setTrips(mapped);
+        // const mapped = rawTrips.map((t: any) => normalizeServerTrip(t));
+        if (mounted) setTrips(rawTrips);
       } catch (e) {
         console.error("failed to load trips", e);
       }
@@ -203,7 +174,7 @@ export default function Profile() {
     return () => {
       mounted = false;
     };
-  }, [activeTab, storeUser, storeToken, normalizeServerTrip]);
+  }, [activeTab, storeUser, storeToken]);
 
   const handleSaveProfile = (updatedUser: UserProfile) => {
     setUser(updatedUser);
@@ -256,7 +227,7 @@ export default function Profile() {
         flexDirection: "column",
       }}
     >
-      <Navbar />
+      {/* <Navbar /> */}
       {/* <Container maxWidth="lg" sx={{ py: 6 }}> */}
       <Paper
         elevation={3}
