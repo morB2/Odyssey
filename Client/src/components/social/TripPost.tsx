@@ -30,7 +30,7 @@ import {
 } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { type Trip, type Comment } from './types';
+
 const theme = createTheme({
     palette: {
         primary: {
@@ -39,50 +39,49 @@ const theme = createTheme({
     },
 });
 
-// interface Comment {
-//     id: string;
-//     user: {
-//         name: string;
-//         username: string;
-//         avatar: string;
-//     };
-//     text: string;
-//     timestamp: string;
-//     reactionsAggregated?: Record<string, number>;
-// }
+interface Comment {
+    id: string;
+    user: {
+        name: string;
+        username: string;
+        avatar: string;
+    };
+    text: string;
+    timestamp: string;
+    reactionsAggregated?: Record<string, number>;
+}
 
-// interface Trip {
-//     id: string;
-//     user: {
-//         id: string;
-//         name: string;
-//         username: string;
-//         avatar: string;
-//         isFollowing: boolean;
-//     };
-//     location: string;
-//     duration: string;
-//     description: string;
-//     activities: string[];
-//     images: string[];
-//     likes: number;
-//     comments?: Comment[]; // now typed
-//     isLiked: boolean;
-//     isSaved: boolean;
-//     detailedData?: any;
-//     optimizedRoute?: any;
-//     currentUserId?: string;
-// }
+interface Trip {
+    id: string;
+    user: {
+        id: string;
+        name: string;
+        username: string;
+        avatar: string;
+        isFollowing: boolean;
+    };
+    location: string;
+    duration: string;
+    description: string;
+    activities: string[];
+    images: string[];
+    likes: number;
+    comments?: Comment[]; // now typed
+    isLiked: boolean;
+    isSaved: boolean;
+    detailedData?: any;
+    optimizedRoute?: any;
+    currentUserId?: string;
+}
 
 interface TripPostProps {
     trip: Trip;
-    setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
-
+    onLike: (id: string) => void;
+    onSave: (id: string) => void;
+    onFollow: (username: string) => void;
 }
 
-export default function TripPost({ trip, setTrips }: TripPostProps) {
-    console.log("trip\n",trip);
-    
+export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogImageIndex, setDialogImageIndex] = useState(0);
@@ -113,6 +112,8 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
         setCommentReactions(initializeReactions(trip.comments || []));
         setComments(trip.comments || []);
     }, [trip.comments]);
+
+    console.log(trip);
 
     const handleCardClick = (e: any) => {
         // Don't open dialog if clicking on interactive elements
@@ -245,38 +246,6 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
         }
     };
 
-    const handleLike = (id: string) => {
-    setTrips((prevTrips) =>
-      prevTrips.map((trip) =>
-        trip.id === id
-          ? {
-            ...trip,
-            isLiked: !trip.isLiked,
-            likes: trip.isLiked ? trip.likes - 1 : trip.likes + 1,
-          }
-          : trip
-      )
-    );
-  };
-
-  const handleSave = (id: string) => {
-    setTrips((prevTrips) =>
-      prevTrips.map((trip) =>
-        trip.id === id ? { ...trip, isSaved: !trip.isSaved } : trip
-      )
-    );
-  };
-
-  const handleFollow = (_id: string) => {
-    setTrips((prevTrips) =>
-      prevTrips.map((trip) =>
-        trip.user.id === _id
-          ? { ...trip, user: { ...trip.user, isFollowing: !trip.user.isFollowing } }
-          : trip
-      )
-    );
-  };
-
     return (
         <>
             <ThemeProvider theme={theme}>
@@ -302,14 +271,14 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
                         <Box display="flex" alignItems="center" justifyContent="space-between">
                             <Box display="flex" alignItems="center" gap={1.5}>
                                 <Avatar src={trip.user.avatar} alt={trip.user.name}>
-                                    {trip.user.name||" "}
+                                    {trip.user.name[0]}
                                 </Avatar>
                                 <Box>
                                     <Typography variant="body1" fontWeight={500}>
                                         {trip.user.name}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        @{trip.user.firstName?.toLowerCase() || ""}{trip.user.lastName?.toLowerCase() || ""}
+                                        @{trip.user.username}
                                     </Typography>
                                 </Box>
                             </Box>
@@ -318,7 +287,7 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
                                 size="small"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleFollow(trip.user.username||" ");
+                                    onFollow(trip.user.username);
                                     postFollow();
                                 }}
                             >
@@ -341,7 +310,7 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
                                 >
                                     <img
                                         src={image}
-                                        alt={`${trip.title} - ${index + 1}`}
+                                        alt={`${trip.location} - ${index + 1}`}
                                         style={{
                                             width: '100%',
                                             height: '100%',
@@ -403,7 +372,7 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         postLike();
-                                        handleLike(trip.id);
+                                        onLike(trip.id);
                                     }}
                                     aria-label={trip.isLiked ? 'Unlike' : 'Like'}
                                     color={trip.isLiked ? 'primary' : 'default'}
@@ -428,7 +397,7 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
                         <IconButton
                             onClick={(e) => {
                                 e.stopPropagation();
-                                handleSave(trip.id);
+                                onSave(trip.id);
                                 postSave();
                             }}
                             aria-label={trip.isSaved ? 'Unsave' : 'Save'}
@@ -442,7 +411,7 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
                     <CardContent>
                         <Box mb={1.5}>
                             <Typography variant="h6" gutterBottom>
-                                {trip.title || 'Untitled Trip'}
+                                {trip.location}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
                                 {trip.duration}
@@ -626,7 +595,7 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
                     <DialogTitle>
                         <Box display="flex" justifyContent="space-between" alignItems="center">
                             <Typography variant="h5" fontWeight={600}>
-                                {trip.detailedData?.title || trip.title}
+                                {trip.detailedData?.title || trip.location}
                             </Typography>
                             <IconButton onClick={handleCloseDialog} edge="end">
                                 <Close />
