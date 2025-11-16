@@ -1,5 +1,5 @@
 import type { Trip } from "./types";
-import { TripCard } from "./TripCard";
+import TripPostAdapter from "./TripPostAdapter";
 import { Box, Tabs, Tab, Typography } from "@mui/material";
 import { Grid } from "@mui/material";
 import { User, Heart, Bookmark } from "lucide-react";
@@ -9,13 +9,18 @@ interface TripsListProps {
   activeTab: "my-trips" | "liked" | "saved";
   onTabChange: (tab: "my-trips" | "liked" | "saved") => void;
   onTripClick: (trip: Trip) => void;
+  setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
+  onEdit: (trip: Trip) => void;
+  onDelete: (tripId: string) => void;
 }
 
 export function TripsList({
   trips,
   activeTab,
   onTabChange,
-  onTripClick,
+  setTrips,
+  onEdit,
+  onDelete,
 }: TripsListProps) {
   // defensive: ensure we always work with an array
   const list = Array.isArray(trips) ? trips : [];
@@ -143,12 +148,17 @@ export function TripsList({
       ) : (
         <Grid container spacing={3}>
           {list.map((trip) => (
-            <Grid
+            <Box
               key={trip.id}
               sx={{ width: { xs: "100%", sm: "50%", md: "33.333%" } }}
             >
-              <TripCard trip={trip} onClick={() => onTripClick(trip)} />
-            </Grid>
+              <TripPostAdapter
+                trip={trip}
+                setTrips={setTrips}
+                onEdit={() => onEdit && onEdit(trip)}
+                onDelete={() => onDelete && onDelete(trip.id)}
+              />
+            </Box>
           ))}
         </Grid>
       )}

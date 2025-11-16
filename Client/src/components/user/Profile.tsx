@@ -1,15 +1,17 @@
-import { useState, useEffect } from "react";
-import { Container, Box, Paper, Typography } from "@mui/material";
+import { useState, useEffect, useCallback } from "react";
+import { Box, Paper, Typography } from "@mui/material";
 import { ProfileHeader } from "./ProfileHeader";
 import { TripsList } from "./TripsList";
 import { EditProfileModal } from "./EditProfileModal";
-import { TripDetailsModal } from "./TripDetailsModal";
+// TripDetailsModal removed; details are shown in-line or via Edit modal now
 import { EditTripModal } from "./EditTripModal";
-import type { Trip, UserProfile, ServerTrip } from "./types";
+import type { Trip, UserProfile, Comment } from "./types";
 import { useUserStore } from "../../store/userStore";
 import Navbar from "../general/Navbar";
 
 const BASE_URL = "http://localhost:3000";
+
+// (server raw trip helper removed; we normalize responses with normalizeServerTrip)
 
 // We'll fetch the real user and trips from the server using the profile APIs.
 // If no logged-in user is available in the store, the component falls back to a guest view.
@@ -21,12 +23,81 @@ export default function Profile() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
+  // selectedTrip removed — we don't use a dedicated details modal anymore
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
   const [activeTab, setActiveTab] = useState<"my-trips" | "liked" | "saved">(
     "my-trips"
   );
 
+  const adaptComments = useCallback((apiComments: any[]): Comment[] => {
+    // eslint-disable-next-line no-console
+    console.log("in comments:\n", apiComments);
+
+    return (Array.isArray(apiComments) ? apiComments : []).map((c: any) => {
+      const date = new Date(c.createdAt);
+      const time = date.toLocaleString([], {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      return {
+        id: c._id,
+        user: {
+          name: `${c.user.firstName} ${c.user.lastName}`,
+          username: ` @${c.user.firstName.toLowerCase()}${c.user.lastName.toLowerCase()}`,
+          avatar: c.user.avatar || "/default-avatar.png",
+        },
+        text: c.comment,
+        timestamp: time,
+      };
+    });
+  }, []);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const normalizeServerTrip = useCallback(
+    (raw: any): Trip => {
+      const userRaw = raw?.user || {};
+      const userId =
+        userRaw._id ||
+        userRaw.id ||
+        (typeof userRaw === "string" ? userRaw : "");
+      const userName =
+        userRaw.firstName && userRaw.lastName
+          ? `${userRaw.firstName} ${userRaw.lastName}`
+          : userRaw.fullName || userRaw.name || "";
+
+      return {
+        id: raw._id || raw.id || "",
+        title: raw.title || raw.location || "",
+        user: {
+          id: userId,
+          name: userName || String(userId),
+          username: (userRaw.username || userName || "")
+            .toLowerCase()
+            .replace(/\s+/g, ""),
+          avatar: userRaw.avatar || "/default-avatar.png",
+          isFollowing: !!userRaw.isFollowing,
+        },
+        location: raw.title || raw.location || "",
+        duration: raw.duration || "",
+        description: raw.description || raw.summary || "",
+        activities: Array.isArray(raw.activities) ? raw.activities : [],
+        images: Array.isArray(raw.images) ? raw.images : [],
+        likes: typeof raw.likes === "number" ? raw.likes : 0,
+        comments: Array.isArray(raw.comments)
+          ? adaptComments(raw.comments)
+          : [],
+        isLiked: !!raw.isLiked || !!raw.liked,
+        isSaved: !!raw.isSaved,
+        detailedData: raw.detailedData || null,
+        optimizedRoute: raw.optimizedRoute || raw.optimized_route || null,
+      } as Trip;
+    },
+    [adaptComments]
+  );
   useEffect(() => {
     // When the logged-in user changes, load their profile and initial trips.
     let mounted = true;
@@ -59,13 +130,19 @@ export default function Profile() {
           throw new Error(userRes.error || "Failed to load user");
 
         setUser(userRes.user);
-        const serverTrips = Array.isArray(tripsRes)
+        console.log("in profile: \n", tripsRes);
+
+        const rawTrips = Array.isArray(tripsRes)
           ? tripsRes
           : Array.isArray(tripsRes?.trips)
           ? tripsRes.trips
           : [];
 
-        setTrips(serverTrips.map(mapTrip));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const tripsData: Trip[] = rawTrips.map((t: any) =>
+          normalizeServerTrip(t)
+        );
+        setTrips(tripsData);
       } catch (e) {
         if (!mounted) return;
         setError(String(e instanceof Error ? e.message : e));
@@ -76,7 +153,7 @@ export default function Profile() {
     return () => {
       mounted = false;
     };
-  }, [storeUser, storeToken]);
+  }, [storeUser, storeToken, normalizeServerTrip]);
 
   useEffect(() => {
     // Fetch trips for the currently active tab (my-trips / liked / saved)
@@ -109,13 +186,14 @@ export default function Profile() {
         });
         const data = await res.json();
 
-        const serverTrips = Array.isArray(data)
+        const rawTrips = Array.isArray(data)
           ? data
           : Array.isArray(data?.trips)
           ? data.trips
           : [];
-
-        if (mounted) setTrips(serverTrips.map(mapTrip));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mapped = rawTrips.map((t: any) => normalizeServerTrip(t));
+        if (mounted) setTrips(mapped);
       } catch (e) {
         console.error("failed to load trips", e);
       }
@@ -125,43 +203,7 @@ export default function Profile() {
     return () => {
       mounted = false;
     };
-  }, [activeTab, storeUser, storeToken]);
-
-  const mapTrip = (t: ServerTrip): Trip => {
-    const ordered = t.optimizedRoute?.ordered_route || [];
-    const modeFromOptimized = t.optimizedRoute?.mode;
-    
-    return {
-      id: t._id || t.id || "",
-      title: t.title || "",
-      description: t.description || "",
-      images: t.images || [],
-      route: ordered.length ? ordered.map((r) => r.name || "") : t.route || [],
-      routeInstructions: t.optimizedRoute?.instructions
-        ? t.optimizedRoute.instructions.map((ins, i) => ({
-            step: i + 1,
-            instruction: ins,
-            mode:
-              modeFromOptimized === "driving"
-                ? "car"
-                : modeFromOptimized === "walking"
-                ? "walk"
-                : "transit",
-            distance: "",
-          }))
-        : t.routeInstructions || [],
-      mode: modeFromOptimized
-        ? modeFromOptimized === "driving"
-          ? "car"
-          : modeFromOptimized === "walking"
-          ? "walk"
-          : "transit"
-        : t.mode || "car",
-      visibility: t.visabilityStatus === "public" ? "public" : "private",
-      activities: t.activities || [],
-      notes: t.notes || "",
-    } as Trip;
-  };
+  }, [activeTab, storeUser, storeToken, normalizeServerTrip]);
 
   const handleSaveProfile = (updatedUser: UserProfile) => {
     setUser(updatedUser);
@@ -171,7 +213,6 @@ export default function Profile() {
   const handleSaveTrip = (updatedTrip: Trip) => {
     setTrips(trips.map((t) => (t.id === updatedTrip.id ? updatedTrip : t)));
     setEditingTrip(null);
-    setSelectedTrip(updatedTrip);
   };
 
   const handleDeleteTrip = (tripId: string) => {
@@ -199,7 +240,6 @@ export default function Profile() {
 
         // remove locally on success
         setTrips((prev) => prev.filter((t) => t.id !== tripId));
-        setSelectedTrip(null);
       } catch (e) {
         console.error("Failed to delete trip", e);
         alert(String(e instanceof Error ? e.message : e));
@@ -217,52 +257,55 @@ export default function Profile() {
       }}
     >
       <Navbar />
-      <Container maxWidth="lg" sx={{ py: 6 }}>
-        <Paper
-          elevation={3}
-          sx={{ p: 4, borderRadius: 4, bgcolor: "background.paper" }}
-        >
-          <ProfileHeader
-            user={
-              user
-                ? user
-                : {
-                    id: "",
-                    firstName: "Guest",
-                    lastName: "guest",
-                    email: "",
-                    avatar: "",
-                  }
-            }
-            onEditClick={() => setIsEditModalOpen(true)}
-          />
+      {/* <Container maxWidth="lg" sx={{ py: 6 }}> */}
+      <Paper
+        elevation={3}
+        sx={{ p: 4, borderRadius: 4, bgcolor: "background.paper" }}
+      >
+        <ProfileHeader
+          user={
+            user
+              ? user
+              : {
+                  id: "",
+                  firstName: "Guest",
+                  lastName: "guest",
+                  email: "",
+                  avatar: "",
+                }
+          }
+          onEditClick={() => setIsEditModalOpen(true)}
+        />
 
-          {error && (
-            <Box
-              sx={{
-                mb: 2,
-                p: 2,
-                border: "1px solid #fdecea",
-                backgroundColor: "#fff5f5",
-                borderRadius: 1,
-              }}
-            >
-              <Typography color="error">{error}</Typography>
-            </Box>
-          )}
-
-          <Box sx={{ mt: 4 }}>
-            <Box sx={{ mt: 3 }}>
-              <TripsList
-                trips={trips}
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                onTripClick={setSelectedTrip}
-              />
-            </Box>
+        {error && (
+          <Box
+            sx={{
+              mb: 2,
+              p: 2,
+              border: "1px solid #fdecea",
+              backgroundColor: "#fff5f5",
+              borderRadius: 1,
+            }}
+          >
+            <Typography color="error">{error}</Typography>
           </Box>
-        </Paper>
-      </Container>
+        )}
+
+        <Box sx={{ mt: 4 }}>
+          <Box sx={{ mt: 3 }}>
+            <TripsList
+              trips={trips}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              onTripClick={() => {}}
+              setTrips={setTrips}
+              onEdit={(trip) => setEditingTrip(trip)}
+              onDelete={(tripId) => handleDeleteTrip(tripId)}
+            />
+          </Box>
+        </Box>
+      </Paper>
+      {/* </Container> */}
 
       {/* Modals */}
       <EditProfileModal
@@ -280,13 +323,7 @@ export default function Profile() {
         onSave={handleSaveProfile}
       />
 
-      <TripDetailsModal
-        trip={selectedTrip}
-        isOpen={!!selectedTrip}
-        onClose={() => setSelectedTrip(null)}
-        onEdit={() => setEditingTrip(selectedTrip)}
-        onDelete={() => selectedTrip && handleDeleteTrip(selectedTrip.id)}
-      />
+      {/* TripDetailsModal removed — details can be viewed in Edit modal or inline components */}
 
       <EditTripModal
         trip={editingTrip}

@@ -16,16 +16,12 @@ import {
   Calendar,
   DollarSign,
   Route,
-  Cloud,
-  Hotel,
   Heart,
   Users,
   Globe,
-  Award,
 } from 'lucide-react';
 import Navbar from './Navbar';
 import { useNavigate } from "react-router-dom";
-import { useUserStore } from '../../store/userStore';
 
 interface Feature {
   icon: React.ReactNode;
@@ -35,7 +31,6 @@ interface Feature {
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
-  const user = useUserStore(state => state.user);
 
   const features: Feature[] = [
     { icon: <Route style={{ color: '#b45309', width: 32, height: 32 }} />, title: "Smart Route Planning", description: "AI calculates the most efficient routes, saving you time and maximizing your adventure." },
@@ -47,19 +42,31 @@ const Home: React.FC = () => {
   ];
 
   return (
-    <Box sx={{ minHeight: '100vh', overflowX: 'hidden' }}>
+    <Box sx={{ 
+      minHeight: '100vh', 
+      width: '100%', 
+      maxWidth: '100%',
+      overflowX: 'hidden',
+      boxSizing: 'border-box',
+      margin: 0,
+      padding: 0,
+    }}>
       <Navbar />
 
       {/* Hero Section */}
       <Box sx={{
         position: 'relative',
+        width: '100%',
+        maxWidth: '100%',
         height: '90vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        overflow: 'hidden',
         backgroundImage: 'url(https://images.unsplash.com/photo-1488646953014-85cb44e25828?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cmF2ZWwlMjBhZHZlbnR1cmUlMjBsYW5kc2NhcGV8ZW58MXx8fHwxNzYyMjQ4NjMwfDA&ixlib=rb-4.1.0&q=80&w=1080)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
         '&::before': { content: '""', position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)' }
       }}>
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 10, textAlign: 'center', px: 3 }}>
@@ -90,7 +97,14 @@ const Home: React.FC = () => {
       </Box>
 
       {/* Features Section */}
-      <Box id="features" sx={{ py: 12, px: { xs: 3, md: 6 }, bgcolor: 'white' }}>
+      <Box id="features" sx={{ 
+        width: '100%', 
+        maxWidth: '100%',
+        boxSizing: 'border-box',
+        py: 12, 
+        px: { xs: 3, md: 6 }, 
+        bgcolor: 'white' 
+      }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 8 }}>
             <Chip label="What We Offer" sx={{ mb: 2, bgcolor: '#fef3c7', color: '#92400e', fontWeight: 600, fontSize: '1.25rem', px: 3, py: 1.5, borderRadius: '12px' }} />
@@ -115,7 +129,14 @@ const Home: React.FC = () => {
       </Box>
 
       {/* Community Section */}
-      <Box id="community" sx={{ py: 12, px: { xs: 3, md: 6 }, background: 'linear-gradient(to bottom, #f9fafb, white)' }}>
+      <Box id="community" sx={{ 
+        width: '100%', 
+        maxWidth: '100%',
+        boxSizing: 'border-box',
+        py: 12, 
+        px: { xs: 3, md: 6 }, 
+        background: 'linear-gradient(to bottom, #f9fafb, white)' 
+      }}>
         <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
           <Typography variant="h2" sx={{ mb: 3, fontWeight: 700 }}>Join the Travel Community</Typography>
           <Typography variant="h6" sx={{ mb: 8, color: 'text.secondary', maxWidth: '700px', mx: 'auto' }}>
@@ -149,7 +170,14 @@ const Home: React.FC = () => {
       </Box>
 
       {/* CTA Section */}
-      <Box sx={{ py: 12, px: { xs: 3, md: 6 }, background: 'linear-gradient(135deg, #d97706, #b45309)' }}>
+      <Box sx={{ 
+        width: '100%', 
+        maxWidth: '100%',
+        boxSizing: 'border-box',
+        py: 12, 
+        px: { xs: 3, md: 6 }, 
+        background: 'linear-gradient(135deg, #d97706, #b45309)' 
+      }}>
         <Container maxWidth="md" sx={{ textAlign: 'center' }}>
           <Typography variant="h2" sx={{ color: 'white', mb: 3, fontWeight: 700 }}>Start Planning and Sharing Today</Typography>
           <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.9)', mb: 5, fontWeight: 400, lineHeight: 1.6 }}>Join Odyssey to plan smart trips, share your journeys, and connect with travelers worldwide.</Typography>
@@ -161,7 +189,15 @@ const Home: React.FC = () => {
       </Box>
 
       {/* Footer */}
-      <Box sx={{ bgcolor: '#111827', color: 'white', py: 8, px: { xs: 3, md: 6 } }}>
+      <Box sx={{ 
+        width: '100%', 
+        maxWidth: '100%',
+        boxSizing: 'border-box',
+        bgcolor: '#111827', 
+        color: 'white', 
+        py: 8, 
+        px: { xs: 3, md: 6 } 
+      }}>
         <Container maxWidth="lg">
           <Grid container spacing={6} sx={{ mb: 6 }}>
             <Grid size={{ xs: 12, md: 6 }}>

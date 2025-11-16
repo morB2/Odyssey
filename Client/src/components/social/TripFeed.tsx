@@ -14,6 +14,7 @@ interface Comment {
   };
   text: string;
   timestamp: string;
+  reactionsAggregated?: Record<string, number>;
 }
 interface Trip {
   _id: string;
@@ -65,6 +66,7 @@ function adaptComments(apiComments: any[]): Comment[] {
       },
       text: c.comment,
       timestamp: time, // use formatted time instead of raw timestamp
+      reactionsAggregated: c.reactionsAggregated || {}, // Include aggregated reactions
     };
   });
 }
@@ -97,38 +99,6 @@ export function TripFeed() {
     fetchTrips();
   }, []);
 
-  const handleLike = (id: string) => {
-    setTrips((prevTrips) =>
-      prevTrips.map((trip) =>
-        trip._id === id
-          ? {
-            ...trip,
-            isLiked: !trip.isLiked,
-            likes: trip.isLiked ? trip.likes - 1 : trip.likes + 1,
-          }
-          : trip
-      )
-    );
-  };
-
-  const handleSave = (id: string) => {
-    setTrips((prevTrips) =>
-      prevTrips.map((trip) =>
-        trip._id === id ? { ...trip, isSaved: !trip.isSaved } : trip
-      )
-    );
-  };
-
-  const handleFollow = (_id: string) => {
-    setTrips((prevTrips) =>
-      prevTrips.map((trip) =>
-        trip.user._id === _id
-          ? { ...trip, user: { ...trip.user, isFollowing: !trip.user.isFollowing } }
-          : trip
-      )
-    );
-  };
-
   if (loading) return <Typography align="center">Loading trips...</Typography>;
 
   return (
@@ -159,9 +129,7 @@ export function TripFeed() {
               isSaved: trip.isSaved,
               optimizedRoute: trip.optimizedRoute
             }}
-            onLike={handleLike}
-            onSave={handleSave}
-            onFollow={handleFollow}
+            setTrips={setTrips}
           />
         ))}
       </Container>
