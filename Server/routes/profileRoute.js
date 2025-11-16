@@ -6,6 +6,7 @@ import {
   deleteUserTrip,
   updatePassword,
 } from "../controller/profileController.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -54,9 +55,23 @@ router.post("/:userId/changePassword", async (req, res) => {
 });
 
 // GET /profile/:userId/trips - list trips
-router.get("/:userId/trips", async (req, res) => {
+router.get("/:userId/trips", authMiddleware, async (req, res) => {
   try {
-    const trips = await listUserTrips(req.params.userId);
+  //   // viewer is authenticated user
+  //   const viewerId = req.user?._id || req.user?.id;
+  //   // ensure the viewer is the profile owner for this endpoint
+  //   if (!viewerId || String(viewerId) !== String(req.params.userId)) {
+  //     console.log("Forbidden access attempt by viewer:", viewerId, "on profile:", req.params.userId);
+      
+  //     return res
+  //       .status(403)
+  //       .json({
+  //         success: false,
+  //         error: "Forbidden: viewer must be profile owner",
+  //       });
+  //   }
+
+    const trips = await listUserTrips(req.params.userId, req.params.userId);
     res.json({ success: true, trips });
   } catch (err) {
     console.error("list trips error", err);
@@ -67,17 +82,23 @@ router.get("/:userId/trips", async (req, res) => {
 });
 
 // GET single trip
-// router.get("/:userId/trips/:tripId", async (req, res) => {
-//   try {
-//     const trip = await getUserTrip(req.params.userId, req.params.tripId);
-//     res.json({ success: true, trip });
-//   } catch (err) {
-//     console.error("get user trip error", err);
-//     return res
-//       .status(err.status || 500)
-//       .json({ success: false, error: String(err) });
-//   }
-// });
+router.get("/:userId/trips/:tripId", async (req, res) => {
+  try {
+    // Optional viewerId can be passed as query param (?viewerId=...)
+    const viewerId = req.query.viewerId;
+    const trip = await getUserTrip(
+      req.params.userId,
+      req.params.tripId,
+      viewerId
+    );
+    res.json({ success: true, trip });
+  } catch (err) {
+    console.error("get user trip error", err);
+    return res
+      .status(err.status || 500)
+      .json({ success: false, error: String(err) });
+  }
+});
 
 // PUT update trip
 router.put("/:userId/trips/:tripId", async (req, res) => {

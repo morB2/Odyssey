@@ -1,124 +1,91 @@
-import { useState } from "react";
-import type { ComponentType } from "react";
-import axios from "axios";
-import type { Trip } from "./types";
 import TripPost from "../social/TripPost";
 import { useUserStore } from "../../store/userStore";
+import type { Trip } from "./types";
+import { Box, Button } from "@mui/material";
+import { Trash2, Edit } from "lucide-react";
 
 interface AdapterProps {
   trip: Trip;
-  onClick?: () => void; // optional: preserve previous behavior
+  setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
+  onDelete: () => void;
+  onEdit: () => void;
 }
 
-// local shape that matches essential parts of the TripPost expected `trip` prop
-type TripPostShape = {
-  id: string;
-  user: {
-    id?: string;
-    name?: string;
-    username?: string;
-    avatar?: string;
-    isFollowing?: boolean;
-  };
-  location?: string;
-  duration?: string;
-  description?: string;
-  activities?: string[];
-  images?: string[];
-  likes?: number;
-  comments?: unknown[];
-  isLiked?: boolean;
-  isSaved?: boolean;
-  currentUserId?: string | undefined;
-  [k: string]: unknown;
-};
-
-export default function TripPostAdapter({ trip, onClick }: AdapterProps) {
+export default function TripPostAdapter({
+  trip,
+  setTrips,
+  onDelete,
+  onEdit,
+}: AdapterProps) {
   const storeUser = useUserStore((s) => s.user);
-  const currentUserId = storeUser?._id;
+  const currentUserId = storeUser?._id || "";
 
-  // local UI state for optimistic updates
-  const [isLiked, setIsLiked] = useState<boolean>(!!trip.liked);
-  const [likes, setLikes] = useState<number>(trip.likes || 0);
-  const [isSaved, setIsSaved] = useState<boolean>(!!trip.saved);
-
-  const toggleLike = async (id: string) => {
-    // optimistic
-    const newLiked = !isLiked;
-    setIsLiked(newLiked);
-    setLikes((c) => (newLiked ? c + 1 : Math.max(0, c - 1)));
-
-    try {
-      const url = `http://localhost:3000/likes/${id}/${
-        newLiked ? "like" : "unlike"
-      }`;
-      const res = await axios.post(url, { userId: currentUserId });
-      if (res?.data && typeof res.data.likes === "number")
-        setLikes(res.data.likes);
-    } catch (err) {
-      // rollback
-      setIsLiked(!newLiked);
-      setLikes((c) => (newLiked ? Math.max(0, c - 1) : c + 1));
-      console.error("like failed", err);
-    }
-  };
-
-  const toggleSave = async (id: string) => {
-    const newSaved = !isSaved;
-    setIsSaved(newSaved);
-    try {
-      const url = `http://localhost:3000/saves/${id}/${
-        newSaved ? "save" : "unsave"
-      }`;
-      await axios.post(url, { userId: currentUserId });
-    } catch (err) {
-      setIsSaved(!newSaved);
-      console.error("save failed", err);
-    }
-  };
-
-  // map your Trip -> TripPost's expected trip shape
-  const postShape = {
+  // Map our client-side Trip to the shape expected by TripPost
+  const mapped = {
+    currentUserId,
     id: trip.id,
     user: {
-      id: trip.ownerId || "",
-      name: "", // server doesn't include full owner info here; leave blank
-      username: "",
-      avatar: "",
-      isFollowing: false,
+      id: trip.user?.id || "",
+      name: trip.user?.name || `${trip.user?.id || ""}`,
+      username:
+        (trip.user?.name || "").toLowerCase().replace(/\s+/g, "") ||
+        trip.user?.id ||
+        "",
+      avatar: trip.user?.avatar || "/default-avatar.png",
+      isFollowing: !!trip.user?.isFollowing,
     },
-    location: trip.title,
-    duration: "",
-    description: trip.description,
+    location: trip.location || trip.description || "",
+    duration: trip.duration || "",
+    description: trip.description || "",
     activities: trip.activities || [],
     images: trip.images || [],
-    likes: likes,
-    comments: [],
-    isLiked: isLiked,
-    isSaved: isSaved,
-    detailedData: undefined,
-    optimizedRoute: undefined,
-    currentUserId: currentUserId,
-  } as TripPostShape;
-
-  const TripPostAny = TripPost as unknown as ComponentType<
-    Record<string, unknown>
-  >;
+    likes: trip.likes || 0,
+    comments: trip.comments || [],
+    isLiked: !!trip.isLiked,
+    isSaved: !!trip.isSaved,
+    optimizedRoute: trip.optimizedRoute,
+  };
 
   return (
-    <div
-      onClick={() => {
-        if (onClick) onClick();
-      }}
-    >
-      <TripPostAny
-        trip={postShape}
-        onLike={() => toggleLike(trip.id)}
-        onSave={() => toggleSave(trip.id)}
-        onFollow={() => {
-          /* no-op for now */
-        }}
-      />
+    <div>
+      <TripPost trip={mapped} setTrips={setTrips} />
+      {storeUser?._id === trip.user?.id && (
+        <Box sx={{ display: "flex", gap: 1.5, mt: 1 }}>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              onDelete();
+            }}
+            sx={{
+              borderColor: "#fca5a5",
+              color: "#dc2626",
+              textTransform: "none",
+              "&:hover": {
+                borderColor: "#f87171",
+                backgroundColor: "#fef2f2",
+                color: "#b91c1c",
+              },
+            }}
+          >
+            <Trash2 size={16} style={{ marginRight: "8px" }} />
+            Delete
+          </Button>
+          <Button
+            onClick={onEdit}
+            variant="contained"
+            sx={{
+              backgroundColor: "#f97316",
+              textTransform: "none",
+              "&:hover": {
+                backgroundColor: "#ea580c",
+              },
+            }}
+          >
+            <Edit size={16} style={{ marginRight: "8px" }} />
+            Edit Trip
+          </Button>
+        </Box>
+      )}
     </div>
   );
 }

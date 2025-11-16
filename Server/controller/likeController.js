@@ -28,7 +28,7 @@ export const getLikedTripsController = async (req, res) => {
   try {
     const userId = req.params.userId; // userId comes from URL
     const trips = await likeService.getLikedTripsByUser(userId);
-    res.status(200).json(trips);
+    res.status(200).json({ success: true, trips });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
