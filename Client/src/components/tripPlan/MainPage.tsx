@@ -83,7 +83,28 @@ export default function MainPage() {
 
   const handleSendMessage = async (text?: string) => {
     const messageText = text || inputMessage.trim();
-    if (!messageText) return;
+    
+    // Client-side validation
+    if (!messageText) {
+      return; // Don't send empty messages
+    }
+    
+    // Length validation (max 2000 characters)
+    if (messageText.length > 2000) {
+      const errorMessage: Message = {
+        id: messages.length + 1,
+        text: "Message is too long. Please keep it under 2000 characters.",
+        sender: 'ai',
+        timestamp: new Date()
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+      return;
+    }
+    
+    // Check for minimum length
+    if (messageText.length < 1) {
+      return;
+    }
 
     const userMessage: Message = {
       id: messages.length + 1,
@@ -108,12 +129,34 @@ export default function MainPage() {
     }),
   });
 
+  // Check response status before parsing
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMsg = errorData.error || 
+      (response.status === 403 
+        ? "Your request was rejected due to invalid input. Please try again with a different message."
+        : response.status === 400
+        ? "Invalid input. Please check your message and try again."
+        : response.status === 429
+        ? "Too many requests. Please wait a moment before trying again."
+        : "Hmm… I couldn't apply those changes right now. Try again in a moment.");
+    
+    setMessages((prev) => [...prev, {
+      id: messages.length + 2,
+      text: errorMsg,
+      sender: 'ai',
+      timestamp: new Date(),
+    }]);
+    setIsTyping(false);
+    return;
+  }
+
   const data = await response.json();
 
   if (data.success) {
     const aiUpdateConfirm: Message = {
       id: messages.length + 2,
-      text: "Got it! ✏️ I’ve updated your itinerary based on your feedback.",
+      text: "Got it! ✏️ I've updated your itinerary based on your feedback.",
       sender: 'ai',
       timestamp: new Date(),
     };
@@ -132,9 +175,21 @@ export default function MainPage() {
     
     setMessages((prev) => [...prev, aiUpdateConfirm, aiUpdatedTrip]);
   } else {
+    // Handle different error types
+    let errorMsg = "Hmm… I couldn't apply those changes right now. Try again in a moment.";
+    if (response.status === 403) {
+      errorMsg = "Your request was rejected due to invalid input. Please try again with a different message.";
+    } else if (response.status === 400) {
+      errorMsg = data.error || "Invalid input. Please check your message and try again.";
+    } else if (response.status === 429) {
+      errorMsg = "Too many requests. Please wait a moment before trying again.";
+    } else if (data.error) {
+      errorMsg = data.error;
+    }
+    
     setMessages((prev) => [...prev, {
       id: messages.length + 2,
-      text: "Hmm… I couldn’t apply those changes right now. Try again in a moment.",
+      text: errorMsg,
       sender: 'ai',
       timestamp: new Date(),
     }]);
@@ -150,6 +205,13 @@ export default function MainPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt: messageText }),
         });
+        
+        // Check response status before parsing
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw { response, data: errorData };
+        }
+        
         const data = await response.json();
 
         if (data.success && data.suggestions) {
@@ -176,7 +238,7 @@ export default function MainPage() {
 
           const aiMessage3: Message = {
             id: messages.length + 4,
-            text: " Click on the itinerary that speaks to you, and I’ll find you the best route! 🗺️",
+            text: " Click on the itinerary that speaks to you, and I'll find you the best route! 🗺️",
             sender: 'ai',
             timestamp: new Date(),
           };
@@ -198,11 +260,31 @@ export default function MainPage() {
           setNumAiMessages(numAiMessages + 1);
         }, 1500);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching suggestions:", error);
+      
+      // Handle different error types from server
+      let errorMessage = "Sorry, something went wrong fetching your itinerary 😢";
+      
+      // If error was thrown with response and data from our check above
+      if (error.response && error.data) {
+        const status = error.response.status;
+        const data = error.data;
+        
+        if (status === 403) {
+          errorMessage = "Your request was rejected due to invalid input. Please try again with a different message.";
+        } else if (status === 400) {
+          errorMessage = data.error || "Invalid input. Please check your message and try again.";
+        } else if (status === 429) {
+          errorMessage = "Too many requests. Please wait a moment before trying again.";
+        } else if (data.error) {
+          errorMessage = data.error;
+        }
+      }
+      
       setMessages((prev) => [...prev, {
         id: messages.length + 2,
-        text: "Sorry, something went wrong fetching your itinerary 😢",
+        text: errorMessage,
         sender: 'ai',
         timestamp: new Date()
       }]);

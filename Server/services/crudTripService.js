@@ -11,7 +11,7 @@ import User from "../models/userModel.js"; // Assuming User has name & avatar
 
 export async function getTripsForUser(currentUserId) {
   // 1. Get first 10 trips, including user info and populated comment users
-  const trips = await Trip.find()
+  const trips = await Trip.find({ visabilityStatus: "public" })
     .sort({ createdAt: -1 })
     .limit(10)
     .populate({
@@ -64,7 +64,7 @@ export async function getTripsForUser(currentUserId) {
           reactionsByEmoji[reaction.emoji]++;
         });
       }
-      
+
       return {
         ...comment,
         reactionsAggregated: reactionsByEmoji, // Add aggregated reactions
