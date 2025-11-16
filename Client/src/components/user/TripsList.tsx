@@ -1,5 +1,5 @@
 import type { Trip } from "./types";
-import { TripCard } from "./TripCard";
+import TripPostAdapter from "./TripPostAdapter";
 import { Box, Tabs, Tab, Typography } from "@mui/material";
 import { Grid } from "@mui/material";
 import { User, Heart, Bookmark } from "lucide-react";
@@ -147,7 +147,7 @@ export function TripsList({
               key={trip.id}
               sx={{ width: { xs: "100%", sm: "50%", md: "33.333%" } }}
             >
-              <TripCard trip={trip} onClick={() => onTripClick(trip)} />
+              <TripPostAdapter trip={trip} onClick={() => onTripClick(trip)} />
             </Grid>
           ))}
         </Grid>

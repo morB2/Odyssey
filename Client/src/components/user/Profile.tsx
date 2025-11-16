@@ -11,6 +11,12 @@ import Navbar from "../general/Navbar";
 
 const BASE_URL = "http://localhost:3000";
 
+// helper type for server trip variants (includes likes and user fields)
+type RawServerTrip = ServerTrip & {
+  likes?: number;
+  user?: { _id?: string } | string;
+};
+
 // We'll fetch the real user and trips from the server using the profile APIs.
 // If no logged-in user is available in the store, the component falls back to a guest view.
 
@@ -130,7 +136,8 @@ export default function Profile() {
   const mapTrip = (t: ServerTrip): Trip => {
     const ordered = t.optimizedRoute?.ordered_route || [];
     const modeFromOptimized = t.optimizedRoute?.mode;
-    
+    const raw = t as RawServerTrip;
+
     return {
       id: t._id || t.id || "",
       title: t.title || "",
@@ -158,6 +165,11 @@ export default function Profile() {
           : "transit"
         : t.mode || "car",
       visibility: t.visabilityStatus === "public" ? "public" : "private",
+      // include social and ownership fields from server trip
+      likes: raw.likes ?? 0,
+      liked: false,
+      saved: false,
+      ownerId: typeof raw.user === "string" ? raw.user : raw.user?._id,
       activities: t.activities || [],
       notes: t.notes || "",
     } as Trip;
