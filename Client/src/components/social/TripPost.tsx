@@ -76,12 +76,13 @@ interface Trip {
 
 interface TripPostProps {
     trip: Trip;
-    onLike: (id: string) => void;
-    onSave: (id: string) => void;
-    onFollow: (username: string) => void;
+    setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
+
 }
 
-export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostProps) {
+export default function TripPost({ trip, setTrips }: TripPostProps) {
+    console.log("trip\n",trip);
+    
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogImageIndex, setDialogImageIndex] = useState(0);
@@ -112,8 +113,6 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
         setCommentReactions(initializeReactions(trip.comments || []));
         setComments(trip.comments || []);
     }, [trip.comments]);
-
-    console.log(trip);
 
     const handleCardClick = (e: any) => {
         // Don't open dialog if clicking on interactive elements
@@ -246,6 +245,38 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
         }
     };
 
+    const handleLike = (id: string) => {
+    setTrips((prevTrips) =>
+      prevTrips.map((trip) =>
+        trip._id === id
+          ? {
+            ...trip,
+            isLiked: !trip.isLiked,
+            likes: trip.isLiked ? trip.likes - 1 : trip.likes + 1,
+          }
+          : trip
+      )
+    );
+  };
+
+  const handleSave = (id: string) => {
+    setTrips((prevTrips) =>
+      prevTrips.map((trip) =>
+        trip._id === id ? { ...trip, isSaved: !trip.isSaved } : trip
+      )
+    );
+  };
+
+  const handleFollow = (_id: string) => {
+    setTrips((prevTrips) =>
+      prevTrips.map((trip) =>
+        trip.user._id === _id
+          ? { ...trip, user: { ...trip.user, isFollowing: !trip.user.isFollowing } }
+          : trip
+      )
+    );
+  };
+
     return (
         <>
             <ThemeProvider theme={theme}>
@@ -287,7 +318,7 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
                                 size="small"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    onFollow(trip.user.username);
+                                    handleFollow(trip.user.username);
                                     postFollow();
                                 }}
                             >
@@ -372,7 +403,7 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         postLike();
-                                        onLike(trip.id);
+                                        handleLike(trip.id);
                                     }}
                                     aria-label={trip.isLiked ? 'Unlike' : 'Like'}
                                     color={trip.isLiked ? 'primary' : 'default'}
@@ -397,7 +428,7 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
                         <IconButton
                             onClick={(e) => {
                                 e.stopPropagation();
-                                onSave(trip.id);
+                                handleSave(trip.id);
                                 postSave();
                             }}
                             aria-label={trip.isSaved ? 'Unsave' : 'Save'}
