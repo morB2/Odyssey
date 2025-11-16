@@ -50,18 +50,39 @@ export async function getTripsForUser(currentUserId) {
 
   const followingUserIds = new Set(follows.map((f) => f.following.toString()));
 
-  // 5. Add flags + comments to trips
-  const tripsWithStatus = trips.map((trip) => ({
-    ...trip,
-    isLiked: likedTripIds.has(trip._id.toString()),
-    isSaved: savedTripIds.has(trip._id.toString()),
-    user: {
-      ...trip.user,
-      isFollowing: followingUserIds.has(trip.user._id.toString()),
-    },
-    comments: trip.comments || [], // 👈 ensure comments are included
-  }));
+  // 5. Add flags + comments to trips with aggregated reactions
+  const tripsWithStatus = trips.map((trip) => {
+    // Process comments and aggregate reactions
+    const processedComments = (trip.comments || []).map((comment) => {
+      // Aggregate reactions by emoji
+      const reactionsByEmoji = {};
+      if (comment.reactions && comment.reactions.length > 0) {
+        comment.reactions.forEach((reaction) => {
+          if (!reactionsByEmoji[reaction.emoji]) {
+            reactionsByEmoji[reaction.emoji] = 0;
+          }
+          reactionsByEmoji[reaction.emoji]++;
+        });
+      }
+      
+      return {
+        ...comment,
+        reactionsAggregated: reactionsByEmoji, // Add aggregated reactions
+      };
+    });
 
+    return {
+      ...trip,
+      isLiked: likedTripIds.has(trip._id.toString()),
+      isSaved: savedTripIds.has(trip._id.toString()),
+      user: {
+        ...trip.user,
+        isFollowing: followingUserIds.has(trip.user._id.toString()),
+      },
+      comments: processedComments, // 👈 comments with aggregated reactions
+    };
+  });
+  console.log(tripsWithStatus);
   return tripsWithStatus;
 }
 
@@ -112,4 +133,46 @@ export async function postCommentForUser(tripId, userId, commentText) {
       }
       : null,
   };
+}
+
+/**
+ * Adds a reaction (emoji) to a specific comment on a trip post.
+ * @param {string} postId - The ID of the trip (post)
+ * @param {string} commentId - The ID of the comment to react to
+ * @param {string} userId - The ID of the user reacting
+ * @param {string} emoji - The emoji reaction
+ * @returns {Promise<Object>} - The updated comment with reactions
+ */
+export async function addReactionToComment(postId, commentId, userId, emoji) {
+  if (!emoji || !userId) throw new Error("Emoji and userId are required.");
+
+  // Add the reaction to the specific comment in the trip's comments array
+  const trip = await Trip.findOneAndUpdate(
+    {
+      _id: postId,
+      "comments._id": commentId
+    },
+    {
+      $push: {
+        "comments.$.reactions": {
+          emoji: emoji,
+          user: userId,
+          createdAt: new Date()
+        }
+      }
+    },
+    { new: true }
+  )
+    .populate({
+      path: "comments.user comments.reactions.user",
+      select: "_id firstName lastName avatar",
+    })
+    .lean();
+
+  if (!trip) throw new Error("Trip or comment not found.");
+
+  // Find the updated comment object
+  const updatedComment = trip.comments.find(c => c._id.toString() === commentId);
+
+  return updatedComment;
 }

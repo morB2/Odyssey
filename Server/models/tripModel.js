@@ -58,6 +58,13 @@ const commentSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     comment: { type: String, required: true },
+    reactions: [
+      {
+        emoji: { type: String, required: true },
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+        createdAt: { type: Date, default: Date.now }
+      }
+    ],
     createdAt: { type: Date, default: Date.now },
   },
   { _id: true } // enable comment IDs for editing/deleting later
