@@ -17,7 +17,7 @@ export const unSaveTripController = async (req, res, next) => {
     const userId = req.body.userId; // ideally from auth middleware
     const tripId = req.params.tripId;
 
-   await saveService.unSaveTrip(userId, tripId);
+    await saveService.unSaveTrip(userId, tripId);
     res.status(200).json({ message: "Trip unsaved!" });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -28,7 +28,7 @@ export const getSavedTripsController = async (req, res) => {
   try {
     const userId = req.params.userId;
     const trips = await saveService.getSavedTripsByUser(userId);
-    res.status(200).json(trips);
+    res.status(200).json({ success: true, trips });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

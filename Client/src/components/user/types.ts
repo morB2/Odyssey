@@ -27,22 +27,38 @@ export interface RouteInstruction {
   distance?: string;
 }
 
-export interface Trip {
+export interface Comment {
   id: string;
-  title: string;
-  description: string;
-  images: string[];
-  route: string[];
-  routeInstructions: RouteInstruction[];
-  mode: "car" | "walk" | "transit";
-  visibility: "public" | "private";
-  activities: string[];
-  notes: string;
-  // optional social fields
-  likes?: number;
-  liked?: boolean; // whether the current user liked this trip
-  saved?: boolean; // whether the current user saved this trip
-  ownerId?: string;
+  user: {
+    name: string;
+    username: string;
+    avatar: string;
+  };
+  text: string;
+  timestamp: string;
+}
+
+export interface Trip {
+    id: string;
+    user: {
+        id: string;
+        name: string;
+        username: string;
+        avatar: string;
+        isFollowing: boolean;
+    };
+    location: string;
+    duration: string;
+    description: string;
+    activities: string[];
+    images: string[];
+    likes: number;
+    comments?: Comment[]; // now typed
+    isLiked: boolean;
+    isSaved: boolean;
+    detailedData?: any;
+    optimizedRoute?: any;
+    currentUserId?: string;
 }
 
 export type ServerTrip = {

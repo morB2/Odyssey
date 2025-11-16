@@ -9,13 +9,14 @@ export async function updatePassword(userId, currentPassword, newPassword) {
   return services.updatePassword(userId, currentPassword, newPassword);
 }
 
-export async function listUserTrips(userId) {
-  return services.listUserTrips(userId);
+export async function listUserTrips(userId, viewerId) {
+  // forward viewerId (may be undefined) to service
+  return services.listUserTripsForViewer(userId, viewerId);
 }
 
-// export async function getUserTrip(userId, tripId) {
-//   return services.getUserTrip(userId, tripId);
-// }
+export async function getUserTrip(userId, tripId, viewerId) {
+  return services.getUserTrip(userId, tripId, viewerId);
+}
 
 export async function updateUserTrip(userId, tripId, updates) {
   return services.updateUserTrip(userId, tripId, updates);
