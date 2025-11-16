@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema(
     googleId: { type: String, unique: true, sparse: true },
     avatar: { type: String },
     password: { type: String }, 
+    status: {type: Boolean, default: true},
   },
   { timestamps: true } 
 );

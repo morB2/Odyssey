@@ -1,6 +1,4 @@
 import axios, { type AxiosInstance  } from 'axios';
-import { useUserStore } from '../store/userStore';
-
 
 const baseURL = import.meta.env.VITE_API_URL;
 const BASE_URL = baseURL ? `${baseURL}` : 'http://localhost:3000';

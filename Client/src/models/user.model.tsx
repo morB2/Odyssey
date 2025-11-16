@@ -11,6 +11,7 @@ export interface User {
   googleId?: string;
   avatar?: string;
   password?: string;
+  status: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
