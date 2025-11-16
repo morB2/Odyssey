@@ -4,38 +4,7 @@ import { AppBar, Toolbar, Typography, Container, Box } from '@mui/material';
 import { Explore } from '@mui/icons-material';
 import axios from 'axios';
 import Navbar from '../general/Navbar';
-
-interface Comment {
-  id: string;
-  user: {
-    name: string;
-    username: string;
-    avatar: string;
-  };
-  text: string;
-  timestamp: string;
-  reactionsAggregated?: Record<string, number>;
-}
-interface Trip {
-  _id: string;
-  user: {
-    _id: string;
-    firstName: string;
-    lastName: string;
-    avatar: string;
-    isFollowing: boolean;
-  };
-  title: string;
-  description: string;
-  activities: string[];
-  images: string[];
-  likes: number;
-  comments?: Comment[];
-  isLiked: boolean;
-  isSaved: boolean;
-  optimizedRoute?: any;
-  notes?: string;
-}
+import {type Trip,type Comment } from './types';
 interface StoredUser {
   state: {
     user: {
@@ -51,7 +20,7 @@ function adaptComments(apiComments: any[]): Comment[] {
     const date = new Date(c.createdAt);
     const time = date.toLocaleString([], {
       year: "numeric",
-      month: "short", 
+      month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
@@ -107,28 +76,8 @@ export function TripFeed() {
       <Container maxWidth="md" sx={{ py: 3 }}>
         {trips.map((trip) => (
           <TripPost
-            key={trip._id}
-            trip={{
-              currentUserId: id || '',
-              id: trip._id,
-              user: {
-                id: trip.user._id,
-                name: `${trip.user.firstName} ${trip.user.lastName}`,
-                username: trip.user.firstName.toLowerCase() + trip.user.lastName.toLowerCase(),
-                avatar: trip.user.avatar,
-                isFollowing: trip.user.isFollowing,
-              },
-              location: trip.title, // or you can adjust if you have separate location
-              duration: '', // you can calculate duration if needed
-              description: trip.description,
-              activities: trip.activities,
-              images: trip.images,
-              likes: trip.likes,
-              comments: trip.comments,
-              isLiked: trip.isLiked,
-              isSaved: trip.isSaved,
-              optimizedRoute: trip.optimizedRoute
-            }}
+            key={trip.id}
+            trip={trip}
             setTrips={setTrips}
           />
         ))}

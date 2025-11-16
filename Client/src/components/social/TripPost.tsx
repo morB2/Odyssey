@@ -30,7 +30,7 @@ import {
 } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-
+import { type Trip, type Comment } from './types';
 const theme = createTheme({
     palette: {
         primary: {
@@ -39,40 +39,40 @@ const theme = createTheme({
     },
 });
 
-interface Comment {
-    id: string;
-    user: {
-        name: string;
-        username: string;
-        avatar: string;
-    };
-    text: string;
-    timestamp: string;
-    reactionsAggregated?: Record<string, number>;
-}
+// interface Comment {
+//     id: string;
+//     user: {
+//         name: string;
+//         username: string;
+//         avatar: string;
+//     };
+//     text: string;
+//     timestamp: string;
+//     reactionsAggregated?: Record<string, number>;
+// }
 
-interface Trip {
-    id: string;
-    user: {
-        id: string;
-        name: string;
-        username: string;
-        avatar: string;
-        isFollowing: boolean;
-    };
-    location: string;
-    duration: string;
-    description: string;
-    activities: string[];
-    images: string[];
-    likes: number;
-    comments?: Comment[]; // now typed
-    isLiked: boolean;
-    isSaved: boolean;
-    detailedData?: any;
-    optimizedRoute?: any;
-    currentUserId?: string;
-}
+// interface Trip {
+//     id: string;
+//     user: {
+//         id: string;
+//         name: string;
+//         username: string;
+//         avatar: string;
+//         isFollowing: boolean;
+//     };
+//     location: string;
+//     duration: string;
+//     description: string;
+//     activities: string[];
+//     images: string[];
+//     likes: number;
+//     comments?: Comment[]; // now typed
+//     isLiked: boolean;
+//     isSaved: boolean;
+//     detailedData?: any;
+//     optimizedRoute?: any;
+//     currentUserId?: string;
+// }
 
 interface TripPostProps {
     trip: Trip;
@@ -248,7 +248,7 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
     const handleLike = (id: string) => {
     setTrips((prevTrips) =>
       prevTrips.map((trip) =>
-        trip._id === id
+        trip.id === id
           ? {
             ...trip,
             isLiked: !trip.isLiked,
@@ -262,7 +262,7 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
   const handleSave = (id: string) => {
     setTrips((prevTrips) =>
       prevTrips.map((trip) =>
-        trip._id === id ? { ...trip, isSaved: !trip.isSaved } : trip
+        trip.id === id ? { ...trip, isSaved: !trip.isSaved } : trip
       )
     );
   };
@@ -270,7 +270,7 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
   const handleFollow = (_id: string) => {
     setTrips((prevTrips) =>
       prevTrips.map((trip) =>
-        trip.user._id === _id
+        trip.user.id === _id
           ? { ...trip, user: { ...trip.user, isFollowing: !trip.user.isFollowing } }
           : trip
       )
@@ -302,14 +302,14 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
                         <Box display="flex" alignItems="center" justifyContent="space-between">
                             <Box display="flex" alignItems="center" gap={1.5}>
                                 <Avatar src={trip.user.avatar} alt={trip.user.name}>
-                                    {trip.user.name[0]}
+                                    {trip.user.name||" "}
                                 </Avatar>
                                 <Box>
                                     <Typography variant="body1" fontWeight={500}>
                                         {trip.user.name}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        @{trip.user.username}
+                                        @{trip.user.firstName?.toLowerCase() || ""}{trip.user.lastName?.toLowerCase() || ""}
                                     </Typography>
                                 </Box>
                             </Box>
@@ -318,7 +318,7 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
                                 size="small"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleFollow(trip.user.username);
+                                    handleFollow(trip.user.username||" ");
                                     postFollow();
                                 }}
                             >
@@ -341,7 +341,7 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
                                 >
                                     <img
                                         src={image}
-                                        alt={`${trip.location} - ${index + 1}`}
+                                        alt={`${trip.title} - ${index + 1}`}
                                         style={{
                                             width: '100%',
                                             height: '100%',
@@ -442,7 +442,7 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
                     <CardContent>
                         <Box mb={1.5}>
                             <Typography variant="h6" gutterBottom>
-                                {trip.location}
+                                {trip.title || 'Untitled Trip'}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
                                 {trip.duration}
@@ -626,7 +626,7 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
                     <DialogTitle>
                         <Box display="flex" justifyContent="space-between" alignItems="center">
                             <Typography variant="h5" fontWeight={600}>
-                                {trip.detailedData?.title || trip.location}
+                                {trip.detailedData?.title || trip.title}
                             </Typography>
                             <IconButton onClick={handleCloseDialog} edge="end">
                                 <Close />
