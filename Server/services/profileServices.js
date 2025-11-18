@@ -46,6 +46,11 @@ export async function updateProfile(userId, updates) {
   ];
   const payload = {};
   for (const k of allowed) if (k in updates) payload[k] = updates[k];
+  // If avatar is a local uploads path (starts with '/'), convert to absolute URL
+  if (payload.avatar && typeof payload.avatar === "string") {
+    const a = payload.avatar;
+    if (a.startsWith("/")) payload.avatar = normalizeAvatarUrl(a);
+  }
   const user = await User.findByIdAndUpdate(userId, payload, { new: true })
     .select("-password -__v")
     .lean();
@@ -80,8 +85,9 @@ export async function updatePassword(userId, currentPassword, newPassword) {
   return { success: true };
 }
 
-export async function listUserTrips(userId) {
-  throw new Error("use listUserTrips(userId, viewerId?) instead");
+export async function listUserTrips(userId, viewerId) {
+  // Backwards-compatible wrapper: prefer using listUserTripsForViewer
+  return listUserTripsForViewer(userId, viewerId);
 }
 
 // Enhanced version: returns trips for a specific owner with populated user/comments
@@ -175,36 +181,15 @@ export async function getUserTrip(userId, tripId, viewerId) {
 
   // If a viewerId is provided, compute social flags (isLiked, isSaved, isFollowing)
   if (viewerId) {
-    const Like = await import("./../models/likesModel.js")
-      .then((m) => m.default)
-      .catch(() => null);
-    const Save = await import("./../models/savesModel.js")
-      .then((m) => m.default)
-      .catch(() => null);
-    const Follow = await import("./../models/followModel.js")
-      .then((m) => m.default)
-      .catch(() => null);
-
     try {
-      if (Like) {
-        const like = await Like.findOne({
-          user: viewerId,
-          trip: trip._id,
-        }).select("_id");
-        trip.isLiked = !!like;
-      }
-      if (Save) {
-        const save = await Save.findOne({
-          user: viewerId,
-          trip: trip._id,
-        }).select("_id");
-        trip.isSaved = !!save;
-      }
-      if (Follow && trip.user && trip.user._id) {
-        const follow = await Follow.findOne({
-          follower: viewerId,
-          following: trip.user._id,
-        }).select("_id");
+      const like = await Like.findOne({ user: viewerId, trip: trip._id }).select("_id");
+      trip.isLiked = !!like;
+
+      const save = await Save.findOne({ user: viewerId, trip: trip._id }).select("_id");
+      trip.isSaved = !!save;
+
+      if (trip.user && trip.user._id) {
+        const follow = await Follow.findOne({ follower: viewerId, following: trip.user._id }).select("_id");
         trip.user.isFollowing = !!follow;
       }
     } catch (e) {

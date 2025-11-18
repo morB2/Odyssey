@@ -4,7 +4,6 @@ import { Box, Paper, Typography } from "@mui/material";
 import { ProfileHeader } from "./ProfileHeader";
 import { TripsList } from "./TripsList";
 import { ChangePasswordModal } from "./EditProfileModal";
-// TripDetailsModal removed; details are shown in-line or via Edit modal now
 import { EditTripModal } from "./EditTripModal";
 import type { Trip, UserProfile } from "./types";
 import { useUserStore } from "../../store/userStore";

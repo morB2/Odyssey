@@ -249,8 +249,8 @@ export function ProfileHeader({
                 <ListItemText
                   primary={
                     <Link
-                      component={RouterLink}
-                      to={`/profile/${f._id || f.id}`}
+                      // component={RouterLink}
+                      href={`/profile/${f._id || f.id}`}
                       underline="hover"
                       onClick={() => setOpenDialog(null)}
                     >

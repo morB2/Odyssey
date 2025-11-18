@@ -53,7 +53,8 @@ export default function TripPostAdapter({
     user: {
       _id: String(trip.user?._id || trip.user?.id || ""),
       id: trip.user?.id || "",
-      name: trip.user?.firstName + " " + trip.user?.lastName || `${trip.user?.id || ""}`,
+       firstName: trip.user.firstName || "",
+     lastName: trip.user.lastName || "",
       username:
         (trip.user?.firstName + " " + trip.user?.lastName || "").toLowerCase().replace(/\s+/g, "") ||
         trip.user?.id ||
@@ -73,6 +74,7 @@ export default function TripPostAdapter({
     comments: adaptComments(trip.comments || []),
   };
 
+  console.log("server trip\n",trip.user,"map\n",mapped.user);
   
 
   return (
