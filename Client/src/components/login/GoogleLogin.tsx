@@ -1,21 +1,19 @@
+import type { FC } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import googleLoginService from "../../services/login.service";
-import { useState } from "react";
 import { useUserStore } from "../../store/userStore";
 
 interface GLoginProps {
   onSuccess?: () => void;
 }
 
-const GLogin = ({ onSuccess }: GLoginProps) => {
+export const GLogin: FC<GLoginProps> = ({ onSuccess }) => {
+
   const handleSuccess = async (credentialResponse: any) => {
     if (!credentialResponse.credential) return;
-
     const token = credentialResponse.credential;
-
     const decoded: any = jwtDecode(token);
-
     try {
       const response = await googleLoginService.googleLogin(token);
       const userInfo = {
@@ -24,10 +22,8 @@ const GLogin = ({ onSuccess }: GLoginProps) => {
         googleId: decoded.sub || response.user.googleId,
         avatar: response.user.avatar,
       };
-
       useUserStore.getState().setUser(userInfo, response.token); 
-      if (onSuccess) onSuccess();
-      
+      if (onSuccess) onSuccess();  
     } catch (err) {
       console.error("Google login failed:", err);
     }
@@ -44,7 +40,5 @@ const GLogin = ({ onSuccess }: GLoginProps) => {
 
   );
 };
-
-export default GLogin;
 
 

@@ -11,7 +11,7 @@ interface EditProfileModalProps {
   onSave: (user: UserProfile) => void;
 }
 
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
   const [currentPassword, setCurrentPassword] = useState("");
