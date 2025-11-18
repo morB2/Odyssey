@@ -53,11 +53,18 @@ router.get("/:userId", async (req, res) => {
 // });
 
 // POST /profile/:userId/changePassword - change user password (protected)
-router.post("/:userId/changePassword", async (req, res) => {
+router.post("/:userId/changePassword", authMiddleware, async (req, res) => {
   try {
+    const paramUserId = req.params.userId;
+    const authId =
+      req.user?._id || req.user?.id || req.user?.userId || req.user?.id_str;
+    if (!authId || String(authId) !== String(paramUserId)) {
+      return res.status(403).json({ success: false, error: "Forbidden" });
+    }
+
     const { currentPassword, newPassword } = req.body || {};
     const result = await updatePassword(
-      req.params.userId,
+      paramUserId,
       currentPassword,
       newPassword
     );
@@ -116,11 +123,18 @@ router.get("/:userId/trips/:tripId", async (req, res) => {
   }
 });
 
-// PUT update trip
-router.put("/:userId/trips/:tripId", async (req, res) => {
+// PUT update trip (only profile owner may update)
+router.put("/:userId/trips/:tripId", authMiddleware, async (req, res) => {
   try {
+    const paramUserId = req.params.userId;
+    const authId =
+      req.user?._id || req.user?.id || req.user?.userId || req.user?.id_str;
+    if (!authId || String(authId) !== String(paramUserId)) {
+      return res.status(403).json({ success: false, error: "Forbidden" });
+    }
+
     const trip = await updateUserTrip(
-      req.params.userId,
+      paramUserId,
       req.params.tripId,
       req.body || {}
     );
@@ -133,10 +147,17 @@ router.put("/:userId/trips/:tripId", async (req, res) => {
   }
 });
 
-// DELETE trip
-router.delete("/:userId/trips/:tripId", async (req, res) => {
+// DELETE trip (only profile owner may delete)
+router.delete("/:userId/trips/:tripId", authMiddleware, async (req, res) => {
   try {
-    const trip = await deleteUserTrip(req.params.userId, req.params.tripId);
+    const paramUserId = req.params.userId;
+    const authId =
+      req.user?._id || req.user?.id || req.user?.userId || req.user?.id_str;
+    if (!authId || String(authId) !== String(paramUserId)) {
+      return res.status(403).json({ success: false, error: "Forbidden" });
+    }
+
+    const trip = await deleteUserTrip(paramUserId, req.params.tripId);
     res.json({ success: true, trip });
   } catch (err) {
     console.error("delete trip error", err);

@@ -18,22 +18,32 @@ import {
   Link,
   IconButton,
 } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 import { Edit, Users, UserPlus } from "lucide-react";
 import { useUserStore } from "../../store/userStore";
 const BASE_URL = "http://localhost:3000";
-
-// Server now returns absolute avatar URLs; client no longer needs BASE_URL prefixing
+type SimpleFollow = {
+  _id?: string;
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  avatar?: string;
+  email?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  [k: string]: unknown;
+};
 
 interface ProfileHeaderProps {
   user: UserProfile;
-  onEditClick: () => void;
+  isOwner?: boolean;
+  onEditClick?: () => void;
   onAvatarSaved?: (user: UserProfile) => void;
 }
 
-type SimpleFollow = { id?: string; fullName?: string; profilePicture?: string };
-
 export function ProfileHeader({
   user,
+  isOwner = false,
   onEditClick,
   onAvatarSaved,
 }: ProfileHeaderProps) {
@@ -53,6 +63,7 @@ export function ProfileHeader({
 
   // keep counts in sync when the parent provides an updated `user` object
   useEffect(() => {
+    setOpenDialog(null);
     const u = user as unknown as {
       followersCount?: number;
       followingCount?: number;
@@ -71,12 +82,18 @@ export function ProfileHeader({
       const hasObjects = arr.length > 0 && typeof arr[0] === "object";
       if (hasObjects) setFollowers(arr as SimpleFollow[]);
       else setFollowers([]); // clear so loadList will fetch full objects
+    } else {
+      // if the parent didn't provide follower objects for this user, clear cached list
+      setFollowers([]);
     }
     if (Array.isArray(u.following)) {
       const arr = u.following as unknown[];
       const hasObjects = arr.length > 0 && typeof arr[0] === "object";
       if (hasObjects) setFollowing(arr as SimpleFollow[]);
       else setFollowing([]);
+    } else {
+      // if the parent didn't provide following objects for this user, clear cached list
+      setFollowing([]);
     }
   }, [user]);
 
@@ -85,50 +102,6 @@ export function ProfileHeader({
   const [avatarUrl, setAvatarUrl] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
   const [savingAvatar, setSavingAvatar] = useState(false);
-
-  /** Generic loader for followers/following */
-  const loadList = async (listType: "followers" | "following") => {
-    const setter = listType === "followers" ? setFollowers : setFollowing;
-    const currentList = listType === "followers" ? followers : following;
-    // If we already have items cached, show them. Otherwise fetch from follow routes.
-    if (!currentList.length) {
-      try {
-        const u = user as unknown as { id?: string; _id?: string };
-        const uid = u.id || u._id || "";
-        if (!uid) throw new Error("Missing user id for follow list");
-        const res = await fetch(`${BASE_URL}/follow/${uid}/${listType}`);
-        const data = await res.json();
-
-        if (Array.isArray(data)) {
-          // Map server user objects to { id, fullName, profilePicture }
-          const mapped = data.map((u) => {
-            const usr = u || {};
-            const id = usr._id || usr.id || usr._doc?._id || "";
-            const firstName = usr.firstName || usr.first_name || usr.name || "";
-            const lastName = usr.lastName || usr.last_name || "";
-            const fullName =
-              `${firstName} ${lastName}`.trim() ||
-              String(
-                usr.fullName || usr.fullname || usr.name || usr.username || ""
-              );
-            const profilePicture =
-              usr.avatar || usr.profilePicture || usr.picture || "";
-            return { id, fullName, profilePicture };
-          });
-
-          setter(mapped);
-          if (listType === "followers") setFollowersCount(mapped.length);
-          else setFollowingCount(mapped.length);
-        } else {
-          console.warn(`unexpected ${listType} response`, data);
-        }
-      } catch (err) {
-        console.error(`Failed to load ${listType}`, err);
-      }
-    }
-
-    setOpenDialog(listType);
-  };
 
   useEffect(() => {
     if (!avatarFile) {
@@ -146,6 +119,36 @@ export function ProfileHeader({
     setPreview(null);
     setAvatarDialogOpen(true);
   };
+
+  /** Generic loader for followers/following */
+  const loadList = async (listType: "followers" | "following") => {
+    const setter = listType === "followers" ? setFollowers : setFollowing;
+    const currentList = listType === "followers" ? followers : following;
+    // If we already have items cached, show them. Otherwise fetch from follow routes.
+    if (!currentList.length) {
+      try {
+        const u = user as unknown as { id?: string; _id?: string };
+        const uid = u.id || u._id || "";
+        if (!uid) throw new Error("Missing user id for follow list");
+        const res = await fetch(`${BASE_URL}/follow/${uid}/${listType}`);
+        const data = await res.json();
+
+        if (Array.isArray(data)) {
+          // The server now returns full user objects. Use them as-is.
+          setter(data as SimpleFollow[]);
+          if (listType === "followers")
+            setFollowersCount((data as unknown[]).length);
+          else setFollowingCount((data as unknown[]).length);
+        } else {
+          console.warn(`unexpected ${listType} response`, data);
+        }
+      } catch (err) {
+        console.error(`Failed to load ${listType}`, err);
+      }
+    }
+
+    setOpenDialog(listType);
+  };  
 
   const handleSaveAvatar = async () => {
     const u = user as unknown as { id?: string; _id?: string };
@@ -234,16 +237,30 @@ export function ProfileHeader({
         <DialogContent>
           <List>
             {list.map((f) => (
-              <ListItem key={f.id}>
+              <ListItem key={f._id || f.id}>
                 <ListItemAvatar>
-                  <Avatar src={f.profilePicture} alt={f.fullName}>
-                    {f.fullName?.[0]?.toUpperCase()}
+                  <Avatar
+                    src={f.avatar || undefined}
+                    alt={`${f.firstName || ""} ${f.lastName || ""}`}
+                  >
+                    {(f.firstName || f.lastName || "")[0]?.toUpperCase()}
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText
                   primary={
-                    <Link href={`/profile/${f.id}`} underline="hover">
-                      {f.fullName}
+                    <Link
+                      component={RouterLink}
+                      to={`/profile/${f._id || f.id}`}
+                      underline="hover"
+                      onClick={() => setOpenDialog(null)}
+                    >
+                      {String(
+                        `${f.firstName || ""} ${f.lastName || ""}`.trim() ||
+                          (f.email as string) ||
+                          (f.username as string) ||
+                          (f._id as string) ||
+                          ""
+                      )}
                     </Link>
                   }
                 />
@@ -300,20 +317,22 @@ export function ProfileHeader({
                     fontWeight: 600,
                   }}
                 />
-                <IconButton
-                  onClick={handleOpenAvatarDialog}
-                  size="small"
-                  sx={{
-                    position: "absolute",
-                    right: -6,
-                    bottom: -6,
-                    bgcolor: "background.paper",
-                    border: "1px solid rgba(0,0,0,0.08)",
-                    boxShadow: 1,
-                  }}
-                >
-                  <Edit size={14} />
-                </IconButton>
+                {isOwner && (
+                  <IconButton
+                    onClick={handleOpenAvatarDialog}
+                    size="small"
+                    sx={{
+                      position: "absolute",
+                      right: -6,
+                      bottom: -6,
+                      bgcolor: "background.paper",
+                      border: "1px solid rgba(0,0,0,0.08)",
+                      boxShadow: 1,
+                    }}
+                  >
+                    <Edit size={14} />
+                  </IconButton>
+                )}
               </Box>
 
               <Box sx={{ textAlign: { xs: "center", sm: "left" } }}>
@@ -366,26 +385,28 @@ export function ProfileHeader({
             </Box>
 
             {/* Edit button */}
-            <Button
-              type="button"
-              onClick={() => {
-                try {
-                  onEditClick();
-                } catch (e) {
-                  // ensure exceptions don't prevent UI updates
-                  console.error("onEditClick failed", e);
-                }
-              }}
-              variant="contained"
-              sx={{
-                backgroundColor: "#f97316",
-                textTransform: "none",
-                "&:hover": { backgroundColor: "#ea580c" },
-              }}
-            >
-              <Edit size={16} style={{ marginRight: 8 }} />
-              Change Password
-            </Button>
+            {isOwner && (
+              <Button
+                type="button"
+                onClick={() => {
+                  try {
+                    onEditClick?.();
+                  } catch (e) {
+                    // ensure exceptions don't prevent UI updates
+                    console.error("onEditClick failed", e);
+                  }
+                }}
+                variant="contained"
+                sx={{
+                  backgroundColor: "#f97316",
+                  textTransform: "none",
+                  "&:hover": { backgroundColor: "#ea580c" },
+                }}
+              >
+                <Edit size={16} style={{ marginRight: 8 }} />
+                Change Password
+              </Button>
+            )}
           </Box>
         </Box>
       </Card>

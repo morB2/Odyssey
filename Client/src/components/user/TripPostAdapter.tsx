@@ -67,7 +67,6 @@ export default function TripPostAdapter({
     activities: trip.activities || [],
     images: trip.images || [],
     likes: trip.likes || 0,
-    comments: trip.comments || [],
     isLiked: !!trip.isLiked,
     isSaved: !!trip.isSaved,
     optimizedRoute: trip.optimizedRoute,
