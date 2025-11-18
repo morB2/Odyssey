@@ -10,7 +10,7 @@ import LanguageSwitcher from './LanguageSwitcher';
 export const Navbar: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // const { t } = useTranslation();
+  const { t } = useTranslation();
   const user = useUserStore(state => state.user);
 
   return (
@@ -57,7 +57,7 @@ export const Navbar: FC = () => {
               >
                 <BookImage size={24} />
                 <Typography variant="caption" sx={{ mt: 0.3 }}>
-                  Feed
+                  {t('feed')}
                 </Typography>
               </Box>
 
@@ -75,7 +75,7 @@ export const Navbar: FC = () => {
               >
                 <Sparkles size={24} />
                 <Typography variant="caption" sx={{ mt: 0.3 }}>
-                  Create Trip
+                  {t('createTrip')}
                 </Typography>
               </Box>
             </>
@@ -97,7 +97,7 @@ export const Navbar: FC = () => {
                   '&:focus': { outline: 'none' },
                 }}
               >
-                Log In
+                {t('logIn')}
               </Button>
               <Button
                 variant="contained"
@@ -110,7 +110,7 @@ export const Navbar: FC = () => {
                   '&:focus': { outline: 'none' },
                 }}
               >
-                Sign Up
+                {t('signUp')}
               </Button>
             </Box>
           )}
