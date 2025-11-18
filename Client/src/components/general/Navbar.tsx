@@ -51,7 +51,7 @@ function Navbar() {
                   '&:hover': { opacity: 0.8 }
                 }}
               >
-                <Sparkles size={24} />
+                <BookImage size={24} />
                 <Typography variant="caption" sx={{ mt: 0.3 }}>
                   Feed
                 </Typography>
@@ -69,7 +69,7 @@ function Navbar() {
                   '&:hover': { opacity: 0.8 }
                 }}
               >
-                <BookImage size={24} />
+                <Sparkles size={24} />
                 <Typography variant="caption" sx={{ mt: 0.3 }}>
                   Create Trip
                 </Typography>
