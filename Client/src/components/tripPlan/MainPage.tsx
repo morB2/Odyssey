@@ -1,15 +1,14 @@
-import  { useState, useRef, useEffect, useCallback } from 'react';
-import { Box, Card, CardContent, CardHeader, Typography, Stack } from '@mui/material';
-import { Sparkles, Calendar, MapPin } from 'lucide-react';
-import Navbar from '../general/Navbar';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Box, Button, Card, CardContent, CardHeader, TextField, Typography, Chip, Stack, Paper } from '@mui/material';
+import { Sparkles, Send, Calendar, DollarSign, MapPin } from 'lucide-react';
 // IMPORT NEW COMPONENTS
 import ChatWindow from './ChatWindow';
 import ChatInput from './ChatInput';
 import QuickActions from './QuickActions';
 import FeatureCard from './FeatureCard'; // Extracted
 // Assuming types are in a separate file for cleanliness
-import { type Message, type Itinerary } from './types';
-import { getSuggestions, customizeTrip, findOptimalRoute } from '../../services/createTrip.service';
+import { type Message, type Itinerary } from './types'; 
+import { Navbar } from '../general/Navbar';
 
 // --- Initial Data and Feature Card Data ---
 const initialMessage: Message = { id: 1, text: "Hi there! 👋 I'm your AI travel assistant. Tell me about your dream vacation and I'll create a personalized itinerary just for you. Where would you like to go?", sender: 'ai', timestamp: new Date() };
