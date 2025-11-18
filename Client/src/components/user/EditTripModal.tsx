@@ -20,6 +20,7 @@ interface EditTripModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (trip: Trip) => void;
+  setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
 }
 
 export function EditTripModal({
@@ -27,6 +28,7 @@ export function EditTripModal({
   isOpen,
   onClose,
   onSave,
+  setTrips,
 }: EditTripModalProps) {
   const [title, setTitle] = useState(trip?.title || "");
   const [description, setDescription] = useState(trip?.description || "");
@@ -106,7 +108,7 @@ export function EditTripModal({
         }
 
         const res = await fetch(
-          `${BASE_URL}/profile/${userId}/trips/${trip.id}`,
+          `${BASE_URL}/profile/${userId}/trips/${trip._id}`,
           {
             method: "PUT",
             headers: {
@@ -133,8 +135,11 @@ export function EditTripModal({
         const mapModeTransit = (m?: string): "car" | "walk" | "transit" =>
           m === "driving" ? "car" : m === "walking" ? "walk" : "transit";
 
-        const mapped: Trip = {
+        const mapped = {
           id: serverTrip._id || serverTrip.id || trip.id,
+          _id: String(
+            serverTrip._id || serverTrip.id || trip._id || trip.id || ""
+          ),
           title: serverTrip.title || title,
           description: serverTrip.description || description,
           images: serverTrip.images || images,
@@ -156,10 +161,16 @@ export function EditTripModal({
             serverTrip.visabilityStatus === "public" ? "public" : "private",
           activities: serverTrip.activities || activities,
           notes: serverTrip.notes || notes,
-        };
+        } as unknown as Trip;
 
         onSave(mapped);
         onClose();
+        // Also update trips list in parent (match by either id field)
+        setTrips((prevTrips) =>
+          prevTrips.map((t) =>
+            t.id === mapped.id || t._id === mapped._id ? { ...t, ...mapped } : t
+          )
+        );
       } catch (e) {
         console.error("Failed to save trip", e);
         alert(String(e instanceof Error ? e.message : e));

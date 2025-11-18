@@ -1,16 +1,24 @@
-import express from 'express';
-import path from 'path';
-import http from 'http';
-import cors from 'cors';
-import { routesInit } from './routes/config_routes.js';
-import './db/mongoConect.js';
-import { config } from './config/secret.js';
-import { errorHandler } from './middleware/errorHandler.js';
+import express from "express";
+import path from "path";
+import http from "http";
+import cors from "cors";
+import { routesInit } from "./routes/config_routes.js";
+import "./db/mongoConect.js";
+import { config } from "./config/secret.js";
+import { errorHandler } from "./middleware/errorHandler.js";
+import fs from "fs";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// Ensure uploads directory exists and serve it statically
+const uploadsDir = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+app.use("/uploads", express.static(uploadsDir));
 
 routesInit(app);
 

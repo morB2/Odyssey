@@ -1,4 +1,8 @@
 import express from "express";
+import path from "path";
+import multer from "multer";
+import fs from "fs";
+import * as services from "../services/profileServices.js";
 import {
   getProfile,
   listUserTrips,
@@ -9,6 +13,18 @@ import {
 import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
+
+// configure multer for avatar uploads
+const uploadsDir = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+const storage = multer.diskStorage({
+  destination: uploadsDir,
+  filename: (req, file, cb) => {
+    const name = `${Date.now()}-${file.originalname.replace(/\s+/g, "-")}`;
+    cb(null, name);
+  },
+});
+const upload = multer({ storage });
 
 // GET /profile/:userId - get user details
 router.get("/:userId", async (req, res) => {
@@ -57,19 +73,19 @@ router.post("/:userId/changePassword", async (req, res) => {
 // GET /profile/:userId/trips - list trips
 router.get("/:userId/trips", authMiddleware, async (req, res) => {
   try {
-  //   // viewer is authenticated user
-  //   const viewerId = req.user?._id || req.user?.id;
-  //   // ensure the viewer is the profile owner for this endpoint
-  //   if (!viewerId || String(viewerId) !== String(req.params.userId)) {
-  //     console.log("Forbidden access attempt by viewer:", viewerId, "on profile:", req.params.userId);
-      
-  //     return res
-  //       .status(403)
-  //       .json({
-  //         success: false,
-  //         error: "Forbidden: viewer must be profile owner",
-  //       });
-  //   }
+    //   // viewer is authenticated user
+    //   const viewerId = req.user?._id || req.user?.id;
+    //   // ensure the viewer is the profile owner for this endpoint
+    //   if (!viewerId || String(viewerId) !== String(req.params.userId)) {
+    //     console.log("Forbidden access attempt by viewer:", viewerId, "on profile:", req.params.userId);
+
+    //     return res
+    //       .status(403)
+    //       .json({
+    //         success: false,
+    //         error: "Forbidden: viewer must be profile owner",
+    //       });
+    //   }
 
     const trips = await listUserTrips(req.params.userId, req.params.userId);
     res.json({ success: true, trips });
@@ -129,5 +145,95 @@ router.delete("/:userId/trips/:tripId", async (req, res) => {
       .json({ success: false, error: String(err) });
   }
 });
+
+// PUT /profile/:userId/avatar - upload or set avatar URL (protected)
+router.put(
+  "/:userId/avatar",
+  authMiddleware,
+  upload.single("avatar"),
+  async (req, res) => {
+    try {
+      // resolve authenticated id and param id
+      const paramUserId = req.params.userId;
+      const authId =
+        req.user?._id || req.user?.id || req.user?.userId || req.user?.id_str;
+      const resolvedUserId = paramUserId || authId;
+
+      if (!resolvedUserId) {
+        return res
+          .status(400)
+          .json({ success: false, error: "Missing user id" });
+      }
+
+      // if param provided, ensure it matches authenticated user
+      if (paramUserId && authId && String(authId) !== String(paramUserId)) {
+        console.warn(
+          "avatar upload forbidden: auth user does not match target user",
+          { authId, paramUserId }
+        );
+        return res.status(403).json({ success: false, error: "Forbidden" });
+      }
+
+      // Accept either multipart file (field 'avatar') or JSON field 'avatarUrl'
+      let avatarValue = null;
+      if (req.file) {
+        // saved to uploads directory; expose under /uploads
+        avatarValue = `/uploads/${req.file.filename}`;
+      } else if (req.body && req.body.avatarUrl) {
+        avatarValue = req.body.avatarUrl;
+      }
+
+      if (!avatarValue) {
+        return res
+          .status(400)
+          .json({ success: false, error: "No avatar provided" });
+      }
+
+      // If a new avatarValue is provided (file upload or URL), try to remove the previous uploaded avatar file
+      if (avatarValue) {
+        try {
+          const prev = await services
+            .getProfile(resolvedUserId)
+            .catch(() => null);
+          const prevAvatar = prev && prev.avatar ? String(prev.avatar) : null;
+          // only attempt to remove files that are stored under our /uploads path
+          if (
+            prevAvatar &&
+            prevAvatar.includes("/uploads/") &&
+            prevAvatar !== avatarValue
+          ) {
+            // extract filename after /uploads/
+            const idx = prevAvatar.lastIndexOf("/uploads/");
+            let filename = prevAvatar
+              .substring(idx + "/uploads/".length)
+              .split("?")[0];
+            filename = decodeURIComponent(filename);
+            const candidate = path.join(uploadsDir, filename);
+            const normalized = path.normalize(candidate);
+            const uploadsNorm = path.normalize(uploadsDir + path.sep);
+            if (
+              normalized.startsWith(uploadsNorm) &&
+              fs.existsSync(normalized)
+            ) {
+              fs.unlinkSync(normalized);
+            }
+          }
+        } catch (e) {
+          console.warn("failed to remove previous avatar file", e);
+        }
+      }
+
+      const updated = await services.updateProfile(resolvedUserId, {
+        avatar: avatarValue,
+      });
+      res.json({ success: true, user: updated });
+    } catch (err) {
+      console.error("update avatar error", err);
+      return res
+        .status(err.status || 500)
+        .json({ success: false, error: String(err) });
+    }
+  }
+);
 
 export default router;

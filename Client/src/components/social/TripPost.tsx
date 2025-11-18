@@ -146,11 +146,11 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
         let response;
         try {
             if (!trip.isLiked) {
-                response = await axios.post(`http://localhost:3000/likes/${trip.id}/like`, {
+                response = await axios.post(`http://localhost:3000/likes/${trip._id}/like`, {
                     userId: trip.currentUserId,
                 });
             } else {
-                response = await axios.post(`http://localhost:3000/likes/${trip.id}/unlike`, {
+                response = await axios.post(`http://localhost:3000/likes/${trip._id}/unlike`, {
                     userId: trip.currentUserId,
                 });
             }
@@ -164,11 +164,11 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
         let response;
         try {
             if (!trip.isSaved) {
-                response = await axios.post(`http://localhost:3000/saves/${trip.id}/save`, {
+                response = await axios.post(`http://localhost:3000/saves/${trip._id}/save`, {
                     userId: trip.currentUserId,
                 });
             } else {
-                response = await axios.post(`http://localhost:3000/saves/${trip.id}/unsave`, {
+                response = await axios.post(`http://localhost:3000/saves/${trip._id}/unsave`, {
                     userId: trip.currentUserId,
                 });
             }
@@ -180,7 +180,7 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
 
     const postFollow = async () => {
         try {
-            const response = await axios.post(`http://localhost:3000/follow/${trip.user.id}/follow`, {
+            const response = await axios.post(`http://localhost:3000/follow/${trip.user._id}/follow`, {
                 userId: trip.currentUserId,
             });
             console.log('follow response:', response?.data);
@@ -192,7 +192,7 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
     // Add comment handler (optimistic update)
     const handleAddComment = async () => {
         if (!commentText.trim()) return;
-        const response = await axios.post(`http://localhost:3000/trips/${trip.id}/comment`, {
+        const response = await axios.post(`http://localhost:3000/trips/${trip._id}/comment`, {
             userId: trip.currentUserId,
             comment: commentText.trim()
         });
@@ -233,7 +233,7 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
 
         try {
             // You can add an API call here to save the reaction
-            await axios.post(`http://localhost:3000/trips/${trip.id}/comment/${commentId}/react`, {
+            await axios.post(`http://localhost:3000/trips/${trip._id}/comment/${commentId}/react`, {
                 userId: trip.currentUserId,
                 emoji,
             });

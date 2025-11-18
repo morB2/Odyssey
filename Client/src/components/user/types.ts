@@ -44,7 +44,8 @@ export interface Trip {
   user: {
     id?: string;
     _id: string;
-    name: string;
+    firstName: string;
+    lastName: string;
     username: string;
     avatar: string;
     isFollowing: boolean;

@@ -5,11 +5,33 @@ import Save from "../models/savesModel.js";
 import Follow from "../models/followModel.js";
 import bcrypt from "bcrypt";
 
+const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
+
+function normalizeAvatarUrl(avatar) {
+  if (!avatar) return avatar;
+  if (typeof avatar !== "string") return avatar;
+  if (avatar.startsWith("http://") || avatar.startsWith("https://"))
+    return avatar;
+  if (avatar.startsWith("/")) return `${SERVER_URL}${avatar}`;
+  return avatar;
+}
+
 export async function getProfile(userId) {
   if (!userId) throw new Error("userId required");
   const user = await User.findById(userId).select("-password -__v").lean();
   if (!user) throw Object.assign(new Error("User not found"), { status: 404 });
-  return user;
+  // normalize avatar to absolute URL for clients
+  if (user.avatar) user.avatar = normalizeAvatarUrl(user.avatar);
+  // include follower/following counts
+  try {
+    const followersCount = await Follow.countDocuments({ following: user._id });
+    const followingCount = await Follow.countDocuments({ follower: user._id });
+    return { ...user, followersCount, followingCount };
+  } catch (e) {
+    // on error computing counts, return user without counts but log
+    console.warn("failed to compute follow counts for user", userId, e);
+    return user;
+  }
 }
 
 export async function updateProfile(userId, updates) {
@@ -28,6 +50,7 @@ export async function updateProfile(userId, updates) {
     .select("-password -__v")
     .lean();
   if (!user) throw Object.assign(new Error("User not found"), { status: 404 });
+  if (user.avatar) user.avatar = normalizeAvatarUrl(user.avatar);
   return user;
 }
 
@@ -120,6 +143,18 @@ export async function listUserTripsForViewer(ownerId, viewerId) {
     },
     comments: trip.comments || [],
   }));
+
+  // normalize avatars in returned trips
+  for (const t of tripsWithStatus) {
+    if (t.user && t.user.avatar)
+      t.user.avatar = normalizeAvatarUrl(t.user.avatar);
+    if (Array.isArray(t.comments)) {
+      for (const c of t.comments) {
+        if (c.user && c.user.avatar)
+          c.user.avatar = normalizeAvatarUrl(c.user.avatar);
+      }
+    }
+  }
 
   return tripsWithStatus;
 }

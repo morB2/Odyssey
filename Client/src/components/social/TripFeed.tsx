@@ -110,9 +110,9 @@ export function TripFeed() {
             key={trip._id}
             trip={{
               currentUserId: id || '',
-              id: trip._id,
+              _id: trip._id,
               user: {
-                id: trip.user._id,
+                _id: trip.user._id,
                 name: `${trip.user.firstName} ${trip.user.lastName}`,
                 username: trip.user.firstName.toLowerCase() + trip.user.lastName.toLowerCase(),
                 avatar: trip.user.avatar,

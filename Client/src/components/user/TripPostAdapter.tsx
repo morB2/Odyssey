@@ -11,6 +11,31 @@ interface AdapterProps {
   onEdit: () => void;
 }
 
+function adaptComments(apiComments: any[]): Comment[] {
+  return apiComments.map((c) => {
+    const date = new Date(c.createdAt);
+    const time = date.toLocaleString([], {
+      year: "numeric",
+      month: "short", 
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    return {
+      id: c._id,
+      user: {
+        name: `${c.user.firstName} ${c.user.lastName}`,
+        username: ` @${c.user.firstName.toLowerCase()}${c.user.lastName.toLowerCase()}`,
+        avatar: c.user.avatar || "/default-avatar.png",
+      },
+      text: c.comment,
+      timestamp: time, // use formatted time instead of raw timestamp
+      reactionsAggregated: c.reactionsAggregated || {}, // Include aggregated reactions
+    };
+  });
+}
+
 export default function TripPostAdapter({
   trip,
   setTrips,
@@ -28,9 +53,9 @@ export default function TripPostAdapter({
     user: {
       _id: String(trip.user?._id || trip.user?.id || ""),
       id: trip.user?.id || "",
-      name: trip.user?.name || `${trip.user?.id || ""}`,
+      name: trip.user?.firstName + " " + trip.user?.lastName || `${trip.user?.id || ""}`,
       username:
-        (trip.user?.name || "").toLowerCase().replace(/\s+/g, "") ||
+        (trip.user?.firstName + " " + trip.user?.lastName || "").toLowerCase().replace(/\s+/g, "") ||
         trip.user?.id ||
         "",
       avatar: trip.user?.avatar || "/default-avatar.png",
@@ -46,12 +71,15 @@ export default function TripPostAdapter({
     isLiked: !!trip.isLiked,
     isSaved: !!trip.isSaved,
     optimizedRoute: trip.optimizedRoute,
+    comments: adaptComments(trip.comments || []),
   };
+
+  
 
   return (
     <div>
       <TripPost trip={mapped} setTrips={setTrips} />
-      {storeUser?._id === trip.user?.id && (
+      {storeUser?._id === trip.user?._id && (
         <Box sx={{ display: "flex", gap: 1.5, mt: 1 }}>
           <Button
             variant="outlined"

@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Box, Paper, Typography } from "@mui/material";
 import { ProfileHeader } from "./ProfileHeader";
 import { TripsList } from "./TripsList";
-import { EditProfileModal } from "./EditProfileModal";
+import { ChangePasswordModal } from "./EditProfileModal";
 // TripDetailsModal removed; details are shown in-line or via Edit modal now
 import { EditTripModal } from "./EditTripModal";
-import type { Trip, UserProfile, Comment } from "./types";
+import type { Trip, UserProfile } from "./types";
 import { useUserStore } from "../../store/userStore";
 import Navbar from "../general/Navbar";
 
@@ -24,51 +24,7 @@ export default function Profile() {
     "my-trips"
   );
 
-  const adaptComments = useCallback((apiComments: unknown[]): Comment[] => {
-    const list = Array.isArray(apiComments) ? apiComments : [];
-    return list.map((item) => {
-      const c = (item as Record<string, unknown>) || {};
-      const createdAt =
-        typeof c.createdAt === "string"
-          ? c.createdAt
-          : String(c.createdAt ?? "");
-
-      const userObj = (c.user as Record<string, unknown>) || {};
-      const firstName =
-        typeof userObj.firstName === "string" ? userObj.firstName : "";
-      const lastName =
-        typeof userObj.lastName === "string" ? userObj.lastName : "";
-      const avatar =
-        typeof userObj.avatar === "string"
-          ? userObj.avatar
-          : "/default-avatar.png";
-      const username =
-        (typeof userObj.username === "string" && userObj.username) ||
-        (firstName || lastName
-          ? `@${(firstName + lastName).toLowerCase().replace(/\s+/g, "")}`
-          : "");
-
-      const date = new Date(createdAt);
-      const time = date.toLocaleString([], {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-
-      return {
-        id: typeof c._id === "string" ? c._id : String(c.id ?? ""),
-        user: {
-          name: `${firstName} ${lastName}`.trim() || String(userObj.name ?? ""),
-          username: String(username),
-          avatar,
-        },
-        text: typeof c.comment === "string" ? c.comment : String(c.text ?? ""),
-        timestamp: time,
-      };
-    });
-  }, []);
+  // comments adaptation removed — server now returns comment objects suitable for the client
 
   useEffect(() => {
     // When the logged-in user changes, load their profile and initial trips.
@@ -109,10 +65,6 @@ export default function Profile() {
           ? tripsRes.trips
           : [];
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        // const tripsData: Trip[] = rawTrips.map((t: any) =>
-        //   normalizeServerTrip(t)
-        // );
         setTrips(rawTrips);
       } catch (e) {
         if (!mounted) return;
@@ -162,8 +114,6 @@ export default function Profile() {
           : Array.isArray(data?.trips)
           ? data.trips
           : [];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        // const mapped = rawTrips.map((t: any) => normalizeServerTrip(t));
         if (mounted) setTrips(rawTrips);
       } catch (e) {
         console.error("failed to load trips", e);
@@ -176,10 +126,7 @@ export default function Profile() {
     };
   }, [activeTab, storeUser, storeToken]);
 
-  const handleSaveProfile = (updatedUser: UserProfile) => {
-    setUser(updatedUser);
-    setIsEditModalOpen(false);
-  };
+  // password modal replaces previous edit modal
 
   const handleSaveTrip = (updatedTrip: Trip) => {
     setTrips(trips.map((t) => (t.id === updatedTrip.id ? updatedTrip : t)));
@@ -219,6 +166,7 @@ export default function Profile() {
   };
 
   return (
+    // <Navbar />
     <Box
       sx={{
         minHeight: "100vh",
@@ -227,7 +175,6 @@ export default function Profile() {
         flexDirection: "column",
       }}
     >
-      {/* <Navbar /> */}
       {/* <Container maxWidth="lg" sx={{ py: 6 }}> */}
       <Paper
         elevation={3}
@@ -246,6 +193,7 @@ export default function Profile() {
                 }
           }
           onEditClick={() => setIsEditModalOpen(true)}
+          onAvatarSaved={(u) => setUser(u)}
         />
 
         {error && (
@@ -279,19 +227,9 @@ export default function Profile() {
       {/* </Container> */}
 
       {/* Modals */}
-      <EditProfileModal
-        user={
-          user ?? {
-            id: "",
-            firstName: "",
-            lastName: "",
-            email: "",
-            avatar: "",
-          }
-        }
+      <ChangePasswordModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        onSave={handleSaveProfile}
       />
 
       {/* TripDetailsModal removed — details can be viewed in Edit modal or inline components */}
@@ -301,6 +239,7 @@ export default function Profile() {
         isOpen={!!editingTrip}
         onClose={() => setEditingTrip(null)}
         onSave={handleSaveTrip}
+        setTrips={setTrips}
       />
     </Box>
   );

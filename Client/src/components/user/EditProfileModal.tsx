@@ -1,19 +1,19 @@
 import { useState, useEffect, useRef } from "react";
-import type { UserProfile } from "./types";
 import { Modal } from "./Modal";
 import { Box, Button, TextField, Typography, Divider } from "@mui/material";
 import { useUserStore } from "../../store/userStore";
 
-interface EditProfileModalProps {
-  user: UserProfile;
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: (user: UserProfile) => void;
-}
-
 const BASE_URL = "http://localhost:3000";
 
-export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
+interface ChangePasswordModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function ChangePasswordModal({
+  isOpen,
+  onClose,
+}: ChangePasswordModalProps) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -23,7 +23,6 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
   const closeTimer = useRef<number | null>(null);
 
   useEffect(() => {
-    // clear timer when modal closes or component unmounts
     if (!isOpen && closeTimer.current) {
       clearTimeout(closeTimer.current);
       closeTimer.current = null;
@@ -35,6 +34,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
       }
     };
   }, [isOpen]);
+
   const storeToken = useUserStore((s) => s.token);
   const user = useUserStore((s) => s.user);
 
@@ -61,10 +61,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
             authorization: `Bearer ${storeToken}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            currentPassword,
-            newPassword,
-          }),
+          body: JSON.stringify({ currentPassword, newPassword }),
         }
       );
 
@@ -81,7 +78,6 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
       setNewPassword("");
       setConfirmPassword("");
 
-      // auto-close modal after 2.5 seconds
       closeTimer.current = window.setTimeout(() => {
         setSuccess(null);
         onClose();
@@ -99,7 +95,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
       isOpen={isOpen}
       onClose={onClose}
       title="Change Password"
-      maxWidth="lg"
+      maxWidth="sm"
     >
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <Divider sx={{ backgroundColor: "#e5e5e5" }} />
@@ -140,17 +136,6 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                   if (error) setError(null);
                 }}
                 placeholder="Enter current password"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "#ffffff",
-                    "& fieldset": {
-                      borderColor: "#d4d4d4",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#a3a3a3",
-                    },
-                  },
-                }}
               />
             </Box>
 
@@ -178,17 +163,6 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                   if (error) setError(null);
                 }}
                 placeholder="Enter new password"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "#ffffff",
-                    "& fieldset": {
-                      borderColor: "#d4d4d4",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#a3a3a3",
-                    },
-                  },
-                }}
               />
             </Box>
 
@@ -216,17 +190,6 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                   if (error) setError(null);
                 }}
                 placeholder="Confirm new password"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "#ffffff",
-                    "& fieldset": {
-                      borderColor: "#d4d4d4",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#a3a3a3",
-                    },
-                  },
-                }}
               />
             </Box>
 
@@ -237,19 +200,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
               disabled={
                 loading || !currentPassword || !newPassword || !confirmPassword
               }
-              sx={{
-                borderColor: "#d4d4d4",
-                color: "#171717",
-                textTransform: "none",
-                "&:hover": {
-                  borderColor: "#a3a3a3",
-                  backgroundColor: "#fafafa",
-                },
-                "&.Mui-disabled": {
-                  borderColor: "#e5e5e5",
-                  color: "#a3a3a3",
-                },
-              }}
+              sx={{ textTransform: "none" }}
             >
               {loading ? "Changing..." : "Change Password"}
             </Button>
@@ -257,7 +208,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
         </Box>
 
         <Divider sx={{ backgroundColor: "#e5e5e5" }} />
-        {/** Error / Success Messages */}
+
         {error && (
           <>
             <Typography color="error" sx={{ textAlign: "center" }}>
@@ -269,32 +220,18 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
 
         {success && (
           <>
-            {/**color of the success message is orange */}
             <Typography color="orange" sx={{ textAlign: "center" }}>
               {success}
             </Typography>
             <Divider sx={{ backgroundColor: "#e5e5e5" }} />
-            {/* <Typography color="primary" sx={{ textAlign: "center" }}>
-              {success}
-            </Typography>
-            <Divider sx={{ backgroundColor: "#e5e5e5" }} /> */}
           </>
         )}
 
-        {/* Action Buttons */}
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
           <Button
             variant="outlined"
             onClick={onClose}
-            sx={{
-              borderColor: "#d4d4d4",
-              color: "#171717",
-              textTransform: "none",
-              "&:hover": {
-                borderColor: "#a3a3a3",
-                backgroundColor: "#fafafa",
-              },
-            }}
+            sx={{ textTransform: "none" }}
           >
             Cancel
           </Button>
