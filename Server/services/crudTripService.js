@@ -3,7 +3,7 @@ import Like from "../models/likesModel.js";
 import Save from "../models/savesModel.js";
 import Follow from "../models/followModel.js";
 import User from "../models/userModel.js"; // Assuming User has name & avatar
-
+import { clearUserFeedCache } from "../utils/cacheUtils.js";
 /**
  * Get first 10 trips with user info, following, liked, and saved status
  * @param {String} currentUserId - the ID of the current logged-in user
@@ -11,7 +11,7 @@ import User from "../models/userModel.js"; // Assuming User has name & avatar
 
 export async function getTripsForUser(currentUserId) {
   // 1. Get first 10 trips, including user info and populated comment users
-  const trips = await Trip.find()
+  const trips = await Trip.find({ visabilityStatus: "public" })
     .sort({ createdAt: -1 })
     .limit(10)
     .populate({
@@ -64,7 +64,7 @@ export async function getTripsForUser(currentUserId) {
           reactionsByEmoji[reaction.emoji]++;
         });
       }
-      
+
       return {
         ...comment,
         reactionsAggregated: reactionsByEmoji, // Add aggregated reactions
@@ -116,7 +116,7 @@ export async function postCommentForUser(tripId, userId, commentText) {
     .lean();
 
   if (!updatedTrip) throw new Error("Trip not found.");
-
+    await clearUserFeedCache(userId);
   // Get the last added comment (most recent one)
   const newComment = updatedTrip.comments[updatedTrip.comments.length - 1];
 

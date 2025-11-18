@@ -2,7 +2,7 @@ import Trip from "../models/tripModel.js";
 import Like from "../models/likesModel.js";
 import Save from "../models/savesModel.js";
 import Follow from "../models/followModel.js";
-
+import { clearUserFeedCache } from "../utils/cacheUtils.js";
 export const likeTrip = async (userId, tripId) => {
   // Check if the like already exists
   const existingLike = await Like.findOne({ user: userId, trip: tripId });
@@ -18,6 +18,7 @@ export const likeTrip = async (userId, tripId) => {
     { $inc: { likes: 1 } },
     { new: true }
   );
+  await clearUserFeedCache(userId);
   return trip.likes;
 };
 
@@ -35,6 +36,7 @@ export const unlikeTrip = async (userId, tripId) => {
     { $inc: { likes: -1 } },
     { new: true }
   );
+  await clearUserFeedCache(userId);
   return trip.likes;
 };
 

@@ -1,41 +1,11 @@
+
 import { useState, useEffect } from 'react';
 import TripPost from './TripPost';
 import { AppBar, Toolbar, Typography, Container, Box } from '@mui/material';
 import { Explore } from '@mui/icons-material';
 import axios from 'axios';
 import Navbar from '../general/Navbar';
-
-interface Comment {
-  id: string;
-  user: {
-    name: string;
-    username: string;
-    avatar: string;
-  };
-  text: string;
-  timestamp: string;
-  reactionsAggregated?: Record<string, number>;
-}
-interface Trip {
-  _id: string;
-  user: {
-    _id: string;
-    firstName: string;
-    lastName: string;
-    avatar: string;
-    isFollowing: boolean;
-  };
-  title: string;
-  description: string;
-  activities: string[];
-  images: string[];
-  likes: number;
-  comments?: Comment[];
-  isLiked: boolean;
-  isSaved: boolean;
-  optimizedRoute?: any;
-  notes?: string;
-}
+import {type Comment, type Trip} from './types';
 interface StoredUser {
   state: {
     user: {
@@ -110,15 +80,15 @@ export function TripFeed() {
             key={trip._id}
             trip={{
               currentUserId: id || '',
-              id: trip._id,
+              _id: trip._id,
               user: {
-                id: trip.user._id,
-                name: `${trip.user.firstName} ${trip.user.lastName}`,
-                username: trip.user.firstName.toLowerCase() + trip.user.lastName.toLowerCase(),
+                _id: trip.user._id,
+                firstName:trip.user.firstName,
+                lastName: trip.user.lastName,
                 avatar: trip.user.avatar,
                 isFollowing: trip.user.isFollowing,
               },
-              location: trip.title, // or you can adjust if you have separate location
+              title: trip.title, // or you can adjust if you have separate location
               duration: '', // you can calculate duration if needed
               description: trip.description,
               activities: trip.activities,
@@ -129,7 +99,9 @@ export function TripFeed() {
               isSaved: trip.isSaved,
               optimizedRoute: trip.optimizedRoute
             }}
-            setTrips={setTrips}
+            // onLike={handleLike}
+            // onSave={handleSave}
+            // onFollow={handleFollow}
           />
         ))}
       </Container>
