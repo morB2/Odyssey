@@ -1,5 +1,89 @@
-import { AppBar, Toolbar, Box, Button, Link } from '@mui/material';
+// import { AppBar, Toolbar, Box, Button, Link } from '@mui/material';
+// import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
+// import { BookImage, Sparkles } from 'lucide-react';
+// import { useUserStore } from '../../store/userStore';
+// import ProfileMenu from '../user/ProfileMenu';
+
+// function Navbar() {
+//   const navigate = useNavigate();
+//   const location = useLocation();
+//   const user = useUserStore(state => state.user);
+
+//   return (
+//     <AppBar position="absolute" elevation={0} sx={{ background: 'transparent' }}>
+//       <Toolbar sx={{ px: { xs: 2, md: 6 }, py: 2, justifyContent: 'space-between' }}>
+
+//         {/* Left side: Logo */}
+//         <Link
+//           component={RouterLink}
+//           to="/"
+//           sx={{
+//             display: 'flex',
+//             alignItems: 'center',
+//             textDecoration: 'none',
+//             cursor: 'pointer',
+//             '&:hover': { opacity: 0.9 },
+//             transition: 'opacity 0.2s',
+//           }}
+//         >
+//           <Box
+//             component="img"
+//             src="/logo-white.png"
+//             alt="Odyssey Logo"
+//             sx={{ height: { xs: 90, md: 110 }, objectFit: 'contain' }}
+//           />
+//         </Link>
+
+//         {/* Right side: Links + Buttons */}
+//         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }} />
+//         {user ? (
+//           <ProfileMenu />
+//         ) : (
+//           <Box sx={{
+//             display: 'flex',
+//             gap: 1,
+//             minWidth: 'fit-content',
+//             flexShrink: 0,
+//           }}>
+//             <Button
+//               variant="text"
+//               onClick={() => navigate("/login?tab=login", { state: { backgroundLocation: location.pathname } })}
+//               sx={{
+//                 color: 'white',
+//                 mr: 1,
+//                 minWidth: 'auto',
+//                 '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+//                 '&:focus': { outline: 'none' },
+//               }}
+//             >
+//               Log In
+//             </Button>
+//             <Button
+//               variant="contained"
+//               onClick={() => navigate("/login?tab=signup", { state: { backgroundLocation: location.pathname } })}
+//               sx={{
+//                 bgcolor: '#d97706',
+//                 '&:hover': { bgcolor: '#b45309' },
+//                 fontWeight: 600,
+//                 minWidth: 'auto',
+//                 '&:focus': { outline: 'none' },
+//               }}
+//             >
+//               Sign Up
+//             </Button>
+//           </Box>
+//         )}
+//         {/* </Box> */}
+//       </Toolbar>
+//     </AppBar>
+
+//   )
+// }
+
+// export default Navbar
+import { AppBar, Toolbar, Box, Button, Link, IconButton, Typography } from '@mui/material';
 import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
+import { BookImage, Sparkles } from 'lucide-react';
 import { useUserStore } from '../../store/userStore';
 import ProfileMenu from '../user/ProfileMenu';
 
@@ -9,66 +93,82 @@ function Navbar() {
   const user = useUserStore(state => state.user);
 
   return (
-      <AppBar position="absolute" elevation={0} sx={{ background: 'transparent' }}>
-        <Toolbar sx={{ px: { xs: 2, md: 6 }, py: 2, justifyContent: 'space-between' }}>
+    <AppBar position="absolute" elevation={0} sx={{ background: 'transparent' }}>
+      <Toolbar sx={{ px: { xs: 2, md: 6 }, py: 2, justifyContent: 'space-between' }}>
 
-          {/* Left side: Logo */}
-          <Link
-            component={RouterLink}
-            to="/"
-            sx={{ 
-              display: 'flex',
-              alignItems: 'center',
-              textDecoration: 'none',
-              cursor: 'pointer',
-              '&:hover': { opacity: 0.9 },
-              transition: 'opacity 0.2s',
-            }}
-          >
-            <Box 
-              component="img" 
-              src="/logo-white.png" 
-              alt="Odyssey Logo" 
-              sx={{ height: { xs: 90, md: 110 }, objectFit: 'contain' }} 
-            />
-          </Link>
+        {/* Left side: Logo */}
+        <Link
+          component={RouterLink}
+          to="/"
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            textDecoration: 'none',
+            cursor: 'pointer',
+            '&:hover': { opacity: 0.9 },
+            transition: 'opacity 0.2s',
+          }}
+        >
+          <Box
+            component="img"
+            src="/logo-white.png"
+            alt="Odyssey Logo"
+            sx={{ height: { xs: 90, md: 110 }, objectFit: 'contain' }}
+          />
+        </Link>
 
-          {/* Right side: Links + Buttons */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 3, mr: 3 }}>
-              <Link
-                component={RouterLink}
-                to="/features"
-                underline="none"
-                sx={{ color: 'white', '&:hover': { color: '#fcd34d' }, transition: 'color 0.3s' }}
+        {/* Right side: Icons + Buttons */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+
+          {user && (
+            <>
+              {/* Feed Icon + Label */}
+              <Box
+                onClick={() => navigate('/feed')}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  color: 'white',
+                  '&:hover': { opacity: 0.8 }
+                }}
               >
-                Features
-              </Link>
+                <Sparkles size={24} />
+                <Typography variant="caption" sx={{ mt: 0.3 }}>
+                  Feed
+                </Typography>
+              </Box>
 
-              <Link
-                component={RouterLink}
-                to="/about"
-                underline="none"
-                sx={{ color: 'white', '&:hover': { color: '#fcd34d' }, transition: 'color 0.3s' }}
+              {/* AI Trip Creator Icon + Label */}
+              <Box
+                onClick={() => navigate('/createtrip')}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  color: 'white',
+                  '&:hover': { opacity: 0.8 }
+                }}
               >
-                About
-              </Link>
-            </Box>
-          </Box>
+                <BookImage size={24} />
+                <Typography variant="caption" sx={{ mt: 0.3 }}>
+                  Create Trip
+                </Typography>
+              </Box>
+            </>
+          )}
+
           {user ? (
             <ProfileMenu />
           ) : (
-            <Box sx={{ 
-              display: 'flex', 
-              gap: 1,
-              minWidth: 'fit-content',
-              flexShrink: 0,
-            }}>
+            <Box sx={{ display: 'flex', gap: 1, minWidth: 'fit-content', flexShrink: 0 }}>
               <Button
                 variant="text"
                 onClick={() => navigate("/login?tab=login", { state: { backgroundLocation: location.pathname } })}
-                sx={{ 
-                  color: 'white', 
+                sx={{
+                  color: 'white',
                   mr: 1,
                   minWidth: 'auto',
                   '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
@@ -80,9 +180,9 @@ function Navbar() {
               <Button
                 variant="contained"
                 onClick={() => navigate("/login?tab=signup", { state: { backgroundLocation: location.pathname } })}
-                sx={{ 
-                  bgcolor: '#d97706', 
-                  '&:hover': { bgcolor: '#b45309' }, 
+                sx={{
+                  bgcolor: '#d97706',
+                  '&:hover': { bgcolor: '#b45309' },
                   fontWeight: 600,
                   minWidth: 'auto',
                   '&:focus': { outline: 'none' },
@@ -92,11 +192,10 @@ function Navbar() {
               </Button>
             </Box>
           )}
-        {/* </Box> */}
+        </Box>
       </Toolbar>
     </AppBar>
- 
-  )
+  );
 }
 
-export default Navbar
+export default Navbar;

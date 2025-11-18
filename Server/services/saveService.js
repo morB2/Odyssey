@@ -1,6 +1,7 @@
 import Save from "../models/savesModel.js";
 import Trip from "../models/tripModel.js";
 import Follow from "../models/followModel.js";
+import { clearUserFeedCache } from "../utils/cacheUtils.js";
 
 export const saveTrip = async (userId, tripId) => {
   const existingSave = await Save.findOne({ user: userId, trip: tripId });
@@ -8,6 +9,7 @@ export const saveTrip = async (userId, tripId) => {
 
   const save = new Save({ user: userId, trip: tripId });
   await save.save();
+  await clearUserFeedCache(userId);
   return save;
 };
 
@@ -16,6 +18,8 @@ export const unSaveTrip = async (userId, tripId) => {
   if (!existingSave) throw new Error("You have not saved this trip yet.");
 
   await Save.deleteOne({ _id: existingSave._id });
+  await clearUserFeedCache(userId);
+
   return true;
 };
 

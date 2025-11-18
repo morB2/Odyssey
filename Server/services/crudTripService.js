@@ -3,7 +3,7 @@ import Like from "../models/likesModel.js";
 import Save from "../models/savesModel.js";
 import Follow from "../models/followModel.js";
 import User from "../models/userModel.js"; // Assuming User has name & avatar
-
+import { clearUserFeedCache } from "../utils/cacheUtils.js";
 /**
  * Get first 10 trips with user info, following, liked, and saved status
  * @param {String} currentUserId - the ID of the current logged-in user
@@ -116,7 +116,7 @@ export async function postCommentForUser(tripId, userId, commentText) {
     .lean();
 
   if (!updatedTrip) throw new Error("Trip not found.");
-
+    await clearUserFeedCache(userId);
   // Get the last added comment (most recent one)
   const newComment = updatedTrip.comments[updatedTrip.comments.length - 1];
 

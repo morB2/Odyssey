@@ -76,22 +76,33 @@ interface Trip {
 
 interface TripPostProps {
     trip: Trip;
-    onLike: (id: string) => void;
-    onSave: (id: string) => void;
-    onFollow: (username: string) => void;
+    // onLike: (id: string) => void;
+    // onSave: (id: string) => void;
+    // onFollow: (username: string) => void;
 }
 
-export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostProps) {
+export default function TripPost({ trip }: TripPostProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogImageIndex, setDialogImageIndex] = useState(0);
+   const [isLiked, setIsLiked] = useState(trip.isLiked);
+    const [likesCount, setLikesCount] = useState(trip.likes);
+    const [isSaved, setIsSaved] = useState(trip.isSaved);
+    const [isFollowing, setIsFollowing] = useState(trip.user.isFollowing);
 
+    // Update local state when trip prop changes (e.g., initial load or full re-fetch)
+    useEffect(() => {
+        setIsLiked(trip.isLiked);
+        setLikesCount(trip.likes);
+        setIsSaved(trip.isSaved);
+        setIsFollowing(trip.user.isFollowing);
+    }, [trip.isLiked, trip.likes, trip.isSaved, trip.user.isFollowing]);
     // Comments state
     const [showComments, setShowComments] = useState(false);
     const [commentText, setCommentText] = useState('');
     const [comments, setComments] = useState<Comment[]>(trip.comments || []);
     const [hoveredCommentId, setHoveredCommentId] = useState<string | null>(null);
-    
+
     // Initialize reactions from trip comments
     const initializeReactions = (comments: Comment[]) => {
         const reactions: Record<string, Record<string, number>> = {};
@@ -102,11 +113,11 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
         });
         return reactions;
     };
-    
+
     const [commentReactions, setCommentReactions] = useState<Record<string, Record<string, number>>>(
         initializeReactions(trip.comments || [])
     );
-    
+
     // Update reactions when comments change (e.g., when trip data is updated)
     useEffect(() => {
         setCommentReactions(initializeReactions(trip.comments || []));
@@ -145,10 +156,65 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
         );
     };
 
+    // const postLike = async () => {
+    //     let response;
+    //     try {
+    //         if (!trip.isLiked) {
+    //             response = await axios.post(`http://localhost:3000/likes/${trip.id}/like`, {
+    //                 userId: trip.currentUserId,
+    //             });
+    //         } else {
+    //             response = await axios.post(`http://localhost:3000/likes/${trip.id}/unlike`, {
+    //                 userId: trip.currentUserId,
+    //             });
+    //         }
+    //         console.log('Like toggled:', response?.data);
+    //     } catch (error) {
+    //         console.error('Error toggling like:', error);
+    //     }
+    // };
+
+    // const postSave = async () => {
+    //     let response;
+    //     try {
+    //         if (!trip.isSaved) {
+    //             response = await axios.post(`http://localhost:3000/saves/${trip.id}/save`, {
+    //                 userId: trip.currentUserId,
+    //             });
+    //         } else {
+    //             response = await axios.post(`http://localhost:3000/saves/${trip.id}/unsave`, {
+    //                 userId: trip.currentUserId,
+    //             });
+    //         }
+    //         console.log('save toggled:', response?.data);
+    //     } catch (error) {
+    //         console.error('Error toggling save:', error);
+    //     }
+    // };
+
+    // const postFollow = async () => {
+    //     try {
+    //         const response = await axios.post(`http://localhost:3000/follow/${trip.user.id}/follow`, {
+    //             userId: trip.currentUserId,
+    //         });
+    //         console.log('follow response:', response?.data);
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // };
+
+    
     const postLike = async () => {
+        // Optimistic UI update
+        const newIsLiked = !isLiked;
+        const newLikesCount = isLiked ? likesCount - 1 : likesCount + 1;
+        
+        setIsLiked(newIsLiked);
+        setLikesCount(newLikesCount);
+
         let response;
         try {
-            if (!trip.isLiked) {
+            if (!isLiked) { // Use original state for API check
                 response = await axios.post(`http://localhost:3000/likes/${trip.id}/like`, {
                     userId: trip.currentUserId,
                 });
@@ -160,13 +226,21 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
             console.log('Like toggled:', response?.data);
         } catch (error) {
             console.error('Error toggling like:', error);
+            // Rollback optimistic update on error
+            setIsLiked(!newIsLiked);
+            setLikesCount(!newLikesCount);
         }
     };
 
+    // Update postSave to use and update local state
     const postSave = async () => {
+        // Optimistic UI update
+        const newIsSaved = !isSaved;
+        setIsSaved(newIsSaved);
+
         let response;
         try {
-            if (!trip.isSaved) {
+            if (!isSaved) { // Use original state for API check
                 response = await axios.post(`http://localhost:3000/saves/${trip.id}/save`, {
                     userId: trip.currentUserId,
                 });
@@ -178,20 +252,31 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
             console.log('save toggled:', response?.data);
         } catch (error) {
             console.error('Error toggling save:', error);
+            // Rollback optimistic update on error
+            setIsSaved(!newIsSaved);
         }
     };
 
+    // Update postFollow to use and update local state
     const postFollow = async () => {
+        // Optimistic UI update
+        const newIsFollowing = !isFollowing;
+        setIsFollowing(newIsFollowing);
+
         try {
-            const response = await axios.post(`http://localhost:3000/follow/${trip.user.id}/follow`, {
+            // Note: The original logic in TripFeed toggled a property on the trip.user object 
+            // of the *current* trip. Here we assume the API handles the follow/unfollow toggle 
+            // based on the current state.
+            const response = await axios.post(`http://localhost:3000/follow/${trip.user.id}/${isFollowing ? 'unfollow' : 'follow'}`, {
                 userId: trip.currentUserId,
             });
             console.log('follow response:', response?.data);
         } catch (error) {
             console.log(error);
+            // Rollback optimistic update on error
+            setIsFollowing(!newIsFollowing);
         }
     };
-
     // Add comment handler (optimistic update)
     const handleAddComment = async () => {
         if (!commentText.trim()) return;
@@ -219,7 +304,7 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
 
     // Emoji reactions
     const emojiOptions = ['👍', '❤️', '🤣', '😮', '🔥'];
-    
+
     const handleEmojiReaction = async (commentId: string, emoji: string) => {
         // Optimistic UI update
         setCommentReactions((prev) => {
@@ -282,17 +367,17 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
                                     </Typography>
                                 </Box>
                             </Box>
-                            <Button
-                                variant={trip.user.isFollowing ? 'outlined' : 'contained'}
+                            {(trip.user.id != trip.currentUserId) && <Button
+                                variant={isFollowing ? 'outlined' : 'contained'}
                                 size="small"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    onFollow(trip.user.username);
+                                    // onFollow(trip.user.username);
                                     postFollow();
                                 }}
                             >
-                                {trip.user.isFollowing ? 'Following' : 'Follow'}
-                            </Button>
+                                {isFollowing ? 'Following' : 'Follow'}
+                            </Button>}
                         </Box>
                     </CardContent>
 
@@ -454,11 +539,11 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
                                             key={comment.id}
                                             onMouseEnter={() => setHoveredCommentId(comment.id)}
                                             onMouseLeave={() => setHoveredCommentId(null)}
-                                            sx={{ 
+                                            sx={{
                                                 position: 'relative',
-                                                display: 'flex', 
-                                                gap: 1.5, 
-                                                py: 1, 
+                                                display: 'flex',
+                                                gap: 1.5,
+                                                py: 1,
                                                 alignItems: 'flex-start',
                                                 '&:hover': {
                                                     bgcolor: 'rgba(0, 0, 0, 0.02)',
@@ -475,7 +560,7 @@ export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostPro
                                                 <Typography variant="caption" color="text.secondary">
                                                     {comment.timestamp}
                                                 </Typography>
-                                                
+
                                                 {/* Display reactions */}
                                                 {commentReactions[comment.id] && Object.keys(commentReactions[comment.id]).length > 0 && (
                                                     <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, flexWrap: 'wrap' }}>
