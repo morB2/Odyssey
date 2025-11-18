@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { BookImage, Sparkles } from 'lucide-react';
 import { useUserStore } from '../../store/userStore';
 import ProfileMenu from '../user/ProfileMenu';
+import LanguageSwitcher from './LanguageSwitcher';
 
 function Navbar() {
   const navigate = useNavigate();
@@ -76,6 +77,7 @@ function Navbar() {
               </Box>
             </>
           )}
+          <LanguageSwitcher />
 
           {user ? (
             <ProfileMenu />
