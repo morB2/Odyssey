@@ -2,8 +2,8 @@ import React, { type FC } from 'react';
 import { Box, Container, Typography, Grid, Card, CardContent, Chip, Button, Link, } from '@mui/material';
 import { Map, Sparkles, Calendar, DollarSign, Route, Heart, Users, Globe, } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
-import Navbar from './Navbar';
 import { useTranslation } from 'react-i18next';
+import { Navbar } from './Navbar';
 
 
 interface Feature {

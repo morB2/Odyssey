@@ -4,8 +4,8 @@ import TripPost from './TripPost';
 import { AppBar, Toolbar, Typography, Container, Box } from '@mui/material';
 import { Explore } from '@mui/icons-material';
 import axios from 'axios';
-import Navbar from '../general/Navbar';
 import {type Comment, type Trip} from './types';
+import { Navbar } from '../general/Navbar';
 interface StoredUser {
   state: {
     user: {
