@@ -11,21 +11,18 @@ export interface Comment {
   reactionsAggregated?: Record<string, number>;
 }
 
-export interface TripUser {
-  id: string;              // unified id
-  _id?: string;            // optional if coming from backend
-  firstName?: string;      // optional for feed display
-  lastName?: string;       // optional for feed display
-  name?: string;           // optional for TripPost
-  username?: string;       // optional, can be generated from names
+export interface TripUser {            // unified id
+  _id: string;            // optional if coming from backend
+  firstName: string;      // optional for feed display
+  lastName: string;       // optional for feed display       // optional, can be generated from names
   avatar: string;
   isFollowing: boolean;
 }
 
 export interface Trip {
-  id: string;
+  _id: string;
   user: TripUser;
-  title?: string;          // optional for TripPost
+  title: string;          // optional for TripPost
   location?: string;       // optional for TripFeed
   duration?: string;
   description: string;
