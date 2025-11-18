@@ -13,8 +13,6 @@ export const loginUser = async (data: any) => {
 };
 
 export const registerUser = async (data: any) => {
-    console.log("Registering user with data:", data);
-    console.log("API Base URL:", `${BASE_URL}/register`);
   try {
     const res = await api.post(`${BASE_URL}/register`, data);
     return res.data;

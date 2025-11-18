@@ -1,105 +1,90 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Box,
-  Grid,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  TableContainer,
-  Paper,
-  Typography,
-  TextField,
-  IconButton,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  MenuItem,
-  Chip,
+  Box, Grid, Table, TableBody, TableCell, TableHead, TableRow, TableContainer, Paper, Typography,
+  TextField, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, Chip,
+  Checkbox,
 } from "@mui/material";
 import { Search, UserPlus, Trash2, Edit } from "lucide-react";
+import { getAllUsers, updateUser } from "../../services/user.service";
+import type { User, UserRole } from "../../models/user.model";
+import { CheckBox, CheckBoxOutlineBlank } from "@mui/icons-material";
 
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  role: "Admin" | "User" | "Moderator";
-  status: "Active" | "Inactive";
-  joinDate: string;
-};
-
-const initialUsers: User[] = [
-  { id: "1", name: "John Doe", email: "john@example.com", role: "Admin", status: "Active", joinDate: "2024-01-15" },
-  { id: "2", name: "Jane Smith", email: "jane@example.com", role: "User", status: "Active", joinDate: "2024-02-20" },
-  { id: "3", name: "Mike Johnson", email: "mike@example.com", role: "Moderator", status: "Active", joinDate: "2024-03-10" },
-  { id: "4", name: "Sarah Williams", email: "sarah@example.com", role: "User", status: "Inactive", joinDate: "2024-01-05" },
-  { id: "5", name: "David Brown", email: "david@example.com", role: "User", status: "Active", joinDate: "2024-04-12" },
-];
 
 export default function UsersManagement() {
-  const [users, setUsers] = useState<User[]>(initialUsers);
+  const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [newUser, setNewUser] = useState({
-    name: "",
+  const [newUser, setNewUser] = useState<User>({
+    firstName: "",
+    lastName: "",
     email: "",
-    role: "User" as User["role"],
-    status: "Active" as User["status"],
+    role: "user",
+    status: true,
+    preferences: [],
   });
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const allUers = await getAllUsers();
+      console.log("Fetched users:", allUers);
+      setUsers(allUers);
+    };
+
+    fetchUsers();
+  }, []);
+
 
   const filteredUsers = users.filter(
     (user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleAddUser = () => {
-    const user: User = {
-      id: Date.now().toString(),
-      ...newUser,
-      joinDate: new Date().toISOString().split("T")[0],
-    };
-    setUsers([...users, user]);
-    setNewUser({ name: "", email: "", role: "User", status: "Active" });
-    setIsAddDialogOpen(false);
+    // const user: User = {
+    //   id: Date.now().toString(),
+    //   ...newUser,
+    //   joinDate: new Date().toISOString().split("T")[0],
+    // };
+    // setUsers([...users, user]);
+    // setNewUser({ name: "", email: "", role: "User", status: "Active" });
+    // setIsAddDialogOpen(false);
   };
 
-  const handleEditUser = () => {
+  const handleEditUser = async () => {
     if (editingUser) {
-      setUsers(users.map((u) => (u.id === editingUser.id ? editingUser : u)));
-      setEditingUser(null);
+      try {
+        const updatedUser = await updateUser(editingUser._id, editingUser);
+        setUsers(users.map(u => (u._id === updatedUser._id ? updatedUser : u)));
+        setEditingUser(null);
+      } catch (error) {
+        console.error("Error updating user:", error);
+      }
     }
   };
 
   const handleDeleteUser = (id: string) => {
-    setUsers(users.filter((u) => u.id !== id));
+    setUsers(users.filter((u) => u._id !== id));
   };
 
   const getRoleColor = (role: User["role"]) => {
     switch (role) {
-      case "Admin":
+      case "admin":
         return "warning";
-      case "Moderator":
-        return "default";
+      case "user":
+        return "info";
       default:
         return "secondary";
     }
   };
 
-  const getStatusColor = (status: User["status"]) => {
-    return status === "Active" ? "success" : "error";
-  };
-
   return (
-    <Box sx={{ p: 3,backgroundColor:"black" }}>
+    <Box sx={{ p: 3, backgroundColor: "black" }}>
       {/* Header */}
       <Grid container spacing={2} alignItems="center" justifyContent="space-between" mb={3}>
         <Grid size={{ xs: 12, md: 6 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 ,bgcolor:"#18181B",p:1,borderRadius:1}}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, bgcolor: "#18181B", p: 1, borderRadius: 1 }}>
             <Search size={18} color="gray" />
             <TextField
               fullWidth
@@ -108,11 +93,18 @@ export default function UsersManagement() {
               placeholder="Search users by name or email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              sx={{
+                '& .MuiInputBase-input': { color: 'white' },
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'gray' },
+                '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
+                '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'white', },
+                '& .MuiInputLabel-root': { color: 'white', }
+              }}
             />
           </Box>
         </Grid>
 
-        <Grid size={{ xs: 12, md: 3 }} textAlign="right">
+        {/* <Grid size={{ xs: 12, md: 3 }} textAlign="right">
           <Button
             variant="contained"
             color="warning"
@@ -121,7 +113,7 @@ export default function UsersManagement() {
           >
             Add User
           </Button>
-        </Grid>
+        </Grid> */}
       </Grid>
 
       {/* Table */}
@@ -129,32 +121,38 @@ export default function UsersManagement() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell  sx={{color:"white"}}><b>Name</b></TableCell>
-              <TableCell sx={{color:"white"}}><b>Email</b></TableCell>
-              <TableCell sx={{color:"white"}}><b>Role</b></TableCell>
-              <TableCell sx={{color:"white"}}><b>Status</b></TableCell>
-              <TableCell sx={{color:"white"}}><b>Join Date</b></TableCell>
-              <TableCell align="right" sx={{color:"white"}}><b>Actions</b></TableCell>
+              <TableCell sx={{ color: "white" }}><b>Name</b></TableCell>
+              <TableCell sx={{ color: "white" }}><b>Email</b></TableCell>
+              <TableCell sx={{ color: "white" }}><b>Role</b></TableCell>
+              <TableCell sx={{ color: "white" }}><b>Status</b></TableCell>
+              <TableCell sx={{ color: "white" }}><b>Join Date</b></TableCell>
+              <TableCell align="right" sx={{ color: "white" }}><b>Actions</b></TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
             {filteredUsers.map((user) => (
-              <TableRow key={user.id} hover sx={{ color:"white"}}>
-                <TableCell sx={{color:"white"}}>{user.name}</TableCell>
-                <TableCell sx={{color:"white"}}>{user.email}</TableCell>
+              <TableRow key={user._id} hover sx={{ color: "white" }}>
+                <TableCell sx={{ color: "white" }}>{user.firstName} {user.lastName}</TableCell>
+                <TableCell sx={{ color: "white" }}>{user.email}</TableCell>
                 <TableCell>
                   <Chip label={user.role} color={getRoleColor(user.role)} />
                 </TableCell>
                 <TableCell>
-                  <Chip label={user.status} color={getStatusColor(user.status)} />
+                  <Checkbox
+                    checked={user.status}
+                    disabled
+                    icon={<CheckBoxOutlineBlank sx={{ color: "white" }} />}
+                    checkedIcon={<CheckBox sx={{ color: "white" }} />}
+                    sx={{ p: 0 }}
+                  />
                 </TableCell>
-                <TableCell sx={{color:"white"}}>{user.joinDate}</TableCell>
+                <TableCell sx={{ color: "white" }}>{user.createdAt}</TableCell>
                 <TableCell align="right">
-                  <IconButton color="default" onClick={() => setEditingUser({ ...user })}>
+                  <IconButton sx={{ color: "white" }} onClick={() => setEditingUser({ ...user })}>
                     <Edit size={18} />
                   </IconButton>
-                  <IconButton color="error" onClick={() => handleDeleteUser(user.id)}>
+                  <IconButton color="error" onClick={() => handleDeleteUser(user._id!)}>
                     <Trash2 size={18} />
                   </IconButton>
                 </TableCell>
@@ -171,13 +169,13 @@ export default function UsersManagement() {
       )}
 
       {/* Add Dialog */}
-      <Dialog open={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false)}>
+      {/* <Dialog open={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false)} >
         <DialogTitle>Add New User</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
           <TextField
             label="Name"
-            value={newUser.name}
-            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+            value={newUser.firstName}
+            onChange={(e) => setNewUser({ ...newUser, firstName: e.target.value })}
             fullWidth
           />
           <TextField
@@ -195,14 +193,13 @@ export default function UsersManagement() {
             fullWidth
           >
             <MenuItem value="User">User</MenuItem>
-            <MenuItem value="Moderator">Moderator</MenuItem>
             <MenuItem value="Admin">Admin</MenuItem>
           </TextField>
           <TextField
             label="Status"
             select
             value={newUser.status}
-            onChange={(e) => setNewUser({ ...newUser, status: e.target.value as User["status"] })}
+            onChange={(e) => setNewUser({ ...newUser, status: e.target.value as unknown as boolean })}
             fullWidth
           >
             <MenuItem value="Active">Active</MenuItem>
@@ -215,18 +212,21 @@ export default function UsersManagement() {
             Add User
           </Button>
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
 
       {/* Edit Dialog */}
-      <Dialog open={!!editingUser} onClose={() => setEditingUser(null)}>
-        <DialogTitle>Edit User</DialogTitle>
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+      <Dialog open={!!editingUser} onClose={() => setEditingUser(null)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle sx={{ padding: "10px" }}>Edit User</DialogTitle>
+        <DialogContent sx={{ display: "flex", padding: '16px', flexDirection: "column", gap: 3, pt: 2, mb: 2, mt: 1 }}>
           {editingUser && (
             <>
               <TextField
                 label="Name"
-                value={editingUser.name}
-                onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
+                value={editingUser.firstName}
+                onChange={(e) => setEditingUser({ ...editingUser, firstName: e.target.value })}
                 fullWidth
               />
               <TextField
@@ -240,22 +240,23 @@ export default function UsersManagement() {
                 label="Role"
                 select
                 value={editingUser.role}
-                onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as User["role"] })}
+                onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as UserRole })}
                 fullWidth
               >
-                <MenuItem value="User">User</MenuItem>
-                <MenuItem value="Moderator">Moderator</MenuItem>
-                <MenuItem value="Admin">Admin</MenuItem>
+                <MenuItem value="user">User</MenuItem>
+                <MenuItem value="admin">Admin</MenuItem>
               </TextField>
               <TextField
                 label="Status"
                 select
-                value={editingUser.status}
-                onChange={(e) => setEditingUser({ ...editingUser, status: e.target.value as User["status"] })}
+                value={editingUser.status ? "true" : "false"}
+                onChange={(e) =>
+                  setEditingUser({ ...editingUser, status: e.target.value === "true" })
+                }
                 fullWidth
               >
-                <MenuItem value="Active">Active</MenuItem>
-                <MenuItem value="Inactive">Inactive</MenuItem>
+                <MenuItem value="true">Active</MenuItem>
+                <MenuItem value="false">Inactive</MenuItem>
               </TextField>
             </>
           )}

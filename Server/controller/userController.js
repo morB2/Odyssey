@@ -1,22 +1,17 @@
-import client from '../config/googleClient.js';
-import { config } from '../config/secret.js';
-import { googleLoginS, loginUserS, registerUserS } from '../services/loginService.js';
+import { getAllUsers, updateUser } from '../services/userService.js';
 
-export async function loginUser(userData) {
-    const { email, password } = userData;
-    return await loginUserS(email, password);
+export async function getAll() {
+    const data = await getAllUsers();
+    return data;
 }
 
-export async function registerUser(userData) {
-    const { firstName, lastName, email, password, birthdate } = userData;
-    return await registerUserS(firstName, lastName, email, password, birthdate);
-}
+// export async function create(query) {
+//     const userData = query; 
+//     const newUser = await addUser(userData);
+//     return newUser;
+// }
 
-export async function googleLogin(token) {
-    const ticket = await client.verifyIdToken({
-        idToken: token,
-        audience: config.GOOGLE_CLIENT_ID,
-    });
-
-    return await googleLoginS(ticket);
+export async function update(id, updateData) {
+    const updatedUser = await updateUser(id, updateData);
+    return updatedUser;
 }

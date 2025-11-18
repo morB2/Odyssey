@@ -30,6 +30,7 @@ import {
 } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import {type Comment, type Trip } from './types';
 
 const theme = createTheme({
     palette: {
@@ -39,58 +40,33 @@ const theme = createTheme({
     },
 });
 
-interface Comment {
-    id: string;
-    user: {
-        name: string;
-        username: string;
-        avatar: string;
-    };
-    text: string;
-    timestamp: string;
-    reactionsAggregated?: Record<string, number>;
-}
-
-interface Trip {
-    _id: string;
-    user: {
-        _id: string;
-        name: string;
-        username: string;
-        avatar: string;
-        isFollowing: boolean;
-    };
-    location: string;
-    duration: string;
-    description: string;
-    activities: string[];
-    images: string[];
-    likes: number;
-    comments?: Comment[]; // now typed
-    isLiked: boolean;
-    isSaved: boolean;
-    detailedData?: any;
-    optimizedRoute?: any;
-    currentUserId?: string;
-}
 
 interface TripPostProps {
     trip: Trip;
-    setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
-
 }
 
-export default function TripPost({ trip, setTrips }: TripPostProps) {    
+export default function TripPost({ trip }: TripPostProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogImageIndex, setDialogImageIndex] = useState(0);
+   const [isLiked, setIsLiked] = useState(trip.isLiked);
+    const [likesCount, setLikesCount] = useState(trip.likes);
+    const [isSaved, setIsSaved] = useState(trip.isSaved);
+    const [isFollowing, setIsFollowing] = useState(trip.user.isFollowing);
 
+    // Update local state when trip prop changes (e.g., initial load or full re-fetch)
+    useEffect(() => {
+        setIsLiked(trip.isLiked);
+        setLikesCount(trip.likes);
+        setIsSaved(trip.isSaved);
+        setIsFollowing(trip.user.isFollowing);
+    }, [trip.isLiked, trip.likes, trip.isSaved, trip.user.isFollowing]);
     // Comments state
     const [showComments, setShowComments] = useState(false);
     const [commentText, setCommentText] = useState('');
     const [comments, setComments] = useState<Comment[]>(trip.comments || []);
     const [hoveredCommentId, setHoveredCommentId] = useState<string | null>(null);
-    
+
     // Initialize reactions from trip comments
     const initializeReactions = (comments: Comment[]) => {
         const reactions: Record<string, Record<string, number>> = {};
@@ -101,16 +77,18 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
         });
         return reactions;
     };
-    
+
     const [commentReactions, setCommentReactions] = useState<Record<string, Record<string, number>>>(
         initializeReactions(trip.comments || [])
     );
-    
+
     // Update reactions when comments change (e.g., when trip data is updated)
     useEffect(() => {
         setCommentReactions(initializeReactions(trip.comments || []));
         setComments(trip.comments || []);
     }, [trip.comments]);
+
+    console.log(trip);
 
     const handleCardClick = (e: any) => {
         // Don't open dialog if clicking on interactive elements
@@ -142,10 +120,70 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
         );
     };
 
-    const postLike = async () => {
+    // const postLike = async () => {
+    //     let response;
+    //     try {
+    //         if (!trip.isLiked) {
+    //             response = await axios.post(`http://localhost:3000/likes/${trip.id}/like`, {
+    //                 userId: trip.currentUserId,
+    //             });
+    //         } else {
+    //             response = await axios.post(`http://localhost:3000/likes/${trip.id}/unlike`, {
+    //                 userId: trip.currentUserId,
+    //             });
+    //         }
+    //         console.log('Like toggled:', response?.data);
+    //     } catch (error) {
+    //         console.error('Error toggling like:', error);
+    //     }
+    // };
+
+    // const postSave = async () => {
+    //     let response;
+    //     try {
+    //         if (!trip.isSaved) {
+    //             response = await axios.post(`http://localhost:3000/saves/${trip.id}/save`, {
+    //                 userId: trip.currentUserId,
+    //             });
+    //         } else {
+    //             response = await axios.post(`http://localhost:3000/saves/${trip.id}/unsave`, {
+    //                 userId: trip.currentUserId,
+    //             });
+    //         }
+    //         console.log('save toggled:', response?.data);
+    //     } catch (error) {
+    //         console.error('Error toggling save:', error);
+    //     }
+    // };
+
+    // const postFollow = async () => {
+    //     try {
+    //         const response = await axios.post(`http://localhost:3000/follow/${trip.user.id}/follow`, {
+    //             userId: trip.currentUserId,
+    //         });
+    //         console.log('follow response:', response?.data);
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // };
+
+    
+   const postLike = async () => {
+        // 1. Capture Original State for Rollback
+        const originalIsLiked = isLiked;
+        const originalLikesCount = likesCount;
+
+        // 2. Calculate Optimistic New State
+        const newIsLiked = !originalIsLiked;
+        const newLikesCount = originalIsLiked ? originalLikesCount - 1 : originalLikesCount + 1;
+        
+        // 3. Apply Optimistic UI update
+        setIsLiked(newIsLiked);
+        setLikesCount(newLikesCount);
+
         let response;
         try {
-            if (!trip.isLiked) {
+            if (!originalIsLiked) { 
                 response = await axios.post(`http://localhost:3000/likes/${trip._id}/like`, {
                     userId: trip.currentUserId,
                 });
@@ -156,14 +194,23 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
             }
             console.log('Like toggled:', response?.data);
         } catch (error) {
-            console.error('Error toggling like:', error);
+            console.error('Error toggling like, rolling back:', error);
+            
+            // 4. Rollback on API error (using the captured original values)
+            setIsLiked(originalIsLiked);
+            setLikesCount(originalLikesCount); 
         }
     };
 
+    // Update postSave to use and update local state
     const postSave = async () => {
+        // Optimistic UI update
+        const newIsSaved = !isSaved;
+        setIsSaved(newIsSaved);
+
         let response;
         try {
-            if (!trip.isSaved) {
+            if (!isSaved) { // Use original state for API check
                 response = await axios.post(`http://localhost:3000/saves/${trip._id}/save`, {
                     userId: trip.currentUserId,
                 });
@@ -175,20 +222,31 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
             console.log('save toggled:', response?.data);
         } catch (error) {
             console.error('Error toggling save:', error);
+            // Rollback optimistic update on error
+            setIsSaved(!newIsSaved);
         }
     };
 
+    // Update postFollow to use and update local state
     const postFollow = async () => {
+        // Optimistic UI update
+        const newIsFollowing = !isFollowing;
+        setIsFollowing(newIsFollowing);
+
         try {
-            const response = await axios.post(`http://localhost:3000/follow/${trip.user._id}/follow`, {
+            // Note: The original logic in TripFeed toggled a property on the trip.user object 
+            // of the *current* trip. Here we assume the API handles the follow/unfollow toggle 
+            // based on the current state.
+            const response = await axios.post(`http://localhost:3000/follow/${trip.user._id}/${isFollowing ? 'unfollow' : 'follow'}`, {
                 userId: trip.currentUserId,
             });
             console.log('follow response:', response?.data);
         } catch (error) {
             console.log(error);
+            // Rollback optimistic update on error
+            setIsFollowing(!newIsFollowing);
         }
     };
-
     // Add comment handler (optimistic update)
     const handleAddComment = async () => {
         if (!commentText.trim()) return;
@@ -216,7 +274,7 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
 
     // Emoji reactions
     const emojiOptions = ['👍', '❤️', '🤣', '😮', '🔥'];
-    
+
     const handleEmojiReaction = async (commentId: string, emoji: string) => {
         // Optimistic UI update
         setCommentReactions((prev) => {
@@ -243,38 +301,6 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
         }
     };
 
-    const handleLike = (id: string) => {
-    setTrips((prevTrips) =>
-      prevTrips.map((trip) =>
-        trip._id === id
-          ? {
-            ...trip,
-            isLiked: !trip.isLiked,
-            likes: trip.isLiked ? trip.likes - 1 : trip.likes + 1,
-          }
-          : trip
-      )
-    );
-  };
-
-  const handleSave = (id: string) => {
-    setTrips((prevTrips) =>
-      prevTrips.map((trip) =>
-        trip._id === id ? { ...trip, isSaved: !trip.isSaved } : trip
-      )
-    );
-  };
-
-  const handleFollow = (_id: string) => {
-    setTrips((prevTrips) =>
-      prevTrips.map((trip) =>
-        trip.user._id === _id
-          ? { ...trip, user: { ...trip.user, isFollowing: !trip.user.isFollowing } }
-          : trip
-      )
-    );
-  };
-
     return (
         <>
             <ThemeProvider theme={theme}>
@@ -299,29 +325,29 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
                     <CardContent>
                         <Box display="flex" alignItems="center" justifyContent="space-between">
                             <Box display="flex" alignItems="center" gap={1.5}>
-                                <Avatar src={trip.user.avatar} alt={trip.user.name}>
-                                    {trip.user.name[0]}
+                                <Avatar src={trip.user.avatar} alt={`${trip.user.firstName}  ${trip.user.lastName}`}>
+                                    {trip.user.firstName[0]}
                                 </Avatar>
                                 <Box>
                                     <Typography variant="body1" fontWeight={500}>
-                                        {trip.user.name}
+                                        {trip.user.firstName} {trip.user.lastName}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        @{trip.user.username}
+                                        @{trip.user.firstName.toLowerCase()}{trip.user.lastName.toLowerCase()}
                                     </Typography>
                                 </Box>
                             </Box>
-                            <Button
-                                variant={trip.user.isFollowing ? 'outlined' : 'contained'}
+                            {(trip.user._id != trip.currentUserId) && <Button
+                                variant={isFollowing ? 'outlined' : 'contained'}
                                 size="small"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleFollow(trip.user.username);
+                                    // onFollow(trip.user.username);
                                     postFollow();
                                 }}
                             >
-                                {trip.user.isFollowing ? 'Following' : 'Follow'}
-                            </Button>
+                                {isFollowing ? 'Following' : 'Follow'}
+                            </Button>}
                         </Box>
                     </CardContent>
 
@@ -401,14 +427,14 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         postLike();
-                                        handleLike(trip.id);
+                                        // onLike(trip.id);
                                     }}
-                                    aria-label={trip.isLiked ? 'Unlike' : 'Like'}
-                                    color={trip.isLiked ? 'primary' : 'default'}
+                                    aria-label={isLiked ? 'Unlike' : 'Like'}
+                                    color={isLiked ? 'primary' : 'default'}
                                 >
-                                    {trip.isLiked ? <Favorite /> : <FavoriteBorder />}
+                                    {isLiked ? <Favorite /> : <FavoriteBorder />}
                                 </IconButton>
-                                <Typography variant="body2">{trip.likes}</Typography>
+                                <Typography variant="body2">{likesCount}</Typography>
                             </Box>
                             <Box display="flex" alignItems="center">
                                 <IconButton
@@ -426,13 +452,13 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
                         <IconButton
                             onClick={(e) => {
                                 e.stopPropagation();
-                                handleSave(trip.id);
+                                // onSave(trip.id);
                                 postSave();
                             }}
-                            aria-label={trip.isSaved ? 'Unsave' : 'Save'}
-                            color={trip.isSaved ? 'primary' : 'default'}
+                            aria-label={isSaved ? 'Unsave' : 'Save'}
+                            color={isSaved ? 'primary' : 'default'}
                         >
-                            {trip.isSaved ? <Bookmark /> : <BookmarkBorder />}
+                            {isSaved ? <Bookmark /> : <BookmarkBorder />}
                         </IconButton>
                     </CardActions>
 
@@ -483,11 +509,11 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
                                             key={comment.id}
                                             onMouseEnter={() => setHoveredCommentId(comment.id)}
                                             onMouseLeave={() => setHoveredCommentId(null)}
-                                            sx={{ 
+                                            sx={{
                                                 position: 'relative',
-                                                display: 'flex', 
-                                                gap: 1.5, 
-                                                py: 1, 
+                                                display: 'flex',
+                                                gap: 1.5,
+                                                py: 1,
                                                 alignItems: 'flex-start',
                                                 '&:hover': {
                                                     bgcolor: 'rgba(0, 0, 0, 0.02)',
@@ -504,7 +530,7 @@ export default function TripPost({ trip, setTrips }: TripPostProps) {
                                                 <Typography variant="caption" color="text.secondary">
                                                     {comment.timestamp}
                                                 </Typography>
-                                                
+
                                                 {/* Display reactions */}
                                                 {commentReactions[comment.id] && Object.keys(commentReactions[comment.id]).length > 0 && (
                                                     <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, flexWrap: 'wrap' }}>

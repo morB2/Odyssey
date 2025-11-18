@@ -1,33 +1,32 @@
 import express from 'express';
-import { googleLogin, loginUser, registerUser } from '../controller/loginController.js';
+import { getAll, update } from '../controller/userController.js';
 
 const router = express.Router();
 
-router.post('/login', async (req, res, next) => {
+router.get('/', async (req, res, next) => {
     try {
-        const result = await loginUser(req.body);
+        const result = await getAll(req.query)
         res.json(result);
-    } catch (err) {
-        next(err);
+    } catch (error) {
+        next(error);
     }
 });
 
-router.post('/register', async (req, res, next) => {
-    try {
-        const result = await registerUser(req.body);
-        res.status(201).json(result);
-    } catch (err) {
-        next(err);
-    }
-});
+// router.post('/', async (req, res, next) => {
+//     try {
+//         const result = await create(req.body);
+//         res.status(201).json(result);
+//     } catch (error) {
+//         next(error);
+//     }
+// });
 
-router.post('/google', async (req, res, next) => {
+router.put('/:id', async (req, res, next) => {
     try {
-        const { token } = req.body;
-        const result = await googleLogin(token);
-        res.status(201).json(result);
-    } catch (err) {
-        next(err);
+        const result = await update(req.params.id, req.body);
+        res.json(result);
+    } catch (error) {
+        next(error);
     }
 });
 

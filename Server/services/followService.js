@@ -1,6 +1,6 @@
 import Follow from "../models/followModel.js";
 import User from "../models/userModel.js";
-
+import { clearUserFeedCache } from "../utils/cacheUtils.js";
 const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
 function normalizeAvatar(avatar) {
   if (!avatar || typeof avatar !== "string") return avatar;
@@ -9,7 +9,6 @@ function normalizeAvatar(avatar) {
   if (avatar.startsWith("/")) return `${SERVER_URL}${avatar}`;
   return avatar;
 }
-
 export const followUser = async (followerId, followingId) => {
   if (followerId === followingId)
     throw new Error("You cannot follow yourself.");
@@ -22,6 +21,7 @@ export const followUser = async (followerId, followingId) => {
 
   const follow = new Follow({ follower: followerId, following: followingId });
   await follow.save();
+    await clearUserFeedCache(userId);
   return follow;
 };
 
@@ -33,6 +33,8 @@ export const unfollowUser = async (followerId, followingId) => {
   if (!existingFollow) throw new Error("You are not following this user.");
 
   await Follow.deleteOne({ _id: existingFollow._id });
+  await clearUserFeedCache(userId);
+  
   return true;
 };
 

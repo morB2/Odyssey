@@ -6,6 +6,7 @@ import sendEmail from "./sendEmailRoute.js";
 import like from "./likeRoutes.js"
 import save from "./saveRoutes.js";
 import follow from './followRoutes.js';
+import users from './usersRoute.js';
 import {authMiddleware as autoM} from '../middleware/authMiddleware.js';
 
 export function routesInit(app) {
@@ -18,4 +19,5 @@ export function routesInit(app) {
   app.use('/likes', like);
   app.use('/saves', save);
   app.use('/follow',follow);
+  app.use('/users', users);
 }
