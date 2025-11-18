@@ -4,6 +4,7 @@ import { BookImage, Sparkles } from 'lucide-react';
 import { useUserStore } from '../../store/userStore';
 import ProfileMenu from '../user/ProfileMenu';
 import Search from './Search';
+import LanguageSwitcher from './LanguageSwitcher';
 
 function Navbar() {
   const navigate = useNavigate();
@@ -77,6 +78,7 @@ function Navbar() {
               </Box>
             </>
           )}
+          <LanguageSwitcher />
 
           {user ? (
             <ProfileMenu />

@@ -13,7 +13,13 @@ import './App.css'
 
 function App() {
   const location = useLocation();
+  const { i18n } = useTranslation();
+  const theme = getTheme(i18n.language);
 
+
+  useEffect(() => {
+    document.body.dir = i18n.language === 'he' ? 'rtl' : 'ltr';
+  }, [i18n.language]);
   const state = location.state as { backgroundLocation?: string };
 
   const background = state?.backgroundLocation
@@ -34,14 +40,15 @@ function App() {
         <Route path='/401' element={<Page401 />} />
         <Route path="*" element={<Page404 />} />
 
-      </Routes>
+          </Routes>
 
-      {state?.backgroundLocation && (
-        <Routes>
-          <Route path="/login" element={<Login />} />
-        </Routes>
-      )}
-
+          {state?.backgroundLocation && (
+            <Routes>
+              <Route path="/login" element={<Login />} />
+            </Routes>
+          )}
+        </ThemeProvider>
+      </CacheProvider>
     </>
   )
 }

@@ -1,27 +1,10 @@
-import React from 'react';
-import {
-  Box,
-  Container,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  Chip,
-  Button,
-  Link,
-} from '@mui/material';
-import {
-  Map,
-  Sparkles,
-  Calendar,
-  DollarSign,
-  Route,
-  Heart,
-  Users,
-  Globe,
-} from 'lucide-react';
-import Navbar from './Navbar';
+import React, { type FC } from 'react';
+import { Box, Container, Typography, Grid, Card, CardContent, Chip, Button, Link, } from '@mui/material';
+import { Map, Sparkles, Calendar, DollarSign, Route, Heart, Users, Globe, } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
+import Navbar from './Navbar';
+import { useTranslation } from 'react-i18next';
+
 
 interface Feature {
   icon: React.ReactNode;
@@ -29,22 +12,23 @@ interface Feature {
   description: string;
 }
 
-const Home: React.FC = () => {
+export const Home: FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const features: Feature[] = [
-    { icon: <Route style={{ color: '#b45309', width: 32, height: 32 }} />, title: "Smart Route Planning", description: "AI calculates the most efficient routes, saving you time and maximizing your adventure." },
-    { icon: <Calendar style={{ color: '#b45309', width: 32, height: 32 }} />, title: "Flexible Scheduling", description: "Build day-by-day itineraries that adapt to your pace, with the flexibility to adjust plans on the go." },
-    { icon: <DollarSign style={{ color: '#b45309', width: 32, height: 32 }} />, title: "Budget Optimization", description: "Set your budget and get smart recommendations for cost-effective options." },
-    { icon: <Users style={{ color: '#b45309', width: 32, height: 32 }} />, title: "Traveler Feed", description: "Follow friends and fellow travelers, see updates, stories, and tips from the community." },
-    { icon: <Heart style={{ color: '#b45309', width: 32, height: 32 }} />, title: "Share Your Journey", description: "Post photos, videos, and travel notes for others to discover and get inspired." },
-    { icon: <Globe style={{ color: '#b45309', width: 32, height: 32 }} />, title: "Global Connections", description: "Join travel groups, connect with like-minded explorers, and discover trending destinations worldwide." },
+    { icon: <Route style={{ color: '#b45309', width: 32, height: 32 }} />, title: t('smart_route_planning'), description: t('smart_route_desc') },
+    { icon: <Calendar style={{ color: '#b45309', width: 32, height: 32 }} />, title: t('flexible_scheduling'), description: t('flexible_scheduling_desc') },
+    { icon: <DollarSign style={{ color: '#b45309', width: 32, height: 32 }} />, title: t('budget_optimization'), description: t('budget_optimization_desc') },
+    { icon: <Users style={{ color: '#b45309', width: 32, height: 32 }} />, title: t('traveler_feed'), description: t('traveler_feed_desc') },
+    { icon: <Heart style={{ color: '#b45309', width: 32, height: 32 }} />, title: t('share_your_journey'), description: t('share_your_journey_desc') },
+    { icon: <Globe style={{ color: '#b45309', width: 32, height: 32 }} />, title: t('global_connections'), description: t('global_connections_desc') },
   ];
 
   return (
-    <Box sx={{ 
-      minHeight: '100vh', 
-      width: '100%', 
+    <Box sx={{
+      minHeight: '100vh',
+      width: '100%',
       maxWidth: '100%',
       overflowX: 'hidden',
       boxSizing: 'border-box',
@@ -84,32 +68,32 @@ const Home: React.FC = () => {
           >
             Odyssey
           </Typography>
-          <Typography variant="h4" sx={{ color: 'white', mb: 3, fontWeight: 700 }}>Plan, Share, and Explore</Typography>
+          <Typography variant="h4" sx={{ color: 'white', mb: 3, fontWeight: 700 }}>{t('plan_share_explore')}</Typography>
           <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.9)', mb: 6, maxWidth: '700px', mx: 'auto', fontWeight: 400, lineHeight: 1.6 }}>
-            Odyssey is your all-in-one travel platform: create AI-powered itineraries, share your adventures, follow fellow travelers, and discover amazing destinations worldwide.
+            {t('odyssey_description')}
           </Typography>
 
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, justifyContent: 'center', mb: 8 }}>
-            <Button onClick={() => navigate('/createtrip')} variant="contained" size="large" startIcon={<Sparkles style={{ width: 20, height: 20 }} />} sx={{ bgcolor: '#d97706', '&:hover': { bgcolor: '#b45309' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600 }}>Plan Your Trip</Button>
-            <Button onClick={() => navigate('/feed')} variant="outlined" size="large" sx={{ borderColor: 'white', color: 'white', '&:hover': { bgcolor: 'white', color: 'black', borderColor: 'white' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600, borderWidth: 2 }}>Explore Feed</Button>
+            <Button onClick={() => navigate('/createtrip')} variant="contained" size="large" startIcon={<Sparkles style={{ width: 20, height: 20 }} />} sx={{ bgcolor: '#d97706', '&:hover': { bgcolor: '#b45309' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600 }}>{t('plan_your_trip')}</Button>
+            <Button onClick={() => navigate('/feed')} variant="outlined" size="large" sx={{ borderColor: 'white', color: 'white', '&:hover': { bgcolor: 'white', color: 'black', borderColor: 'white' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600, borderWidth: 2 }}>{t('explore_feed')}</Button>
           </Box>
         </Container>
       </Box>
 
       {/* Features Section */}
-      <Box id="features" sx={{ 
-        width: '100%', 
+      <Box id="features" sx={{
+        width: '100%',
         maxWidth: '100%',
         boxSizing: 'border-box',
-        py: 12, 
-        px: { xs: 3, md: 6 }, 
-        bgcolor: 'white' 
+        py: 12,
+        px: { xs: 3, md: 6 },
+        bgcolor: 'white'
       }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 8 }}>
-            <Chip label="What We Offer" sx={{ mb: 2, bgcolor: '#fef3c7', color: '#92400e', fontWeight: 600, fontSize: '1.25rem', px: 3, py: 1.5, borderRadius: '12px' }} />
-            <Typography variant="h2" sx={{ mb: 2, fontWeight: 700, fontSize: { xs: '2rem', md: '3rem' } }}>Plan Smarter. Share Your Adventures.</Typography>
-            <Typography variant="h6" sx={{ color: 'text.secondary', maxWidth: '800px', mx: 'auto', fontWeight: 400 }}>From AI-powered itineraries to social sharing, Odyssey brings together everything you need for unforgettable journeys.</Typography>
+            <Chip label={t('what_we_offer')} sx={{ mb: 2, bgcolor: '#fef3c7', color: '#92400e', fontWeight: 600, fontSize: '1.25rem', px: 3, py: 1.5, borderRadius: '12px' }} />
+            <Typography variant="h2" sx={{ mb: 2, fontWeight: 700, fontSize: { xs: '2rem', md: '3rem' } }}>{t('plan_smarter_share')}</Typography>
+            <Typography variant="h6" sx={{ color: 'text.secondary', maxWidth: '800px', mx: 'auto', fontWeight: 400 }}>{t('features_description')}</Typography>
           </Box>
 
           <Grid container spacing={4}>
@@ -129,40 +113,40 @@ const Home: React.FC = () => {
       </Box>
 
       {/* Community Section */}
-      <Box id="community" sx={{ 
-        width: '100%', 
+      <Box id="community" sx={{
+        width: '100%',
         maxWidth: '100%',
         boxSizing: 'border-box',
-        py: 12, 
-        px: { xs: 3, md: 6 }, 
-        background: 'linear-gradient(to bottom, #f9fafb, white)' 
+        py: 12,
+        px: { xs: 3, md: 6 },
+        background: 'linear-gradient(to bottom, #f9fafb, white)'
       }}>
         <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
-          <Typography variant="h2" sx={{ mb: 3, fontWeight: 700 }}>Join the Travel Community</Typography>
+          <Typography variant="h2" sx={{ mb: 3, fontWeight: 700 }}>{t('join_travel_community')}</Typography>
           <Typography variant="h6" sx={{ mb: 8, color: 'text.secondary', maxWidth: '700px', mx: 'auto' }}>
-            Follow travelers, share your adventures, get inspired by real experiences, and discover trending destinations.
+            {t('community_description')}
           </Typography>
 
           <Grid container spacing={4}>
             <Grid size={{ xs: 12, md: 4 }}>
               <Card sx={{ p: 3 }}>
                 <Box sx={{ mb: 2 }}><Users style={{ width: 32, height: 32, color: '#b45309' }} /></Box>
-                <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>Connect with Friends</Typography>
-                <Typography color="text.secondary">Follow friends, join travel groups, and interact with fellow explorers.</Typography>
+                <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>{t('connect_with_friends')}</Typography>
+                <Typography color="text.secondary">{t('connect_with_friends_desc')}</Typography>
               </Card>
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <Card sx={{ p: 3 }}>
                 <Box sx={{ mb: 2 }}><Heart style={{ width: 32, height: 32, color: '#b45309' }} /></Box>
-                <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>Share Your Moments</Typography>
-                <Typography color="text.secondary">Upload photos, videos, and travel stories to inspire the community.</Typography>
+                <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>{t('share_your_moments')}</Typography>
+                <Typography color="text.secondary">{t('share_your_moments_desc')}</Typography>
               </Card>
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <Card sx={{ p: 3 }}>
                 <Box sx={{ mb: 2 }}><Map style={{ width: 32, height: 32, color: '#b45309' }} /></Box>
-                <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>Plan Trips Together</Typography>
-                <Typography color="text.secondary">Create itineraries, collaborate with friends, and share your planned routes.</Typography>
+                <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>{t('plan_trips_together')}</Typography>
+                <Typography color="text.secondary">{t('plan_trips_together_desc')}</Typography>
               </Card>
             </Grid>
           </Grid>
@@ -170,59 +154,59 @@ const Home: React.FC = () => {
       </Box>
 
       {/* CTA Section */}
-      <Box sx={{ 
-        width: '100%', 
+      <Box sx={{
+        width: '100%',
         maxWidth: '100%',
         boxSizing: 'border-box',
-        py: 12, 
-        px: { xs: 3, md: 6 }, 
-        background: 'linear-gradient(135deg, #d97706, #b45309)' 
+        py: 12,
+        px: { xs: 3, md: 6 },
+        background: 'linear-gradient(135deg, #d97706, #b45309)'
       }}>
         <Container maxWidth="md" sx={{ textAlign: 'center' }}>
-          <Typography variant="h2" sx={{ color: 'white', mb: 3, fontWeight: 700 }}>Start Planning and Sharing Today</Typography>
-          <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.9)', mb: 5, fontWeight: 400, lineHeight: 1.6 }}>Join Odyssey to plan smart trips, share your journeys, and connect with travelers worldwide.</Typography>
+          <Typography variant="h2" sx={{ color: 'white', mb: 3, fontWeight: 700 }}>{t('start_planning_sharing')}</Typography>
+          <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.9)', mb: 5, fontWeight: 400, lineHeight: 1.6 }}>{t('join_odyssey_description')}</Typography>
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, justifyContent: 'center' }}>
-            <Button onClick={() => navigate('/createtrip')} variant="contained" size="large" startIcon={<Sparkles style={{ width: 20, height: 20 }} />} sx={{ bgcolor: 'white', color: '#b45309', '&:hover': { bgcolor: '#f3f4f6' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600 }}>Plan Your Trip</Button>
-            <Button onClick={() => navigate('/feed')} variant="outlined" size="large" sx={{ borderColor: 'white', color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)', borderColor: 'white' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600, borderWidth: 2 }}>Explore Feed</Button>
+            <Button onClick={() => navigate('/createtrip')} variant="contained" size="large" startIcon={<Sparkles style={{ width: 20, height: 20 }} />} sx={{ bgcolor: 'white', color: '#b45309', '&:hover': { bgcolor: '#f3f4f6' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600 }}>{t('plan_your_trip')}</Button>
+            <Button onClick={() => navigate('/feed')} variant="outlined" size="large" sx={{ borderColor: 'white', color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)', borderColor: 'white' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600, borderWidth: 2 }}>{t('explore_feed')}</Button>
           </Box>
         </Container>
       </Box>
 
       {/* Footer */}
-      <Box sx={{ 
-        width: '100%', 
+      <Box sx={{
+        width: '100%',
         maxWidth: '100%',
         boxSizing: 'border-box',
-        bgcolor: '#111827', 
-        color: 'white', 
-        py: 8, 
-        px: { xs: 3, md: 6 } 
+        bgcolor: '#111827',
+        color: 'white',
+        py: 8,
+        px: { xs: 3, md: 6 }
       }}>
         <Container maxWidth="lg">
           <Grid container spacing={6} sx={{ mb: 6 }}>
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="h5" sx={{ mb: 2, fontWeight: 700, letterSpacing: 1 }}>ODYSSEY</Typography>
-              <Typography sx={{ color: '#9ca3af', mb: 3, maxWidth: 400, lineHeight: 1.7 }}>A social travel platform to plan trips, share adventures, and connect with fellow travelers.</Typography>
+              <Typography sx={{ color: '#9ca3af', mb: 3, maxWidth: 400, lineHeight: 1.7 }}>{t('footer_description')}</Typography>
               <Typography sx={{ color: '#6b7280' }}>© 2025 Odyssey. All rights reserved.</Typography>
             </Grid>
 
             <Grid size={{ xs: 6, md: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Explore</Typography>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>{t('explore')}</Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>Feed</Link>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>Destinations</Link>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>Groups</Link>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>Plan Trip</Link>
+                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>{t('feed')}</Link>
+                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>{t('destinations')}</Link>
+                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>{t('groups')}</Link>
+                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>{t('plan_trip')}</Link>
               </Box>
             </Grid>
 
             <Grid size={{ xs: 6, md: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Support</Typography>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>{t('support')}</Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>Help Center</Link>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>Terms of Service</Link>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>Privacy Policy</Link>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>Contact</Link>
+                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>{t('help_center')}</Link>
+                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>{t('terms_of_service')}</Link>
+                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>{t('privacy_policy')}</Link>
+                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>{t('contact')}</Link>
               </Box>
             </Grid>
           </Grid>
@@ -232,4 +216,3 @@ const Home: React.FC = () => {
   );
 };
 
-export default Home;
