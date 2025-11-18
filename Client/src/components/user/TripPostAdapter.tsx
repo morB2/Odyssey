@@ -26,11 +26,8 @@ export default function TripPostAdapter({
     id: trip.id,
     user: {
       id: trip.user?.id || "",
-      name: trip.user?.name || `${trip.user?.id || ""}`,
-      username:
-        (trip.user?.name || "").toLowerCase().replace(/\s+/g, "") ||
-        trip.user?.id ||
-        "",
+      firstName: trip.user.firstName || "",
+      lastName: trip.user.lastName || "",
       avatar: trip.user?.avatar || "/default-avatar.png",
       isFollowing: !!trip.user?.isFollowing,
     },
