@@ -7,6 +7,9 @@ import MainPage from './components/tripPlan/MainPage';
 import { TripFeed } from './components/social/TripFeed';
 import ForgotPassword from './components/login/ForgotPassword';
 import Dashboard from './components/admin/Dashboard';
+import Page404 from './components/general/404Page';
+import Page401 from './components/general/401Page';
+import './App.css'
 
 function App() {
   const location = useLocation();
@@ -28,7 +31,8 @@ function App() {
         <Route path="/feed" element={<TripFeed />} />
         <Route path="/forgotPassword" element={<ForgotPassword />} />
         <Route path="/admin" element={<Dashboard />} />
-        <Route path="*" element={<Home />} />
+        <Route path='/401' element={<Page401 />} />
+        <Route path="*" element={<Page404 />} />
 
       </Routes>
 

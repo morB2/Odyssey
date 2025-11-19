@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { BookImage, Sparkles } from 'lucide-react';
 import { useUserStore } from '../../store/userStore';
 import ProfileMenu from '../user/ProfileMenu';
+import Search from './Search';
 
 function Navbar() {
   const navigate = useNavigate();
@@ -10,7 +11,7 @@ function Navbar() {
   const user = useUserStore(state => state.user);
 
   return (
-    <AppBar position="absolute" elevation={0} sx={{ background: 'transparent' }}>
+    <AppBar position="fixed" elevation={0} sx={{ background: 'transparent' }}>
       <Toolbar sx={{ px: { xs: 2, md: 6 }, py: 2, justifyContent: 'space-between' }}>
 
         {/* Left side: Logo */}
@@ -36,7 +37,7 @@ function Navbar() {
 
         {/* Right side: Icons + Buttons */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-
+          <Search onSearch={(searchTerm) => console.log('Search term:', searchTerm)} />
           {user && (
             <>
               {/* Feed Icon + Label */}

@@ -1,4 +1,4 @@
-import { fetchTrips,postComment,addReaction } from "../controller/tripController.js";
+import { fetchTrips,postComment,addReaction,postReply } from "../controller/tripController.js";
 import express from "express";
 const router = express.Router();
 
@@ -6,5 +6,6 @@ const router = express.Router();
 router.get("/:id", fetchTrips);
 router.post("/:tripId/comment",  postComment);
 router.post("/:tripId/comment/:commentId/react", addReaction);
+router.post("/:tripId/comment/:commentId/reply", postReply);
 
 export default router;

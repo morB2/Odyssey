@@ -22,6 +22,10 @@ export async function getTripsForUser(currentUserId) {
       path: "comments.user", // 👈 populate comment users too
       select: "_id firstName lastName avatar",
     })
+    .populate({
+      path: "comments.replies.user", // 👈 populate reply users
+      select: "_id firstName lastName avatar",
+    })
     .lean(); // convert to plain objects
 
   // 2. Extract trip and user IDs
@@ -116,7 +120,7 @@ export async function postCommentForUser(tripId, userId, commentText) {
     .lean();
 
   if (!updatedTrip) throw new Error("Trip not found.");
-    await clearUserFeedCache(userId);
+  await clearUserFeedCache(userId);
   // Get the last added comment (most recent one)
   const newComment = updatedTrip.comments[updatedTrip.comments.length - 1];
 
@@ -175,4 +179,53 @@ export async function addReactionToComment(postId, commentId, userId, emoji) {
   const updatedComment = trip.comments.find(c => c._id.toString() === commentId);
 
   return updatedComment;
+}
+
+/**
+ * Adds a reply to a specific comment on a trip.
+ * @param {string} tripId - ID of the trip
+ * @param {string} commentId - ID of the comment to reply to
+ * @param {string} userId - ID of the replying user
+ * @param {string} replyText - Reply content
+ */
+export async function postReplyForUser(tripId, commentId, userId, replyText) {
+  if (!replyText?.trim()) throw new Error("Reply cannot be empty.");
+
+  const updatedTrip = await Trip.findOneAndUpdate(
+    { _id: tripId, "comments._id": commentId },
+    {
+      $push: {
+        "comments.$.replies": {
+          user: userId,
+          comment: replyText,
+        },
+      },
+    },
+    { new: true }
+  )
+    .populate({
+      path: "comments.replies.user",
+      select: "_id firstName lastName avatar",
+    })
+    .lean();
+
+  if (!updatedTrip) throw new Error("Trip or comment not found.");
+
+  // Find the updated comment and the new reply
+  const comment = updatedTrip.comments.find(c => c._id.toString() === commentId);
+  const newReply = comment.replies[comment.replies.length - 1];
+
+  return {
+    _id: newReply._id,
+    comment: newReply.comment,
+    createdAt: newReply.createdAt,
+    user: newReply.user
+      ? {
+        _id: newReply.user._id,
+        firstName: newReply.user.firstName,
+        lastName: newReply.user.lastName,
+        avatar: newReply.user.avatar,
+      }
+      : null,
+  };
 }

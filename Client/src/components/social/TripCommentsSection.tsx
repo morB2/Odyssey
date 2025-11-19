@@ -9,10 +9,21 @@ interface CommentItemProps {
     comment: Comment;
     reactions: Record<string, number> | undefined;
     onReact: (commentId: string, emoji: string) => void;
+    onReply: (commentId: string, replyText: string) => Promise<void>;
+    userAvatar: string | undefined;
 }
 
-const CommentItem = ({ comment, reactions, onReact }: CommentItemProps) => {
+const CommentItem = ({ comment, reactions, onReact, onReply, userAvatar }: CommentItemProps) => {
     const [hoveredCommentId, setHoveredCommentId] = useState<string | null>(null);
+    const [isReplying, setIsReplying] = useState(false);
+    const [replyText, setReplyText] = useState('');
+
+    const handleReplySubmit = async () => {
+        if (!replyText.trim()) return;
+        await onReply(comment.id, replyText.trim());
+        setReplyText('');
+        setIsReplying(false);
+    };
 
     return (
         <Box
@@ -39,6 +50,13 @@ const CommentItem = ({ comment, reactions, onReact }: CommentItemProps) => {
                 <Typography variant="body2">{comment.text}</Typography>
                 <Typography variant="caption" color="text.secondary">
                     {comment.timestamp}
+                </Typography>
+                <Typography
+                    variant="caption"
+                    sx={{ ml: 2, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                    onClick={() => setIsReplying(!isReplying)}
+                >
+                    Reply
                 </Typography>
 
                 {/* Display reactions */}
@@ -105,6 +123,61 @@ const CommentItem = ({ comment, reactions, onReact }: CommentItemProps) => {
                         ))}
                     </Box>
                 )}
+
+                {/* Replies */}
+                {comment.replies && comment.replies.length > 0 && (
+                    <Box sx={{ mt: 1, pl: 2, borderLeft: '2px solid rgba(0,0,0,0.1)' }}>
+                        {comment.replies.map((reply) => (
+                            <Box key={reply.id} sx={{ mb: 1 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Avatar src={reply.user.avatar} sx={{ width: 20, height: 20 }}>
+                                        {reply.user.name[0]}
+                                    </Avatar>
+                                    <Typography variant="subtitle2" sx={{ fontSize: '0.8rem' }}>
+                                        {reply.user.name}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                        {reply.timestamp}
+                                    </Typography>
+                                </Box>
+                                <Typography variant="body2" sx={{ fontSize: '0.85rem', ml: 3.5 }}>
+                                    {reply.text}
+                                </Typography>
+                            </Box>
+                        ))}
+                    </Box>
+                )}
+
+                {/* Reply Input */}
+                {isReplying && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                        <Avatar src={userAvatar} sx={{ width: 24, height: 24 }}>
+                            {'U'}
+                        </Avatar>
+                        <TextField
+                            fullWidth
+                            size="small"
+                            placeholder="Write a reply..."
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleReplySubmit();
+                                }
+                            }}
+                            sx={{ '& .MuiInputBase-input': { fontSize: '0.85rem', py: 0.5 } }}
+                        />
+                        <IconButton
+                            size="small"
+                            color="primary"
+                            disabled={!replyText.trim()}
+                            onClick={handleReplySubmit}
+                        >
+                            <Send fontSize="small" />
+                        </IconButton>
+                    </Box>
+                )}
             </Box>
         </Box>
     );
@@ -117,6 +190,7 @@ interface TripCommentsSectionProps {
     userAvatar: string | undefined;
     onAddComment: (text: string) => Promise<void>;
     onReact: (commentId: string, emoji: string) => Promise<void>;
+    onReply: (commentId: string, replyText: string) => Promise<void>;
 }
 
 export default function TripCommentsSection({
@@ -125,6 +199,7 @@ export default function TripCommentsSection({
     userAvatar,
     onAddComment,
     onReact,
+    onReply,
 }: TripCommentsSectionProps) {
     const [commentText, setCommentText] = useState('');
 
@@ -153,6 +228,8 @@ export default function TripCommentsSection({
                             comment={comment}
                             reactions={commentReactions[comment.id]}
                             onReact={onReact}
+                            onReply={onReply}
+                            userAvatar={userAvatar}
                         />
                     ))
                 ) : (
