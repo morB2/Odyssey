@@ -59,6 +59,7 @@ export function ItinerarySummary({
                 borderRadius: 3,
                 boxShadow: 3,
                 overflow: "hidden",
+                border: 'none',
             }}
         >
             {/* Header Image */}
