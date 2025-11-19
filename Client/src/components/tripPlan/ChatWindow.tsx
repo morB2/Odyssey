@@ -6,7 +6,7 @@ import { type Message, type Itinerary } from './types';
 interface ChatWindowProps {
     messages: Message[];
     isTyping: boolean;
-    scrollAreaRef: RefObject<HTMLDivElement> | null;
+    scrollAreaRef: RefObject<HTMLDivElement | null> | null;
     selectedItinerary: Itinerary | null;
     onSelectItinerary: (itinerary: Itinerary) => void;
     onSelectTravelMode: (mode: string) => void;
