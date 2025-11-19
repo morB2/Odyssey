@@ -8,7 +8,8 @@ import ChatInput from './ChatInput';
 import QuickActions from './QuickActions';
 import FeatureCard from './FeatureCard'; // Extracted
 // Assuming types are in a separate file for cleanliness
-import { type Message, type Itinerary } from './types'; 
+import { type Message, type Itinerary } from './types';
+import { getSuggestions, customizeTrip, findOptimalRoute } from '../../services/createTrip.service';
 
 // --- Initial Data and Feature Card Data ---
 const initialMessage: Message = { id: 1, text: "Hi there! 👋 I'm your AI travel assistant. Tell me about your dream vacation and I'll create a personalized itinerary just for you. Where would you like to go?", sender: 'ai', timestamp: new Date() };
@@ -53,26 +54,19 @@ export default function MainPage() {
         try {
             if (isCustomizing && selectedItinerary && travelMode) {
                 // --- CUSTOMIZATION LOGIC ---
-                const response = await fetch('http://localhost:3000/createTrip/customize', { /* ... */ });
-                const data = await response.json();
-                
+                const data = await customizeTrip({ /* ... */ });
+
                 if (data.success) {
                     const aiUpdateConfirm: Message = { id: messages.length + 2, text: "Got it! ✏️ I've updated your itinerary based on your feedback.", sender: 'ai', timestamp: new Date() };
                     const aiUpdatedTrip: Message = { id: messages.length + 3, text: null, sender: 'ai', timestamp: new Date(), content: { type: 'tripDisplay', data: data } };
                     setMessages((prev) => [...prev, aiUpdateConfirm, aiUpdatedTrip]);
                     setRoute(data.route);
                 } else {
-                     // Error handling for customization
+                    // Error handling for customization
                 }
             } else if (numAiMessages === 0) {
                 // --- INITIAL SUGGESTION LOGIC ---
-                const response = await fetch('http://localhost:3000/createTrip/suggestions', { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ prompt: messageText }) 
-                });
-                
-                const data = await response.json();
+                const data = await getSuggestions(messageText);
 
                 if (data.success && data.suggestions) {
                     setSuggestions(data.suggestions);
@@ -84,15 +78,15 @@ export default function MainPage() {
                     setMessages((prev) => [...prev, aiMessage1, aiMessage2, aiMessage3]);
                     setNumAiMessages(prev => prev + 1);
                 } else {
-                     // Error handling for initial suggestions
+                    // Error handling for initial suggestions
                 }
             } else {
                 // --- FALLBACK LOGIC ---
-                 setTimeout(() => {
+                setTimeout(() => {
                     const aiMessage: Message = { id: messages.length + 2 + numAiMessages, text: "sorry,the server is too busy right now ... try again in a few minutes 😢", sender: 'ai', timestamp: new Date() };
                     setMessages((prev) => [...prev, aiMessage]);
                     setNumAiMessages(prev => prev + 1);
-                 }, 1500);
+                }, 1500);
             }
         } catch (error) {
             console.error("Error:", error);
@@ -126,13 +120,8 @@ export default function MainPage() {
         setIsTyping(true);
 
         try {
-            const response = await fetch('http://localhost:3000/createTrip/findOptimalRoute', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ destinations: selectedItinerary?.destinations, mode: mode.toLowerCase() }),
-            });
-            const data = await response.json();
-            
+            const data = await findOptimalRoute(selectedItinerary?.destinations || [], mode.toLowerCase());
+
             if (data.success) {
                 const aiConfirm: Message = { id: messages.length + 2, text: `Perfect! 🌍 I’ll plan the best ${mode.toLowerCase()} route for your "${selectedItinerary?.title}" trip.`, sender: 'ai', timestamp: new Date() };
                 const aiTripDisplay: Message = { id: messages.length + 3, text: null, sender: 'ai', timestamp: new Date(), content: { type: 'tripDisplay', data: data } };
@@ -173,7 +162,7 @@ export default function MainPage() {
                 <Card sx={{ border: '2px solid #f5f5f5', boxShadow: 8 }}>
                     <CardHeader title={<Stack direction="row" alignItems="center" spacing={1}><Sparkles style={{ color: '#ff6b35', width: 20, height: 20 }} /><Typography variant="h6">AI Travel Assistant</Typography></Stack>} sx={{ background: 'linear-gradient(to right, #fff7ed, #ffffff)' }} />
                     <CardContent sx={{ p: 0 }}>
-                        
+
                         {/* Chat Area Component */}
                         <ChatWindow
                             messages={messages}

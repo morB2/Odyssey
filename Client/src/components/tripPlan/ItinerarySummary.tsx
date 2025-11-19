@@ -27,23 +27,6 @@ export function ItinerarySummary({
     title = "Travel Itinerary",
 }: ItinerarySummaryProps) {
     const [imageUrl, setImageUrl] = useState<string>("");
-
-    // useEffect(() => {
-    //     const fetchImage = async () => {
-    //         const query = items.length > 0 ? items[0].name : title;
-    //         try {
-    //             const response = await fetch(
-    //                 `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)},travel,landscape&content_filter=high&orientation=landscape&client_id=${import.meta.env.VITE_UNSPLASH_KEY}`
-    //             );
-    //             const data = await response.json();
-    //             setImageUrl(data.urls.regular);
-    //         } catch (error) {
-    //             console.error("Failed to fetch image:", error);
-    //         }
-    //     };
-
-    //     fetchImage();
-    // }, [items, title]);
     useEffect(() => {
         const fetchImage = async () => {
             const query = items.length > 0 ? items[0].name : title;
