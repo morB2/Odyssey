@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Box, Button, Card, CardContent, CardHeader, TextField, Typography, Chip, Stack, Paper } from '@mui/material';
-import { Sparkles, Send, Calendar, DollarSign, MapPin } from 'lucide-react';
+import  { useState, useRef, useEffect, useCallback } from 'react';
+import { Box, Card, CardContent, CardHeader, Typography, Stack } from '@mui/material';
+import { Sparkles, Calendar, MapPin } from 'lucide-react';
 import Navbar from '../general/Navbar';
 // IMPORT NEW COMPONENTS
 import ChatWindow from './ChatWindow';

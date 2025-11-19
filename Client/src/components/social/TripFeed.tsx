@@ -1,11 +1,11 @@
-
 import { useState, useEffect } from 'react';
 import TripPost from './TripPost';
-import { AppBar, Toolbar, Typography, Container, Box } from '@mui/material';
-import { Explore } from '@mui/icons-material';
+import { Container, Box } from '@mui/material';
 import axios from 'axios';
 import Navbar from '../general/Navbar';
-import {type Comment, type Trip} from './types';
+import { type Comment, type Trip } from './types';
+import TripFeedSkeleton from './TripFeedSkeleton';
+
 interface StoredUser {
   state: {
     user: {
@@ -21,7 +21,7 @@ function adaptComments(apiComments: any[]): Comment[] {
     const date = new Date(c.createdAt);
     const time = date.toLocaleString([], {
       year: "numeric",
-      month: "short", 
+      month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
@@ -69,41 +69,45 @@ export function TripFeed() {
     fetchTrips();
   }, []);
 
-  if (loading) return <Typography align="center">Loading trips...</Typography>;
-
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#bb986cff' }}>
       <Navbar />
       <Container maxWidth="md" sx={{ py: 3 }}>
-        {trips.map((trip) => (
-          <TripPost
-            key={trip._id}
-            trip={{
-              currentUserId: id || '',
-              _id: trip._id,
-              user: {
-                _id: trip.user._id,
-                firstName:trip.user.firstName,
-                lastName: trip.user.lastName,
-                avatar: trip.user.avatar,
-                isFollowing: trip.user.isFollowing,
-              },
-              title: trip.title, // or you can adjust if you have separate location
-              duration: '', // you can calculate duration if needed
-              description: trip.description,
-              activities: trip.activities,
-              images: trip.images,
-              likes: trip.likes,
-              comments: trip.comments,
-              isLiked: trip.isLiked,
-              isSaved: trip.isSaved,
-              optimizedRoute: trip.optimizedRoute
-            }}
+        {loading ? (
+          Array.from(new Array(3)).map((_, index) => (
+            <TripFeedSkeleton key={index} />
+          ))
+        ) : (
+          trips.map((trip) => (
+            <TripPost
+              key={trip._id}
+              trip={{
+                currentUserId: id || '',
+                _id: trip._id,
+                user: {
+                  _id: trip.user._id,
+                  firstName: trip.user.firstName,
+                  lastName: trip.user.lastName,
+                  avatar: trip.user.avatar,
+                  isFollowing: trip.user.isFollowing,
+                },
+                title: trip.title, // or you can adjust if you have separate location
+                duration: '', // you can calculate duration if needed
+                description: trip.description,
+                activities: trip.activities,
+                images: trip.images,
+                likes: trip.likes,
+                comments: trip.comments,
+                isLiked: trip.isLiked,
+                isSaved: trip.isSaved,
+                optimizedRoute: trip.optimizedRoute
+              }}
             // onLike={handleLike}
             // onSave={handleSave}
             // onFollow={handleFollow}
-          />
-        ))}
+            />
+          ))
+        )}
       </Container>
     </Box>
   );

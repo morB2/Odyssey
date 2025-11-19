@@ -1,16 +1,10 @@
 import {
     Card,
     CardContent,
-    CardActions,
-    Box,
     createTheme,
-    Dialog,
-    DialogTitle,
-    DialogContent,
     ThemeProvider,
 } from '@mui/material';
 import { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
 import { type Comment, type Trip } from './types';
 import { useUserStore } from '../../store/userStore';
 import TripPostHeader from './TripPostHeader';
@@ -19,6 +13,7 @@ import TripPostActions from './TripPostActions';
 import TripPostContent from './TripPostContent';
 import TripCommentsSection from './TripCommentsSection';
 import TripDetailsDialog from './TripDetailsDialog';
+import { toggleLike, toggleSave, toggleFollow, addComment, addReaction, addReply } from '../../services/tripPost.service';
 
 const theme = createTheme({
     palette: {
@@ -81,21 +76,17 @@ export default function TripPost({ trip }: TripPostProps) {
         // Optimistic UI update
         const newIsLiked = !originalIsLiked;
         const newLikesCount = originalIsLiked ? originalLikesCount - 1 : originalLikesCount + 1;
-        
+
         setIsLiked(newIsLiked);
         setLikesCount(newLikesCount);
 
         try {
-            if (!originalIsLiked) { 
-                await axios.post(`http://localhost:3000/likes/${trip._id}/like`, { userId: trip.currentUserId });
-            } else {
-                await axios.post(`http://localhost:3000/likes/${trip._id}/unlike`, { userId: trip.currentUserId });
-            }
+            await toggleLike(trip._id, trip.currentUserId, originalIsLiked);
         } catch (error) {
             console.error('Error toggling like, rolling back:', error);
             // Rollback on API error
             setIsLiked(originalIsLiked);
-            setLikesCount(originalLikesCount); 
+            setLikesCount(originalLikesCount);
         }
     }, [isLiked, likesCount, trip._id, trip.currentUserId]);
 
@@ -104,11 +95,7 @@ export default function TripPost({ trip }: TripPostProps) {
         setIsSaved(newIsSaved); // Optimistic UI update
 
         try {
-            if (!isSaved) { 
-                await axios.post(`http://localhost:3000/saves/${trip._id}/save`, { userId: trip.currentUserId });
-            } else {
-                await axios.post(`http://localhost:3000/saves/${trip._id}/unsave`, { userId: trip.currentUserId });
-            }
+            await toggleSave(trip._id, trip.currentUserId, isSaved);
         } catch (error) {
             console.error('Error toggling save:', error);
             setIsSaved(!newIsSaved); // Rollback optimistic update
@@ -120,10 +107,7 @@ export default function TripPost({ trip }: TripPostProps) {
         setIsFollowing(newIsFollowing); // Optimistic UI update
 
         try {
-            await axios.post(
-                `http://localhost:3000/follow/${trip.user._id}/${isFollowing ? 'unfollow' : 'follow'}`, 
-                { userId: trip.currentUserId }
-            );
+            await toggleFollow(trip.user._id, trip.currentUserId, isFollowing);
         } catch (error) {
             console.error('Error toggling follow:', error);
             setIsFollowing(!newIsFollowing); // Rollback optimistic update
@@ -132,21 +116,18 @@ export default function TripPost({ trip }: TripPostProps) {
 
     const handleAddComment = useCallback(async (commentText: string) => {
         try {
-            const response = await axios.post(`http://localhost:3000/trips/${trip._id}/comment`, {
-                userId: trip.currentUserId,
-                comment: commentText.trim()
-            });
+            const response = await addComment(trip._id, trip.currentUserId, commentText.trim());
 
             // Create and apply optimistic comment
             const newComment: Comment = {
-                id: response.data._id,
+                id: response._id,
                 user: {
-                    name: response.data.user.firstName + " " + response.data.user.lastName,
-                    username: '@' + response.data.user.firstName + response.data.user.lastName,
+                    name: response.user.firstName + " " + response.user.lastName,
+                    username: '@' + response.user.firstName + response.user.lastName,
                     avatar: user?.avatar || '/default-avatar.png',
                 },
                 text: commentText.trim(),
-                timestamp: response.data.createdAt,
+                timestamp: response.createdAt,
             };
 
             setComments((prev) => [newComment, ...prev]);
@@ -171,15 +152,44 @@ export default function TripPost({ trip }: TripPostProps) {
         });
 
         try {
-            await axios.post(`http://localhost:3000/trips/${trip._id}/comment/${commentId}/react`, {
-                userId: trip.currentUserId,
-                emoji,
-            });
+            await addReaction(trip._id, commentId, trip.currentUserId, emoji);
         } catch (error) {
             console.error('Error adding reaction:', error);
             // In a real app, you might decrement the count on failure
         }
     }, [trip._id, trip.currentUserId]);
+
+    const handleAddReply = useCallback(async (commentId: string, replyText: string) => {
+        try {
+            const response = await addReply(trip._id, commentId, trip.currentUserId, replyText.trim());
+
+            // Optimistic update for reply
+            const newReply: Comment = {
+                id: response._id,
+                user: {
+                    name: response.user.firstName + " " + response.user.lastName,
+                    username: '@' + response.user.firstName + response.user.lastName,
+                    avatar: user?.avatar || '/default-avatar.png',
+                },
+                text: replyText.trim(),
+                timestamp: response.createdAt,
+            };
+
+            setComments((prev) =>
+                prev.map((comment) => {
+                    if (comment.id === commentId) {
+                        return {
+                            ...comment,
+                            replies: [...(comment.replies || []), newReply],
+                        };
+                    }
+                    return comment;
+                })
+            );
+        } catch (error) {
+            console.error('Error adding reply:', error);
+        }
+    }, [trip._id, trip.currentUserId, user?.avatar]);
 
 
     // --- Dialog Handlers ---
@@ -223,11 +233,11 @@ export default function TripPost({ trip }: TripPostProps) {
                 onClick={handleCardClick}
             >
                 {/* Header */}
-                <TripPostHeader 
-                    user={trip.user} 
-                    currentUserId={trip.currentUserId||" "}
-                    isFollowing={isFollowing} 
-                    onFollow={postFollow} 
+                <TripPostHeader
+                    user={trip.user}
+                    currentUserId={trip.currentUserId || " "}
+                    isFollowing={isFollowing}
+                    onFollow={postFollow}
                 />
 
                 {/* Image Carousel */}
@@ -252,9 +262,9 @@ export default function TripPost({ trip }: TripPostProps) {
 
                 {/* Content */}
                 <CardContent>
-                    <TripPostContent 
+                    <TripPostContent
                         title={trip.title}
-                        duration={trip.duration||''}
+                        duration={trip.duration || ''}
                         description={trip.description}
                         activities={trip.activities}
                     />
@@ -268,6 +278,7 @@ export default function TripPost({ trip }: TripPostProps) {
                         userAvatar={user?.avatar}
                         onAddComment={handleAddComment}
                         onReact={handleEmojiReaction}
+                        onReply={handleAddReply}
                     />
                 )}
             </Card>
