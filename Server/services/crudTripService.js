@@ -72,6 +72,7 @@ export async function getTripsForUser(currentUserId) {
       return {
         ...comment,
         reactionsAggregated: reactionsByEmoji, // Add aggregated reactions
+        replies: comment.replies || [], // Preserve replies
       };
     });
 
@@ -210,6 +211,9 @@ export async function postReplyForUser(tripId, commentId, userId, replyText) {
     .lean();
 
   if (!updatedTrip) throw new Error("Trip or comment not found.");
+
+  // Clear cache after adding reply
+  await clearUserFeedCache(userId);
 
   // Find the updated comment and the new reply
   const comment = updatedTrip.comments.find(c => c._id.toString() === commentId);

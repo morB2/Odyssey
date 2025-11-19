@@ -26,16 +26,21 @@ function adaptComments(apiComments: any[]): Comment[] {
       minute: "2-digit",
     });
 
+    // Safety checks for user data
+    const firstName = c.user?.firstName || "Unknown";
+    const lastName = c.user?.lastName || "User";
+
     return {
       id: c._id,
       user: {
-        name: `${c.user.firstName} ${c.user.lastName}`,
-        username: ` @${c.user.firstName.toLowerCase()}${c.user.lastName.toLowerCase()}`,
-        avatar: c.user.avatar || "/default-avatar.png",
+        name: `${firstName} ${lastName}`,
+        username: ` @${firstName.toLowerCase()}${lastName.toLowerCase()}`,
+        avatar: c.user?.avatar || "/default-avatar.png",
       },
       text: c.comment,
       timestamp: time, // use formatted time instead of raw timestamp
       reactionsAggregated: c.reactionsAggregated || {}, // Include aggregated reactions
+      replies: c.replies ? adaptComments(c.replies) : [], // Recursively adapt replies
     };
   });
 }
@@ -50,10 +55,10 @@ export function TripFeed() {
     : undefined;
   // Fetch trips from backend
   useEffect(() => {
-    const fetchTrips = async () => {
+    const fetchTripsData = async () => {
       try {
-        const res = await axios.get(`http://localhost:3000/trips/${id}`); // Your API endpoint
-        const tripsData: Trip[] = res.data.map((trip: any) => ({
+        const data = await fetchTrips(id || '');
+        const tripsData: Trip[] = data.map((trip: any) => ({
           ...trip,
           comments: adaptComments(trip.comments || []),
         }));
@@ -65,7 +70,7 @@ export function TripFeed() {
       }
     };
 
-    fetchTrips();
+    fetchTripsData();
   }, []);
 
   return (
