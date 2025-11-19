@@ -240,6 +240,8 @@ import Like from "../models/likesModel.js";
 import Save from "../models/savesModel.js";
 import Follow from "../models/followModel.js";
 import bcrypt from "bcrypt";
+import redis from '../db/redisClient.js';
+import { clearUserFeedCache, clearUserProfileCache } from "../utils/cacheUtils.js";
 import path from "path";
 import fs from "fs";
 
@@ -462,6 +464,11 @@ export async function updateUserTrip(userId, tripId, authUser, updates, files) {
   ).lean();
 
   if (!trip) throw Object.assign(new Error("Trip not found"), { status: 404 });
+
+  // Invalidate caches when trip is updated
+  await clearUserFeedCache(userId);
+  await clearUserProfileCache(userId);
+
   return trip;
 }
 
@@ -475,6 +482,11 @@ export async function deleteUserTrip(userId, tripId, authUser) {
     user: userId,
   }).lean();
   if (!trip) throw Object.assign(new Error("Trip not found"), { status: 404 });
+
+  // Invalidate caches when trip is deleted
+  await clearUserFeedCache(userId);
+  await clearUserProfileCache(userId);
+
   return trip;
 }
 
