@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import TripPost from './TripPost';
 import { Container, Box } from '@mui/material';
 import axios from 'axios';
-import Navbar from '../general/Navbar';
 import { type Comment, type Trip } from './types';
+import { Navbar } from '../general/Navbar';
 import TripFeedSkeleton from './TripFeedSkeleton';
 
 interface StoredUser {

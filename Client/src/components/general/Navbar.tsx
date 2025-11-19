@@ -1,13 +1,17 @@
-import { AppBar, Toolbar, Box, Button, Link, IconButton, Typography } from '@mui/material';
+import type { FC } from 'react';
 import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { BookImage, Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { AppBar, Toolbar, Box, Button, Link, Typography } from '@mui/material';
 import { useUserStore } from '../../store/userStore';
 import ProfileMenu from '../user/ProfileMenu';
+import LanguageSwitcher from './LanguageSwitcher';
 import Search from './Search';
 
-function Navbar() {
+export const Navbar: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  // const { t } = useTranslation();
   const user = useUserStore(state => state.user);
 
   return (
@@ -77,6 +81,7 @@ function Navbar() {
               </Box>
             </>
           )}
+          <LanguageSwitcher />
 
           {user ? (
             <ProfileMenu />
@@ -115,5 +120,3 @@ function Navbar() {
     </AppBar>
   );
 }
-
-export default Navbar;

@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-// import { createPortal } from 'react-dom';
+import { useEffect, type FC } from 'react';
 import { Dialog, DialogContent, DialogActions, Button, Box, Typography } from '@mui/material';
 import { AlertTriangle } from 'lucide-react';
+import { t } from 'i18next';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -11,7 +11,8 @@ interface ConfirmDialogProps {
   message: string;
 }
 
-export function ConfirmDialog({ isOpen, onClose, onConfirm, title, message }: ConfirmDialogProps) {
+export const ConfirmDialog: FC<ConfirmDialogProps> = ({ isOpen, onClose, onConfirm, title, message }) => {
+ 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -81,7 +82,7 @@ export function ConfirmDialog({ isOpen, onClose, onConfirm, title, message }: Co
                 fontWeight: 600,
               }}
             >
-              {title}
+              {t(title)}
             </Typography>
             <Typography
               sx={{
@@ -89,7 +90,7 @@ export function ConfirmDialog({ isOpen, onClose, onConfirm, title, message }: Co
                 fontSize: '0.875rem',
               }}
             >
-              {message}
+              {t(message)}
             </Typography>
           </Box>
         </Box>
@@ -108,7 +109,7 @@ export function ConfirmDialog({ isOpen, onClose, onConfirm, title, message }: Co
             }
           }}
         >
-          Cancel
+          {t('Cancel')}
         </Button>
         <Button
           onClick={handleConfirm}
@@ -121,7 +122,7 @@ export function ConfirmDialog({ isOpen, onClose, onConfirm, title, message }: Co
             }
           }}
         >
-          Confirm
+          {t('Confirm')}
         </Button>
       </DialogActions>
     </Dialog>
