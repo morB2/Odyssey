@@ -32,7 +32,7 @@ export default function MainPage() {
     const [inputMessage, setInputMessage] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const [isCustomizing, setIsCustomizing] = useState(false);
-    const scrollAreaRef = useRef<HTMLDivElement>(null);
+    const scrollAreaRef = useRef<HTMLDivElement | null>(null);
 
     const scrollToBottom = () => { if (scrollAreaRef.current) scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight; };
     useEffect(() => { scrollToBottom(); }, [messages]);
@@ -54,8 +54,7 @@ export default function MainPage() {
         try {
             if (isCustomizing && selectedItinerary && travelMode) {
                 // --- CUSTOMIZATION LOGIC ---
-                const data = await customizeTrip({ /* ... */ });
-
+                const data = await customizeTrip({ prompt: messageText, trip: route });
                 if (data.success) {
                     const aiUpdateConfirm: Message = { id: messages.length + 2, text: "Got it! ✏️ I've updated your itinerary based on your feedback.", sender: 'ai', timestamp: new Date() };
                     const aiUpdatedTrip: Message = { id: messages.length + 3, text: null, sender: 'ai', timestamp: new Date(), content: { type: 'tripDisplay', data: data } };
