@@ -1,17 +1,14 @@
-import  { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Box, Card, CardContent, CardHeader, Typography, Stack } from '@mui/material';
 import { Sparkles, Calendar, MapPin } from 'lucide-react';
-// IMPORT NEW COMPONENTS
 import ChatWindow from './ChatWindow';
 import ChatInput from './ChatInput';
 import QuickActions from './QuickActions';
-import FeatureCard from './FeatureCard'; // Extracted
-// Assuming types are in a separate file for cleanliness
+import FeatureCard from './FeatureCard';
 import { type Message, type Itinerary } from './types';
 import { getSuggestions, customizeTrip, findOptimalRoute } from '../../services/createTrip.service';
 import { Navbar } from '../general/Navbar';
 
-// --- Initial Data and Feature Card Data ---
 const initialMessage: Message = { id: 1, text: "Hi there! 👋 I'm your AI travel assistant. Tell me about your dream vacation and I'll create a personalized itinerary just for you. Where would you like to go?", sender: 'ai', timestamp: new Date() };
 
 const featureData = [
@@ -22,7 +19,6 @@ const featureData = [
 
 
 export default function MainPage() {
-    // --- State Management (All kept here) ---
     const [numAiMessages, setNumAiMessages] = useState(0);
     const [suggestions, setSuggestions] = useState<Itinerary[]>([]);
     const [selectedItinerary, setSelectedItinerary] = useState<Itinerary | null>(null);
@@ -37,12 +33,7 @@ export default function MainPage() {
     const scrollToBottom = () => { if (scrollAreaRef.current) scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight; };
     useEffect(() => { scrollToBottom(); }, [messages]);
 
-    // --- API Handlers (All kept here) ---
-
-    // 1. Send Message Handler (Handles initial prompt and customization)
     const handleSendMessage = useCallback(async (text?: string) => {
-        // ... (API and validation logic from original component) ...
-        // [Simplified for brevity]
         const messageText = text || inputMessage.trim();
         if (!messageText || messageText.length > 2000 || messageText.length < 1) return;
 
@@ -53,7 +44,6 @@ export default function MainPage() {
 
         try {
             if (isCustomizing && selectedItinerary && travelMode) {
-                // --- CUSTOMIZATION LOGIC ---
                 const data = await customizeTrip({ prompt: messageText, trip: route });
                 if (data.success) {
                     const aiUpdateConfirm: Message = { id: messages.length + 2, text: "Got it! ✏️ I've updated your itinerary based on your feedback.", sender: 'ai', timestamp: new Date() };
@@ -61,10 +51,9 @@ export default function MainPage() {
                     setMessages((prev) => [...prev, aiUpdateConfirm, aiUpdatedTrip]);
                     setRoute(data.route);
                 } else {
-                    // Error handling for customization
+                    throw new Error("Customization not found");
                 }
             } else if (numAiMessages === 0) {
-                // --- INITIAL SUGGESTION LOGIC ---
                 const data = await getSuggestions(messageText);
 
                 if (data.success && data.suggestions) {
@@ -77,26 +66,30 @@ export default function MainPage() {
                     setMessages((prev) => [...prev, aiMessage1, aiMessage2, aiMessage3]);
                     setNumAiMessages(prev => prev + 1);
                 } else {
-                    // Error handling for initial suggestions
+                    throw new Error("Suggestions not found");
                 }
             } else {
-                // --- FALLBACK LOGIC ---
                 setTimeout(() => {
                     const aiMessage: Message = { id: messages.length + 2 + numAiMessages, text: "sorry,the server is too busy right now ... try again in a few minutes 😢", sender: 'ai', timestamp: new Date() };
                     setMessages((prev) => [...prev, aiMessage]);
                     setNumAiMessages(prev => prev + 1);
                 }, 1500);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error:", error);
-            // General error message for the user
+           
+                const aiErrorMessage: Message = {
+                    id: messages.length + 2,
+                    text: "We're sorry, but our AI service is currently unavailable. Please try again later. 🙏",
+                    sender: 'ai',
+                    timestamp: new Date()
+                };
+                setMessages((prev) => [...prev, aiErrorMessage]);
         } finally {
             setIsTyping(false);
         }
-    }, [inputMessage, messages.length, numAiMessages, isCustomizing, selectedItinerary, travelMode]);
+    }, [inputMessage, messages.length, numAiMessages, isCustomizing, selectedItinerary, travelMode, route]);
 
-
-    // 2. Select Itinerary Handler
     const handleSelectItinerary = useCallback((itinerary: Itinerary) => {
         if (selectedItinerary && travelMode) return;
 
@@ -122,18 +115,26 @@ export default function MainPage() {
             const data = await findOptimalRoute(selectedItinerary?.destinations || [], mode.toLowerCase());
 
             if (data.success) {
-                const aiConfirm: Message = { id: messages.length + 2, text: `Perfect! 🌍 I’ll plan the best ${mode.toLowerCase()} route for your "${selectedItinerary?.title}" trip.`, sender: 'ai', timestamp: new Date() };
+                const aiConfirm: Message = { id: messages.length + 2, text: `Perfect! 🌍 I'll plan the best ${mode.toLowerCase()} route for your "${selectedItinerary?.title}" trip.`, sender: 'ai', timestamp: new Date() };
                 const aiTripDisplay: Message = { id: messages.length + 3, text: null, sender: 'ai', timestamp: new Date(), content: { type: 'tripDisplay', data: data } };
-                const aiCustomize: Message = { id: messages.length + 4, text: "If there’s anything you’d like me to change, just let me know and I’ll adjust it for you!", sender: "ai", timestamp: new Date() };
+                const aiCustomize: Message = { id: messages.length + 4, text: "If there's anything you'd like me to change, just let me know and I'll adjust it for you!", sender: "ai", timestamp: new Date() };
 
                 setMessages((prev) => [...prev, aiConfirm, aiTripDisplay, aiCustomize]);
                 setIsCustomizing(true);
                 setRoute(data.route);
             } else {
-                console.error('Error fetching optimal route');
+                throw new Error("Route not found");
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error fetching optimal route', err);
+           
+                const aiErrorMessage: Message = {
+                    id: messages.length + 2,
+                    text: "We're sorry, but our AI service is currently unavailable. Please try again later. 🙏",
+                    sender: 'ai',
+                    timestamp: new Date()
+                };
+                setMessages((prev) => [...prev, aiErrorMessage]);
         } finally {
             setIsTyping(false);
         }
