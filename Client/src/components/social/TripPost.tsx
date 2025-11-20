@@ -14,7 +14,7 @@ import TripPostContent from './TripPostContent';
 import TripCommentsSection from './TripCommentsSection';
 import TripDetailsDialog from './TripDetailsDialog';
 import { toggleLike, toggleSave, toggleFollow, addComment, addReaction, addReply } from '../../services/tripPost.service';
-
+import { useTripRealtime } from '../../hooks/useTripRealtime';
 const theme = createTheme({
     palette: {
         primary: {
@@ -67,7 +67,21 @@ export default function TripPost({ trip }: TripPostProps) {
         setCommentReactions(initializeReactions(trip.comments || []));
     }, [trip.isLiked, trip.likes, trip.isSaved, trip.user.isFollowing, trip.comments]);
 
-
+    useTripRealtime({
+        tripId: trip._id,
+        onNewComment: (newComment) => setComments((prev) => [newComment, ...prev]),
+        onNewReaction: (commentId, reactions) =>
+            setCommentReactions((prev) => ({ ...prev, [commentId]: reactions })),
+        onNewReply: (commentId, reply) =>
+            setComments((prev) =>
+                prev.map((c) =>
+                    c.id === commentId
+                        ? { ...c, replies: [...(c.replies || []), reply] }
+                        : c
+                )
+            ),
+        onLikeUpdate: (likes) => setLikesCount(likes),
+    });
     // --- API Handlers ---
     const postLike = useCallback(async () => {
         const originalIsLiked = isLiked;
