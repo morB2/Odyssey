@@ -52,7 +52,7 @@ export default function MainPage() {
                     setMessages((prev) => [...prev, aiUpdateConfirm, aiUpdatedTrip]);
                     setRoute(data.route);
                 } else {
-                    // Error handling for customization
+                    throw new Error("Customization not found");
                 }
             } else if (numAiMessages === 0) {
                 const data = await getSuggestions(messageText);
@@ -67,7 +67,7 @@ export default function MainPage() {
                     setMessages((prev) => [...prev, aiMessage1, aiMessage2, aiMessage3]);
                     setNumAiMessages(prev => prev + 1);
                 } else {
-                    // Error handling for initial suggestions
+                    throw new Error("Suggestions not found");
                 }
             } else {
                 setTimeout(() => {
@@ -76,13 +76,20 @@ export default function MainPage() {
                     setNumAiMessages(prev => prev + 1);
                 }, 1500);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error:", error);
-            // General error message for the user
+           
+                const aiErrorMessage: Message = {
+                    id: messages.length + 2,
+                    text: "We're sorry, but our AI service is currently unavailable. Please try again later. 🙏",
+                    sender: 'ai',
+                    timestamp: new Date()
+                };
+                setMessages((prev) => [...prev, aiErrorMessage]);
         } finally {
             setIsTyping(false);
         }
-    }, [inputMessage, messages.length, numAiMessages, isCustomizing, selectedItinerary, travelMode]);
+    }, [inputMessage, messages.length, numAiMessages, isCustomizing, selectedItinerary, travelMode, route]);
 
     const handleSelectItinerary = useCallback((itinerary: Itinerary) => {
         if (selectedItinerary && travelMode) return;
@@ -109,18 +116,26 @@ export default function MainPage() {
             const data = await findOptimalRoute(selectedItinerary?.destinations || [], mode.toLowerCase());
 
             if (data.success) {
-                const aiConfirm: Message = { id: messages.length + 2, text: `Perfect! 🌍 I’ll plan the best ${mode.toLowerCase()} route for your "${selectedItinerary?.title}" trip.`, sender: 'ai', timestamp: new Date() };
+                const aiConfirm: Message = { id: messages.length + 2, text: `Perfect! 🌍 I'll plan the best ${mode.toLowerCase()} route for your "${selectedItinerary?.title}" trip.`, sender: 'ai', timestamp: new Date() };
                 const aiTripDisplay: Message = { id: messages.length + 3, text: null, sender: 'ai', timestamp: new Date(), content: { type: 'tripDisplay', data: data } };
-                const aiCustomize: Message = { id: messages.length + 4, text: "If there’s anything you’d like me to change, just let me know and I’ll adjust it for you!", sender: "ai", timestamp: new Date() };
+                const aiCustomize: Message = { id: messages.length + 4, text: "If there's anything you'd like me to change, just let me know and I'll adjust it for you!", sender: "ai", timestamp: new Date() };
 
                 setMessages((prev) => [...prev, aiConfirm, aiTripDisplay, aiCustomize]);
                 setIsCustomizing(true);
                 setRoute(data.route);
             } else {
-                console.error('Error fetching optimal route');
+                throw new Error("Route not found");
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error fetching optimal route', err);
+           
+                const aiErrorMessage: Message = {
+                    id: messages.length + 2,
+                    text: "We're sorry, but our AI service is currently unavailable. Please try again later. 🙏",
+                    sender: 'ai',
+                    timestamp: new Date()
+                };
+                setMessages((prev) => [...prev, aiErrorMessage]);
         } finally {
             setIsTyping(false);
         }
