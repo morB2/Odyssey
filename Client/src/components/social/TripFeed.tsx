@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import TripPost from './TripPost';
+import TripPost from './TripPostWithRealtime';
 import { Container, Box } from '@mui/material';
 import { fetchTrips } from '../../services/tripFeed.service';
 import Navbar from '../general/Navbar';
