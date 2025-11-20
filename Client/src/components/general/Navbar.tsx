@@ -1,4 +1,4 @@
-import { AppBar, Toolbar, Box, Button, Link, IconButton, Typography } from '@mui/material';
+import { AppBar, Toolbar, Box, Button, Link, Typography } from '@mui/material';
 import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { BookImage, Sparkles } from 'lucide-react';
 import { useUserStore } from '../../store/userStore';
