@@ -2,8 +2,9 @@ import Report from "../models/reportModel.js";
 
 export const createReport = async (req, res) => {
     try {
-        const { tripId, reason } = req.body;
-        const reporterId = req.user.userId; // Assuming auth middleware adds tokenData
+        const { tripId, reason, userId } = req.body;
+        console.log("user", req.user);
+        const reporterId = userId;
 
         if (!tripId || !reason) {
             return res.status(400).json({ error: "Trip ID and reason are required" });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -10,7 +10,7 @@ import {
     InputLabel,
     Select,
     MenuItem,
-   type SelectChangeEvent,
+    type SelectChangeEvent,
     Typography,
     Box
 } from '@mui/material';
@@ -20,6 +20,7 @@ interface ReportDialogProps {
     open: boolean;
     onClose: () => void;
     tripId: string;
+    userId: string;
 }
 
 const REPORT_REASONS = [
@@ -31,7 +32,7 @@ const REPORT_REASONS = [
     "Other"
 ];
 
-export default function ReportDialog({ open, onClose, tripId }: ReportDialogProps) {
+export default function ReportDialog({ open, onClose, tripId, userId }: ReportDialogProps) {
     const [reason, setReason] = useState('');
     const [customReason, setCustomReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,7 +55,8 @@ export default function ReportDialog({ open, onClose, tripId }: ReportDialogProp
         setError(null);
 
         try {
-            await submitReport(tripId, finalReason);
+            console.log("submitting report", tripId, finalReason, userId);
+            await submitReport(tripId, finalReason, userId);
             onClose();
             // Ideally show a success toast here, but for now just close
             alert("Report submitted successfully. Thank you.");
@@ -76,7 +78,13 @@ export default function ReportDialog({ open, onClose, tripId }: ReportDialogProp
     };
 
     return (
-        <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            fullWidth
+            maxWidth="sm"
+            onClick={(e) => e.stopPropagation()}
+        >
             <DialogTitle>Report Post</DialogTitle>
             <DialogContent>
                 <Box display="flex" flexDirection="column" gap={2} mt={1}>

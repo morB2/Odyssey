@@ -90,6 +90,7 @@ export default function TripPostHeader({ user, currentUserId, isFollowing, onFol
                 open={reportOpen}
                 onClose={() => setReportOpen(false)}
                 tripId={tripId}
+                userId={currentUserId}
             />
         </CardContent>
     );

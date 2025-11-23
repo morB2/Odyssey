@@ -1,19 +1,9 @@
 import api from "./httpService";
 
-export const submitReport = async (tripId: string, reason: string) => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        throw new Error('No authentication token found');
-    }
-
+export const submitReport = async (tripId: string, reason: string, userId: string) => {
     const response = await api.post(
         `/reports`,
-        { tripId, reason },
-        {
-            headers: {
-                'x-api-key': token,
-            },
-        }
+        { tripId, reason, userId }
     );
 
     return response.data;
