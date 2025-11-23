@@ -23,6 +23,7 @@ import { useNavigate } from "react-router-dom";
 import { MapPin, Navigation, ExternalLink, Save } from "lucide-react";
 import { AuthSaveDialog } from "./AuthSaveDialog";
 import { toast } from "react-toastify";
+import { useUserStore } from "../../store/userStore";
 
 interface Location {
   name: string;
@@ -94,8 +95,7 @@ export function TripDisplay({ data }: TripDisplayProps) {
   const [openAuthDialog, setOpenAuthDialog] = useState(false);
 
   const handleSaveClick = () => {
-    const userStorage = localStorage.getItem('user-storage');
-    const user = userStorage ? (JSON.parse(userStorage) as StoredUser).state.user : null;
+   const {user}= useUserStore();
 
     if (user) {
       setOpenDialog(true);
@@ -119,17 +119,14 @@ export function TripDisplay({ data }: TripDisplayProps) {
 
   const handleSaveOption = async (type: "private" | "public") => {
     setOpenDialog(false);
-    const userStorage = localStorage.getItem('user-storage');
-    const id: string | undefined = userStorage
-      ? (JSON.parse(userStorage) as StoredUser).state.user._id
-      : undefined;
+   const {user} =useUserStore();
 
     try {
       const response = await fetch('http://localhost:3000/createTrip/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(
-          { userId: id, title, description, optimizedRoute: { ordered_route, mode, instructions, google_maps_url }, activities, visabilityStatus: type, image: imageUrl }
+          { userId: user?._id, title, description, optimizedRoute: { ordered_route, mode, instructions, google_maps_url }, activities, visabilityStatus: type, image: imageUrl }
         ),
       });
       const result = await response.json();
