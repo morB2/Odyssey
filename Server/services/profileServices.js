@@ -448,7 +448,6 @@ export async function updateUserTrip(userId, tripId, authUser, updates, files) {
     }
   }
 
-  // אם יש קבצים חדשים, מוסיפים את הנתיבים
   if (files && files.length > 0) {
     const newPaths = files.map((f) => `/uploads/${f.filename}`);
     payload.images = payload.images
