@@ -54,7 +54,10 @@ const CommentItem = ({ comment, reactions, onReact, onReply, userAvatar }: Comme
                 <Typography
                     variant="caption"
                     sx={{ ml: 2, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
-                    onClick={() => setIsReplying(!isReplying)}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsReplying(!isReplying);
+                    }}
                 >
                     Reply
                 </Typography>
