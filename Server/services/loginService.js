@@ -15,7 +15,7 @@ function generateToken(user) {
     );
 }
 
-export async function loginUserS(email) {
+export async function loginUserS(email, password) {
     const user = await usersModel.findOne({ email });
     console.log("user", user)
     if (!user) {
@@ -23,7 +23,8 @@ export async function loginUserS(email) {
         error.status = 404;
         throw error;
     }
-
+    console.log("password", password)
+    console.log("user.password", user.password)
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
         const error = new Error('Invalid password');

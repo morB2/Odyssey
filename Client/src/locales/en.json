@@ -103,5 +103,10 @@
     "itinerarySummary": {
         "defaultTitle": "Travel Itinerary",
         "noItems": "No itinerary items yet"
-    }
+    },
+      "travelModes": {
+    "driving": "Driving 🚗",
+    "walking": "Walking 🚶‍♀️",
+    "transit": "Transit 🚌"
+  }
 }
