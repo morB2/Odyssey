@@ -14,7 +14,7 @@ import { ChatWindow } from './ChatWindow';
 
 export const MainPage: FC = () => {
     // --- State Management (All kept here) ---
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [numAiMessages, setNumAiMessages] = useState(0);
     const [suggestions, setSuggestions] = useState<Itinerary[]>([]);
     const [selectedItinerary, setSelectedItinerary] = useState<Itinerary | null>(null);
@@ -28,7 +28,16 @@ export const MainPage: FC = () => {
     const initialMessage: Message = { id: 1, text: t("main_page.initial_message"), sender: 'ai', timestamp: new Date() };
     const [messages, setMessages] = useState<Message[]>([initialMessage]);
 
-        const featureData = [
+    useEffect(() => {
+        setMessages(prevMessages => {
+            if (prevMessages.length === 0) return [{ id: 1, text: t("main_page.initial_message"), sender: 'ai', timestamp: new Date() }];
+            const newMessages = [...prevMessages];
+            newMessages[0] = { ...newMessages[0], text: t("main_page.initial_message") };
+            return newMessages;
+        });
+    }, [i18n.language]);
+
+    const featureData = [
         { icon: <Sparkles color="white" size={24} />, bg: "#ff6b35", title: t("main_page.feature_ai_title"), text: t("main_page.feature_ai_text") },
         { icon: <MapPin color="white" size={24} />, bg: "#000", title: t("main_page.feature_routes_title"), text: t("main_page.feature_routes_text") },
         { icon: <Calendar color="white" size={24} />, bg: "#ff6b35", title: t("main_page.feature_flexible_title"), text: t("main_page.feature_flexible_text") },
@@ -74,21 +83,21 @@ export const MainPage: FC = () => {
                 }
             } else {
                 setTimeout(() => {
-                    const aiMessage: Message = { id: messages.length + 2 + numAiMessages,  text: t("main_page.ai_error_busy"), sender: 'ai', timestamp: new Date() };
+                    const aiMessage: Message = { id: messages.length + 2 + numAiMessages, text: t("main_page.ai_error_busy"), sender: 'ai', timestamp: new Date() };
                     setMessages((prev) => [...prev, aiMessage]);
                     setNumAiMessages(prev => prev + 1);
                 }, 1500);
             }
         } catch (error: any) {
             console.error("Error:", error);
-           
-                const aiErrorMessage: Message = {
-                    id: messages.length + 2,
-                    text: t("main_page.ai_error_unavailable"),
-                    sender: 'ai',
-                    timestamp: new Date()
-                };
-                setMessages((prev) => [...prev, aiErrorMessage]);
+
+            const aiErrorMessage: Message = {
+                id: messages.length + 2,
+                text: t("main_page.ai_error_unavailable"),
+                sender: 'ai',
+                timestamp: new Date()
+            };
+            setMessages((prev) => [...prev, aiErrorMessage]);
         } finally {
             setIsTyping(false);
         }
@@ -139,7 +148,7 @@ export const MainPage: FC = () => {
         try {
             const data = await findOptimalRoute(selectedItinerary?.destinations || [], mode.toLowerCase());
 
-if (data.success) {
+            if (data.success) {
                 const aiConfirm: Message = {
                     id: messages.length + 2,
                     text: t("main_page.ai_route_confirm", {
@@ -173,14 +182,14 @@ if (data.success) {
             }
         } catch (err: any) {
             console.error('Error fetching optimal route', err);
-           
-                const aiErrorMessage: Message = {
-                    id: messages.length + 2,
-                    text: t("main_page.ai_error_unavailable"),
-                    sender: 'ai',
-                    timestamp: new Date()
-                };
-                setMessages((prev) => [...prev, aiErrorMessage]);
+
+            const aiErrorMessage: Message = {
+                id: messages.length + 2,
+                text: t("main_page.ai_error_unavailable"),
+                sender: 'ai',
+                timestamp: new Date()
+            };
+            setMessages((prev) => [...prev, aiErrorMessage]);
         } finally {
             setIsTyping(false);
         }
