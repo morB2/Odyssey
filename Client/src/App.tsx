@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
 import Profile from './components/user/Profile';
 import { TripFeed } from './components/social/TripFeed';
 import ForgotPassword from './components/login/ForgotPassword';
