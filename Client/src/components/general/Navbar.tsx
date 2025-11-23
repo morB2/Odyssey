@@ -1,7 +1,6 @@
 import type { FC } from 'react';
 import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { BookImage, Sparkles } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { AppBar, Toolbar, Box, Button, Link, Typography } from '@mui/material';
 import { useUserStore } from '../../store/userStore';
 import ProfileMenu from '../user/ProfileMenu';
@@ -11,7 +10,6 @@ import Search from './Search';
 export const Navbar: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // const { t } = useTranslation();
   const user = useUserStore(state => state.user);
 
   return (
@@ -39,57 +37,60 @@ export const Navbar: FC = () => {
           />
         </Link>
 
-        {/* Right side: Icons + Buttons */}
+        {/* Right side */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
           <Search onSearch={(searchTerm) => console.log('Search term:', searchTerm)} />
-          {user && (
-            <>
-              {/* Feed Icon + Label */}
-              <Box
-                onClick={() => navigate('/feed')}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  cursor: 'pointer',
-                  color: 'white',
-                  '&:hover': { opacity: 0.8 }
-                }}
-              >
-                <BookImage size={24} />
-                <Typography variant="caption" sx={{ mt: 0.3 }}>
-                  Feed
-                </Typography>
-              </Box>
 
-              {/* AI Trip Creator Icon + Label */}
-              <Box
-                onClick={() => navigate('/createtrip')}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  cursor: 'pointer',
-                  color: 'white',
-                  '&:hover': { opacity: 0.8 }
-                }}
-              >
-                <Sparkles size={24} />
-                <Typography variant="caption" sx={{ mt: 0.3 }}>
-                  Create Trip
-                </Typography>
-              </Box>
-            </>
-          )}
+          {/* Feed Icon */}
+          <Box
+            onClick={() => navigate('/feed')}
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              cursor: 'pointer',
+              color: 'white',
+              '&:hover': { opacity: 0.8 }
+            }}
+          >
+            <BookImage size={24} />
+            <Typography variant="caption" sx={{ mt: 0.3 }}>
+              Feed
+            </Typography>
+          </Box>
+
+          {/* Create Trip Icon */}
+          <Box
+            onClick={() => navigate('/createtrip')}
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              cursor: 'pointer',
+              color: 'white',
+              '&:hover': { opacity: 0.8 }
+            }}
+          >
+            <Sparkles size={24} />
+            <Typography variant="caption" sx={{ mt: 0.3 }}>
+              Create Trip
+            </Typography>
+          </Box>
+
           <LanguageSwitcher />
 
+          {/* Profile or Auth Buttons */}
           {user ? (
             <ProfileMenu />
           ) : (
             <Box sx={{ display: 'flex', gap: 1, minWidth: 'fit-content', flexShrink: 0 }}>
               <Button
                 variant="text"
-                onClick={() => navigate("/login?tab=login", { state: { backgroundLocation: location.pathname } })}
+                onClick={() =>
+                  navigate("/login?tab=login", {
+                    state: { backgroundLocation: location.pathname },
+                  })
+                }
                 sx={{
                   color: 'white',
                   mr: 1,
@@ -100,9 +101,14 @@ export const Navbar: FC = () => {
               >
                 Log In
               </Button>
+
               <Button
                 variant="contained"
-                onClick={() => navigate("/login?tab=signup", { state: { backgroundLocation: location.pathname } })}
+                onClick={() =>
+                  navigate("/login?tab=signup", {
+                    state: { backgroundLocation: location.pathname },
+                  })
+                }
                 sx={{
                   bgcolor: '#d97706',
                   '&:hover': { bgcolor: '#b45309' },
@@ -119,4 +125,4 @@ export const Navbar: FC = () => {
       </Toolbar>
     </AppBar>
   );
-}
+};
