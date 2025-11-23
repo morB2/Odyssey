@@ -1,51 +1,54 @@
-import React from 'react';
+import React, { type FC } from 'react';
 import { Box, Typography, Stack, Chip } from '@mui/material';
 import { Calendar, DollarSign, MapPin } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface QuickActionsProps {
     onQuickAction: (action: string) => void;
 }
 
-export default function QuickActions({ onQuickAction }: QuickActionsProps) {
+export const QuickActions: FC<QuickActionsProps> = ({ onQuickAction }: QuickActionsProps)=> {
+       const { t } = useTranslation();
+
     return (
         <Box sx={{ px: 3, py: 2, borderTop: '1px solid #f5f5f5', bgcolor: '#fffaf5' }}>
             <Typography variant="caption" sx={{ color: 'text.secondary', mb: 1, display: 'block' }}>
-                Quick suggestions:
+                {t("quick_actions.quick_suggestions_title")}
             </Typography>
             <Stack direction="row" flexWrap="wrap" gap={1}>
                 <Chip
-                    label="Beach vacation"
+                    label={t("quick_actions.quick_beach_label")}
                     icon={<MapPin size={14} />}
                     variant="outlined"
-                    onClick={() => onQuickAction('I want a relaxing beach vacation')}
+                    onClick={() => onQuickAction(t("quick_actions.quick_beach_action"))}
                     sx={{ borderColor: '#ffccaa', '&:hover': { bgcolor: '#fff2e6' } }}
                 />
                 <Chip
-                    label="Adventure trip"
+                    label={t("quick_actions.quick_adventure_label")}
                     icon={<MapPin size={14} />}
                     variant="outlined"
-                    onClick={() => onQuickAction('I want an adventure trip with hiking and exploring')}
+                    onClick={() => onQuickAction(t("quick_actions.quick_adventure_action"))}
                     sx={{ borderColor: '#ffccaa', '&:hover': { bgcolor: '#fff2e6' } }}
                 />
                 <Chip
-                    label="Cultural experience"
+                    label={t("quick_actions.quick_culture_label")}
                     icon={<MapPin size={14} />}
                     variant="outlined"
-                    onClick={() => onQuickAction('Cultural experience with local food tours')}
+                    onClick={() => onQuickAction(t("quick_actions.quick_culture_action"))}
                     sx={{ borderColor: '#ffccaa', '&:hover': { bgcolor: '#fff2e6' } }}
                 />
                 <Chip
-                    label="1 week"
+                    label={t("quick_actions.quick_week_label")}
                     icon={<Calendar size={14} />}
                     variant="outlined"
-                    onClick={() => onQuickAction('1 week trip')}
+                    onClick={() => onQuickAction(t("quick_actions.quick_week_action"))}
                     sx={{ borderColor: '#ffccaa', '&:hover': { bgcolor: '#fff2e6' } }}
                 />
                 <Chip
-                    label="Moderate budget"
+                    label={t("quick_actions.quick_budget_label")}
                     icon={<DollarSign size={14} />}
                     variant="outlined"
-                    onClick={() => onQuickAction('Moderate budget')}
+                    onClick={() => onQuickAction(t("quick_actions.quick_budget_action"))}
                     sx={{ borderColor: '#ffccaa', '&:hover': { bgcolor: '#fff2e6' } }}
                 />
             </Stack>

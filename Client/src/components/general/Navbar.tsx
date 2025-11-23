@@ -6,10 +6,12 @@ import { useUserStore } from '../../store/userStore';
 import ProfileMenu from '../user/ProfileMenu';
 import LanguageSwitcher from './LanguageSwitcher';
 import Search from './Search';
+import { useTranslation } from 'react-i18next';
 
 export const Navbar: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const user = useUserStore(state => state.user);
 
   return (
@@ -41,41 +43,46 @@ export const Navbar: FC = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
           <Search onSearch={(searchTerm) => console.log('Search term:', searchTerm)} />
 
-          {/* Feed Icon */}
-          <Box
-            onClick={() => navigate('/feed')}
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              cursor: 'pointer',
-              color: 'white',
-              '&:hover': { opacity: 0.8 }
-            }}
-          >
-            <BookImage size={24} />
-            <Typography variant="caption" sx={{ mt: 0.3 }}>
-              Feed
-            </Typography>
-          </Box>
+          {/* Only show Feed + CreateTrip when logged in */}
+          {user && (
+            <>
+              {/* Feed Icon */}
+              <Box
+                onClick={() => navigate('/feed')}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  color: 'white',
+                  '&:hover': { opacity: 0.8 }
+                }}
+              >
+                <BookImage size={24} />
+                <Typography variant="caption" sx={{ mt: 0.3 }}>
+                  {t('feed')}
+                </Typography>
+              </Box>
 
-          {/* Create Trip Icon */}
-          <Box
-            onClick={() => navigate('/createtrip')}
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              cursor: 'pointer',
-              color: 'white',
-              '&:hover': { opacity: 0.8 }
-            }}
-          >
-            <Sparkles size={24} />
-            <Typography variant="caption" sx={{ mt: 0.3 }}>
-              Create Trip
-            </Typography>
-          </Box>
+              {/* Create Trip Icon */}
+              <Box
+                onClick={() => navigate('/createtrip')}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  color: 'white',
+                  '&:hover': { opacity: 0.8 }
+                }}
+              >
+                <Sparkles size={24} />
+                <Typography variant="caption" sx={{ mt: 0.3 }}>
+                  {t('createTrip')}
+                </Typography>
+              </Box>
+            </>
+          )}
 
           <LanguageSwitcher />
 
@@ -99,7 +106,7 @@ export const Navbar: FC = () => {
                   '&:focus': { outline: 'none' },
                 }}
               >
-                Log In
+                {t('logIn')}
               </Button>
 
               <Button
@@ -117,7 +124,7 @@ export const Navbar: FC = () => {
                   '&:focus': { outline: 'none' },
                 }}
               >
-                Sign Up
+                {t('signUp')}
               </Button>
             </Box>
           )}

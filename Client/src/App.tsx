@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 
 import Profile from './components/user/Profile';
-import MainPage from './components/tripPlan/MainPage';
 import { TripFeed } from './components/social/TripFeed';
 import ForgotPassword from './components/login/ForgotPassword';
 import Dashboard from './components/admin/Dashboard';
@@ -13,8 +12,10 @@ import { getTheme } from './theme/theme';
 import { CacheProvider } from '@emotion/react';
 import { cacheRtl } from './theme/rtl';
 import { ThemeProvider } from '@mui/material/styles';
+
 import Page404 from './components/general/404Page';
 import Page401 from './components/general/401Page';
+import { MainPage } from './components/tripPlan/MainPage';
 
 import { initializeSocket } from './services/socketService';
 import { useUserStore } from './store/userStore';
@@ -27,7 +28,7 @@ function App() {
   const location = useLocation();
   const { token } = useUserStore();
 
-  // Initialize Socket.IO once for the entire app
+  // Initialize Socket.IO once
   useEffect(() => {
     if (token) {
       console.log('🔌 Initializing Socket.IO connection...');
