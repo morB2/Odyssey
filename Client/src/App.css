@@ -2,3 +2,37 @@ html,
 body {
   background-color: #FFF7ED;
 }
+
+/* Everything is hidden by default when printing */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Only show the trip display */
+  .trip-print-container, 
+  .trip-print-container * {
+    visibility: visible !important;
+  }
+
+  /* Make it full width on print */
+  .trip-print-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  /* Hide the print/save buttons */
+  .trip-print-container button,
+  .trip-print-container .MuiCardActions-root {
+    display: none !important;
+  }
+
+  /* Hide dialogs entirely */
+  .MuiDialog-root,
+  .MuiDialog-root * {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}

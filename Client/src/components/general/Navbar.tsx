@@ -1,12 +1,12 @@
 import type { FC } from 'react';
 import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { BookImage, Sparkles } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { AppBar, Toolbar, Box, Button, Link, Typography } from '@mui/material';
 import { useUserStore } from '../../store/userStore';
 import ProfileMenu from '../user/ProfileMenu';
 import LanguageSwitcher from './LanguageSwitcher';
 import Search from './Search';
+import { useTranslation } from 'react-i18next';
 
 export const Navbar: FC = () => {
   const navigate = useNavigate();
@@ -39,12 +39,14 @@ export const Navbar: FC = () => {
           />
         </Link>
 
-        {/* Right side: Icons + Buttons */}
+        {/* Right side */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
           <Search onSearch={(searchTerm) => console.log('Search term:', searchTerm)} />
+
+          {/* Only show Feed + CreateTrip when logged in */}
           {user && (
             <>
-              {/* Feed Icon + Label */}
+              {/* Feed Icon */}
               <Box
                 onClick={() => navigate('/feed')}
                 sx={{
@@ -62,7 +64,7 @@ export const Navbar: FC = () => {
                 </Typography>
               </Box>
 
-              {/* AI Trip Creator Icon + Label */}
+              {/* Create Trip Icon */}
               <Box
                 onClick={() => navigate('/createtrip')}
                 sx={{
@@ -81,15 +83,21 @@ export const Navbar: FC = () => {
               </Box>
             </>
           )}
+
           <LanguageSwitcher />
 
+          {/* Profile or Auth Buttons */}
           {user ? (
             <ProfileMenu />
           ) : (
             <Box sx={{ display: 'flex', gap: 1, minWidth: 'fit-content', flexShrink: 0 }}>
               <Button
                 variant="text"
-                onClick={() => navigate("/login?tab=login", { state: { backgroundLocation: location.pathname } })}
+                onClick={() =>
+                  navigate("/login?tab=login", {
+                    state: { backgroundLocation: location.pathname },
+                  })
+                }
                 sx={{
                   color: 'white',
                   mr: 1,
@@ -100,9 +108,14 @@ export const Navbar: FC = () => {
               >
                 {t('logIn')}
               </Button>
+
               <Button
                 variant="contained"
-                onClick={() => navigate("/login?tab=signup", { state: { backgroundLocation: location.pathname } })}
+                onClick={() =>
+                  navigate("/login?tab=signup", {
+                    state: { backgroundLocation: location.pathname },
+                  })
+                }
                 sx={{
                   bgcolor: '#d97706',
                   '&:hover': { bgcolor: '#b45309' },
@@ -119,4 +132,4 @@ export const Navbar: FC = () => {
       </Toolbar>
     </AppBar>
   );
-}
+};

@@ -4,7 +4,8 @@ const BASE_URL = "/trips";
 
 export const fetchTrips = async (userId: string) => {
     try {
-        const res = await api.get(`${BASE_URL}/${userId}`);
+        const url = userId ? `${BASE_URL}/${userId}` : BASE_URL;
+        const res = await api.get(url);
         return res.data;
     } catch (error) {
         console.error("Error fetching trips:", error);
