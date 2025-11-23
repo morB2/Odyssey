@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { AppBar, Toolbar, Box, Button, Link, Typography } from '@mui/material';
 import { useUserStore } from '../../store/userStore';
 import ProfileMenu from '../user/ProfileMenu';
-import Search from './Search';
 import LanguageSwitcher from './LanguageSwitcher';
+import Search from './Search';
 
 export const Navbar: FC = () => {
   const navigate = useNavigate();

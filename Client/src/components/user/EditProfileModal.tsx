@@ -3,7 +3,7 @@ import { Modal } from "./Modal";
 import { Box, Button, TextField, Typography, Divider } from "@mui/material";
 import { useUserStore } from "../../store/userStore";
 
-import { changePassword as svcChangePassword } from "../../services/profile.service";
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 interface ChangePasswordModalProps {
   isOpen: boolean;

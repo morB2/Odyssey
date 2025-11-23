@@ -242,8 +242,6 @@ import Follow from "../models/followModel.js";
 import bcrypt from "bcrypt";
 import redis from '../db/redisClient.js';
 import { clearUserFeedCache, clearUserProfileCache } from "../utils/cacheUtils.js";
-import path from "path";
-import fs from "fs";
 
 const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
 const uploadsDir = path.join(process.cwd(), "uploads");
@@ -306,7 +304,26 @@ export async function updatePassword(
 
 // --- Trips ---
 export async function listUserTrips(userId, viewerId) {
-  if (!userId) throw new Error("ownerId required");
+  // Backwards-compatible wrapper: prefer using listUserTripsForViewer
+  return listUserTripsForViewer(userId, viewerId);
+}
+
+// Enhanced version: returns trips for a specific owner with populated user/comments
+// and optional viewerId to compute isLiked/isSaved/isFollowing flags.
+export async function listUserTripsForViewer(ownerId, viewerId) {
+  if (!ownerId) throw new Error("ownerId required");
+
+  const cacheKey = `profile:${ownerId}:trips:viewer:${viewerId || 'none'}`;
+  console.log(`[Profile] Checking cache for user ${ownerId}, viewer ${viewerId}`);
+
+  // Check Redis cache first
+  const cached = await redis.get(cacheKey);
+  if (cached) {
+    console.log(`[Profile] Cache hit! Returning cached trips for user ${ownerId}`);
+    return JSON.parse(cached);
+  }
+
+  console.log(`[Profile] Cache miss. Loading trips from DB for user ${ownerId}`);
 
   const trips = await Trip.find({ user: userId })
     .sort({ createdAt: -1 })
@@ -343,27 +360,37 @@ export async function listUserTrips(userId, viewerId) {
     if (f) followingUserIds.add(String(trips[0].user._id));
   }
 
-  return trips
-    .map((trip) => ({
-      ...trip,
-      likes: trip.likes || 0,
-      isLiked: viewerId ? likedTripIds.has(String(trip._id)) : false,
-      isSaved: viewerId ? savedTripIds.has(String(trip._id)) : false,
-      user: {
-        ...trip.user,
-        isFollowing: viewerId
-          ? followingUserIds.has(String(trip.user?._id))
-          : false,
-      },
-      comments: trip.comments || [],
-    }))
-    .map((t) => {
-      if (t.user?.avatar) t.user.avatar = normalizeAvatarUrl(t.user.avatar);
-      t.comments.forEach((c) => {
-        if (c.user?.avatar) c.user.avatar = normalizeAvatarUrl(c.user.avatar);
-      });
-      return t;
-    });
+  const tripsWithStatus = trips.map((trip) => ({
+    ...trip,
+    likes: trip.likes || 0,
+    isLiked: viewerId ? likedTripIds.has(String(trip._id)) : false,
+    isSaved: viewerId ? savedTripIds.has(String(trip._id)) : false,
+    user: {
+      ...trip.user,
+      isFollowing: viewerId
+        ? followingUserIds.has(String(trip.user?._id))
+        : false,
+    },
+    comments: trip.comments || [],
+  }));
+
+  // normalize avatars in returned trips
+  for (const t of tripsWithStatus) {
+    if (t.user && t.user.avatar)
+      t.user.avatar = normalizeAvatarUrl(t.user.avatar);
+    if (Array.isArray(t.comments)) {
+      for (const c of t.comments) {
+        if (c.user && c.user.avatar)
+          c.user.avatar = normalizeAvatarUrl(c.user.avatar);
+      }
+    }
+  }
+
+  // Cache result for 60 seconds
+  console.log(`[Profile] Caching trips for user ${ownerId} for 60 seconds`);
+  await redis.setEx(cacheKey, 60, JSON.stringify(tripsWithStatus));
+
+  return tripsWithStatus;
 }
 
 export async function getUserTrip(userId, tripId, viewerId) {
