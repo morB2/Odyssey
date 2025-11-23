@@ -14,7 +14,7 @@ const api: AxiosInstance = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401){
+    if (error.response && error.response.status === 403){
       const clearUser = useUserStore.getState().clearUser;
         clearUser();
         // navigate('/401');

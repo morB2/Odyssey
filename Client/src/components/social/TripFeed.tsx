@@ -1,20 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import TripPost from './TripPost';
 import { Container, Box } from '@mui/material';
 import { fetchTrips } from '../../services/tripFeed.service';
 import Navbar from '../general/Navbar';
 import { type Comment, type Trip } from './types';
 import TripFeedSkeleton from './TripFeedSkeleton';
+import {useUserStore} from '../../store/userStore'
 
-interface StoredUser {
-  state: {
-    user: {
-      _id: string;
-      avatar: string;
-      // add other properties if needed
-    };
-  };
-}
+// interface StoredUser {
+//   state: {
+//     user: {
+//       _id: string;
+//       avatar: string;
+//       // add other properties if needed
+//     };
+//   };
+// }
 
 function adaptComments(apiComments: any[]): Comment[] {
   return apiComments.map((c) => {
@@ -50,10 +51,8 @@ function adaptComments(apiComments: any[]): Comment[] {
 export function TripFeed() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
-  const userStorage = localStorage.getItem('user-storage');
-  const id: string | undefined = userStorage
-    ? (JSON.parse(userStorage) as StoredUser).state.user._id
-    : undefined;
+  const {user} = useUserStore();
+  const id: string | undefined = user?._id;
   // Fetch trips from backend
   useEffect(() => {
     const fetchTripsData = async () => {

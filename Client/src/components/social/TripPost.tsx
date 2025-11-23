@@ -142,6 +142,7 @@ export default function TripPost({ trip }: TripPostProps) {
                 },
                 text: commentText.trim(),
                 timestamp: response.createdAt,
+                replies: []
             };
 
             setComments((prev) => [newComment, ...prev]);
@@ -252,6 +253,7 @@ export default function TripPost({ trip }: TripPostProps) {
                     currentUserId={trip.currentUserId || " "}
                     isFollowing={isFollowing}
                     onFollow={postFollow}
+                    tripId={trip._id}
                 />
 
                 {/* Image Carousel */}
