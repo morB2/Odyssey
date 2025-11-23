@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Box, Button, Card, CardContent, CardHeader, TextField, Typography, Chip, Stack, Paper } from '@mui/material';
-import { Sparkles, Send, Calendar, DollarSign, MapPin } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback, type FC } from 'react';
+import { Box, Card, CardContent, CardHeader, Typography, Stack } from '@mui/material';
+import { Sparkles, Calendar, MapPin } from 'lucide-react';
 // IMPORT NEW COMPONENTS
 import ChatWindow from './ChatWindow';
 import ChatInput from './ChatInput';
@@ -20,7 +20,7 @@ const featureData = [
 ];
 
 
-export default function MainPage() {
+export const MainPage: FC = () => {
     // --- State Management (All kept here) ---
     const [numAiMessages, setNumAiMessages] = useState(0);
     const [suggestions, setSuggestions] = useState<Itinerary[]>([]);
