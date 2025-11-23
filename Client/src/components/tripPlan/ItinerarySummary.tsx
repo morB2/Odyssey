@@ -9,6 +9,7 @@ import {
     Stack,
 } from "@mui/material";
 import RoomIcon from "@mui/icons-material/Room";
+import { useTranslation } from "react-i18next";
 
 interface ItineraryItem {
     name: string;
@@ -21,18 +22,22 @@ interface ItinerarySummaryProps {
     title?: string;
 }
 
-export function ItinerarySummary({
+export const ItinerarySummary = ({
     items,
     discription,
-    title = "Travel Itinerary",
-}: ItinerarySummaryProps) {
+    title,
+}: ItinerarySummaryProps) => {
+
+    const { t } = useTranslation();
+    const displayTitle = title || t("itinerarySummary.defaultTitle");
+
     const [imageUrl, setImageUrl] = useState<string>("");
     useEffect(() => {
         const fetchImage = async () => {
             const query = items.length > 0 ? items[0].name : title;
             try {
                 const response = await fetch(
-                    `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)} travel landscape&orientation=landscape&per_page=1`,
+                    `https://api.pexels.com/v1/search?query=${encodeURIComponent(query || "Travel")} travel landscape&orientation=landscape&per_page=1`,
                     {
                         headers: {
                             Authorization: import.meta.env.VITE_PEXELS_KEY
@@ -49,7 +54,7 @@ export function ItinerarySummary({
         };
 
         fetchImage();
-    }, [items, title]);
+    }, [items, displayTitle]);
 
     return (
         <Card
@@ -69,7 +74,7 @@ export function ItinerarySummary({
                         component="img"
                         height="180"
                         image={imageUrl}
-                        alt={title}
+                        alt={displayTitle}
                         sx={{ objectFit: "cover" }}
                     />
                 )}
@@ -91,7 +96,7 @@ export function ItinerarySummary({
                         fontWeight: 600,
                     }}
                 >
-                    {title}
+                    {displayTitle}
                 </Typography>
                 <Typography
                     sx={{
@@ -115,7 +120,7 @@ export function ItinerarySummary({
                         align="center"
                         sx={{ py: 3 }}
                     >
-                        No itinerary items yet
+                        {t("itinerarySummary.noItems")}
                     </Typography>
                 ) : (
                     <Stack spacing={2}>

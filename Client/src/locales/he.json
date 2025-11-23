@@ -57,5 +57,51 @@
     "privacy_policy": "מדיניות פרטיות",
     "contact": "צור קשר",
     "createTrip": "צור טיול",
-    "logIn": "התחברות"
+    "logIn": "התחברות",
+    "main_page": {
+        "hero_title": "צור את הטיול המושלם שלך בעזרת AI",
+        "hero_subtitle": "שוחח עם העוזר החכם שלנו כדי לתכנן חופשה מושלמת",
+        "chat_header": "עוזר טיולים חכם",
+        "initial_message": "היי! 👋 אני עוזר הטיולים החכם שלך. ספר לי על החופשה שאת חולמת עליה ואבנה עבורך מסלול מותאם אישית. לאן תרצי לנסוע?",
+        "ai_suggestions_intro": "הנה כמה מסלולים מדהימים שמצאתי עבורך 🌍",
+        "ai_suggestions_click": "לחצי על המסלול שמעניין אותך ואני אמצא עבורך את המסלול הטוב ביותר! 🗺️",
+        "ai_travel_question": "מעולה! 🚗 איך תרצי להתנייד?",
+        "ai_route_confirm": "מצוין! 🌍 אתכנן עבורך את מסלול ה{{mode}} הטוב ביותר לטיול \"{{title}}\".",
+        "ai_customize_prompt": "אם תרצי לשנות משהו — רק תגידי ואעדכן עבורך!",
+        "ai_customize_done": "הבנתי! ✏️ עדכנתי את המסלול לפי הבקשה שלך.",
+        "ai_error_unavailable": "מצטערים, שירות ה-AI אינו זמין כרגע. אנא נסי שוב מאוחר יותר. 🙏",
+        "ai_error_busy": "מצטערים, השרת עמוס כרגע... נסי שוב בעוד כמה דקות 😢",
+        "user_selected_itinerary": "בחרתי: {{title}}",
+        "user_selected_mode": "אני מעדיפה {{mode}}",
+        "feature_ai_title": "AI חכם",
+        "feature_ai_text": "מערכת AI מתקדמת שמתאימה עבורך מסלולים אישיים",
+        "feature_routes_title": "מסלולים מותאמים",
+        "feature_routes_text": "קבלי מסלולים ולוחות זמנים מותאמים לסגנון הטיול שלך",
+        "feature_flexible_title": "תכנון גמיש",
+        "feature_flexible_text": "תכנני טיולים בכל אורך עם מסלולים גמישים שמתאימים ללוח הזמנים שלך"
+    },
+    "quick_actions": {
+        "quick_suggestions_title": "הצעות מהירות:",
+        "quick_beach_label": "חופשת חוף",
+        "quick_beach_action": "אני רוצה חופשת חוף רגועה",
+        "quick_adventure_label": "טיול אתגרי",
+        "quick_adventure_action": "אני רוצה טיול אתגרי עם מסלולי הליכה וחקירה",
+        "quick_culture_label": "חוויה תרבותית",
+        "quick_culture_action": "חוויה תרבותית עם סיורי אוכל מקומי",
+        "quick_week_label": "שבוע",
+        "quick_week_action": "טיול של שבוע",
+        "quick_budget_label": "תקציב בינוני",
+        "quick_budget_action": "תקציב בינוני"
+    },
+    "chat_input": {
+        "placeholder": "הקלד הודעה...",
+        "hint": "לחיצה על Enter תשלח את ההודעה • ה-AI יבנה עבורך מסלול מותאם"
+    },
+    "messageBubble": {
+        "aiAssistant": "עוזר ה-AI"
+    },
+    "itinerarySummary": {
+        "defaultTitle": "מסלול טיול",
+        "noItems": "אין עדיין פריטים במסלול"
+    }
 }
