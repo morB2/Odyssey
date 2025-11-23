@@ -6,6 +6,7 @@ import { AppBar, Toolbar, Box, Button, Link, Typography } from '@mui/material';
 import { useUserStore } from '../../store/userStore';
 import ProfileMenu from '../user/ProfileMenu';
 import LanguageSwitcher from './LanguageSwitcher';
+import Search from './Search';
 
 export const Navbar: FC = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ export const Navbar: FC = () => {
   const user = useUserStore(state => state.user);
 
   return (
-    <AppBar position="absolute" elevation={0} sx={{ background: 'transparent' }}>
+    <AppBar position="fixed" elevation={0} sx={{ background: 'transparent' }}>
       <Toolbar sx={{ px: { xs: 2, md: 6 }, py: 2, justifyContent: 'space-between' }}>
 
         {/* Left side: Logo */}
@@ -40,7 +41,7 @@ export const Navbar: FC = () => {
 
         {/* Right side: Icons + Buttons */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-
+          <Search onSearch={(searchTerm) => console.log('Search term:', searchTerm)} />
           {user && (
             <>
               {/* Feed Icon + Label */}

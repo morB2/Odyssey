@@ -9,6 +9,7 @@ export interface Comment {
   text: string;
   timestamp: string;
   reactionsAggregated?: Record<string, number>;
+  replies?: Comment[];
 }
 
 export interface TripUser {            // unified id
@@ -35,5 +36,5 @@ export interface Trip {
   notes?: string;
   detailedData?: any;
   optimizedRoute?: any;
-  currentUserId?: string;
+  currentUserId: string;
 }

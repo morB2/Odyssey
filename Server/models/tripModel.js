@@ -1,5 +1,14 @@
 import mongoose from "mongoose";
 
+const replySchema = new mongoose.Schema(
+  {
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    comment: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now },
+  },
+  { _id: true }
+);
+
 const commentSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -11,6 +20,7 @@ const commentSchema = new mongoose.Schema(
         createdAt: { type: Date, default: Date.now }
       }
     ],
+    replies: [replySchema],
     createdAt: { type: Date, default: Date.now },
   },
   { _id: true } // enable comment IDs for editing/deleting later

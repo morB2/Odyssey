@@ -4,6 +4,8 @@ import Like from "../models/likesModel.js";
 import Save from "../models/savesModel.js";
 import Follow from "../models/followModel.js";
 import bcrypt from "bcrypt";
+import redis from '../db/redisClient.js';
+import { clearUserFeedCache, clearUserProfileCache } from "../utils/cacheUtils.js";
 
 const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
 
@@ -95,6 +97,18 @@ export async function listUserTrips(userId, viewerId) {
 export async function listUserTripsForViewer(ownerId, viewerId) {
   if (!ownerId) throw new Error("ownerId required");
 
+  const cacheKey = `profile:${ownerId}:trips:viewer:${viewerId || 'none'}`;
+  console.log(`[Profile] Checking cache for user ${ownerId}, viewer ${viewerId}`);
+
+  // Check Redis cache first
+  const cached = await redis.get(cacheKey);
+  if (cached) {
+    console.log(`[Profile] Cache hit! Returning cached trips for user ${ownerId}`);
+    return JSON.parse(cached);
+  }
+
+  console.log(`[Profile] Cache miss. Loading trips from DB for user ${ownerId}`);
+
   // get trips for owner
   const trips = await Trip.find({ user: ownerId })
     .sort({ createdAt: -1 })
@@ -162,6 +176,10 @@ export async function listUserTripsForViewer(ownerId, viewerId) {
     }
   }
 
+  // Cache result for 60 seconds
+  console.log(`[Profile] Caching trips for user ${ownerId} for 60 seconds`);
+  await redis.setEx(cacheKey, 60, JSON.stringify(tripsWithStatus));
+
   return tripsWithStatus;
 }
 
@@ -221,6 +239,11 @@ export async function updateUserTrip(userId, tripId, updates) {
     { new: true }
   ).lean();
   if (!trip) throw Object.assign(new Error("Trip not found"), { status: 404 });
+
+  // Invalidate caches when trip is updated
+  await clearUserFeedCache(userId);
+  await clearUserProfileCache(userId);
+
   return trip;
 }
 
@@ -231,5 +254,10 @@ export async function deleteUserTrip(userId, tripId) {
     user: userId,
   }).lean();
   if (!trip) throw Object.assign(new Error("Trip not found"), { status: 404 });
+
+  // Invalidate caches when trip is deleted
+  await clearUserFeedCache(userId);
+  await clearUserProfileCache(userId);
+
   return trip;
 }

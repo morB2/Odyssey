@@ -13,21 +13,21 @@ export default function TripPostHeader({ user, currentUserId, isFollowing, onFol
     return (
         <CardContent>
             <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box display="flex" alignItems="center" gap={1.5}>
-                    <Avatar src={user.avatar} alt={`${user.firstName} ${user.lastName}`}>
-                        {user.firstName[0]}
-                    </Avatar>
-                    <Box>
-                        <Typography variant="body1" fontWeight={500}>
-                            {user.firstName} {user.lastName}
-                        </Typography>
-                        <Link to={`/profile/${user._id}`} style={{ textDecoration: 'none' }}>
+                <Link to={`/profile/${user._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <Box display="flex" alignItems="center" gap={1.5}>
+                        <Avatar src={user.avatar} alt={`${user.firstName} ${user.lastName}`}>
+                            {user.firstName[0]}
+                        </Avatar>
+                        <Box>
+                            <Typography variant="body1" fontWeight={500}>
+                                {user.firstName} {user.lastName}
+                            </Typography>
                             <Typography variant="body2" color="text.secondary">
                                 @{user.firstName.toLowerCase()}{user.lastName.toLowerCase()}
                             </Typography>
-                        </Link>
+                        </Box>
                     </Box>
-                </Box>
+                </Link>
                 {user._id !== currentUserId && (
                     <Button
                         variant={isFollowing ? 'outlined' : 'contained'}

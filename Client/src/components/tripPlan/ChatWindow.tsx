@@ -7,6 +7,7 @@ interface ChatWindowProps {
     messages: Message[];
     isTyping: boolean;
     scrollAreaRef: React.RefObject<HTMLDivElement | null>;
+    // scrollAreaRef: RefObject<HTMLDivElement | null> | null;
     selectedItinerary: Itinerary | null;
     onSelectItinerary: (itinerary: Itinerary) => void;
     onSelectTravelMode: (mode: string) => void;

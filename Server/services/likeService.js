@@ -2,7 +2,8 @@ import Trip from "../models/tripModel.js";
 import Like from "../models/likesModel.js";
 import Save from "../models/savesModel.js";
 import Follow from "../models/followModel.js";
-import { clearUserFeedCache } from "../utils/cacheUtils.js";
+import { clearUserFeedCache, clearUserLikedCache } from "../utils/cacheUtils.js";
+import redis from '../db/redisClient.js';
 export const likeTrip = async (userId, tripId) => {
   // Check if the like already exists
   const existingLike = await Like.findOne({ user: userId, trip: tripId });
@@ -19,6 +20,7 @@ export const likeTrip = async (userId, tripId) => {
     { new: true }
   );
   await clearUserFeedCache(userId);
+  await clearUserLikedCache(userId);
   return trip.likes;
 };
 
@@ -37,10 +39,23 @@ export const unlikeTrip = async (userId, tripId) => {
     { new: true }
   );
   await clearUserFeedCache(userId);
+  await clearUserLikedCache(userId);
   return trip.likes;
 };
 
 export const getLikedTripsByUser = async (userId) => {
+  const cacheKey = `liked:${userId}`;
+  console.log(`[Liked] Checking cache for user ${userId}`);
+
+  // Check Redis cache first
+  const cached = await redis.get(cacheKey);
+  if (cached) {
+    console.log(`[Liked] Cache hit! Returning cached liked trips for user ${userId}`);
+    return JSON.parse(cached);
+  }
+
+  console.log(`[Liked] Cache miss. Loading liked trips from DB for user ${userId}`);
+
   // Find all likes by the user and populate nested trip -> user and comments.user
   const likes = await Like.find({ user: userId })
     .populate({
@@ -88,6 +103,10 @@ export const getLikedTripsByUser = async (userId) => {
     },
     comments: trip.comments || [],
   }));
+
+  // Cache result for 60 seconds
+  console.log(`[Liked] Caching liked trips for user ${userId} for 60 seconds`);
+  await redis.setEx(cacheKey, 60, JSON.stringify(tripsWithStatus));
 
   return tripsWithStatus;
 };
