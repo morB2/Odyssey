@@ -38,26 +38,26 @@ function Navbar() {
         {/* Right side: Icons + Buttons */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
           <Search onSearch={(searchTerm) => console.log('Search term:', searchTerm)} />
+          {/* Feed Icon + Label */}
+          <Box
+            onClick={() => navigate('/feed')}
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              cursor: 'pointer',
+              color: 'white',
+              '&:hover': { opacity: 0.8 }
+            }}
+          >
+            <BookImage size={24} />
+            <Typography variant="caption" sx={{ mt: 0.3 }}>
+              Feed
+            </Typography>
+          </Box>
+
           {user && (
             <>
-              {/* Feed Icon + Label */}
-              <Box
-                onClick={() => navigate('/feed')}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  cursor: 'pointer',
-                  color: 'white',
-                  '&:hover': { opacity: 0.8 }
-                }}
-              >
-                <BookImage size={24} />
-                <Typography variant="caption" sx={{ mt: 0.3 }}>
-                  Feed
-                </Typography>
-              </Box>
-
               {/* AI Trip Creator Icon + Label */}
               <Box
                 onClick={() => navigate('/createtrip')}

@@ -1,21 +1,12 @@
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 import TripPost from './TripPost';
 import { Container, Box } from '@mui/material';
 import { fetchTrips } from '../../services/tripFeed.service';
 import Navbar from '../general/Navbar';
 import { type Comment, type Trip } from './types';
 import TripFeedSkeleton from './TripFeedSkeleton';
-import {useUserStore} from '../../store/userStore'
-
-// interface StoredUser {
-//   state: {
-//     user: {
-//       _id: string;
-//       avatar: string;
-//       // add other properties if needed
-//     };
-//   };
-// }
+import { useUserStore } from '../../store/userStore';
+import GuestWelcomeCard from './GuestWelcomeCard';
 
 function adaptComments(apiComments: any[]): Comment[] {
   return apiComments.map((c) => {
@@ -51,12 +42,20 @@ function adaptComments(apiComments: any[]): Comment[] {
 export function TripFeed() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
-  const {user} = useUserStore();
+  const [allowGuest, setAllowGuest] = useState(false);
+  const { user } = useUserStore();
   const id: string | undefined = user?._id;
   // Fetch trips from backend
   useEffect(() => {
+    // Only fetch when we have a logged-in user or the visitor has opted-in to view as guest
+    if (!id && !allowGuest) {
+      setLoading(false);
+      return;
+    }
+
     const fetchTripsData = async () => {
       try {
+        setLoading(true);
         const data = await fetchTrips(id || '');
         const tripsData: Trip[] = data.map((trip: any) => ({
           ...trip,
@@ -71,12 +70,16 @@ export function TripFeed() {
     };
 
     fetchTripsData();
-  }, []);
+  }, [id, allowGuest]);
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#bb986cff' }}>
       <Navbar />
       <Container maxWidth="md" sx={{ py: 3 }}>
+        {/* If user is not logged in and hasn't opted to view as guest, show the welcome card */}
+        {!user && !allowGuest && (
+          <GuestWelcomeCard onViewAsGuest={() => setAllowGuest(true)} />
+        )}
         {loading ? (
           Array.from(new Array(3)).map((_, index) => (
             <TripFeedSkeleton key={index} />

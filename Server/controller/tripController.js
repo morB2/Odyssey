@@ -4,7 +4,7 @@ import { getIO } from "../config/socket.js";
 
 export async function fetchTrips(req, res) {
   try {
-    const currentUserId = req.params.id; // assuming user ID is available in req.user
+    const currentUserId = req.params.id || null;
     const trips = await getFeedForUser(currentUserId);
     res.status(200).json(trips);
   } catch (error) {

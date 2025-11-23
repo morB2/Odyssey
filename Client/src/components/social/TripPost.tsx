@@ -84,6 +84,11 @@ export default function TripPost({ trip }: TripPostProps) {
     });
     // --- API Handlers ---
     const postLike = useCallback(async () => {
+        if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+            alert("Please log in to like trips.");
+            return;
+        }
+
         const originalIsLiked = isLiked;
         const originalLikesCount = likesCount;
 
@@ -105,6 +110,11 @@ export default function TripPost({ trip }: TripPostProps) {
     }, [isLiked, likesCount, trip._id, trip.currentUserId]);
 
     const postSave = useCallback(async () => {
+        if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+            alert("Please log in to save trips.");
+            return;
+        }
+
         const newIsSaved = !isSaved;
         setIsSaved(newIsSaved); // Optimistic UI update
 
@@ -117,6 +127,11 @@ export default function TripPost({ trip }: TripPostProps) {
     }, [isSaved, trip._id, trip.currentUserId]);
 
     const postFollow = useCallback(async () => {
+        if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+            alert("Please log in to follow users.");
+            return;
+        }
+
         const newIsFollowing = !isFollowing;
         setIsFollowing(newIsFollowing); // Optimistic UI update
 
@@ -129,6 +144,11 @@ export default function TripPost({ trip }: TripPostProps) {
     }, [isFollowing, trip.user._id, trip.currentUserId]);
 
     const handleAddComment = useCallback(async (commentText: string) => {
+        if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+            alert("Please log in to comment.");
+            return;
+        }
+
         try {
             const response = await addComment(trip._id, trip.currentUserId, commentText.trim());
 
@@ -153,6 +173,11 @@ export default function TripPost({ trip }: TripPostProps) {
     }, [trip._id, trip.currentUserId, user?.avatar]);
 
     const handleEmojiReaction = useCallback(async (commentId: string, emoji: string) => {
+        if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+            alert("Please log in to react.");
+            return;
+        }
+
         // Optimistic UI update for reaction count
         setCommentReactions((prev) => {
             const commentReacts = prev[commentId] || {};
@@ -175,6 +200,11 @@ export default function TripPost({ trip }: TripPostProps) {
     }, [trip._id, trip.currentUserId]);
 
     const handleAddReply = useCallback(async (commentId: string, replyText: string) => {
+        if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+            alert("Please log in to reply.");
+            return;
+        }
+
         try {
             const response = await addReply(trip._id, commentId, trip.currentUserId, replyText.trim());
 
