@@ -4,7 +4,7 @@ import { Sparkles } from 'lucide-react';
 import { ItinerarySummary } from './ItinerarySummary'; // Imported from original file
 import { TripDisplay } from './TripDisplay'; // Imported from original file
 import { TravelModeSelector } from './TravelModeSelector'; // Extracted
-import { type Message, type Itinerary } from './types'; 
+import { type Message, type Itinerary } from './types';
 
 interface MessageBubbleProps {
     message: Message;
@@ -13,11 +13,11 @@ interface MessageBubbleProps {
     onSelectTravelMode: (mode: string) => void;
 }
 
-export default function MessageBubble({ 
-    message: m, 
-    selectedItinerary, 
-    onSelectItinerary, 
-    onSelectTravelMode 
+export default function MessageBubble({
+    message: m,
+    selectedItinerary,
+    onSelectItinerary,
+    onSelectTravelMode
 }: MessageBubbleProps) {
 
     const isUser = m.sender === 'user';
@@ -27,14 +27,14 @@ export default function MessageBubble({
     if (m.text) {
         return (
             <Box sx={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
-                <Paper 
-                    sx={{ 
-                        p: 2, 
-                        borderRadius: 3, 
-                        bgcolor: isUser ? '#ffa83fff' : '#fff7ed', 
-                        color: isUser ? 'white' : 'black', 
-                        border: isUser ? 'none' : '1px solid #ffe4cc', 
-                        maxWidth: '80%' 
+                <Paper
+                    sx={{
+                        p: 2,
+                        borderRadius: 3,
+                        bgcolor: isUser ? '#ffa83fff' : '#fff7ed',
+                        color: isUser ? 'white' : 'black',
+                        border: isUser ? 'none' : '1px solid #ffe4cc',
+                        maxWidth: '80%'
                     }}
                 >
                     {!isUser && (
@@ -62,12 +62,14 @@ export default function MessageBubble({
                                 onClick={() => onSelectItinerary(s)}
                                 sx={{
                                     cursor: 'pointer',
+                                    display: 'inline-block',
+                                    width: 'fit-content',
                                     '&:hover': {
                                         transform: 'scale(1.02)',
                                         transition: '0.2s',
                                         boxShadow: 6
                                     },
-                                    border: selectedItinerary?.title === s.title ? '2px solid #ff6b35' : '1px solid #ffe4cc',
+                                    border: 'none',
                                     borderRadius: 2
                                 }}
                             >
@@ -97,6 +99,6 @@ export default function MessageBubble({
             </Box>
         );
     }
-    
+
     return null;
 }
