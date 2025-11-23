@@ -6,10 +6,14 @@ import { TripsList } from "./TripsList";
 import { ChangePasswordModal } from "./EditProfileModal";
 import { EditTripModal } from "./EditTripModal";
 import type { Trip, UserProfile } from "./types";
+import {
+  getProfile,
+  getTrips,
+  getLikedTrips,
+  getSavedTrips,
+  deleteTrip as svcDeleteTrip,
+} from "../../services/profile.service";
 import { useUserStore } from "../../store/userStore";
-// Navbar intentionally not rendered inside this view
-
-const BASE_URL = "http://localhost:3000";
 
 export default function Profile() {
   const storeUser = useUserStore((s) => s.user);
@@ -22,54 +26,44 @@ export default function Profile() {
       ? storeUser._id === viewedUserId
       : !viewedUserId
   );
+
   const [user, setUser] = useState<UserProfile | null>(null);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  // selectedTrip removed — we don't use a dedicated details modal anymore
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
   const [activeTab, setActiveTab] = useState<"my-trips" | "liked" | "saved">(
     "my-trips"
   );
 
-  // comments adaptation removed — server now returns comment objects suitable for the client
-
   useEffect(() => {
-    // When the logged-in user changes, load their profile and initial trips.
     let mounted = true;
     async function loadData() {
       try {
-        // load the profile for the requested user (or current user if no param)
         const [userRes, tripsRes] = await Promise.all([
-          fetch(`${BASE_URL}/profile/${profileId}`, {
-            headers: storeToken
-              ? { Authorization: `Bearer ${storeToken}` }
-              : undefined,
-          })
-            .then((r) => r.json())
-            .catch((e) => ({ success: false, error: String(e) })),
-          fetch(`${BASE_URL}/profile/${profileId}/trips`, {
-            headers: storeToken
-              ? { Authorization: `Bearer ${storeToken}` }
-              : undefined,
-          })
-            .then((r) => r.json())
-            .catch((e) => ({ success: false, error: String(e) })),
+          getProfile(profileId, storeToken || undefined).catch((e) => ({
+            success: false,
+            error: String(e),
+          })),
+          getTrips(profileId as string, storeToken || undefined).catch((e) => ({
+            success: false,
+            error: String(e),
+          })),
         ]);
 
         if (!mounted) return;
-        if (!userRes.success)
-          throw new Error(userRes.error || "Failed to load user");
+        if (!userRes || !userRes.success)
+          throw new Error(userRes?.error || "Failed to load user");
 
         setUser(userRes.user);
 
         const rawTrips = Array.isArray(tripsRes)
           ? tripsRes
-          : Array.isArray(tripsRes?.trips)
-          ? tripsRes.trips
+          : Array.isArray((tripsRes as unknown as { trips?: Trip[] })?.trips)
+          ? (tripsRes as unknown as { trips?: Trip[] }).trips
           : [];
 
-        setTrips(rawTrips);
+        setTrips(rawTrips as Trip[]);
       } catch (e) {
         if (!mounted) return;
         setError(String(e instanceof Error ? e.message : e));
@@ -83,40 +77,30 @@ export default function Profile() {
   }, [storeUser, storeToken, profileId]);
 
   useEffect(() => {
-    // Fetch trips for the currently active tab (my-trips / liked / saved)
     let mounted = true;
     async function fetchForTab() {
-      // Use the profileId (viewed user) for fetching tab data
-      let url = "";
-      switch (activeTab) {
-        case "my-trips":
-          url = `${BASE_URL}/profile/${profileId}/trips`;
-          break;
-        case "liked":
-          url = `${BASE_URL}/likes/${profileId}`;
-          break;
-        case "saved":
-          url = `${BASE_URL}/saves/${profileId}`;
-          break;
-        default:
-          url = `${BASE_URL}/profile/${profileId}/trips`;
-          break;
-      }
-
       try {
-        const res = await fetch(url, {
-          headers: storeToken
-            ? { Authorization: `Bearer ${storeToken}` }
-            : undefined,
-        });
-        const data = await res.json();
+        let data: unknown = null;
+        if (activeTab === "my-trips") {
+          data = await getTrips(profileId as string, storeToken || undefined);
+        } else if (activeTab === "liked") {
+          data = await getLikedTrips(
+            profileId as string,
+            storeToken || undefined
+          );
+        } else {
+          data = await getSavedTrips(
+            profileId as string,
+            storeToken || undefined
+          );
+        }
 
         const rawTrips = Array.isArray(data)
           ? data
-          : Array.isArray(data?.trips)
-          ? data.trips
+          : Array.isArray((data as unknown as { trips?: Trip[] })?.trips)
+          ? (data as unknown as { trips?: Trip[] }).trips
           : [];
-        if (mounted) setTrips(rawTrips);
+        if (mounted) setTrips(rawTrips as Trip[]);
       } catch (e) {
         console.error("failed to load trips", e);
       }
@@ -127,8 +111,6 @@ export default function Profile() {
       mounted = false;
     };
   }, [activeTab, profileId, storeToken]);
-
-  // password modal replaces previous edit modal
 
   const handleSaveTrip = (updatedTrip: Trip) => {
     setTrips((prev) =>
@@ -141,40 +123,31 @@ export default function Profile() {
     setEditingTrip(null);
   };
 
-  const handleDeleteTrip = (tripId: string) => {
-    (async () => {
-      try {
-        const userId = storeUser?._id;
-        const token = storeToken;
-        if (!userId) throw new Error("Not authenticated");
+  const handleDeleteTrip = async (tripId: string) => {
+    try {
+      const userId = storeUser?._id;
+      const token = storeToken || undefined;
+      if (!userId) throw new Error("Not authenticated");
 
-        const res = await fetch(
-          `${BASE_URL}/profile/${userId}/trips/${tripId}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+      const res = await svcDeleteTrip(userId as string, tripId, token);
+      const body = res as unknown as Record<string, unknown>;
+      if (!body || (body.success === false && body["error"]))
+        throw new Error(
+          (body["error"] as string) ||
+            (body["message"] as string) ||
+            "Failed to delete trip"
         );
 
-        const body = await res.json().catch(() => ({}));
-        if (!res.ok)
-          throw new Error(
-            body?.error || body?.message || "Failed to delete trip"
-          );
-
-        // remove locally on success
-        setTrips((prev) => prev.filter((t) => t.id !== tripId));
-      } catch (e) {
-        console.error("Failed to delete trip", e);
-        alert(String(e instanceof Error ? e.message : e));
-      }
-    })();
+      setTrips((prev) =>
+        prev.filter((t) => t.id !== tripId && t._id !== tripId)
+      );
+    } catch (e) {
+      console.error("Failed to delete trip", e);
+      alert(String(e instanceof Error ? e.message : e));
+    }
   };
 
   return (
-    // <Navbar />
     <Box
       sx={{
         minHeight: "100vh",
@@ -183,7 +156,6 @@ export default function Profile() {
         flexDirection: "column",
       }}
     >
-      {/* <Container maxWidth="lg" sx={{ py: 6 }}> */}
       <Paper
         elevation={3}
         sx={{ p: 4, borderRadius: 4, bgcolor: "background.paper" }}
@@ -233,15 +205,11 @@ export default function Profile() {
           </Box>
         </Box>
       </Paper>
-      {/* </Container> */}
 
-      {/* Modals */}
       <ChangePasswordModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
       />
-
-      {/* TripDetailsModal removed — details can be viewed in Edit modal or inline components */}
 
       <EditTripModal
         trip={editingTrip}

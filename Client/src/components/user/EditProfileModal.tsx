@@ -3,7 +3,7 @@ import { Modal } from "./Modal";
 import { Box, Button, TextField, Typography, Divider } from "@mui/material";
 import { useUserStore } from "../../store/userStore";
 
-const BASE_URL = "http://localhost:3000";
+import { changePassword as svcChangePassword } from "../../services/profile.service";
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -53,21 +53,18 @@ export function ChangePasswordModal({
 
     setLoading(true);
     try {
-      const res = await fetch(
-        `${BASE_URL}/profile/${user?._id}/changePassword`,
-        {
-          method: "POST",
-          headers: {
-            authorization: `Bearer ${storeToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ currentPassword, newPassword }),
-        }
+      const res = await svcChangePassword(
+        user?._id as string,
+        currentPassword || undefined,
+        newPassword,
+        storeToken || undefined
       );
-
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const msg = body?.error || body?.message || "Failed to change password";
+      const body = res;
+      if (!res || (res.success === false && (body as any).error)) {
+        const msg =
+          (body as any)?.error ||
+          (body as any)?.message ||
+          "Failed to change password";
         setError(String(msg));
         setLoading(false);
         return;

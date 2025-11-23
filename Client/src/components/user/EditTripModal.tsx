@@ -14,6 +14,7 @@ import { Save, X, Upload, Trash2, Lock, Globe, Plus } from "lucide-react";
 import { ConfirmDialog } from "./ConfirmDialog";
 const BASE_URL = "http://localhost:3000";
 import { useUserStore } from "../../store/userStore";
+import { updateTrip } from "../../services/profile.service";
 
 interface EditTripModalProps {
   trip: Trip | null;
@@ -46,6 +47,8 @@ export function EditTripModal({
     "public" | "private"
   >("public");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const newFilesRef = useRef<File[]>([]);
+  const newPreviewsRef = useRef<string[]>([]);
 
   // Keep local form state in sync when a different trip is loaded into the modal.
   // Use an effect so user edits don't get immediately overwritten on every render.
@@ -67,116 +70,279 @@ export function EditTripModal({
     setImages(trip.images || []);
     setActivities(trip.activities || []);
     setVisibility(trip.visibility || "public");
+    // clear any staged uploads when loading a different trip
+    newFilesRef.current = [];
+    if (newPreviewsRef.current && newPreviewsRef.current.length) {
+      newPreviewsRef.current.forEach((p) => {
+        try {
+          URL.revokeObjectURL(p);
+        } catch (e) {}
+      });
+    }
+    newPreviewsRef.current = [];
   }, [trip]);
 
-  const handleSave = () => {
-    // Save to server instead of only local
-    (async () => {
-      if (!trip) return;
-      try {
-        const storeUser = useUserStore.getState().user;
-        const storeToken = useUserStore.getState().token;
-        const userId = storeUser?._id;
-        if (!userId) throw new Error("Not authenticated");
+  // const handleSave = () => {
+  //   // Save to server instead of only local
+  //   (async () => {
+  //     if (!trip) return;
+  //     try {
+  //       const storeUser = useUserStore.getState().user;
+  //       const storeToken = useUserStore.getState().token;
+  //       const userId = storeUser?._id;
+  //       if (!userId) throw new Error("Not authenticated");
 
-        // Build a minimal payload that contains ONLY the fields that changed.
-        // IMPORTANT: do NOT send optimizedRoute.instructions or route summary here
-        // because the UI doesn't allow editing them and sending empty/partial
-        // values would overwrite server data.
-        const payload: Partial<ServerTrip> = {};
+  //       // Build a minimal payload that contains ONLY the fields that changed.
+  //       // IMPORTANT: do NOT send optimizedRoute.instructions or route summary here
+  //       // because the UI doesn't allow editing them and sending empty/partial
+  //       // values would overwrite server data.
+  //       const payload: Partial<ServerTrip> = {};
 
-        if (title !== trip.title) payload.title = title;
-        if (description !== trip.description) payload.description = description;
-        if (notes !== trip.notes) payload.notes = notes;
-        // compare activities arrays shallowly
-        if (
-          JSON.stringify(activities || []) !==
-          JSON.stringify(trip.activities || [])
-        )
-          payload.activities = activities;
-        // images
-        if (JSON.stringify(images || []) !== JSON.stringify(trip.images || []))
-          payload.images = images;
-        // visibility -> server expects visabilityStatus
-        if (visibility !== trip.visibility)
-          payload.visabilityStatus = visibility;
+  //       if (title !== trip.title) payload.title = title;
+  //       if (description !== trip.description) payload.description = description;
+  //       if (notes !== trip.notes) payload.notes = notes;
+  //       // compare activities arrays shallowly
+  //       if (
+  //         JSON.stringify(activities || []) !==
+  //         JSON.stringify(trip.activities || [])
+  //       )
+  //         payload.activities = activities;
+  //       // images
+  //       if (JSON.stringify(images || []) !== JSON.stringify(trip.images || []))
+  //         payload.images = images;
+  //       // visibility -> server expects visabilityStatus
+  //       if (visibility !== trip.visibility)
+  //         payload.visabilityStatus = visibility;
 
-        // If nothing changed, just close without calling the server
-        if (Object.keys(payload).length === 0) {
-          onClose();
-          return;
+  //       // If nothing changed, just close without calling the server
+  //       if (Object.keys(payload).length === 0) {
+  //         onClose();
+  //         return;
+  //       }
+
+  //       let res;
+  //       // If there are newly selected files, send multipart FormData so server can save files
+  //       if (newFilesRef.current && newFilesRef.current.length > 0) {
+  //         const fd = new FormData();
+  //         // include existing images (those that look like URLs or server paths)
+  //         const existingImages = (images || []).filter(
+  //           (img) =>
+  //             typeof img === "string" &&
+  //             !(img.startsWith("blob:") || img.startsWith("data:"))
+  //         );
+  //         fd.append("imagesExisting", JSON.stringify(existingImages));
+  //         newFilesRef.current.forEach((f) => fd.append("images", f));
+  //         // append other changed fields
+  //         for (const k of Object.keys(payload)) {
+  //           // images are handled separately (imagesExisting + files)
+  //           if (k === "images") continue;
+  //           const v = (payload as any)[k];
+  //           if (v === undefined) continue;
+  //           if (Array.isArray(v) || (typeof v === "object" && v !== null)) {
+  //             fd.append(k, JSON.stringify(v));
+  //           } else {
+  //             fd.append(k, String(v));
+  //           }
+  //         }
+
+  //         res = await updateTrip(
+  //           userId as string,
+  //           trip._id,
+  //           fd,
+  //           storeToken || undefined
+  //         );
+  //       } else {
+  //         res = await updateTrip(
+  //           userId as string,
+  //           String(trip._id || trip.id),
+  //           payload,
+  //           storeToken || undefined
+  //         );
+  //       }
+  //       const serverTrip: ServerTrip = (res && (res.trip || res)) as ServerTrip;
+
+  //       // map serverTrip to client Trip shape (small mapping)
+  //       const ordered = serverTrip.optimizedRoute?.ordered_route || [];
+  //       const modeFromOptimized = serverTrip.optimizedRoute?.mode;
+  //       const mapModeTansit = (m?: string): "car" | "walk" | "tansit" =>
+  //         m === "driving" ? "car" : m === "walking" ? "walk" : "tansit";
+  //       const mapModeTransit = (m?: string): "car" | "walk" | "transit" =>
+  //         m === "driving" ? "car" : m === "walking" ? "walk" : "transit";
+
+  //       const mapped = {
+  //         id: serverTrip._id || serverTrip.id || trip.id,
+  //         _id: String(
+  //           serverTrip._id || serverTrip.id || trip._id || trip.id || ""
+  //         ),
+  //         title: serverTrip.title || title,
+  //         description: serverTrip.description || description,
+  //         images: serverTrip.images || images,
+  //         route: ordered.length
+  //           ? ordered.map((r: { name?: string }) => r.name || "")
+  //           : serverTrip.route || [],
+  //         routeInstructions: (
+  //           ((serverTrip.optimizedRoute?.instructions as string[]) ||
+  //             (serverTrip.routeInstructions as string[]) ||
+  //             []) as string[]
+  //         ).map((ins: string, i: number) => ({
+  //           step: i + 1,
+  //           instruction: ins || "",
+  //           mode: mapModeTansit(modeFromOptimized),
+  //           distance: "",
+  //         })),
+  //         mode: mapModeTransit(modeFromOptimized || serverTrip.mode),
+  //         visibility:
+  //           serverTrip.visabilityStatus === "public" ? "public" : "private",
+  //         activities: serverTrip.activities || activities,
+  //         notes: serverTrip.notes || notes,
+  //       } as unknown as Trip;
+
+  //       onSave(mapped);
+  //       // cleanup staged files/previews
+  //       if (newPreviewsRef.current && newPreviewsRef.current.length) {
+  //         newPreviewsRef.current.forEach((p) => {
+  //           try {
+  //             URL.revokeObjectURL(p);
+  //           } catch (e) {
+  //             console.warn(e);
+  //           }
+  //         });
+  //       }
+  //       newPreviewsRef.current = [];
+  //       newFilesRef.current = [];
+  //       onClose();
+  //       // Also update trips list in parent (match by either id field)
+  //       setTrips((prevTrips) =>
+  //         prevTrips.map((t) =>
+  //           t.id === mapped.id || t._id === mapped._id ? { ...t, ...mapped } : t
+  //         )
+  //       );
+  //     } catch (e) {
+  //       console.error("Failed to save trip", e);
+  //       alert(String(e instanceof Error ? e.message : e));
+  //     }
+  //   })();
+  // };
+const handleSave = () => {
+  (async () => {
+    if (!trip) return;
+    try {
+      const storeUser = useUserStore.getState().user;
+      const storeToken = useUserStore.getState().token;
+      const userId = storeUser?._id;
+      if (!userId) throw new Error("Not authenticated");
+
+      const payload: Partial<ServerTrip> = {};
+
+      if (title !== trip.title) payload.title = title;
+      if (description !== trip.description) payload.description = description;
+      if (notes !== trip.notes) payload.notes = notes;
+      if (JSON.stringify(activities || []) !== JSON.stringify(trip.activities || []))
+        payload.activities = activities;
+      if (visibility !== trip.visibility) payload.visabilityStatus = visibility;
+
+      if (Object.keys(payload).length === 0 && newFilesRef.current.length === 0) {
+        onClose();
+        return;
+      }
+
+      let res;
+      if (newFilesRef.current && newFilesRef.current.length > 0) {
+        const fd = new FormData();
+
+        const existingImages = (images || []).filter(
+          (img) =>
+            typeof img === "string" &&
+            img.trim() !== "" &&
+            !img.startsWith("blob:") &&
+            !img.startsWith("data:")
+        );
+        fd.append("imagesExisting", JSON.stringify(existingImages));
+
+        newFilesRef.current.forEach((f) => fd.append("images", f));
+
+        for (const k of Object.keys(payload)) {// images מטופל בנפרד
+          const v = (payload as any)[k];
+          if (v === undefined) continue;
+          if (Array.isArray(v) || (typeof v === "object" && v !== null)) {
+            fd.append(k, JSON.stringify(v));
+          } else {
+            fd.append(k, String(v));
+          }
         }
 
-        const res = await fetch(
-          `${BASE_URL}/profile/${userId}/trips/${trip._id}`,
-          {
-            method: "PUT",
-            headers: {
-              Authorization: `Bearer ${storeToken}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-          }
+        res = await updateTrip(userId as string, trip._id, fd, storeToken || undefined);
+      } else {
+        // אין קבצים חדשים – שולחים payload רגיל
+        res = await updateTrip(
+          userId as string,
+          String(trip._id || trip.id),
+          payload,
+          storeToken || undefined
         );
-
-        const body = await res.json().catch(() => ({}));
-        if (!res.ok)
-          throw new Error(
-            body?.error || body?.message || "Failed to save trip"
-          );
-
-        const serverTrip: ServerTrip = body.trip || body;
-
-        // map serverTrip to client Trip shape (small mapping)
-        const ordered = serverTrip.optimizedRoute?.ordered_route || [];
-        const modeFromOptimized = serverTrip.optimizedRoute?.mode;
-        const mapModeTansit = (m?: string): "car" | "walk" | "tansit" =>
-          m === "driving" ? "car" : m === "walking" ? "walk" : "tansit";
-        const mapModeTransit = (m?: string): "car" | "walk" | "transit" =>
-          m === "driving" ? "car" : m === "walking" ? "walk" : "transit";
-
-        const mapped = {
-          id: serverTrip._id || serverTrip.id || trip.id,
-          _id: String(
-            serverTrip._id || serverTrip.id || trip._id || trip.id || ""
-          ),
-          title: serverTrip.title || title,
-          description: serverTrip.description || description,
-          images: serverTrip.images || images,
-          route: ordered.length
-            ? ordered.map((r: { name?: string }) => r.name || "")
-            : serverTrip.route || [],
-          routeInstructions: (
-            ((serverTrip.optimizedRoute?.instructions as string[]) ||
-              (serverTrip.routeInstructions as string[]) ||
-              []) as string[]
-          ).map((ins: string, i: number) => ({
-            step: i + 1,
-            instruction: ins || "",
-            mode: mapModeTansit(modeFromOptimized),
-            distance: "",
-          })),
-          mode: mapModeTransit(modeFromOptimized || serverTrip.mode),
-          visibility:
-            serverTrip.visabilityStatus === "public" ? "public" : "private",
-          activities: serverTrip.activities || activities,
-          notes: serverTrip.notes || notes,
-        } as unknown as Trip;
-
-        onSave(mapped);
-        onClose();
-        // Also update trips list in parent (match by either id field)
-        setTrips((prevTrips) =>
-          prevTrips.map((t) =>
-            t.id === mapped.id || t._id === mapped._id ? { ...t, ...mapped } : t
-          )
-        );
-      } catch (e) {
-        console.error("Failed to save trip", e);
-        alert(String(e instanceof Error ? e.message : e));
       }
-    })();
-  };
+
+      const serverTrip: ServerTrip = (res && (res.trip || res)) as ServerTrip;
+
+      // מיפוי ל-Trip של צד לקוח
+      const ordered = serverTrip.optimizedRoute?.ordered_route || [];
+      const modeFromOptimized = serverTrip.optimizedRoute?.mode;
+      const mapModeTansit = (m?: string): "car" | "walk" | "tansit" =>
+        m === "driving" ? "car" : m === "walking" ? "walk" : "tansit";
+      const mapModeTransit = (m?: string): "car" | "walk" | "transit" =>
+        m === "driving" ? "car" : m === "walking" ? "walk" : "transit";
+
+      const mapped: Trip = {
+        id: serverTrip._id || serverTrip.id || trip.id,
+        _id: String(serverTrip._id || serverTrip.id || trip._id || trip.id || ""),
+        title: serverTrip.title || title,
+        description: serverTrip.description || description,
+        images: serverTrip.images || images,
+        route: ordered.length
+          ? ordered.map((r: { name?: string }) => r.name || "")
+          : serverTrip.route || [],
+        routeInstructions: (
+          ((serverTrip.optimizedRoute?.instructions as string[]) ||
+            (serverTrip.routeInstructions as string[]) ||
+            []) as string[]
+        ).map((ins: string, i: number) => ({
+          step: i + 1,
+          instruction: ins || "",
+          mode: mapModeTansit(modeFromOptimized),
+          distance: "",
+        })),
+        mode: mapModeTransit(modeFromOptimized || serverTrip.mode),
+        visibility:
+          serverTrip.visabilityStatus === "public" ? "public" : "private",
+        activities: serverTrip.activities || activities,
+        notes: serverTrip.notes || notes,
+      };
+
+      onSave(mapped);
+
+      // נקה קבצים ו-previews
+      newPreviewsRef.current.forEach((p) => {
+        try {
+          URL.revokeObjectURL(p);
+        } catch {}
+      });
+      newPreviewsRef.current = [];
+      newFilesRef.current = [];
+
+      onClose();
+
+      // עדכון רשימת טיולים בהורה
+      setTrips((prevTrips) =>
+        prevTrips.map((t) =>
+          t.id === mapped.id || t._id === mapped._id ? { ...t, ...mapped } : t
+        )
+      );
+    } catch (e) {
+      console.error("Failed to save trip", e);
+      alert(String(e instanceof Error ? e.message : e));
+    }
+  })();
+};
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -188,16 +354,48 @@ export function EditTripModal({
       return;
     }
 
-    // In a real app, you would upload these to a server
-    // For now, we'll create object URLs
+    // Create object URLs for previews and keep File objects for upload on save
     const filesToAdd = Array.from(files).slice(0, remainingSlots);
-    const newImages = filesToAdd.map((file) => URL.createObjectURL(file));
-    setImages([...images, ...newImages]);
+    const newImages = filesToAdd.map((file) => {
+      const preview = URL.createObjectURL(file);
+      newFilesRef.current.push(file);
+      newPreviewsRef.current.push(preview);
+      return preview;
+    });
+    setImages((prev) => [...prev, ...newImages]);
   };
 
+  // const handleRemoveImage = (index: number) => {
+  //   const img = images[index];
+  //   const previewIdx = newPreviewsRef.current.indexOf(img);
+  //   if (previewIdx !== -1) {
+  //     try {
+  //       URL.revokeObjectURL(newPreviewsRef.current[previewIdx]);
+  //     } catch (e) {
+  //       console.warn(e);
+  //     }
+  //     newPreviewsRef.current.splice(previewIdx, 1);
+  //     newFilesRef.current.splice(previewIdx, 1);
+  //   }
+  //   setImages(images.filter((_, i) => i !== index));
+  // };
   const handleRemoveImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
-  };
+  const img = images[index];
+  // אם זה URL קיים, נסיר אותו מ-existingImages
+  if (!img.startsWith("blob:")) {
+    setImages(prev => prev.filter((_, i) => i !== index));
+    return;
+  }
+  // אחרת, זה preview של file חדש
+  const previewIdx = newPreviewsRef.current.indexOf(img);
+  if (previewIdx !== -1) {
+    URL.revokeObjectURL(newPreviewsRef.current[previewIdx]);
+    newPreviewsRef.current.splice(previewIdx, 1);
+    newFilesRef.current.splice(previewIdx, 1);
+  }
+  setImages(prev => prev.filter((_, i) => i !== index));
+};
+
 
   const handleAddActivity = () => {
     if (newActivity.trim() && !activities.includes(newActivity.trim())) {

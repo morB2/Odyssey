@@ -73,8 +73,6 @@ export default function TripPostAdapter({
     optimizedRoute: trip.optimizedRoute,
     comments: adaptComments(trip.comments || []),
   };
-
-  console.log("server trip\n",trip.user,"map\n",mapped.user);
   
 
   return (
