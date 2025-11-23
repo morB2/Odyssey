@@ -85,7 +85,7 @@ export const Page404: React.FC = () => {
             Return to Homepage
           </Button>
           <Button 
-            href="/explore" 
+            href="/feed" 
             variant="outlined" 
             sx={{ 
               borderColor: ODYSSEY_ORANGE, 

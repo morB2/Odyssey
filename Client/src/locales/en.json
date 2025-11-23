@@ -55,5 +55,58 @@
     "help_center": "Help Center",
     "terms_of_service": "Terms of Service",
     "privacy_policy": "Privacy Policy",
-    "contact": "Contact"
+    "contact": "Contact",
+    "createTrip": "Create Trip",
+    "logIn": "Log In",
+    "main_page": {
+        "hero_title": "Create Your Dream Trip with AI",
+        "hero_subtitle": "Chat with our AI assistant to plan your perfect vacation",
+        "chat_header": "AI Travel Assistant",
+        "initial_message": "Hi there! 👋 I'm your AI travel assistant. Tell me about your dream vacation and I'll create a personalized itinerary just for you. Where would you like to go?",
+        "ai_suggestions_intro": "Here are some amazing itineraries I found for you 🌍",
+        "ai_suggestions_click": "Click on the itinerary that speaks to you, and I'll find you the best route! 🗺️",
+        "ai_travel_question": "Got it! 🚗 How would you like to travel?",
+        "ai_route_confirm": "Perfect! 🌍 I'll plan the best {{mode}} route for your \"{{title}}\" trip.",
+        "ai_customize_prompt": "If there's anything you'd like me to change, just let me know and I'll adjust it for you!",
+        "ai_customize_done": "Got it! ✏️ I've updated your itinerary based on your feedback.",
+        "ai_error_unavailable": "We're sorry, but our AI service is currently unavailable. Please try again later. 🙏",
+        "ai_error_busy": "Sorry, the server is too busy right now... try again in a few minutes 😢",
+        "user_selected_itinerary": "I choose: {{title}}",
+        "user_selected_mode": "I prefer {{mode}}",
+        "feature_ai_title": "AI-Powered",
+        "feature_ai_text": "Advanced AI creates personalized itineraries based on your preferences",
+        "feature_routes_title": "Custom Routes",
+        "feature_routes_text": "Get optimized routes and schedules tailored to your travel style",
+        "feature_flexible_title": "Flexible Planning",
+        "feature_flexible_text": "Plan trips of any duration with flexible itineraries that match your schedule"
+    },
+    "quick_actions": {
+        "quick_suggestions_title": "Quick suggestions:",
+        "quick_beach_label": "Beach vacation",
+        "quick_beach_action": "I want a relaxing beach vacation",
+        "quick_adventure_label": "Adventure trip",
+        "quick_adventure_action": "I want an adventure trip with hiking and exploring",
+        "quick_culture_label": "Cultural experience",
+        "quick_culture_action": "Cultural experience with local food tours",
+        "quick_week_label": "1 week",
+        "quick_week_action": "1 week trip",
+        "quick_budget_label": "Moderate budget",
+        "quick_budget_action": "Moderate budget"
+    },
+    "chat_input": {
+        "placeholder": "Type your message...",
+        "hint": "Press Enter to send • AI will generate your personalized itinerary"
+    },
+    "messageBubble": {
+        "aiAssistant": "AI Assistant"
+    },
+    "itinerarySummary": {
+        "defaultTitle": "Travel Itinerary",
+        "noItems": "No itinerary items yet"
+    },
+      "travelModes": {
+    "driving": "Driving 🚗",
+    "walking": "Walking 🚶‍♀️",
+    "transit": "Transit 🚌"
+  }
 }

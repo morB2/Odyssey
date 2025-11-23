@@ -4,7 +4,8 @@ import { Sparkles } from 'lucide-react';
 import { ItinerarySummary } from './ItinerarySummary'; // Imported from original file
 import { TripDisplay } from './TripDisplay'; // Imported from original file
 import { TravelModeSelector } from './TravelModeSelector'; // Extracted
-import { type Message, type Itinerary } from './types'; 
+import { type Message, type Itinerary } from './types';
+import { useTranslation } from 'react-i18next';
 
 interface MessageBubbleProps {
     message: Message;
@@ -13,12 +14,14 @@ interface MessageBubbleProps {
     onSelectTravelMode: (mode: string) => void;
 }
 
-export default function MessageBubble({ 
-    message: m, 
-    selectedItinerary, 
-    onSelectItinerary, 
-    onSelectTravelMode 
-}: MessageBubbleProps) {
+export const MessageBubble = ({
+    message: m,
+    selectedItinerary,
+    onSelectItinerary,
+    onSelectTravelMode
+}: MessageBubbleProps) => {
+
+    const { t } = useTranslation();
 
     const isUser = m.sender === 'user';
     const isRichContent = !!m.content;
@@ -27,20 +30,20 @@ export default function MessageBubble({
     if (m.text) {
         return (
             <Box sx={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
-                <Paper 
-                    sx={{ 
-                        p: 2, 
-                        borderRadius: 3, 
-                        bgcolor: isUser ? '#ffa83fff' : '#fff7ed', 
-                        color: isUser ? 'white' : 'black', 
-                        border: isUser ? 'none' : '1px solid #ffe4cc', 
-                        maxWidth: '80%' 
+                <Paper
+                    sx={{
+                        p: 2,
+                        borderRadius: 3,
+                        bgcolor: isUser ? '#ffa83fff' : '#fff7ed',
+                        color: isUser ? 'white' : 'black',
+                        border: isUser ? 'none' : '1px solid #ffe4cc',
+                        maxWidth: '80%'
                     }}
                 >
                     {!isUser && (
                         <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
                             <Sparkles style={{ width: 14, height: 14, color: '#ff6b35' }} />
-                            <Typography variant="caption" sx={{ opacity: 0.7 }}>AI Assistant</Typography>
+                            <Typography variant="caption" sx={{ opacity: 0.7 }}> {t("messageBubble.aiAssistant")}</Typography>
                         </Stack>
                     )}
                     <Typography sx={{ whiteSpace: 'pre-wrap' }}>{m.text}</Typography>
@@ -97,6 +100,6 @@ export default function MessageBubble({
             </Box>
         );
     }
-    
+
     return null;
 }
