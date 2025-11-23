@@ -56,7 +56,7 @@ function Navbar() {
             </Typography>
           </Box>
 
-          {user && (
+          { 
             <>
               {/* AI Trip Creator Icon + Label */}
               <Box
@@ -76,7 +76,7 @@ function Navbar() {
                 </Typography>
               </Box>
             </>
-          )}
+          }
 
           {user ? (
             <ProfileMenu />

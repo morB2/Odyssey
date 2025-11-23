@@ -11,6 +11,8 @@ import Page404 from './components/general/404Page';
 import Page401 from './components/general/401Page';
 import { initializeSocket } from './services/socketService';
 import { useUserStore } from './store/userStore';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './App.css'
 
 function App() {
@@ -34,6 +36,7 @@ function App() {
 
   return (
     <>
+      <ToastContainer position="top-right" autoClose={3000} />
       <Routes location={background}>
         <Route path="/" element={<Home />} />
         <Route path="/createtrip" element={<MainPage />} />

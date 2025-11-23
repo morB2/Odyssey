@@ -7,6 +7,7 @@ import { type Comment, type Trip } from './types';
 import TripFeedSkeleton from './TripFeedSkeleton';
 import { useUserStore } from '../../store/userStore';
 import GuestWelcomeCard from './GuestWelcomeCard';
+import { toast } from 'react-toastify';
 
 function adaptComments(apiComments: any[]): Comment[] {
   return apiComments.map((c) => {
@@ -64,6 +65,7 @@ export function TripFeed() {
         setTrips(tripsData);
       } catch (err) {
         console.error('Failed to fetch trips:', err);
+        toast.error("Failed to load trips. Please refresh the page.");
       } finally {
         setLoading(false);
       }

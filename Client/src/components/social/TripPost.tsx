@@ -15,6 +15,8 @@ import TripCommentsSection from './TripCommentsSection';
 import TripDetailsDialog from './TripDetailsDialog';
 import { toggleLike, toggleSave, toggleFollow, addComment, addReaction, addReply } from '../../services/tripPost.service';
 import { useTripRealtime } from '../../hooks/useTripRealtime';
+import { toast } from 'react-toastify';
+
 const theme = createTheme({
     palette: {
         primary: {
@@ -85,7 +87,7 @@ export default function TripPost({ trip }: TripPostProps) {
     // --- API Handlers ---
     const postLike = useCallback(async () => {
         if (!trip.currentUserId || trip.currentUserId.trim() === '') {
-            alert("Please log in to like trips.");
+            toast.info("Please log in to like trips.");
             return;
         }
 
@@ -103,6 +105,7 @@ export default function TripPost({ trip }: TripPostProps) {
             await toggleLike(trip._id, trip.currentUserId, originalIsLiked);
         } catch (error) {
             console.error('Error toggling like, rolling back:', error);
+            toast.error("Failed to like trip. Please try again.");
             // Rollback on API error
             setIsLiked(originalIsLiked);
             setLikesCount(originalLikesCount);
@@ -111,7 +114,7 @@ export default function TripPost({ trip }: TripPostProps) {
 
     const postSave = useCallback(async () => {
         if (!trip.currentUserId || trip.currentUserId.trim() === '') {
-            alert("Please log in to save trips.");
+            toast.info("Please log in to save trips.");
             return;
         }
 
@@ -120,15 +123,21 @@ export default function TripPost({ trip }: TripPostProps) {
 
         try {
             await toggleSave(trip._id, trip.currentUserId, isSaved);
+            if (newIsSaved) {
+                toast.success("Trip saved!");
+            } else {
+                toast.info("Trip unsaved.");
+            }
         } catch (error) {
             console.error('Error toggling save:', error);
+            toast.error("Failed to save trip. Please try again.");
             setIsSaved(!newIsSaved); // Rollback optimistic update
         }
     }, [isSaved, trip._id, trip.currentUserId]);
 
     const postFollow = useCallback(async () => {
         if (!trip.currentUserId || trip.currentUserId.trim() === '') {
-            alert("Please log in to follow users.");
+            toast.info("Please log in to follow users.");
             return;
         }
 
@@ -137,15 +146,21 @@ export default function TripPost({ trip }: TripPostProps) {
 
         try {
             await toggleFollow(trip.user._id, trip.currentUserId, isFollowing);
+            if (newIsFollowing) {
+                toast.success(`Following ${trip.user.firstName}`);
+            } else {
+                toast.info(`Unfollowed ${trip.user.firstName}`);
+            }
         } catch (error) {
             console.error('Error toggling follow:', error);
+            toast.error("Failed to follow user. Please try again.");
             setIsFollowing(!newIsFollowing); // Rollback optimistic update
         }
-    }, [isFollowing, trip.user._id, trip.currentUserId]);
+    }, [isFollowing, trip.user._id, trip.currentUserId, trip.user.firstName]);
 
     const handleAddComment = useCallback(async (commentText: string) => {
         if (!trip.currentUserId || trip.currentUserId.trim() === '') {
-            alert("Please log in to comment.");
+            toast.info("Please log in to comment.");
             return;
         }
 
@@ -166,15 +181,17 @@ export default function TripPost({ trip }: TripPostProps) {
             };
 
             setComments((prev) => [newComment, ...prev]);
+            toast.success("Comment added!");
         } catch (error) {
             console.error('Error adding comment:', error);
+            toast.error("Failed to add comment. Please try again.");
             // In a real app, you might remove the optimistic comment on failure
         }
     }, [trip._id, trip.currentUserId, user?.avatar]);
 
     const handleEmojiReaction = useCallback(async (commentId: string, emoji: string) => {
         if (!trip.currentUserId || trip.currentUserId.trim() === '') {
-            alert("Please log in to react.");
+            toast.info("Please log in to react.");
             return;
         }
 
@@ -195,13 +212,14 @@ export default function TripPost({ trip }: TripPostProps) {
             await addReaction(trip._id, commentId, trip.currentUserId, emoji);
         } catch (error) {
             console.error('Error adding reaction:', error);
+            toast.error("Failed to add reaction.");
             // In a real app, you might decrement the count on failure
         }
     }, [trip._id, trip.currentUserId]);
 
     const handleAddReply = useCallback(async (commentId: string, replyText: string) => {
         if (!trip.currentUserId || trip.currentUserId.trim() === '') {
-            alert("Please log in to reply.");
+            toast.info("Please log in to reply.");
             return;
         }
 
@@ -231,8 +249,10 @@ export default function TripPost({ trip }: TripPostProps) {
                     return comment;
                 })
             );
+            toast.success("Reply added!");
         } catch (error) {
             console.error('Error adding reply:', error);
+            toast.error("Failed to add reply.");
         }
     }, [trip._id, trip.currentUserId, user?.avatar]);
 

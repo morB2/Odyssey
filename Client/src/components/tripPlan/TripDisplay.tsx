@@ -19,7 +19,10 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import { MapPin, Navigation, ExternalLink, Save } from "lucide-react";
+import { AuthSaveDialog } from "./AuthSaveDialog";
+import { toast } from "react-toastify";
 
 interface Location {
   name: string;
@@ -54,8 +57,9 @@ interface StoredUser {
 }
 
 export function TripDisplay({ data }: TripDisplayProps) {
+  const navigate = useNavigate();
   if (!data?.route) return <Typography>No route data to display</Typography>;
-const [imageUrl, setImageUrl] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>("");
   const { title, description, ordered_route, mode, instructions = [], google_maps_url, activities = [] } = data.route;
   useEffect(() => {
     const fetchImage = async () => {
@@ -75,45 +79,74 @@ const [imageUrl, setImageUrl] = useState<string>("");
         }
       } catch (error) {
         console.error("Failed to fetch image:", error);
+        // Optional: toast.error("Failed to load trip image"); - might be too noisy for a background image
       }
     };
 
     fetchImage();
-  }, [ title]);
+  }, [title]);
   const orange = "#ff9800";
   const lightOrange = "#fff3e0";
   const borderOrange = "#ffe0b2";
 
   // Dialog state
   const [openDialog, setOpenDialog] = useState(false);
+  const [openAuthDialog, setOpenAuthDialog] = useState(false);
 
-  const handleSaveClick = () => setOpenDialog(true);
+  const handleSaveClick = () => {
+    const userStorage = localStorage.getItem('user-storage');
+    const user = userStorage ? (JSON.parse(userStorage) as StoredUser).state.user : null;
+
+    if (user) {
+      setOpenDialog(true);
+    } else {
+      setOpenAuthDialog(true);
+    }
+  };
+
   const handleCloseDialog = () => setOpenDialog(false);
+  const handleCloseAuthDialog = () => setOpenAuthDialog(false);
+
+  const handlePrint = () => {
+    window.print();
+    setOpenAuthDialog(false);
+  };
+
+  const handleLoginRedirect = () => {
+    navigate("/login?tab=login", { state: { backgroundLocation: location.pathname } })
+    setOpenAuthDialog(false);
+  };
 
   const handleSaveOption = async (type: "private" | "public") => {
     setOpenDialog(false);
-     const userStorage = localStorage.getItem('user-storage');
-        const id: string | undefined = userStorage
-          ? (JSON.parse(userStorage) as StoredUser).state.user._id
-          : undefined;
-    const response = await fetch('http://localhost:3000/createTrip/save', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(
-        { userId: id, title, description, optimizedRoute: { ordered_route, mode, instructions, google_maps_url }, activities, visabilityStatus: type ,image: imageUrl}
-      ),
-    });
-    const result = await response.json();
-    console.log('Trip save response:', result);
-    if (result.success) {
-      alert('Trip saved successfully!');
-    } else {
-      alert('Failed to save trip.');
+    const userStorage = localStorage.getItem('user-storage');
+    const id: string | undefined = userStorage
+      ? (JSON.parse(userStorage) as StoredUser).state.user._id
+      : undefined;
+
+    try {
+      const response = await fetch('http://localhost:3000/createTrip/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(
+          { userId: id, title, description, optimizedRoute: { ordered_route, mode, instructions, google_maps_url }, activities, visabilityStatus: type, image: imageUrl }
+        ),
+      });
+      const result = await response.json();
+      console.log('Trip save response:', result);
+      if (result.success) {
+        toast.success('Trip saved successfully!');
+      } else {
+        toast.error('Failed to save trip.');
+      }
+    } catch (error) {
+      console.error("Save error:", error);
+      toast.error("An error occurred while saving the trip.");
     }
   };
 
   return (
-    <Card
+    <Card className="trip-print-container"
       sx={{
         maxWidth: 800,
         mx: "auto",
@@ -305,6 +338,14 @@ const [imageUrl, setImageUrl] = useState<string>("");
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Auth Save Dialog */}
+      <AuthSaveDialog
+        open={openAuthDialog}
+        onClose={handleCloseAuthDialog}
+        onLogin={handleLoginRedirect}
+        onPrint={handlePrint}
+      />
     </Card>
   );
 }
