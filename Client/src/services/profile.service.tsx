@@ -56,11 +56,24 @@ export const updateTrip = async (
   token?: string
 ) => {
   try {
-    // If payload is FormData (files + fields), do not set explicit Content-Type header
-    const isForm = payload instanceof FormData;
-    const headers = isForm ? getAuthHeader(token) : getAuthHeader(token);
+    // If payload is FormData (files + fields), use fetch so browser sets multipart boundary
+    if (payload instanceof FormData) {
+      const fullUrl =
+        (api.defaults.baseURL || "") + `${BASE}/${userId}/trips/${tripId}`;
+      const headers = (getAuthHeader(token) || {}) as Record<string, string>;
+      const res = await fetch(fullUrl, {
+        method: "PUT",
+        headers,
+        body: payload,
+      });
+      const json = await res.json();
+      if (!res.ok)
+        throw new Error(json?.error || json?.message || "Update failed");
+      return json;
+    }
+
     const res = await api.put(`${BASE}/${userId}/trips/${tripId}`, payload, {
-      headers,
+      headers: getAuthHeader(token),
     });
     return res.data;
   } catch (error) {
@@ -96,11 +109,21 @@ export const uploadAvatar = async (
 
     if (file) {
       const fd = new FormData();
+      console.log("avatar\n", file);
+
+      // Use fetch for multipart upload so the browser sets the Content-Type boundary correctly
       fd.append("avatar", file);
-      const res = await api.put(url, fd, {
-        headers: getAuthHeader(token),
+      const fullUrl = (api.defaults.baseURL || "") + url;
+      const headers = getAuthHeader(token) || {};
+      const res = await fetch(fullUrl, {
+        method: "PUT",
+        headers: headers as Record<string, string>,
+        body: fd,
       });
-      return res.data;
+      const json = await res.json();
+      if (!res.ok)
+        throw new Error(json?.error || json?.message || "Upload failed");
+      return json;
     }
 
     if (avatarUrl && avatarUrl.trim()) {

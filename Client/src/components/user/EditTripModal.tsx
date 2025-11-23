@@ -76,293 +76,152 @@ export function EditTripModal({
       newPreviewsRef.current.forEach((p) => {
         try {
           URL.revokeObjectURL(p);
-        } catch (e) {}
+        } catch (e) { }
       });
     }
     newPreviewsRef.current = [];
   }, [trip]);
 
-  // const handleSave = () => {
-  //   // Save to server instead of only local
-  //   (async () => {
-  //     if (!trip) return;
-  //     try {
-  //       const storeUser = useUserStore.getState().user;
-  //       const storeToken = useUserStore.getState().token;
-  //       const userId = storeUser?._id;
-  //       if (!userId) throw new Error("Not authenticated");
+  const handleSave = () => {
+    (async () => {
+      if (!trip) return;
+      try {
+        const storeUser = useUserStore.getState().user;
+        const storeToken = useUserStore.getState().token;
+        const userId = storeUser?._id;
+        if (!userId) throw new Error("Not authenticated");
 
-  //       // Build a minimal payload that contains ONLY the fields that changed.
-  //       // IMPORTANT: do NOT send optimizedRoute.instructions or route summary here
-  //       // because the UI doesn't allow editing them and sending empty/partial
-  //       // values would overwrite server data.
-  //       const payload: Partial<ServerTrip> = {};
+        const payload: Partial<ServerTrip> = {};
 
-  //       if (title !== trip.title) payload.title = title;
-  //       if (description !== trip.description) payload.description = description;
-  //       if (notes !== trip.notes) payload.notes = notes;
-  //       // compare activities arrays shallowly
-  //       if (
-  //         JSON.stringify(activities || []) !==
-  //         JSON.stringify(trip.activities || [])
-  //       )
-  //         payload.activities = activities;
-  //       // images
-  //       if (JSON.stringify(images || []) !== JSON.stringify(trip.images || []))
-  //         payload.images = images;
-  //       // visibility -> server expects visabilityStatus
-  //       if (visibility !== trip.visibility)
-  //         payload.visabilityStatus = visibility;
+        if (title !== trip.title) payload.title = title;
+        if (description !== trip.description) payload.description = description;
+        if (notes !== trip.notes) payload.notes = notes;
+        if (JSON.stringify(activities || []) !== JSON.stringify(trip.activities || []))
+          payload.activities = activities;
+        if (visibility !== trip.visibility) payload.visabilityStatus = visibility;
 
-  //       // If nothing changed, just close without calling the server
-  //       if (Object.keys(payload).length === 0) {
-  //         onClose();
-  //         return;
-  //       }
-
-  //       let res;
-  //       // If there are newly selected files, send multipart FormData so server can save files
-  //       if (newFilesRef.current && newFilesRef.current.length > 0) {
-  //         const fd = new FormData();
-  //         // include existing images (those that look like URLs or server paths)
-  //         const existingImages = (images || []).filter(
-  //           (img) =>
-  //             typeof img === "string" &&
-  //             !(img.startsWith("blob:") || img.startsWith("data:"))
-  //         );
-  //         fd.append("imagesExisting", JSON.stringify(existingImages));
-  //         newFilesRef.current.forEach((f) => fd.append("images", f));
-  //         // append other changed fields
-  //         for (const k of Object.keys(payload)) {
-  //           // images are handled separately (imagesExisting + files)
-  //           if (k === "images") continue;
-  //           const v = (payload as any)[k];
-  //           if (v === undefined) continue;
-  //           if (Array.isArray(v) || (typeof v === "object" && v !== null)) {
-  //             fd.append(k, JSON.stringify(v));
-  //           } else {
-  //             fd.append(k, String(v));
-  //           }
-  //         }
-
-  //         res = await updateTrip(
-  //           userId as string,
-  //           trip._id,
-  //           fd,
-  //           storeToken || undefined
-  //         );
-  //       } else {
-  //         res = await updateTrip(
-  //           userId as string,
-  //           String(trip._id || trip.id),
-  //           payload,
-  //           storeToken || undefined
-  //         );
-  //       }
-  //       const serverTrip: ServerTrip = (res && (res.trip || res)) as ServerTrip;
-
-  //       // map serverTrip to client Trip shape (small mapping)
-  //       const ordered = serverTrip.optimizedRoute?.ordered_route || [];
-  //       const modeFromOptimized = serverTrip.optimizedRoute?.mode;
-  //       const mapModeTansit = (m?: string): "car" | "walk" | "tansit" =>
-  //         m === "driving" ? "car" : m === "walking" ? "walk" : "tansit";
-  //       const mapModeTransit = (m?: string): "car" | "walk" | "transit" =>
-  //         m === "driving" ? "car" : m === "walking" ? "walk" : "transit";
-
-  //       const mapped = {
-  //         id: serverTrip._id || serverTrip.id || trip.id,
-  //         _id: String(
-  //           serverTrip._id || serverTrip.id || trip._id || trip.id || ""
-  //         ),
-  //         title: serverTrip.title || title,
-  //         description: serverTrip.description || description,
-  //         images: serverTrip.images || images,
-  //         route: ordered.length
-  //           ? ordered.map((r: { name?: string }) => r.name || "")
-  //           : serverTrip.route || [],
-  //         routeInstructions: (
-  //           ((serverTrip.optimizedRoute?.instructions as string[]) ||
-  //             (serverTrip.routeInstructions as string[]) ||
-  //             []) as string[]
-  //         ).map((ins: string, i: number) => ({
-  //           step: i + 1,
-  //           instruction: ins || "",
-  //           mode: mapModeTansit(modeFromOptimized),
-  //           distance: "",
-  //         })),
-  //         mode: mapModeTransit(modeFromOptimized || serverTrip.mode),
-  //         visibility:
-  //           serverTrip.visabilityStatus === "public" ? "public" : "private",
-  //         activities: serverTrip.activities || activities,
-  //         notes: serverTrip.notes || notes,
-  //       } as unknown as Trip;
-
-  //       onSave(mapped);
-  //       // cleanup staged files/previews
-  //       if (newPreviewsRef.current && newPreviewsRef.current.length) {
-  //         newPreviewsRef.current.forEach((p) => {
-  //           try {
-  //             URL.revokeObjectURL(p);
-  //           } catch (e) {
-  //             console.warn(e);
-  //           }
-  //         });
-  //       }
-  //       newPreviewsRef.current = [];
-  //       newFilesRef.current = [];
-  //       onClose();
-  //       // Also update trips list in parent (match by either id field)
-  //       setTrips((prevTrips) =>
-  //         prevTrips.map((t) =>
-  //           t.id === mapped.id || t._id === mapped._id ? { ...t, ...mapped } : t
-  //         )
-  //       );
-  //     } catch (e) {
-  //       console.error("Failed to save trip", e);
-  //       alert(String(e instanceof Error ? e.message : e));
-  //     }
-  //   })();
-  // };
-const handleSave = () => {
-  (async () => {
-    if (!trip) return;
-    try {
-      const storeUser = useUserStore.getState().user;
-      const storeToken = useUserStore.getState().token;
-      const userId = storeUser?._id;
-      if (!userId) throw new Error("Not authenticated");
-
-      const payload: Partial<ServerTrip> = {};
-
-      if (title !== trip.title) payload.title = title;
-      if (description !== trip.description) payload.description = description;
-      if (notes !== trip.notes) payload.notes = notes;
-      if (JSON.stringify(activities || []) !== JSON.stringify(trip.activities || []))
-        payload.activities = activities;
-      if (visibility !== trip.visibility) payload.visabilityStatus = visibility;
-
-      if (Object.keys(payload).length === 0 && newFilesRef.current.length === 0) {
-        onClose();
-        return;
-      }
-
-      let res;
-      if (newFilesRef.current && newFilesRef.current.length > 0) {
-        const fd = new FormData();
-
-        const existingImages = (images || []).filter(
-          (img) =>
-            typeof img === "string" &&
-            img.trim() !== "" &&
-            !img.startsWith("blob:") &&
-            !img.startsWith("data:")
-        );
-        fd.append("imagesExisting", JSON.stringify(existingImages));
-
-        newFilesRef.current.forEach((f) => fd.append("images", f));
-
-        for (const k of Object.keys(payload)) {// images מטופל בנפרד
-          const v = (payload as any)[k];
-          if (v === undefined) continue;
-          if (Array.isArray(v) || (typeof v === "object" && v !== null)) {
-            fd.append(k, JSON.stringify(v));
-          } else {
-            fd.append(k, String(v));
-          }
+        if (Object.keys(payload).length === 0 && newFilesRef.current.length === 0) {
+          onClose();
+          return;
         }
 
-        res = await updateTrip(userId as string, trip._id, fd, storeToken || undefined);
-      } else {
-        // אין קבצים חדשים – שולחים payload רגיל
-        res = await updateTrip(
-          userId as string,
-          String(trip._id || trip.id),
-          payload,
-          storeToken || undefined
+        let res;
+        if (newFilesRef.current && newFilesRef.current.length > 0) {
+          const fd = new FormData();
+
+          const existingImages = (images || []).filter(
+            (img) =>
+              typeof img === "string" &&
+              img.trim() !== "" &&
+              !img.startsWith("blob:") &&
+              !img.startsWith("data:")
+          );
+          fd.append("imagesExisting", JSON.stringify(existingImages));
+
+          newFilesRef.current.forEach((f) => fd.append("images", f));
+
+          for (const k of Object.keys(payload)) {// images מטופל בנפרד
+            const v = (payload as any)[k];
+            if (v === undefined) continue;
+            if (Array.isArray(v) || (typeof v === "object" && v !== null)) {
+              fd.append(k, JSON.stringify(v));
+            } else {
+              fd.append(k, String(v));
+            }
+          }
+
+          res = await updateTrip(userId as string, trip._id, fd, storeToken || undefined);
+        } else {
+
+          res = await updateTrip(
+            userId as string,
+            String(trip._id || trip.id),
+            payload,
+            storeToken || undefined
+          );
+        }
+
+        const serverTrip: ServerTrip = (res && (res.trip || res)) as ServerTrip;
+
+        const ordered = serverTrip.optimizedRoute?.ordered_route || [];
+        const modeFromOptimized = serverTrip.optimizedRoute?.mode;
+        const mapModeTansit = (m?: string): "car" | "walk" | "tansit" =>
+          m === "driving" ? "car" : m === "walking" ? "walk" : "tansit";
+        const mapModeTransit = (m?: string): "car" | "walk" | "transit" =>
+          m === "driving" ? "car" : m === "walking" ? "walk" : "transit";
+
+        const mapped: Trip = {
+          id: serverTrip._id || serverTrip.id || trip.id,
+          _id: String(serverTrip._id || serverTrip.id || trip._id || trip.id || ""),
+          title: serverTrip.title || title,
+          description: serverTrip.description || description,
+          images: serverTrip.images || images,
+          route: ordered.length
+            ? ordered.map((r: { name?: string }) => r.name || "")
+            : serverTrip.route || [],
+          routeInstructions: (
+            ((serverTrip.optimizedRoute?.instructions as string[]) ||
+              (serverTrip.routeInstructions as string[]) ||
+              []) as string[]
+          ).map((ins: string, i: number) => ({
+            step: i + 1,
+            instruction: ins || "",
+            mode: mapModeTansit(modeFromOptimized),
+            distance: "",
+          })),
+          mode: mapModeTransit(modeFromOptimized || serverTrip.mode),
+          visibility:
+            serverTrip.visabilityStatus === "public" ? "public" : "private",
+          activities: serverTrip.activities || activities,
+          notes: serverTrip.notes || notes,
+        };
+
+        onSave(mapped);
+
+        // נקה קבצים ו-previews
+        newPreviewsRef.current.forEach((p) => {
+          try {
+            URL.revokeObjectURL(p);
+          } catch { }
+        });
+        newPreviewsRef.current = [];
+        newFilesRef.current = [];
+
+        onClose();
+
+        // עדכון רשימת טיולים בהורה
+        setTrips((prevTrips) =>
+          prevTrips.map((t) =>
+            t.id === mapped.id || t._id === mapped._id ? { ...t, ...mapped } : t
+          )
         );
+      } catch (e) {
+        console.error("Failed to save trip", e);
+        alert(String(e instanceof Error ? e.message : e));
       }
-
-      const serverTrip: ServerTrip = (res && (res.trip || res)) as ServerTrip;
-
-      // מיפוי ל-Trip של צד לקוח
-      const ordered = serverTrip.optimizedRoute?.ordered_route || [];
-      const modeFromOptimized = serverTrip.optimizedRoute?.mode;
-      const mapModeTansit = (m?: string): "car" | "walk" | "tansit" =>
-        m === "driving" ? "car" : m === "walking" ? "walk" : "tansit";
-      const mapModeTransit = (m?: string): "car" | "walk" | "transit" =>
-        m === "driving" ? "car" : m === "walking" ? "walk" : "transit";
-
-      const mapped: Trip = {
-        id: serverTrip._id || serverTrip.id || trip.id,
-        _id: String(serverTrip._id || serverTrip.id || trip._id || trip.id || ""),
-        title: serverTrip.title || title,
-        description: serverTrip.description || description,
-        images: serverTrip.images || images,
-        route: ordered.length
-          ? ordered.map((r: { name?: string }) => r.name || "")
-          : serverTrip.route || [],
-        routeInstructions: (
-          ((serverTrip.optimizedRoute?.instructions as string[]) ||
-            (serverTrip.routeInstructions as string[]) ||
-            []) as string[]
-        ).map((ins: string, i: number) => ({
-          step: i + 1,
-          instruction: ins || "",
-          mode: mapModeTansit(modeFromOptimized),
-          distance: "",
-        })),
-        mode: mapModeTransit(modeFromOptimized || serverTrip.mode),
-        visibility:
-          serverTrip.visabilityStatus === "public" ? "public" : "private",
-        activities: serverTrip.activities || activities,
-        notes: serverTrip.notes || notes,
-      };
-
-      onSave(mapped);
-
-      // נקה קבצים ו-previews
-      newPreviewsRef.current.forEach((p) => {
-        try {
-          URL.revokeObjectURL(p);
-        } catch {}
-      });
-      newPreviewsRef.current = [];
-      newFilesRef.current = [];
-
-      onClose();
-
-      // עדכון רשימת טיולים בהורה
-      setTrips((prevTrips) =>
-        prevTrips.map((t) =>
-          t.id === mapped.id || t._id === mapped._id ? { ...t, ...mapped } : t
-        )
-      );
-    } catch (e) {
-      console.error("Failed to save trip", e);
-      alert(String(e instanceof Error ? e.message : e));
-    }
-  })();
-};
+    })();
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
 
     const remainingSlots = 3 - images.length;
-    if (remainingSlots === 0) {
+    if (remainingSlots <= 0) {
       alert("Maximum 3 images allowed");
       return;
     }
 
-    // Create object URLs for previews and keep File objects for upload on save
-    const filesToAdd = Array.from(files).slice(0, remainingSlots);
-    const newImages = filesToAdd.map((file) => {
-      const preview = URL.createObjectURL(file);
-      newFilesRef.current.push(file);
-      newPreviewsRef.current.push(preview);
-      return preview;
-    });
-    setImages((prev) => [...prev, ...newImages]);
+    // Handle only the first file since we removed 'multiple'
+    const file = files[0];
+    const preview = URL.createObjectURL(file);
+    newFilesRef.current.push(file);
+    newPreviewsRef.current.push(preview);
+
+    setImages((prev) => [...prev, preview]);
+
+    // Reset input so the same file can be selected again if needed (though unlikely immediately)
+    e.target.value = "";
   };
 
   // const handleRemoveImage = (index: number) => {
@@ -380,21 +239,21 @@ const handleSave = () => {
   //   setImages(images.filter((_, i) => i !== index));
   // };
   const handleRemoveImage = (index: number) => {
-  const img = images[index];
-  // אם זה URL קיים, נסיר אותו מ-existingImages
-  if (!img.startsWith("blob:")) {
+    const img = images[index];
+    // אם זה URL קיים, נסיר אותו מ-existingImages
+    if (!img.startsWith("blob:")) {
+      setImages(prev => prev.filter((_, i) => i !== index));
+      return;
+    }
+    // אחרת, זה preview של file חדש
+    const previewIdx = newPreviewsRef.current.indexOf(img);
+    if (previewIdx !== -1) {
+      URL.revokeObjectURL(newPreviewsRef.current[previewIdx]);
+      newPreviewsRef.current.splice(previewIdx, 1);
+      newFilesRef.current.splice(previewIdx, 1);
+    }
     setImages(prev => prev.filter((_, i) => i !== index));
-    return;
-  }
-  // אחרת, זה preview של file חדש
-  const previewIdx = newPreviewsRef.current.indexOf(img);
-  if (previewIdx !== -1) {
-    URL.revokeObjectURL(newPreviewsRef.current[previewIdx]);
-    newPreviewsRef.current.splice(previewIdx, 1);
-    newFilesRef.current.splice(previewIdx, 1);
-  }
-  setImages(prev => prev.filter((_, i) => i !== index));
-};
+  };
 
 
   const handleAddActivity = () => {
@@ -537,7 +396,6 @@ const handleSave = () => {
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                multiple
                 style={{ display: "none" }}
                 onChange={handleImageUpload}
               />

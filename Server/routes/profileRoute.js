@@ -329,6 +329,8 @@ if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 const storage = multer.diskStorage({
   destination: uploadsDir,
   filename: (req, file, cb) => {
+    console.log("file\n",file);
+    
     const name = `${Date.now()}-${file.originalname.replace(/\s+/g, "-")}`;
     cb(null, name);
   },
@@ -413,6 +415,8 @@ router.delete("/:userId/trips/:tripId", authMiddleware, async (req, res) => {
 // PUT /profile/:userId/avatar
 router.put("/:userId/avatar", authMiddleware, upload.single("avatar"), async (req, res) => {
   try {
+    console.log("avatarUrl\n",  req.avater);
+    // let avatarUrl = avatarUrl || req.file
     const updatedUser = await services.updateProfileAvatar(req.params.userId, req.user, req.file, req.body.avatarUrl);
     res.json({ success: true, user: updatedUser });
   } catch (err) {

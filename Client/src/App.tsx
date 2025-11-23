@@ -1,4 +1,3 @@
-import react, { useEffect } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import Profile from './components/user/Profile';
@@ -54,6 +53,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/createtrip" element={<MainPage />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/:userId" element={<Profile />} />
             <Route path="/feed" element={<TripFeed />} />
             <Route path="/forgotPassword" element={<ForgotPassword />} />
             <Route path="/admin" element={<Dashboard />} />
