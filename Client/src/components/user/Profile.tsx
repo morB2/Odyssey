@@ -60,8 +60,8 @@ export default function Profile() {
         const rawTrips = Array.isArray(tripsRes)
           ? tripsRes
           : Array.isArray((tripsRes as unknown as { trips?: Trip[] })?.trips)
-          ? (tripsRes as unknown as { trips?: Trip[] }).trips
-          : [];
+            ? (tripsRes as unknown as { trips?: Trip[] }).trips
+            : [];
 
         setTrips(rawTrips as Trip[]);
       } catch (e) {
@@ -98,8 +98,8 @@ export default function Profile() {
         const rawTrips = Array.isArray(data)
           ? data
           : Array.isArray((data as unknown as { trips?: Trip[] })?.trips)
-          ? (data as unknown as { trips?: Trip[] }).trips
-          : [];
+            ? (data as unknown as { trips?: Trip[] }).trips
+            : [];
         if (mounted) setTrips(rawTrips as Trip[]);
       } catch (e) {
         console.error("failed to load trips", e);
@@ -134,8 +134,8 @@ export default function Profile() {
       if (!body || (body.success === false && body["error"]))
         throw new Error(
           (body["error"] as string) ||
-            (body["message"] as string) ||
-            "Failed to delete trip"
+          (body["message"] as string) ||
+          "Failed to delete trip"
         );
 
       setTrips((prev) =>
@@ -165,16 +165,50 @@ export default function Profile() {
             user
               ? user
               : {
-                  id: "",
-                  firstName: "Guest",
-                  lastName: "guest",
-                  email: "",
-                  avatar: "",
-                }
+                id: "",
+                firstName: "Guest",
+                lastName: "guest",
+                email: "",
+                avatar: "",
+              }
           }
           isOwner={isOwner}
           onEditClick={() => isOwner && setIsEditModalOpen(true)}
-          onAvatarSaved={(u) => setUser(u)}
+          onAvatarSaved={(updatedUser) => {
+            // Merge with existing user to preserve counts if they are missing in the update
+            setUser((prev) => {
+              if (!prev) return updatedUser;
+              return {
+                ...prev,
+                ...updatedUser,
+                // Preserve counts if missing in updatedUser
+                followersCount:
+                  updatedUser.followersCount ?? prev.followersCount,
+                followingCount:
+                  updatedUser.followingCount ?? prev.followingCount,
+              };
+            });
+
+            // Update avatar in all trips belonging to this user
+            setTrips((prevTrips) =>
+              prevTrips.map((t) => {
+                if (
+                  t.user &&
+                  (t.user._id === updatedUser.id ||
+                    t.user._id === (updatedUser as any)._id)
+                ) {
+                  return {
+                    ...t,
+                    user: {
+                      ...t.user,
+                      avatar: updatedUser.avatar,
+                    },
+                  };
+                }
+                return t;
+              })
+            );
+          }}
         />
 
         {error && (
@@ -197,7 +231,7 @@ export default function Profile() {
               trips={trips}
               activeTab={activeTab}
               onTabChange={setActiveTab}
-              onTripClick={() => {}}
+              onTripClick={() => { }}
               setTrips={setTrips}
               onEdit={(trip) => setEditingTrip(trip)}
               onDelete={(tripId) => handleDeleteTrip(tripId)}
