@@ -48,6 +48,12 @@ export const initializeSocket = (server) => {
         // Log all connected users whenever someone connects
         logConnectedUsers();
 
+        // Join user-specific room for direct messaging
+        if (socket.userId) {
+            socket.join(`user:${socket.userId}`);
+            console.log(`User ${socket.userId} joined their personal room`);
+        }
+
         // Join a trip-specific room
         socket.on('joinTrip', (tripId) => {
             socket.join(`trip:${tripId}`);
