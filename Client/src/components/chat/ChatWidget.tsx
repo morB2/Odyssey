@@ -37,7 +37,11 @@ export default function ChatWidget() {
 
     // Scroll to bottom of chat
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => {
+            if (messagesEndRef.current) {
+                messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
+            }
+        }, 100);
     };
 
     useEffect(() => {
@@ -372,11 +376,11 @@ export default function ChatWidget() {
                 </Box>
             )}
 
-            {/* Waiting UI */}
+            {/* Waiting UI - Show as banner if initiator */}
             {showWaitingUI && (
-                <Box p={2} bgcolor="white" borderTop={1} borderColor="divider" textAlign="center">
-                    <Typography variant="body2" color="text.secondary">
-                        Chat request sent. Waiting for acceptance.
+                <Box p={1} bgcolor="#f8f9fa" borderTop={1} borderColor="divider" textAlign="center">
+                    <Typography variant="caption" color="text.secondary">
+                        Request sent. You can keep sending messages while waiting.
                     </Typography>
                 </Box>
             )}
@@ -391,7 +395,7 @@ export default function ChatWidget() {
             )}
 
             {/* Input Area */}
-            {(!isPending && !isBlocked) && (
+            {(!isBlocked && (!isPending || isInitiator)) && (
                 <Box p={1.5} bgcolor="white" borderTop={1} borderColor="divider">
                     <form onSubmit={handleSend} style={{ display: 'flex', gap: '8px' }}>
                         <TextField
