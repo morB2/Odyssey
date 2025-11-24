@@ -23,11 +23,14 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
+import { ChatProvider } from './context/ChatContext';
+import ChatWidget from './components/chat/ChatWidget';
+import AllChatsPage from './components/chat/AllChatsPage';
+
 function App() {
   const location = useLocation();
   const { token } = useUserStore();
 
-  // Initialize Socket.IO once
   useEffect(() => {
     if (token) {
       console.log('🔌 Initializing Socket.IO connection...');
@@ -48,13 +51,15 @@ function App() {
     : location;
 
   return (
-    <>
+    <ChatProvider>
       <CacheProvider value={cacheRtl}>
         <ThemeProvider theme={theme}>
           <ToastContainer position="top-right" autoClose={3000} />
+          <ChatWidget />
 
           <Routes location={background}>
             <Route path="/" element={<Home />} />
+            <Route path="/chats" element={<AllChatsPage />} />
             <Route path="/createtrip" element={<MainPage />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/:userId" element={<Profile />} />
@@ -72,7 +77,7 @@ function App() {
           )}
         </ThemeProvider>
       </CacheProvider>
-    </>
+    </ChatProvider>
   );
 }
 

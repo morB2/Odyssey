@@ -1,9 +1,9 @@
 import React from 'react';
 import { Box, Paper, Typography, Stack } from '@mui/material';
 import { Sparkles } from 'lucide-react';
-import { ItinerarySummary } from './ItinerarySummary'; // Imported from original file
-import { TripDisplay } from './TripDisplay'; // Imported from original file
-import { TravelModeSelector } from './TravelModeSelector'; // Extracted
+import { ItinerarySummary } from './ItinerarySummary';
+import { TripDisplay } from './TripDisplay';
+import { TravelModeSelector } from './TravelModeSelector';
 import { type Message, type Itinerary } from './types';
 import { useTranslation } from 'react-i18next';
 
@@ -14,12 +14,12 @@ interface MessageBubbleProps {
     onSelectTravelMode: (mode: string) => void;
 }
 
-export const MessageBubble = ({
+export default function MessageBubble({
     message: m,
     selectedItinerary,
     onSelectItinerary,
     onSelectTravelMode
-}: MessageBubbleProps) => {
+}: MessageBubbleProps) {
 
     const { t } = useTranslation();
 
@@ -43,7 +43,9 @@ export const MessageBubble = ({
                     {!isUser && (
                         <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
                             <Sparkles style={{ width: 14, height: 14, color: '#ff6b35' }} />
-                            <Typography variant="caption" sx={{ opacity: 0.7 }}> {t("messageBubble.aiAssistant")}</Typography>
+                            <Typography variant="caption" sx={{ opacity: 0.7 }}>
+                                {t('messageBubble.aiAssistant')}
+                            </Typography>
                         </Stack>
                     )}
                     <Typography sx={{ whiteSpace: 'pre-wrap' }}>{m.text}</Typography>
@@ -55,29 +57,49 @@ export const MessageBubble = ({
     // --- 2B: Render RICH CONTENT Messages ---
     if (isRichContent) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'flex-start', width: '100%', ml: m.content?.type === 'travelModeSelection' ? 2 : 0 }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    width: '100%',
+                    ml: m.content?.type === 'travelModeSelection' ? 2 : 0
+                }}
+            >
                 {/* Rich Content: Itinerary Suggestions */}
                 {m.content?.type === 'suggestions' && (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2, width: '100%' }}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 3,
+                            mt: 2,
+                            width: '100%'
+                        }}
+                    >
                         {m.content.data.map((s: Itinerary, index: number) => (
                             <Box
                                 key={index}
                                 onClick={() => onSelectItinerary(s)}
                                 sx={{
                                     cursor: 'pointer',
+                                    display: 'inline-block',
+                                    width: 'fit-content',
                                     '&:hover': {
                                         transform: 'scale(1.02)',
                                         transition: '0.2s',
                                         boxShadow: 6
                                     },
-                                    border: selectedItinerary?.title === s.title ? '2px solid #ff6b35' : '1px solid #ffe4cc',
+                                    border: 'none',
                                     borderRadius: 2
                                 }}
                             >
                                 <ItinerarySummary
                                     title={s.title}
                                     discription={s.description}
-                                    items={s.destinations.map((d: any) => ({ name: d.name, notes: d.note }))}
+                                    items={s.destinations.map((d: any) => ({
+                                        name: d.name,
+                                        notes: d.note
+                                    }))}
                                 />
                             </Box>
                         ))}
@@ -86,9 +108,7 @@ export const MessageBubble = ({
 
                 {/* Rich Content: Travel Mode Selection Buttons */}
                 {m.content?.type === 'travelModeSelection' && (
-                    <TravelModeSelector
-                        onSelectMode={onSelectTravelMode}
-                    />
+                    <TravelModeSelector onSelectMode={onSelectTravelMode} />
                 )}
 
                 {/* Rich Content: Trip Display */}
