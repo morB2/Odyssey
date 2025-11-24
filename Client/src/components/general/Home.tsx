@@ -3,7 +3,7 @@ import { Box, Container, Typography, Grid, Card, CardContent, Chip, Button, Link
 import { Map, Sparkles, Calendar, DollarSign, Route, Heart, Users, Globe, } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
-import { Navbar } from './Navbar';
+import  Navbar from './Navbar';
 
 
 interface Feature {

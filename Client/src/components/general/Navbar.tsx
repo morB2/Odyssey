@@ -11,7 +11,7 @@ import Search from './Search';
 import { useTranslation } from 'react-i18next';
 import chatService from '../../services/chat.service';
 
-export const Navbar: FC = () => {
+const Navbar: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
@@ -200,3 +200,5 @@ export const Navbar: FC = () => {
     </AppBar>
   );
 };
+
+export default Navbar;
