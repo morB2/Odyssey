@@ -21,7 +21,11 @@ import {
 import { Link as RouterLink } from "react-router-dom";
 import { Edit, Users, UserPlus } from "lucide-react";
 import { useUserStore } from "../../store/userStore";
-const BASE_URL = "http://localhost:3000";
+import {
+  uploadAvatar,
+  getFollowers as svcGetFollowers,
+  getFollowing as svcGetFollowing,
+} from "../../services/profile.service";
 type SimpleFollow = {
   _id?: string;
   id?: string;
@@ -130,15 +134,20 @@ export function ProfileHeader({
         const u = user as unknown as { id?: string; _id?: string };
         const uid = u.id || u._id || "";
         if (!uid) throw new Error("Missing user id for follow list");
-        const res = await fetch(`${BASE_URL}/follow/${uid}/${listType}`);
-        const data = await res.json();
+        const data =
+          listType === "followers"
+            ? await svcGetFollowers(uid)
+            : await svcGetFollowing(uid);
 
-        if (Array.isArray(data)) {
-          // The server now returns full user objects. Use them as-is.
-          setter(data as SimpleFollow[]);
+        // svc returns server response object or array; normalize
+        const payload = Array.isArray(data)
+          ? data
+          : data?.data || data?.users || data;
+        if (Array.isArray(payload)) {
+          setter(payload as SimpleFollow[]);
           if (listType === "followers")
-            setFollowersCount((data as unknown[]).length);
-          else setFollowingCount((data as unknown[]).length);
+            setFollowersCount((payload as unknown[]).length);
+          else setFollowingCount((payload as unknown[]).length);
         } else {
           console.warn(`unexpected ${listType} response`, data);
         }
@@ -148,7 +157,7 @@ export function ProfileHeader({
     }
 
     setOpenDialog(listType);
-  };  
+  };
 
   const handleSaveAvatar = async () => {
     const u = user as unknown as { id?: string; _id?: string };
@@ -162,53 +171,18 @@ export function ProfileHeader({
         return;
       }
 
-      const url = `${BASE_URL}/profile/${uid}/avatar`;
-      let res;
-      if (avatarFile) {
-        const fd = new FormData();
-        fd.append("avatar", avatarFile);
-        res = await fetch(url, {
-          method: "PUT",
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-          body: fd,
-        });
-      } else if (avatarUrl && avatarUrl.trim()) {
-        res = await fetch(url, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ avatarUrl: avatarUrl.trim() }),
-        });
-      } else {
-        setSavingAvatar(false);
-        return;
-      }
-
-      // attempt to parse response body intelligently
-      let data;
-      const ct = res.headers.get("content-type") || "";
-      if (ct.includes("application/json")) {
-        data = await res.json().catch(() => null);
-      } else {
-        data = await res.text().catch(() => null);
-      }
-      if (!res.ok) {
-        const msg =
-          (data && (data.error || data.message)) ||
-          String(data || "Upload failed");
-        throw new Error(msg);
-      }
-
-      // refresh profile and notify parent
-      const updatedRes = await fetch(`${BASE_URL}/profile/${uid}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      });
-      const updatedBody = await updatedRes.json().catch(() => null);
-      if (updatedBody && updatedBody.success && updatedBody.user) {
+      // use service to upload avatar (file or URL)
+      const result = await uploadAvatar(
+        uid,
+        avatarFile || undefined,
+        avatarUrl || undefined,
+        token
+      );
+      // normalize response shapes: service returns res.data from axios
+      const payload = result?.data ?? result;
+      if (payload && payload.success && payload.user) {
         if (typeof onAvatarSaved === "function")
-          onAvatarSaved(updatedBody.user as unknown as UserProfile);
+          onAvatarSaved(payload.user as unknown as UserProfile);
       }
 
       setAvatarDialogOpen(false);
@@ -249,8 +223,8 @@ export function ProfileHeader({
                 <ListItemText
                   primary={
                     <Link
-                      // component={RouterLink}
-                      href={`/profile/${f._id || f.id}`}
+                      component={RouterLink}
+                      to={`/profile/${f._id || f.id}`}
                       underline="hover"
                       onClick={() => setOpenDialog(null)}
                     >

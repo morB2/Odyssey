@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -23,7 +23,6 @@ import { useNavigate } from "react-router-dom";
 import { MapPin, Navigation, ExternalLink, Save } from "lucide-react";
 import { AuthSaveDialog } from "./AuthSaveDialog";
 import { toast } from "react-toastify";
-import { useTranslation } from "react-i18next";
 import { useUserStore } from "../../store/userStore";
 
 interface Location {
@@ -53,19 +52,19 @@ interface StoredUser {
   state: {
     user: {
       _id: string;
+      // add other properties if needed
     };
   };
 }
 
-export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
-  const { t } = useTranslation();
+export function TripDisplay({ data }: TripDisplayProps) {
   const navigate = useNavigate();
-  if (!data?.route) return <Typography>{t('tripDisplay.noRouteData')}</Typography>;
+  if (!data?.route) return <Typography>No route data to display</Typography>;
   const [imageUrl, setImageUrl] = useState<string>("");
   const { title, description, ordered_route, mode, instructions = [], google_maps_url, activities = [] } = data.route;
   useEffect(() => {
     const fetchImage = async () => {
-      const query = title ? title : t('tripDisplay.defaultTravel');
+      const query = title ? title : "Travel";
       try {
         const response = await fetch(
           `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)} travel landscape&orientation=landscape&per_page=1`,
@@ -86,7 +85,7 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
     };
 
     fetchImage();
-  }, [title, t]);
+  }, [title]);
   const orange = "#ff9800";
   const lightOrange = "#fff3e0";
   const borderOrange = "#ffe0b2";
@@ -96,6 +95,8 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
   const [openAuthDialog, setOpenAuthDialog] = useState(false);
 
   const handleSaveClick = () => {
+    const { user } = useUserStore();
+
     if (user) {
       setOpenDialog(true);
     } else {
@@ -118,8 +119,10 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
 
   const handleSaveOption = async (type: "private" | "public") => {
     setOpenDialog(false);
+    const { user } = useUserStore();
+
     try {
-      const response = await fetch('http://localhost:3000/createTrip/save', {
+      const response = await fetch('/api/createTrip/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(
@@ -155,7 +158,7 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
         component="img"
         height="240"
         image={imageUrl}
-        alt={t('tripDisplay.tripCover')}
+        alt="Trip Cover"
         sx={{ objectFit: "cover" }}
       />
 
@@ -166,7 +169,7 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
           <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
             <Box>
               <Typography variant="h5" fontWeight="bold" sx={{ color: orange }}>
-                {title || t('tripDisplay.untitledTrip')}
+                {title || "Untitled Trip"}
               </Typography>
               {description && (
                 <Typography variant="body2" color="text.secondary" mt={0.5}>
@@ -176,7 +179,7 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
             </Box>
             <Chip
               icon={<Navigation size={16} color={orange} />}
-              label={t(`tripDisplay.travelModes.${mode.toLowerCase()}`)}
+              label={mode}
               sx={{
                 borderColor: orange,
                 color: orange,
@@ -200,7 +203,7 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
             sx={{ display: "flex", alignItems: "center", gap: 1, color: orange }}
           >
             <MapPin size={18} color={orange} />
-            {t('tripDisplay.routeStops')}
+            Route Stops
           </Typography>
           <List disablePadding>
             {ordered_route.map((location, index) => (
@@ -240,7 +243,7 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
             <Divider sx={{ borderColor: borderOrange }} />
             <Box>
               <Typography variant="h6" gutterBottom sx={{ color: orange }}>
-                {t('tripDisplay.travelInstructions')}
+                Travel Instructions
               </Typography>
               <List sx={{ pl: 2, listStyleType: "decimal" }}>
                 {instructions.map((instruction, index) => (
@@ -261,7 +264,7 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
             <Divider sx={{ borderColor: borderOrange }} />
             <Box>
               <Typography variant="h6" gutterBottom sx={{ color: orange }}>
-                {t('tripDisplay.activities')}
+                Activities
               </Typography>
               <Stack direction="row" flexWrap="wrap" gap={1}>
                 {activities.map((activity, index) => (
@@ -299,7 +302,7 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
             px: 3,
           }}
         >
-          {t('tripDisplay.openInGoogleMaps')}
+          Open in Google Maps
         </Button>
         <Button
           variant="outlined"
@@ -313,22 +316,22 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
             fontWeight: 600,
           }}
         >
-          {t('tripDisplay.save')}
+          Save
         </Button>
       </CardActions>
 
       {/* Save Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle sx={{ color: orange, fontWeight: "bold" }}>{t('tripDisplay.saveTrip.title')}</DialogTitle>
+        <DialogTitle sx={{ color: orange, fontWeight: "bold" }}>Save Trip</DialogTitle>
         <DialogContent>
-          <Typography>{t('tripDisplay.saveTrip.prompt')}</Typography>
+          <Typography>Would you like to save your trip privately or publicly?</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => handleSaveOption("private")} variant="contained" sx={{ bgcolor: orange }}>
-            {t('tripDisplay.saveTrip.private')}
+            Save Privately
           </Button>
           <Button onClick={() => handleSaveOption("public")} variant="outlined" sx={{ borderColor: orange, color: orange }}>
-            {t('tripDisplay.saveTrip.public')}
+            Save Publicly
           </Button>
         </DialogActions>
       </Dialog>

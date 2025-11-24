@@ -21,7 +21,7 @@ export const followUser = async (followerId, followingId) => {
 
   const follow = new Follow({ follower: followerId, following: followingId });
   await follow.save();
-    await clearUserFeedCache(userId);
+    await clearUserFeedCache(followerId);
   return follow;
 };
 
@@ -33,7 +33,7 @@ export const unfollowUser = async (followerId, followingId) => {
   if (!existingFollow) throw new Error("You are not following this user.");
 
   await Follow.deleteOne({ _id: existingFollow._id });
-  await clearUserFeedCache(userId);
+  await clearUserFeedCache(followerId);
   
   return true;
 };
