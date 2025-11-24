@@ -16,10 +16,51 @@ export const getConversation = async (req, res) => {
         }
 
         const messages = await chatService.getConversation(currentUserId, userId);
-        res.status(200).json(messages);
+        const conversation = await chatService.getConversationStatus(currentUserId, userId);
+
+        res.status(200).json({ messages, conversation });
     } catch (error) {
         console.error('Error in getConversation:', error);
         res.status(500).json({ error: 'Failed to fetch conversation' });
+    }
+};
+
+/**
+ * Get all conversations for the current user
+ */
+export const getConversations = async (req, res) => {
+    try {
+        const { currentUserId } = req.query;
+
+        if (!currentUserId) {
+            return res.status(400).json({ error: 'Current user ID is required' });
+        }
+
+        const conversations = await chatService.getConversations(currentUserId);
+        res.status(200).json(conversations);
+    } catch (error) {
+        console.error('Error in getConversations:', error);
+        res.status(500).json({ error: 'Failed to fetch conversations' });
+    }
+};
+
+/**
+ * Handle chat request (accept/block)
+ */
+export const handleRequest = async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        const { action, currentUserId } = req.body;
+
+        if (!conversationId || !action || !currentUserId) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        const result = await chatService.handleChatRequest(conversationId, action, currentUserId);
+        res.status(200).json(result);
+    } catch (error) {
+        console.error('Error in handleRequest:', error);
+        res.status(500).json({ error: 'Failed to handle request' });
     }
 };
 
@@ -40,7 +81,7 @@ export const sendMessage = async (req, res) => {
         res.status(201).json(newMessage);
     } catch (error) {
         console.error('Error in sendMessage:', error);
-        res.status(500).json({ error: 'Failed to send message' });
+        res.status(500).json({ error: error.message || 'Failed to send message' });
     }
 };
 

@@ -1,14 +1,39 @@
-import { AppBar, Toolbar, Box, Button, Link, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { AppBar, Toolbar, Box, Button, Link, Typography, IconButton, Badge } from '@mui/material';
 import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
-import { BookImage, Sparkles } from 'lucide-react';
+import { BookImage, Sparkles, MessageCircleMore } from 'lucide-react';
 import { useUserStore } from '../../store/userStore';
 import ProfileMenu from '../user/ProfileMenu';
 import Search from './Search';
+import chatService from '../../services/chat.service';
 
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const user = useUserStore(state => state.user);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchUnread = async () => {
+      if (!user?._id) {
+        setUnreadCount(0);
+        return;
+      }
+      try {
+        const data = await chatService.getUnreadCount(user._id);
+        // API may return a number or an object like { unread: number }
+        const count = typeof data === 'number' ? data : (data?.unread ?? 0);
+        if (mounted) setUnreadCount(count);
+      } catch (err) {
+        console.error('Failed to fetch unread count', err);
+      }
+    };
+
+    fetchUnread();
+
+    return () => { mounted = false; };
+  }, [user]);
 
   return (
     <AppBar position="fixed" elevation={0} sx={{ background: 'transparent' }}>
@@ -56,7 +81,7 @@ function Navbar() {
             </Typography>
           </Box>
 
-          { 
+          {
             <>
               {/* AI Trip Creator Icon + Label */}
               <Box
@@ -77,6 +102,28 @@ function Navbar() {
               </Box>
             </>
           }
+
+          {user && (
+             <>
+              {/* AI Trip Creator Icon + Label */}
+              <Box
+                onClick={() => navigate('/chats')}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  color: 'white',
+                  '&:hover': { opacity: 0.8 }
+                }}
+              >
+                <MessageCircleMore size={24} />
+                <Typography variant="caption" sx={{ mt: 0.3 }}>
+                  message
+                </Typography>
+              </Box>
+            </>
+          )}
 
           {user ? (
             <ProfileMenu />

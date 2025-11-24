@@ -6,27 +6,34 @@ import {
     IconButton,
     TextField,
     Avatar,
-    CircularProgress
+    CircularProgress,
+    Button,
+    Stack
 } from '@mui/material';
 import {
     Close as CloseIcon,
     Send as SendIcon,
-    Minimize as MinimizeIcon
+    Minimize as MinimizeIcon,
+    ArrowBack as ArrowBackIcon,
+    Block as BlockIcon,
+    Check as CheckIcon
 } from '@mui/icons-material';
 import { useChat } from '../../context/ChatContext';
-import { getConversation, sendMessage, markAsRead, type ChatMessage } from '../../services/chat.service';
+import chatService, { type ChatMessage } from '../../services/chat.service';
 import { useUserStore } from '../../store/userStore';
 import { useSocketEvent } from '../../hooks/useSocket';
 import { toast } from 'react-toastify';
+import ChatList from './ChatList';
 
 export default function ChatWidget() {
-    const { activeChatUser, isChatOpen, closeChat } = useChat();
+    const { activeChatUser, isChatOpen, closeChat, openChat } = useChat();
     const { user: currentUser } = useUserStore();
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [isMinimized, setIsMinimized] = useState(false);
+    const [conversationStatus, setConversationStatus] = useState<any>(null);
 
     // Scroll to bottom of chat
     const scrollToBottom = () => {
@@ -43,10 +50,16 @@ export default function ChatWidget() {
             const fetchMessages = async () => {
                 setLoading(true);
                 try {
-                    const data = await getConversation(currentUser._id!, activeChatUser._id);
-                    setMessages(data);
+                    const data = await chatService.getConversation(activeChatUser._id, currentUser._id!);
+                    setMessages(data.messages || data); // Handle both array and object response
+                    if (data.conversation) {
+                        setConversationStatus(data.conversation);
+                    } else {
+                        setConversationStatus(null);
+                    }
+
                     // Mark as read
-                    await markAsRead(currentUser._id!, activeChatUser._id);
+                    await chatService.markAsRead(activeChatUser._id, currentUser._id!);
                 } catch (error) {
                     console.error('Error fetching messages:', error);
                     toast.error('Failed to load chat history');
@@ -73,8 +86,15 @@ export default function ChatWidget() {
 
             // If chat is open, mark as read immediately
             if (isChatOpen && !isMinimized) {
-                markAsRead(currentUser._id!, activeChatUser._id).catch(console.error);
+                chatService.markAsRead(activeChatUser._id, currentUser._id!).catch(console.error);
             }
+        }
+    });
+
+    // Listen for conversation updates
+    useSocketEvent('conversationUpdate', (conversation: any) => {
+        if (activeChatUser && conversation.participants.includes(activeChatUser._id)) {
+            setConversationStatus(conversation);
         }
     });
 
@@ -106,18 +126,68 @@ export default function ChatWidget() {
         setNewMessage('');
 
         try {
-            const sentMessage = await sendMessage(currentUser._id, activeChatUser._id, tempMessage.message);
+            const sentMessage = await chatService.sendMessage(currentUser._id, activeChatUser._id, tempMessage.message);
             // Replace temp message with real one
             setMessages((prev) => prev.map(m => m._id === tempMessage._id ? sentMessage : m));
-        } catch (error) {
+
+            // Update conversation status if it was pending/null
+            if (!conversationStatus) {
+                const data = await chatService.getConversation(activeChatUser._id, currentUser._id!);
+                if (data.conversation) setConversationStatus(data.conversation);
+            }
+        } catch (error: any) {
             console.error('Error sending message:', error);
-            toast.error('Failed to send message');
+            toast.error(error.response?.data?.error || 'Failed to send message');
             // Remove failed message
             setMessages((prev) => prev.filter(m => m._id !== tempMessage._id));
         }
     };
 
-    if (!isChatOpen || !activeChatUser) return null;
+    const handleRequestAction = async (action: 'accept' | 'block') => {
+        if (!conversationStatus?._id || !currentUser?._id) return;
+        try {
+            const updatedConv = await chatService.handleRequest(conversationStatus._id, action, currentUser._id);
+            setConversationStatus(updatedConv);
+            toast.success(action === 'accept' ? 'Chat request accepted' : 'User blocked');
+        } catch (error) {
+            console.error('Error handling request:', error);
+            toast.error('Failed to update request');
+        }
+    };
+
+    const handleBackToList = () => {
+        openChat(null as any); // Clear active user to show list
+    };
+
+    if (!isChatOpen) return null;
+
+    // Show Chat List if no active user
+    if (!activeChatUser) {
+        return (
+            <Paper
+                elevation={6}
+                sx={{
+                    position: 'fixed',
+                    bottom: 20,
+                    right: 20,
+                    width: 320,
+                    height: 450,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    zIndex: 1300,
+                    overflow: 'hidden',
+                    borderRadius: 2
+                }}
+            >
+                <ChatList
+                    onSelectChat={(user) => {
+                        openChat(user);
+                    }}
+                    onClose={closeChat}
+                />
+            </Paper>
+        );
+    }
 
     if (isMinimized) {
         return (
@@ -151,6 +221,18 @@ export default function ChatWidget() {
         );
     }
 
+    const isPending = conversationStatus?.status === 'pending';
+    const isBlocked = conversationStatus?.status === 'blocked';
+    const isInitiator = conversationStatus?.initiator === currentUser?._id;
+    const canChat = !isBlocked && (!isPending || isInitiator || conversationStatus?.status === 'accepted');
+    // Actually, if pending, only initiator can send? No, usually if pending, receiver needs to accept.
+    // If pending:
+    // - Initiator sees: "Request sent. Waiting for acceptance." (Input disabled?)
+    // - Receiver sees: "Accept / Block" buttons. (Input disabled)
+
+    const showRequestUI = isPending && !isInitiator;
+    const showWaitingUI = isPending && isInitiator;
+
     return (
         <Paper
             elevation={6}
@@ -177,6 +259,9 @@ export default function ChatWidget() {
                 justifyContent="space-between"
             >
                 <Box display="flex" alignItems="center" gap={1}>
+                    <IconButton size="small" onClick={handleBackToList} sx={{ color: 'inherit', mr: -1 }}>
+                        <ArrowBackIcon fontSize="small" />
+                    </IconButton>
                     <Avatar
                         src={activeChatUser.avatar}
                         sx={{ width: 32, height: 32, border: '2px solid white' }}
@@ -258,33 +343,82 @@ export default function ChatWidget() {
                 <div ref={messagesEndRef} />
             </Box>
 
+            {/* Request UI */}
+            {showRequestUI && (
+                <Box p={2} bgcolor="white" borderTop={1} borderColor="divider" textAlign="center">
+                    <Typography variant="body2" gutterBottom>
+                        {activeChatUser.firstName} wants to chat with you.
+                    </Typography>
+                    <Stack direction="row" spacing={2} justifyContent="center">
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            size="small"
+                            startIcon={<CheckIcon />}
+                            onClick={() => handleRequestAction('accept')}
+                        >
+                            Accept
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            size="small"
+                            startIcon={<BlockIcon />}
+                            onClick={() => handleRequestAction('block')}
+                        >
+                            Block
+                        </Button>
+                    </Stack>
+                </Box>
+            )}
+
+            {/* Waiting UI */}
+            {showWaitingUI && (
+                <Box p={2} bgcolor="white" borderTop={1} borderColor="divider" textAlign="center">
+                    <Typography variant="body2" color="text.secondary">
+                        Chat request sent. Waiting for acceptance.
+                    </Typography>
+                </Box>
+            )}
+
+            {/* Blocked UI */}
+            {isBlocked && (
+                <Box p={2} bgcolor="white" borderTop={1} borderColor="divider" textAlign="center">
+                    <Typography variant="body2" color="error">
+                        This conversation is blocked.
+                    </Typography>
+                </Box>
+            )}
+
             {/* Input Area */}
-            <Box p={1.5} bgcolor="white" borderTop={1} borderColor="divider">
-                <form onSubmit={handleSend} style={{ display: 'flex', gap: '8px' }}>
-                    <TextField
-                        fullWidth
-                        size="small"
-                        placeholder="Type a message..."
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        variant="outlined"
-                        sx={{
-                            '& .MuiOutlinedInput-root': {
-                                borderRadius: 4,
-                                bgcolor: '#f8f9fa'
-                            }
-                        }}
-                    />
-                    <IconButton
-                        color="primary"
-                        type="submit"
-                        disabled={!newMessage.trim()}
-                        sx={{ bgcolor: 'primary.light', color: 'primary.contrastText', '&:hover': { bgcolor: 'primary.main' } }}
-                    >
-                        <SendIcon fontSize="small" />
-                    </IconButton>
-                </form>
-            </Box>
+            {(!isPending && !isBlocked) && (
+                <Box p={1.5} bgcolor="white" borderTop={1} borderColor="divider">
+                    <form onSubmit={handleSend} style={{ display: 'flex', gap: '8px' }}>
+                        <TextField
+                            fullWidth
+                            size="small"
+                            placeholder="Type a message..."
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            variant="outlined"
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 4,
+                                    bgcolor: '#f8f9fa'
+                                }
+                            }}
+                        />
+                        <IconButton
+                            color="primary"
+                            type="submit"
+                            disabled={!newMessage.trim()}
+                            sx={{ bgcolor: 'primary.light', color: 'primary.contrastText', '&:hover': { bgcolor: 'primary.main' } }}
+                        >
+                            <SendIcon fontSize="small" />
+                        </IconButton>
+                    </form>
+                </Box>
+            )}
         </Paper>
     );
 }

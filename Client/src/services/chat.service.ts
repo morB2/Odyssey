@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import httpService from './httpService';
 
 export interface ChatMessage {
     _id: string;
@@ -21,12 +19,9 @@ export interface ChatMessage {
     createdAt: string;
 }
 
-/**
- * Get conversation with a specific user
- */
-export const getConversation = async (currentUserId: string, otherUserId: string): Promise<ChatMessage[]> => {
+const getConversation = async (userId: string, currentUserId: string) => {
     try {
-        const response = await axios.get(`${API_URL}/chat/${otherUserId}`, {
+        const response = await httpService.get(`/chat/${userId}`, {
             params: { currentUserId }
         });
         return response.data;
@@ -36,12 +31,21 @@ export const getConversation = async (currentUserId: string, otherUserId: string
     }
 };
 
-/**
- * Send a message to another user
- */
-export const sendMessage = async (senderId: string, receiverId: string, message: string): Promise<ChatMessage> => {
+const getConversations = async (currentUserId: string) => {
     try {
-        const response = await axios.post(`${API_URL}/chat/send`, {
+        const response = await httpService.get('/chat/conversations', {
+            params: { currentUserId }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching conversations:', error);
+        throw error;
+    }
+};
+
+const sendMessage = async (senderId: string, receiverId: string, message: string) => {
+    try {
+        const response = await httpService.post('/chat/send', {
             senderId,
             receiverId,
             message
@@ -53,31 +57,48 @@ export const sendMessage = async (senderId: string, receiverId: string, message:
     }
 };
 
-/**
- * Mark messages as read
- */
-export const markAsRead = async (currentUserId: string, otherUserId: string): Promise<void> => {
+const handleRequest = async (conversationId: string, action: 'accept' | 'block', currentUserId: string) => {
     try {
-        await axios.put(`${API_URL}/chat/read/${otherUserId}`, {
+        const response = await httpService.put(`/chat/request/${conversationId}`, {
+            action,
             currentUserId
         });
+        return response.data;
+    } catch (error) {
+        console.error('Error handling chat request:', error);
+        throw error;
+    }
+};
+
+const markAsRead = async (userId: string, currentUserId: string) => {
+    try {
+        const response = await httpService.put(`/chat/read/${userId}`, {
+            currentUserId
+        });
+        return response.data;
     } catch (error) {
         console.error('Error marking messages as read:', error);
         throw error;
     }
 };
 
-/**
- * Get unread message count
- */
-export const getUnreadCount = async (userId: string): Promise<number> => {
+const getUnreadCount = async (userId: string) => {
     try {
-        const response = await axios.post(`${API_URL}/chat/unread`, {
+        const response = await httpService.post('/chat/unread', {
             userId
         });
-        return response.data.count;
+        return response.data;
     } catch (error) {
         console.error('Error getting unread count:', error);
         throw error;
     }
+};
+
+export default {
+    getConversation,
+    getConversations,
+    sendMessage,
+    handleRequest,
+    markAsRead,
+    getUnreadCount
 };

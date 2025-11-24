@@ -17,6 +17,7 @@ import './App.css'
 
 import { ChatProvider } from './context/ChatContext';
 import ChatWidget from './components/chat/ChatWidget';
+import AllChatsPage from './components/chat/AllChatsPage';
 
 function App() {
   const location = useLocation();
@@ -43,6 +44,7 @@ function App() {
       <ChatWidget />
       <Routes location={background}>
         <Route path="/" element={<Home />} />
+        <Route path="/chats" element={<AllChatsPage />} />
         <Route path="/createtrip" element={<MainPage />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/profile/:userId" element={<Profile />} />
