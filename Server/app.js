@@ -8,6 +8,7 @@ import { config } from "./config/secret.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { initializeSocket } from "./config/socket.js";
 import fs from "fs";
+import cloudinary from "./config/cloudinary.js";
 
 const app = express();
 

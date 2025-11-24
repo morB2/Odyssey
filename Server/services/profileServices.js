@@ -11,6 +11,7 @@ import {
 } from "../utils/cacheUtils.js";
 import path from "path";
 import fs from "fs";
+import { uploadToCloudinary } from "./cloudinaryHelper.js";
 
 const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
 const uploadsDir = path.join(process.cwd(), "uploads");
@@ -246,10 +247,16 @@ export async function updateUserTrip(userId, tripId, authUser, updates, files) {
   }
 
   if (files && files.length > 0) {
-    const newPaths = files.map((f) => {
-      const p = `/uploads/${f.filename}`;
-      return p.startsWith("/") ? normalizeAvatarUrl(p) : p;
-    });
+    const newPaths = [];
+    for (const file of files) {
+      const filePath = path.join(uploadsDir, file.filename);
+      try {
+        const cloudUrl = await uploadToCloudinary(filePath, "odyssey/trips");
+        if (cloudUrl) newPaths.push(cloudUrl);
+      } catch (err) {
+        console.error("Failed to upload trip image to Cloudinary:", err);
+      }
+    }
 
     // Ensure payload.images is an array
     const currentImages = payload.images ? (Array.isArray(payload.images) ? payload.images : [payload.images]).map((img) =>
@@ -329,7 +336,16 @@ export async function updateProfileAvatar(userId, authUser, file, avatarUrl) {
   if (!authUser || String(authUser._id || authUser.userId) !== String(userId))
     throw Object.assign(new Error("Forbidden"), { status: 403 });
 
-  const avatarValue = file ? `/uploads/${file.filename}` : avatarUrl;
+  let avatarValue = avatarUrl;
+  if (file) {
+    const filePath = path.join(uploadsDir, file.filename);
+    try {
+      avatarValue = await uploadToCloudinary(filePath, "odyssey/avatars");
+    } catch (err) {
+      console.error("Failed to upload avatar to Cloudinary:", err);
+      throw err;
+    }
+  }
   if (!avatarValue)
     throw Object.assign(new Error("No avatar provided"), { status: 400 });
 
