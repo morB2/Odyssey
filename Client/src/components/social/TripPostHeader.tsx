@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { MoreVert as MoreVertIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import { type Trip } from './types';
-import ReportDialog from './ReportDialog';
+import { ReportDialog } from './ReportDialog';
 
 interface TripPostHeaderProps {
     user: Trip['user'];

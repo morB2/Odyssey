@@ -15,6 +15,7 @@ import {
     Box
 } from '@mui/material';
 import { submitReport } from '../../services/report.service';
+import { useTranslation } from 'react-i18next';
 
 interface ReportDialogProps {
     open: boolean;
@@ -32,7 +33,8 @@ const REPORT_REASONS = [
     "Other"
 ];
 
-export default function ReportDialog({ open, onClose, tripId, userId }: ReportDialogProps) {
+export const ReportDialog = ({ open, onClose, tripId, userId }: ReportDialogProps) => {
+    const { t } = useTranslation();
     const [reason, setReason] = useState('');
     const [customReason, setCustomReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,7 +49,7 @@ export default function ReportDialog({ open, onClose, tripId, userId }: ReportDi
         const finalReason = reason === "Other" ? customReason : reason;
 
         if (!finalReason.trim()) {
-            setError("Please provide a reason for reporting.");
+            setError(t('report.errorNoReason'));
             return;
         }
 
@@ -59,10 +61,10 @@ export default function ReportDialog({ open, onClose, tripId, userId }: ReportDi
             await submitReport(tripId, finalReason, userId);
             onClose();
             // Ideally show a success toast here, but for now just close
-            alert("Report submitted successfully. Thank you.");
+            alert(t('report.success'));
         } catch (err) {
             console.error("Failed to submit report:", err);
-            setError("Failed to submit report. Please try again.");
+            setError(t('report.fail'));
         } finally {
             setIsSubmitting(false);
             setReason('');
@@ -85,22 +87,22 @@ export default function ReportDialog({ open, onClose, tripId, userId }: ReportDi
             maxWidth="sm"
             onClick={(e) => e.stopPropagation()}
         >
-            <DialogTitle>Report Post</DialogTitle>
+            <DialogTitle>{t('report.title')}</DialogTitle>
             <DialogContent>
                 <Box display="flex" flexDirection="column" gap={2} mt={1}>
                     <Typography variant="body2" color="text.secondary">
-                        Please select a reason for reporting this post.
+                        {t('report.selectReason')}
                     </Typography>
 
                     <FormControl fullWidth>
-                        <InputLabel>Reason</InputLabel>
+                        <InputLabel>{t('report.reason')}</InputLabel>
                         <Select
                             value={reason}
-                            label="Reason"
+                            label={t('report.reason')}
                             onChange={handleReasonChange}
                         >
                             {REPORT_REASONS.map((r) => (
-                                <MenuItem key={r} value={r}>{r}</MenuItem>
+                                <MenuItem key={r} value={r}>{t(`report.reasons.${r}`)}</MenuItem>
                             ))}
                         </Select>
                     </FormControl>
@@ -124,14 +126,14 @@ export default function ReportDialog({ open, onClose, tripId, userId }: ReportDi
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleClose} disabled={isSubmitting}>Cancel</Button>
+                <Button onClick={handleClose} disabled={isSubmitting}>{t('report.cancel')}</Button>
                 <Button
                     onClick={handleSubmit}
                     variant="contained"
                     color="primary"
                     disabled={isSubmitting || !reason}
                 >
-                    {isSubmitting ? "Submitting..." : "Submit Report"}
+                    {isSubmitting ? t('report.submitting') : t('report.submit')}
                 </Button>
             </DialogActions>
         </Dialog>

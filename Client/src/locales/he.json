@@ -104,9 +104,68 @@
         "defaultTitle": "מסלול טיול",
         "noItems": "אין עדיין פריטים במסלול"
     },
-      "travelModes": {
-    "driving": "נהיגה 🚗",
-    "walking": "הליכה 🚶‍♀️",
-    "transit": "תחבורה ציבורית 🚌"
+    "travelModes": {
+        "driving": "נהיגה 🚗",
+        "walking": "הליכה 🚶‍♀️",
+        "transit": "תחבורה ציבורית 🚌"
+    },
+    "tripDisplay": {
+        "noRouteData": "אין נתוני מסלול להצגה",
+        "defaultTravel": "טיול",
+        "tripCover": "תמונת מסלול",
+        "untitledTrip": "טיול ללא שם",
+        "routeStops": "תחנות במסלול",
+        "travelInstructions": "הוראות נסיעה",
+        "activities": "פעילויות",
+        "openInGoogleMaps": "פתח בגוגל מפות",
+        "save": "שמירה",
+        "saveTrip": {
+            "title": "שמור את המסלול",
+            "prompt": "האם ברצונך לשמור את המסלול באופן פרטי או ציבורי?",
+            "private": "שמירה פרטית",
+            "public": "שמירה ציבורית",
+            "success": "המסלול נשמר בהצלחה!",
+            "fail": "שמירת המסלול נכשלה.",
+            "error": "אירעה שגיאה בעת שמירת המסלול."
+        }
+    },
+    "guestWelcome": {
+        "title": "ברוכים הבאים ל-Odyssey",
+        "text": "הצטרפו לקהילה שלנו כדי לשתף את ההרפתקאות שלכם, להתחבר למטיילים אחרים ולגלות טיולים מדהימים.",
+        "signIn": "התחבר / הירשם",
+        "viewAsGuest": "צפה כאורח"
+    },
+    "report": {
+        "title": "דווח על פוסט",
+        "selectReason": "אנא בחר סיבה לדיווח על הפוסט הזה.",
+        "reason": "סיבה",
+        "otherSpecify": "אנא פרט",
+        "cancel": "ביטול",
+        "submit": "שלח דיווח",
+        "submitting": "שולח...",
+        "success": "הדיווח נשלח בהצלחה. תודה.",
+        "fail": "הדיווח נכשל. נסה שוב.",
+        "errorNoReason": "אנא ספק סיבה לדיווח.",
+        "reasons": {
+            "inappropriateContent": "תוכן לא הולם",
+            "spam": "ספאם או מטעה",
+            "harassment": "הטרדה או דברי שנאה",
+            "violence": "אלימות או ארגונים מסוכנים",
+            "ipViolation": "הפרת זכויות יוצרים",
+            "other": "אחר"
+        }
+    },
+      "comments": {
+    "noComments": "עדיין אין תגובות. תהיה הראשון להגיב!",
+    "addComment": "הוסף תגובה...",
+    "writeReply": "כתוב תגובה...",
+    "reply": "השב",
+    "emojiReactions": {
+      "like": "👍",
+      "love": "❤️",
+      "funny": "🤣",
+      "wow": "😮",
+      "fire": "🔥"
+    }
   }
 }

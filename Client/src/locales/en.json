@@ -104,9 +104,68 @@
         "defaultTitle": "Travel Itinerary",
         "noItems": "No itinerary items yet"
     },
-      "travelModes": {
-    "driving": "Driving 🚗",
-    "walking": "Walking 🚶‍♀️",
-    "transit": "Transit 🚌"
+    "travelModes": {
+        "driving": "Driving 🚗",
+        "walking": "Walking 🚶‍♀️",
+        "transit": "Transit 🚌"
+    },
+    "tripDisplay": {
+        "noRouteData": "No route data to display",
+        "defaultTravel": "Travel",
+        "tripCover": "Trip Cover",
+        "untitledTrip": "Untitled Trip",
+        "routeStops": "Route Stops",
+        "travelInstructions": "Travel Instructions",
+        "activities": "Activities",
+        "openInGoogleMaps": "Open in Google Maps",
+        "save": "Save",
+        "saveTrip": {
+            "title": "Save Trip",
+            "prompt": "Would you like to save your trip privately or publicly?",
+            "private": "Save Privately",
+            "public": "Save Publicly",
+            "success": "Trip saved successfully!",
+            "fail": "Failed to save trip.",
+            "error": "An error occurred while saving the trip."
+        }
+    },
+    "guestWelcome": {
+        "title": "Welcome to Odyssey",
+        "text": "Join our community to share your adventures, interact with other travelers, and discover amazing trips.",
+        "signIn": "Sign In / Sign Up",
+        "viewAsGuest": "View as Guest"
+    },
+      "report": {
+    "title": "Report Post",
+    "selectReason": "Please select a reason for reporting this post.",
+    "reason": "Reason",
+    "otherSpecify": "Please specify",
+    "cancel": "Cancel",
+    "submit": "Submit Report",
+    "submitting": "Submitting...",
+    "success": "Report submitted successfully. Thank you.",
+    "fail": "Failed to submit report. Please try again.",
+    "errorNoReason": "Please provide a reason for reporting.",
+    "reasons": {
+      "inappropriateContent": "Inappropriate content",
+      "spam": "Spam or misleading",
+      "harassment": "Harassment or hate speech",
+      "violence": "Violence or dangerous organizations",
+      "ipViolation": "Intellectual property violation",
+      "other": "Other"
+    }
+  },
+    "comments": {
+    "noComments": "No comments yet. Be the first to comment!",
+    "addComment": "Add a comment...",
+    "writeReply": "Write a reply...",
+    "reply": "Reply",
+    "emojiReactions": {
+      "like": "👍",
+      "love": "❤️",
+      "funny": "🤣",
+      "wow": "😮",
+      "fire": "🔥"
+    }
   }
 }
