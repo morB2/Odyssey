@@ -167,5 +167,24 @@
       "wow": "😮",
       "fire": "🔥"
     }
+  },
+  "forgotPasswordC": {
+    "brand": "Wanderlust Travels",
+    "description": "Your adventure awaits. Reset your password to continue exploring the world.",
+    "backToLogin": "Back to login",
+    "title": "Forgot Password",
+    "subtitle": "No worries, we’ll help you reset it",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "Enter your email",
+    "helperText": "We’ll send you a link to reset your password.",
+    "sendLink": "Send Reset Link",
+    "rememberPassword": "Remember your password?",
+    "signIn": "Sign in",
+    "checkEmail": "Check Your Email",
+    "sentTo": "We’ve sent a password reset link to",
+    "didNotReceive": "Didn’t receive the email? Check your spam folder or",
+    "tryAgain": "try again",
+    "needHelp": "Need help? Contact our",
+    "contactSupport": "support team"
   }
 }

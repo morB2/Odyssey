@@ -167,5 +167,24 @@
       "wow": "😮",
       "fire": "🔥"
     }
+  },
+  "forgotPasswordC": {
+    "brand": "Wanderlust Travels",
+    "description": "הרפתקה חדשה מחכה לך! איפוס הסיסמה יאפשר לך להמשיך לחקור את העולם.",
+    "backToLogin": "חזרה להתחברות",
+    "title": "שחזור סיסמה",
+    "subtitle": "אל דאגה, נעזור לך לאפס אותה",
+    "emailLabel": "כתובת אימייל",
+    "emailPlaceholder": "הכנס את האימייל שלך",
+    "helperText": "נשלח לך קישור לאיפוס הסיסמה.",
+    "sendLink": "שלח קישור לאיפוס",
+    "rememberPassword": "זכרת את הסיסמה?",
+    "signIn": "התחבר/י",
+    "checkEmail": "בדוק/י את האימייל שלך",
+    "sentTo": "שלחנו קישור לאיפוס הסיסמה לכתובת",
+    "didNotReceive": "לא קיבלת את המייל? בדוק/י את תיקיית הספאם או",
+    "tryAgain": "נסה/י שוב",
+    "needHelp": "צריך/ה עזרה? פנה/י ל",
+    "contactSupport": "צוות התמיכה שלנו"
   }
 }

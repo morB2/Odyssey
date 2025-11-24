@@ -26,6 +26,7 @@ import './App.css';
 import { ChatProvider } from './context/ChatContext';
 import ChatWidget from './components/chat/ChatWidget';
 import AllChatsPage from './components/chat/AllChatsPage';
+import { ResetPasswordPage } from './components/login/ResetPassword';
 
 function App() {
   const location = useLocation();
@@ -65,6 +66,7 @@ function App() {
             <Route path="/profile/:userId" element={<Profile />} />
             <Route path="/feed" element={<TripFeed />} />
             <Route path="/forgotPassword" element={<ForgotPassword />} />
+            <Route path="/resetPassword" element={<ResetPasswordPage />} />
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/401" element={<Page401 />} />
             <Route path="*" element={<Page404 />} />

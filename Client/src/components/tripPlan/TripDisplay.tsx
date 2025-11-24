@@ -58,6 +58,7 @@ interface StoredUser {
 }
 
 export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
+  const { user } = useUserStore();
   const { t } = useTranslation();
   const navigate = useNavigate();
   if (!data?.route) return <Typography>{t('tripDisplay.noRouteData')}</Typography>;
