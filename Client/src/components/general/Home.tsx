@@ -42,9 +42,9 @@ const Home: React.FC = () => {
   ];
 
   return (
-    <Box sx={{ 
-      minHeight: '100vh', 
-      width: '100%', 
+    <Box sx={{
+      minHeight: '100vh',
+      width: '100%',
       maxWidth: '100%',
       overflowX: 'hidden',
       boxSizing: 'border-box',
@@ -97,13 +97,13 @@ const Home: React.FC = () => {
       </Box>
 
       {/* Features Section */}
-      <Box id="features" sx={{ 
-        width: '100%', 
+      <Box id="features" sx={{
+        width: '100%',
         maxWidth: '100%',
         boxSizing: 'border-box',
-        py: 12, 
-        px: { xs: 3, md: 6 }, 
-        bgcolor: 'white' 
+        py: 12,
+        px: { xs: 3, md: 6 },
+        bgcolor: 'white'
       }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 8 }}>
@@ -129,13 +129,13 @@ const Home: React.FC = () => {
       </Box>
 
       {/* Community Section */}
-      <Box id="community" sx={{ 
-        width: '100%', 
+      <Box id="community" sx={{
+        width: '100%',
         maxWidth: '100%',
         boxSizing: 'border-box',
-        py: 12, 
-        px: { xs: 3, md: 6 }, 
-        background: 'linear-gradient(to bottom, #f9fafb, white)' 
+        py: 12,
+        px: { xs: 3, md: 6 },
+        background: 'linear-gradient(to bottom, #f9fafb, white)'
       }}>
         <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
           <Typography variant="h2" sx={{ mb: 3, fontWeight: 700 }}>Join the Travel Community</Typography>
@@ -170,13 +170,13 @@ const Home: React.FC = () => {
       </Box>
 
       {/* CTA Section */}
-      <Box sx={{ 
-        width: '100%', 
+      <Box sx={{
+        width: '100%',
         maxWidth: '100%',
         boxSizing: 'border-box',
-        py: 12, 
-        px: { xs: 3, md: 6 }, 
-        background: 'linear-gradient(135deg, #d97706, #b45309)' 
+        py: 12,
+        px: { xs: 3, md: 6 },
+        background: 'linear-gradient(135deg, #d97706, #b45309)'
       }}>
         <Container maxWidth="md" sx={{ textAlign: 'center' }}>
           <Typography variant="h2" sx={{ color: 'white', mb: 3, fontWeight: 700 }}>Start Planning and Sharing Today</Typography>
@@ -185,47 +185,6 @@ const Home: React.FC = () => {
             <Button onClick={() => navigate('/createtrip')} variant="contained" size="large" startIcon={<Sparkles style={{ width: 20, height: 20 }} />} sx={{ bgcolor: 'white', color: '#b45309', '&:hover': { bgcolor: '#f3f4f6' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600 }}>Plan Your Trip</Button>
             <Button onClick={() => navigate('/feed')} variant="outlined" size="large" sx={{ borderColor: 'white', color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)', borderColor: 'white' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600, borderWidth: 2 }}>Explore Feed</Button>
           </Box>
-        </Container>
-      </Box>
-
-      {/* Footer */}
-      <Box sx={{ 
-        width: '100%', 
-        maxWidth: '100%',
-        boxSizing: 'border-box',
-        bgcolor: '#111827', 
-        color: 'white', 
-        py: 8, 
-        px: { xs: 3, md: 6 } 
-      }}>
-        <Container maxWidth="lg">
-          <Grid container spacing={6} sx={{ mb: 6 }}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Typography variant="h5" sx={{ mb: 2, fontWeight: 700, letterSpacing: 1 }}>ODYSSEY</Typography>
-              <Typography sx={{ color: '#9ca3af', mb: 3, maxWidth: 400, lineHeight: 1.7 }}>A social travel platform to plan trips, share adventures, and connect with fellow travelers.</Typography>
-              <Typography sx={{ color: '#6b7280' }}>© 2025 Odyssey. All rights reserved.</Typography>
-            </Grid>
-
-            <Grid size={{ xs: 6, md: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Explore</Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>Feed</Link>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>Destinations</Link>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>Groups</Link>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>Plan Trip</Link>
-              </Box>
-            </Grid>
-
-            <Grid size={{ xs: 6, md: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Support</Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>Help Center</Link>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>Terms of Service</Link>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>Privacy Policy</Link>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>Contact</Link>
-              </Box>
-            </Grid>
-          </Grid>
         </Container>
       </Box>
     </Box>

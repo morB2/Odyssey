@@ -14,6 +14,7 @@ import { Save, X, Upload, Trash2, Lock, Globe, Plus } from "lucide-react";
 import { ConfirmDialog } from "./ConfirmDialog";
 const BASE_URL = "http://localhost:3000";
 import { useUserStore } from "../../store/userStore";
+import { toast } from "react-toastify";
 
 interface EditTripModalProps {
   trip: Trip | null;
@@ -173,7 +174,7 @@ export function EditTripModal({
         );
       } catch (e) {
         console.error("Failed to save trip", e);
-        alert(String(e instanceof Error ? e.message : e));
+        toast.error(String(e instanceof Error ? e.message : e));
       }
     })();
   };
@@ -184,7 +185,7 @@ export function EditTripModal({
 
     const remainingSlots = 3 - images.length;
     if (remainingSlots === 0) {
-      alert("Maximum 3 images allowed");
+      toast.warning("Maximum 3 images allowed");
       return;
     }
 

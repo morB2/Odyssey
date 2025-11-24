@@ -18,6 +18,7 @@ export default function GuestWelcomeCard({ onViewAsGuest }: GuestWelcomeCardProp
                 boxShadow: '0 6px 18px rgba(0,0,0,0.08)',
                 overflow: 'hidden',
                 bgcolor: 'background.paper',
+                marginTop: '20%'
             }}
         >
             <CardContent sx={{ p: 4, textAlign: 'center' }}>
@@ -43,7 +44,9 @@ export default function GuestWelcomeCard({ onViewAsGuest }: GuestWelcomeCardProp
                             borderRadius: '24px',
                             textTransform: 'none',
                             fontSize: '1rem',
-                            fontWeight: 600
+                            fontWeight: 600,
+                            bgcolor: '#d97706',
+                            '&:hover': { bgcolor: '#b45309' },
                         }}
                     >
                         Sign In / Sign Up
@@ -57,7 +60,9 @@ export default function GuestWelcomeCard({ onViewAsGuest }: GuestWelcomeCardProp
                             borderRadius: '24px',
                             textTransform: 'none',
                             fontSize: '1rem',
-                            fontWeight: 600
+                            fontWeight: 600,
+                            color:'#d97706',
+                            borderColor: '#d97706',
                         }}
                     >
                         View as Guest

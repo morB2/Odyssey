@@ -7,6 +7,7 @@ import { ChangePasswordModal } from "./EditProfileModal";
 import { EditTripModal } from "./EditTripModal";
 import type { Trip, UserProfile } from "./types";
 import { useUserStore } from "../../store/userStore";
+import { toast } from "react-toastify";
 // Navbar intentionally not rendered inside this view
 
 const BASE_URL = "http://localhost:3000";
@@ -66,8 +67,8 @@ export default function Profile() {
         const rawTrips = Array.isArray(tripsRes)
           ? tripsRes
           : Array.isArray(tripsRes?.trips)
-          ? tripsRes.trips
-          : [];
+            ? tripsRes.trips
+            : [];
 
         setTrips(rawTrips);
       } catch (e) {
@@ -114,8 +115,8 @@ export default function Profile() {
         const rawTrips = Array.isArray(data)
           ? data
           : Array.isArray(data?.trips)
-          ? data.trips
-          : [];
+            ? data.trips
+            : [];
         if (mounted) setTrips(rawTrips);
       } catch (e) {
         console.error("failed to load trips", e);
@@ -168,7 +169,7 @@ export default function Profile() {
         setTrips((prev) => prev.filter((t) => t.id !== tripId));
       } catch (e) {
         console.error("Failed to delete trip", e);
-        alert(String(e instanceof Error ? e.message : e));
+        toast.error(String(e instanceof Error ? e.message : e));
       }
     })();
   };
@@ -193,12 +194,12 @@ export default function Profile() {
             user
               ? user
               : {
-                  id: "",
-                  firstName: "Guest",
-                  lastName: "guest",
-                  email: "",
-                  avatar: "",
-                }
+                id: "",
+                firstName: "Guest",
+                lastName: "guest",
+                email: "",
+                avatar: "",
+              }
           }
           isOwner={isOwner}
           onEditClick={() => isOwner && setIsEditModalOpen(true)}
@@ -225,7 +226,7 @@ export default function Profile() {
               trips={trips}
               activeTab={activeTab}
               onTabChange={setActiveTab}
-              onTripClick={() => {}}
+              onTripClick={() => { }}
               setTrips={setTrips}
               onEdit={(trip) => setEditingTrip(trip)}
               onDelete={(tripId) => handleDeleteTrip(tripId)}

@@ -15,6 +15,7 @@ import {
     Box
 } from '@mui/material';
 import { submitReport } from '../../services/report.service';
+import { toast } from "react-toastify";
 
 interface ReportDialogProps {
     open: boolean;
@@ -59,7 +60,7 @@ export default function ReportDialog({ open, onClose, tripId, userId }: ReportDi
             await submitReport(tripId, finalReason, userId);
             onClose();
             // Ideally show a success toast here, but for now just close
-            alert("Report submitted successfully. Thank you.");
+            toast.success("Report submitted successfully. Thank you.");
         } catch (err) {
             console.error("Failed to submit report:", err);
             setError("Failed to submit report. Please try again.");

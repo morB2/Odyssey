@@ -21,6 +21,7 @@ import {
 import { Link as RouterLink } from "react-router-dom";
 import { Edit, Users, UserPlus } from "lucide-react";
 import { useUserStore } from "../../store/userStore";
+import { toast } from "react-toastify";
 const BASE_URL = "http://localhost:3000";
 type SimpleFollow = {
   _id?: string;
@@ -148,7 +149,7 @@ export function ProfileHeader({
     }
 
     setOpenDialog(listType);
-  };  
+  };
 
   const handleSaveAvatar = async () => {
     const u = user as unknown as { id?: string; _id?: string };
@@ -157,7 +158,7 @@ export function ProfileHeader({
     setSavingAvatar(true);
     try {
       if (!token) {
-        alert("You must be signed in to change your avatar.");
+        toast.error("You must be signed in to change your avatar.");
         setSavingAvatar(false);
         return;
       }
@@ -214,7 +215,7 @@ export function ProfileHeader({
       setAvatarDialogOpen(false);
     } catch (e) {
       console.error("Failed to save avatar", e);
-      alert(String(e instanceof Error ? e.message : e));
+      toast.error(String(e instanceof Error ? e.message : e));
     } finally {
       setSavingAvatar(false);
     }
@@ -256,10 +257,10 @@ export function ProfileHeader({
                     >
                       {String(
                         `${f.firstName || ""} ${f.lastName || ""}`.trim() ||
-                          (f.email as string) ||
-                          (f.username as string) ||
-                          (f._id as string) ||
-                          ""
+                        (f.email as string) ||
+                        (f.username as string) ||
+                        (f._id as string) ||
+                        ""
                       )}
                     </Link>
                   }
