@@ -9,6 +9,6 @@ export const getTheme = (language: string) =>
         },
         typography: {
             //כאן בוחרים פונטים שונים עבור עברית ואנגלית
-            fontFamily: "'Merriweather', serif"
+            fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif;'
         },
     });
