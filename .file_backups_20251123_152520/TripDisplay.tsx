@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -48,18 +48,17 @@ interface TripDisplayProps {
     route: RouteData;
   };
 }
-// interface StoredUser {
-//   state: {
-//     user: {
-//       _id: string;
-//       // add other properties if needed
-//     };
-//   };
-// }
+interface StoredUser {
+  state: {
+    user: {
+      _id: string;
+      // add other properties if needed
+    };
+  };
+}
 
 export function TripDisplay({ data }: TripDisplayProps) {
   const navigate = useNavigate();
-  const {user}= useUserStore();
   if (!data?.route) return <Typography>No route data to display</Typography>;
   const [imageUrl, setImageUrl] = useState<string>("");
   const { title, description, ordered_route, mode, instructions = [], google_maps_url, activities = [] } = data.route;
@@ -96,6 +95,8 @@ export function TripDisplay({ data }: TripDisplayProps) {
   const [openAuthDialog, setOpenAuthDialog] = useState(false);
 
   const handleSaveClick = () => {
+    const { user } = useUserStore();
+
     if (user) {
       setOpenDialog(true);
     } else {
@@ -118,8 +119,10 @@ export function TripDisplay({ data }: TripDisplayProps) {
 
   const handleSaveOption = async (type: "private" | "public") => {
     setOpenDialog(false);
+    const { user } = useUserStore();
+
     try {
-      const response = await fetch('http://localhost:3000/createTrip/save', {
+      const response = await fetch('/api/createTrip/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(

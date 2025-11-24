@@ -15,6 +15,9 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css'
 
+import { ChatProvider } from './context/ChatContext';
+import ChatWidget from './components/chat/ChatWidget';
+
 function App() {
   const location = useLocation();
   const { token } = useUserStore();
@@ -35,8 +38,9 @@ function App() {
 
 
   return (
-    <>
+    <ChatProvider>
       <ToastContainer position="top-right" autoClose={3000} />
+      <ChatWidget />
       <Routes location={background}>
         <Route path="/" element={<Home />} />
         <Route path="/createtrip" element={<MainPage />} />
@@ -56,7 +60,7 @@ function App() {
         </Routes>
       )}
 
-    </>
+    </ChatProvider>
   )
 }
 

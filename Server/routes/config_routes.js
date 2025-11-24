@@ -8,6 +8,7 @@ import save from "./saveRoutes.js";
 import follow from './followRoutes.js';
 import users from './usersRoute.js';
 import reports from './reportRoutes.js';
+import chat from './chatRoutes.js';
 import { authMiddleware as autoM } from '../middleware/authMiddleware.js';
 
 export function routesInit(app) {
@@ -22,4 +23,5 @@ export function routesInit(app) {
   app.use('/follow', follow);
   app.use('/users', users);
   app.use('/reports', reports);
+  app.use('/chat', chat);
 }

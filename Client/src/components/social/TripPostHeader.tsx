@@ -1,9 +1,12 @@
 import { Avatar, Button, CardContent, Box, Typography, IconButton, Menu, MenuItem } from '@mui/material';
+
 import { Link } from 'react-router-dom';
 import { MoreVert as MoreVertIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import { type Trip } from './types';
 import ReportDialog from './ReportDialog';
+
+import { useChat } from '../../context/ChatContext';
 
 interface TripPostHeaderProps {
     user: Trip['user'];
@@ -17,6 +20,7 @@ export default function TripPostHeader({ user, currentUserId, isFollowing, onFol
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [reportOpen, setReportOpen] = useState(false);
     const open = Boolean(anchorEl);
+    const { openChat } = useChat();
 
     const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
         event.stopPropagation();
@@ -32,6 +36,12 @@ export default function TripPostHeader({ user, currentUserId, isFollowing, onFol
         event.stopPropagation(); // Prevent card click
         handleMenuClose();
         setReportOpen(true);
+    };
+
+    const handleChatClick = (event: React.MouseEvent) => {
+        event.stopPropagation();
+        handleMenuClose();
+        openChat(user);
     };
 
     return (
@@ -81,6 +91,9 @@ export default function TripPostHeader({ user, currentUserId, isFollowing, onFol
                         onClose={() => setAnchorEl(null)} // Basic close without stopPropagation for backdrop click
                         onClick={(e) => e.stopPropagation()} // Stop clicks inside menu from bubbling
                     >
+                        {user._id !== currentUserId && (
+                            <MenuItem onClick={handleChatClick}>Chat</MenuItem>
+                        )}
                         <MenuItem onClick={handleReportClick}>Report</MenuItem>
                     </Menu>
                 </Box>

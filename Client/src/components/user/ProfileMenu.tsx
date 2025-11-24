@@ -20,7 +20,6 @@ export default function ProfileMenu({ size = 50 }: ProfileMenuProps) {
     const open = Boolean(anchorEl);
     const navigate = useNavigate();
     const user = useUserStore((state) => state.user);
-   console.log(user);
     const handleClick = (event: MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
     };
