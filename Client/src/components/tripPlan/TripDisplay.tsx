@@ -23,6 +23,7 @@ import { useNavigate } from "react-router-dom";
 import { MapPin, Navigation, ExternalLink, Save } from "lucide-react";
 import { AuthSaveDialog } from "./AuthSaveDialog";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 import { useUserStore } from "../../store/userStore";
 
 interface Location {
@@ -48,24 +49,24 @@ interface TripDisplayProps {
     route: RouteData;
   };
 }
-// interface StoredUser {
-//   state: {
-//     user: {
-//       _id: string;
-//       // add other properties if needed
-//     };
-//   };
-// }
+interface StoredUser {
+  state: {
+    user: {
+      _id: string;
+    };
+  };
+}
 
-export function TripDisplay({ data }: TripDisplayProps) {
+export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
+  const { user } = useUserStore();
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const {user}= useUserStore();
-  if (!data?.route) return <Typography>No route data to display</Typography>;
+  if (!data?.route) return <Typography>{t('tripDisplay.noRouteData')}</Typography>;
   const [imageUrl, setImageUrl] = useState<string>("");
   const { title, description, ordered_route, mode, instructions = [], google_maps_url, activities = [] } = data.route;
   useEffect(() => {
     const fetchImage = async () => {
-      const query = title ? title : "Travel";
+      const query = title ? title : t('tripDisplay.defaultTravel');
       try {
         const response = await fetch(
           `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)} travel landscape&orientation=landscape&per_page=1`,
@@ -86,7 +87,7 @@ export function TripDisplay({ data }: TripDisplayProps) {
     };
 
     fetchImage();
-  }, [title]);
+  }, [title, t]);
   const orange = "#ff9800";
   const lightOrange = "#fff3e0";
   const borderOrange = "#ffe0b2";
@@ -155,7 +156,7 @@ export function TripDisplay({ data }: TripDisplayProps) {
         component="img"
         height="240"
         image={imageUrl}
-        alt="Trip Cover"
+        alt={t('tripDisplay.tripCover')}
         sx={{ objectFit: "cover" }}
       />
 
@@ -166,7 +167,7 @@ export function TripDisplay({ data }: TripDisplayProps) {
           <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
             <Box>
               <Typography variant="h5" fontWeight="bold" sx={{ color: orange }}>
-                {title || "Untitled Trip"}
+                {title || t('tripDisplay.untitledTrip')}
               </Typography>
               {description && (
                 <Typography variant="body2" color="text.secondary" mt={0.5}>
@@ -176,7 +177,7 @@ export function TripDisplay({ data }: TripDisplayProps) {
             </Box>
             <Chip
               icon={<Navigation size={16} color={orange} />}
-              label={mode}
+              label={t(`tripDisplay.travelModes.${mode.toLowerCase()}`)}
               sx={{
                 borderColor: orange,
                 color: orange,
@@ -200,7 +201,7 @@ export function TripDisplay({ data }: TripDisplayProps) {
             sx={{ display: "flex", alignItems: "center", gap: 1, color: orange }}
           >
             <MapPin size={18} color={orange} />
-            Route Stops
+            {t('tripDisplay.routeStops')}
           </Typography>
           <List disablePadding>
             {ordered_route.map((location, index) => (
@@ -240,7 +241,7 @@ export function TripDisplay({ data }: TripDisplayProps) {
             <Divider sx={{ borderColor: borderOrange }} />
             <Box>
               <Typography variant="h6" gutterBottom sx={{ color: orange }}>
-                Travel Instructions
+                {t('tripDisplay.travelInstructions')}
               </Typography>
               <List sx={{ pl: 2, listStyleType: "decimal" }}>
                 {instructions.map((instruction, index) => (
@@ -261,7 +262,7 @@ export function TripDisplay({ data }: TripDisplayProps) {
             <Divider sx={{ borderColor: borderOrange }} />
             <Box>
               <Typography variant="h6" gutterBottom sx={{ color: orange }}>
-                Activities
+                {t('tripDisplay.activities')}
               </Typography>
               <Stack direction="row" flexWrap="wrap" gap={1}>
                 {activities.map((activity, index) => (
@@ -299,7 +300,7 @@ export function TripDisplay({ data }: TripDisplayProps) {
             px: 3,
           }}
         >
-          Open in Google Maps
+          {t('tripDisplay.openInGoogleMaps')}
         </Button>
         <Button
           variant="outlined"
@@ -313,22 +314,22 @@ export function TripDisplay({ data }: TripDisplayProps) {
             fontWeight: 600,
           }}
         >
-          Save
+          {t('tripDisplay.save')}
         </Button>
       </CardActions>
 
       {/* Save Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle sx={{ color: orange, fontWeight: "bold" }}>Save Trip</DialogTitle>
+        <DialogTitle sx={{ color: orange, fontWeight: "bold" }}>{t('tripDisplay.saveTrip.title')}</DialogTitle>
         <DialogContent>
-          <Typography>Would you like to save your trip privately or publicly?</Typography>
+          <Typography>{t('tripDisplay.saveTrip.prompt')}</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => handleSaveOption("private")} variant="contained" sx={{ bgcolor: orange }}>
-            Save Privately
+            {t('tripDisplay.saveTrip.private')}
           </Button>
           <Button onClick={() => handleSaveOption("public")} variant="outlined" sx={{ borderColor: orange, color: orange }}>
-            Save Publicly
+            {t('tripDisplay.saveTrip.public')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -12,20 +12,39 @@ import {
 } from "@mui/material";
 import { Mail, Lock, ArrowBack } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { forgotPassword } from "../../services/sendEmail.service";
+import { useTranslation } from "react-i18next";
+
 
 export default function ForgotPassword() {
+  const { t, i18n } = useTranslation();
+
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitted(true);
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setEmail("");
-    }, 3000);
+
+    if (!email) return;
+
+    try {
+      console.log("i18n.language",i18n.language)
+      const result = await forgotPassword(email,i18n.language);
+      console.log("Server response:", result);
+
+      setIsSubmitted(true);
+
+      setTimeout(() => {
+        setIsSubmitted(false);
+        setEmail("");
+      }, 3000);
+    } catch (err) {
+      console.error("Failed to send reset email:", err);
+      // פה אפשר להוסיף הודעת שגיאה למשתמש
+    }
   };
+
 
   return (
     <Grid container sx={{ minHeight: "100vh" }}>
@@ -69,10 +88,10 @@ export default function ForgotPassword() {
           }}
         >
           <Typography variant="h3" fontWeight="bold" mb={2}>
-            Wanderlust Travels
+            {t('forgotPasswordC.brand')}
           </Typography>
           <Typography variant="body1" maxWidth="400px">
-            Your adventure awaits. Reset your password to continue exploring the world.
+            {t('forgotPasswordC.description')}
           </Typography>
         </Box>
       </Grid>
@@ -100,7 +119,7 @@ export default function ForgotPassword() {
             sx={{ display: "inline-flex", alignItems: "center", color: "#e67e00", fontWeight: 500, mb: 3 }}
           >
             <ArrowBack fontSize="small" sx={{ mr: 1 }} />
-            Back to login
+            {t('forgotPasswordC.backToLogin')}
           </Link>
 
           <Box display="flex" alignItems="center" mb={3}>
@@ -108,21 +127,17 @@ export default function ForgotPassword() {
               <Lock />
             </Avatar>
             <Box>
-              <Typography variant="h5">Forgot Password?</Typography>
+              <Typography variant="h5">{t('forgotPasswordC.title')}</Typography>
               <Typography color="text.secondary" variant="body2">
-                No worries, we’ll help you reset it
+                {t('forgotPasswordC.subtitle')}
               </Typography>
             </Box>
           </Box>
 
           {!isSubmitted ? (
             <Box component="form" onSubmit={handleSubmit}>
-              <Typography
-                variant="subtitle2"
-                color="text.primary"
-                sx={{ mb: 1, mt: 2 }}
-              >
-                Email Address
+              <Typography variant="subtitle2" color="text.primary" sx={{ mb: 1, mt: 2 }}>
+                {t('forgotPasswordC.emailLabel')}
               </Typography>
               <Box display="flex" alignItems="center" position="relative" mb={1}>
                 <Mail
@@ -144,35 +159,22 @@ export default function ForgotPassword() {
                 />
               </Box>
               <Typography variant="caption" color="text.secondary">
-                We’ll send you a link to reset your password.
+                {t('forgotPasswordC.helperText')}
               </Typography>
 
               <Button
                 type="submit"
                 variant="contained"
                 fullWidth
-                sx={{
-                  mt: 3,
-                  bgcolor: "orange",
-                  "&:hover": { bgcolor: "#e67e00" },
-                }}
+                sx={{ mt: 3, bgcolor: "orange", "&:hover": { bgcolor: "#e67e00" } }}
               >
-                Send Reset Link
+                {t('forgotPasswordC.sendLink')}
               </Button>
 
-              <Typography
-                align="center"
-                variant="body2"
-                sx={{ mt: 3 }}
-                color="text.secondary"
-              >
-                Remember your password?{" "}
-                <Link
-                  href="#"
-                  underline="hover"
-                  sx={{ color: "orange", fontWeight: 500 }}
-                >
-                  Sign in
+              <Typography align="center" variant="body2" sx={{ mt: 3 }} color="text.secondary">
+                {t('forgotPasswordC.rememberPassword')}{" "}
+                <Link href="#" underline="hover" sx={{ color: "orange", fontWeight: 500 }}>
+                  {t('forgotPasswordC.signIn')}
                 </Link>
               </Typography>
             </Box>
@@ -180,45 +182,24 @@ export default function ForgotPassword() {
             <Box
               textAlign="center"
               p={4}
-              sx={{
-                bgcolor: "#fff7ec",
-                border: "2px solid orange",
-                borderRadius: 2,
-              }}
+              sx={{ bgcolor: "#fff7ec", border: "2px solid orange", borderRadius: 2 }}
             >
-              <Box
-                sx={{
-                  width: 70,
-                  height: 70,
-                  bgcolor: "orange",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  mx: "auto",
-                  mb: 2,
-                }}
-              >
+              <Box sx={{ width: 70, height: 70, bgcolor: "orange", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", mx: "auto", mb: 2 }}>
                 <Mail sx={{ color: "white", fontSize: 40 }} />
               </Box>
               <Typography variant="h6" color="text.primary" mb={1}>
-                Check Your Email
+                {t('forgotPasswordC.checkEmail')}
               </Typography>
               <Typography variant="body2" color="text.secondary" mb={2}>
-                We’ve sent a password reset link to{" "}
+                {t('forgotPasswordC.sentTo')}{" "}
                 <Typography component="span" color="text.primary" fontWeight={500}>
                   {email}
                 </Typography>
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Didn’t receive the email? Check your spam folder or{" "}
-                <Link
-                  component="button"
-                  underline="hover"
-                  sx={{ color: "orange" }}
-                  onClick={() => setIsSubmitted(false)}
-                >
-                  try again
+                {t('forgotPasswordC.didNotReceive')}{" "}
+                <Link component="button" underline="hover" sx={{ color: "orange" }} onClick={() => setIsSubmitted(false)}>
+                  {t('forgotPasswordC.tryAgain')}
                 </Link>
               </Typography>
             </Box>
@@ -227,9 +208,9 @@ export default function ForgotPassword() {
           <Divider sx={{ my: 4 }} />
 
           <Typography align="center" variant="caption" color="text.secondary">
-            Need help? Contact our{" "}
+            {t('forgotPasswordC.needHelp')}{" "}
             <Link href="#" underline="hover" sx={{ color: "orange" }}>
-              support team
+              {t('forgotPasswordC.contactSupport')}
             </Link>
           </Typography>
         </Paper>

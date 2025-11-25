@@ -16,7 +16,6 @@ const uploadsDir = path.join(process.cwd(), "uploads");
 // -----------------------------------------------------
 // Helpers
 // -----------------------------------------------------
-
 function normalizeAvatarUrl(url) {
   if (!url) return url;
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
@@ -40,25 +39,19 @@ function deleteLocalFileIfExists(absolutePath) {
   }
 }
 
-/* ------------------------------------------------------------------
-   🔥 פונקציית עזר משותפת — יצירת מטא־דאטה לצפייה (לייקים, שמירות, פולואו)
-------------------------------------------------------------------- */
 async function buildTripMetadata({ trips, ownerId }) {
   const tripIds = trips.map(t => t._id);
 
-  // לייקים
   const liked = ownerId
     ? await Like.find({ user: ownerId, trip: { $in: tripIds } }).select("trip")
     : [];
   const likedSet = new Set(liked.map(l => String(l.trip)));
 
-  // שמירות
   const saved = ownerId
     ? await Save.find({ user: ownerId, trip: { $in: tripIds } }).select("trip")
     : [];
   const savedSet = new Set(saved.map(s => String(s.trip)));
 
-  // פולואו ליוצרי הטיולים
   const authorIds = [...new Set(trips.map(t => String(t.user?._id)))];
   const follows = ownerId
     ? await Follow.find({
@@ -71,9 +64,6 @@ async function buildTripMetadata({ trips, ownerId }) {
   return { likedSet, savedSet, followSet };
 }
 
-/* ------------------------------------------------------------------
-   🔥 פונקציית עזר משותפת — עיבוד טיול יחיד
-------------------------------------------------------------------- */
 function mapTrip(trip, { likedSet, savedSet, followSet, ownerId }) {
   return {
     ...trip,
@@ -181,7 +171,7 @@ export async function getUserTrip(userId, tripId, viewerId) {
 }
 
 // -----------------------------------------------------
-// PROFILE (LIKED + SAVED) — גרסה רפקטורית בעזרת פונקציה אחת
+// PROFILE (LIKED + SAVED) 
 // -----------------------------------------------------
 
 async function fetchProfileTripCollection({
@@ -259,143 +249,6 @@ export async function updatePassword(userId, authUser, currentPassword, newPassw
   await user.save();
 
   return { success: true };
-}
-
-// --- Trips ---
-export async function listUserTrips(userId, viewerId) {
-  // Backwards-compatible wrapper: prefer using listUserTripsForViewer
-  return listUserTripsForViewer(userId, viewerId);
-}
-
-// Enhanced version: returns trips for a specific owner with populated user/comments
-// and optional viewerId to compute isLiked/isSaved/isFollowing flags.
-export async function listUserTripsForViewer(ownerId, viewerId) {
-  if (!ownerId) throw new Error("ownerId required");
-
-  const cacheKey = `profile:${ownerId}:trips:viewer:${viewerId || "none"}`;
-  console.log(
-    `[Profile] Checking cache for user ${ownerId}, viewer ${viewerId}`
-  );
-
-  // Check Redis cache first
-  const cached = await redis.get(cacheKey);
-  if (cached) {
-    console.log(
-      `[Profile] Cache hit! Returning cached trips for user ${ownerId}`
-    );
-    return JSON.parse(cached);
-  }
-
-  console.log(
-    `[Profile] Cache miss. Loading trips from DB for user ${ownerId}`
-  );
-
-  const trips = await Trip.find({ user: ownerId })
-    .sort({ createdAt: -1 })
-    .populate({ path: "user", select: "_id firstName lastName avatar" })
-    .populate({
-      path: "comments.user",
-      select: "_id firstName lastName avatar",
-    })
-    .populate({
-      path: "comments.replies.user",
-      select: "_id firstName lastName avatar",
-    })
-    .lean();
-
-  if (!trips || trips.length === 0) return [];
-
-  const tripIds = trips.map((t) => t._id);
-  const likedTripIds = new Set();
-  const savedTripIds = new Set();
-  const followingUserIds = new Set();
-
-  if (viewerId) {
-    const likes = await Like.find({
-      user: viewerId,
-      trip: { $in: tripIds },
-    }).select("trip");
-    const saves = await Save.find({
-      user: viewerId,
-      trip: { $in: tripIds },
-    }).select("trip");
-    likes.forEach((l) => likedTripIds.add(String(l.trip)));
-    saves.forEach((s) => savedTripIds.add(String(s.trip)));
-
-    const f = await Follow.findOne({
-      follower: viewerId,
-      following: trips[0].user._id,
-    }).select("following");
-    if (f) followingUserIds.add(String(trips[0].user._id));
-  }
-
-  const tripsWithStatus = trips.map((trip) => ({
-    ...trip,
-    likes: trip.likes || 0,
-    isLiked: viewerId ? likedTripIds.has(String(trip._id)) : false,
-    isSaved: viewerId ? savedTripIds.has(String(trip._id)) : false,
-    user: {
-      ...trip.user,
-      isFollowing: viewerId
-        ? followingUserIds.has(String(trip.user?._id))
-        : false,
-    },
-    comments: trip.comments || [],
-  }));
-
-  // normalize avatars in returned trips
-  for (const t of tripsWithStatus) {
-    if (t.user && t.user.avatar)
-      t.user.avatar = normalizeAvatarUrl(t.user.avatar);
-    if (Array.isArray(t.comments)) {
-      for (const c of t.comments) {
-        if (c.user && c.user.avatar)
-          c.user.avatar = normalizeAvatarUrl(c.user.avatar);
-      }
-    }
-  }
-
-  // Cache result for 60 seconds
-  console.log(`[Profile] Caching trips for user ${ownerId} for 60 seconds`);
-  await redis.setEx(cacheKey, 60, JSON.stringify(tripsWithStatus));
-
-  return tripsWithStatus;
-}
-
-export async function getUserTrip(userId, tripId, viewerId) {
-  if (!userId || !tripId) throw new Error("userId and tripId required");
-
-  const trip = await Trip.findOne({ _id: tripId, user: userId })
-    .populate({ path: "user", select: "_id firstName lastName avatar" })
-    .populate({
-      path: "comments.user",
-      select: "_id firstName lastName avatar",
-    })
-    .populate({
-      path: "comments.replies.user",
-      select: "_id firstName lastName avatar",
-    })
-    .lean();
-
-  if (!trip) throw Object.assign(new Error("Trip not found"), { status: 404 });
-
-  if (viewerId) {
-    trip.isLiked = !!(await Like.findOne({
-      user: viewerId,
-      trip: trip._id,
-    }).select("_id"));
-    trip.isSaved = !!(await Save.findOne({
-      user: viewerId,
-      trip: trip._id,
-    }).select("_id"));
-    if (trip.user?._id)
-      trip.user.isFollowing = !!(await Follow.findOne({
-        follower: viewerId,
-        following: trip.user._id,
-      }).select("_id"));
-  }
-
-  return trip;
 }
 
 export async function updateUserTrip(userId, tripId, authUser, updates, files) {

@@ -1,5 +1,5 @@
 import express from 'express';
-import { googleLogin, loginUser, registerUser } from '../controller/loginController.js';
+import { googleLogin, loginUser, registerUser, resetPassword } from '../controller/loginController.js';
 
 const router = express.Router();
 
@@ -30,5 +30,14 @@ router.post('/google', async (req, res, next) => {
         next(err);
     }
 });
+
+router.post('/resetPassword', async(req, res, next) => {
+    try {
+        const result = await resetPassword(req.body);
+        res.status(201).json(result);
+    } catch (err) {
+        next(err);
+    }}
+);
 
 export default router;

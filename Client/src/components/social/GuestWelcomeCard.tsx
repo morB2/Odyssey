@@ -1,11 +1,13 @@
-import { Card, CardContent, Typography, Button, Stack } from '@mui/material';
+import { Card, CardContent, Typography, Button, Stack, Box } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 interface GuestWelcomeCardProps {
     onViewAsGuest: () => void;
 }
 
-export default function GuestWelcomeCard({ onViewAsGuest }: GuestWelcomeCardProps) {
+export const GuestWelcomeCard = ({ onViewAsGuest }: GuestWelcomeCardProps) => {
+    const {t } = useTranslation();
     const navigate = useNavigate();
 
     return (
@@ -23,10 +25,10 @@ export default function GuestWelcomeCard({ onViewAsGuest }: GuestWelcomeCardProp
         >
             <CardContent sx={{ p: 4, textAlign: 'center' }}>
                 <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600, color: 'text.primary' }}>
-                    Welcome to Odyssey
+                    {t('guestWelcome.title')}
                 </Typography>
                 <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                    Join our community to share your adventures, interact with other travelers, and discover amazing trips.
+                    {t('guestWelcome.text')}
                 </Typography>
 
                 <Stack
@@ -49,7 +51,7 @@ export default function GuestWelcomeCard({ onViewAsGuest }: GuestWelcomeCardProp
                             '&:hover': { bgcolor: '#b45309' },
                         }}
                     >
-                        Sign In / Sign Up
+                        {t('guestWelcome.signIn')}
                     </Button>
                     <Button
                         variant="outlined"
@@ -65,7 +67,7 @@ export default function GuestWelcomeCard({ onViewAsGuest }: GuestWelcomeCardProp
                             borderColor: '#d97706',
                         }}
                     >
-                        View as Guest
+                        {t('guestWelcome.viewAsGuest')}
                     </Button>
                 </Stack>
             </CardContent>
