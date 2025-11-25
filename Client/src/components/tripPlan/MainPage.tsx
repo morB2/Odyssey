@@ -6,7 +6,7 @@ import { ChatInput } from './ChatInput';
 import { FeatureCard } from './FeatureCard';
 import { type Message, type Itinerary } from './types';
 import { getSuggestions, customizeTrip, findOptimalRoute } from '../../services/createTrip.service';
-import { Navbar } from '../general/Navbar';
+import Navbar from '../general/Navbar';
 import { useTranslation } from 'react-i18next';
 import { QuickActions } from './QuickActions';
 import { ChatWindow } from './ChatWindow';

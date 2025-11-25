@@ -13,10 +13,6 @@ const AllChatsPage: React.FC = () => {
         <>
         <Navbar />
         <Container maxWidth="md" sx={{ mt: 12, mb: 6 }}>
-            <Typography variant="h4" gutterBottom>
-                Chats
-            </Typography>
-
             <Paper sx={{ height: '70vh', overflow: 'hidden' }} elevation={1}>
                 <ChatList
                     onSelectChat={(user) => {
