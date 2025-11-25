@@ -1,6 +1,6 @@
 import React,  { type RefObject } from 'react';
 import { Box ,Stack} from '@mui/material';
-import  { MessageBubble } from './MessageBubble';
+import  MessageBubble from './MessageBubble';
 import { type Message, type Itinerary } from './types';
 
 interface ChatWindowProps {

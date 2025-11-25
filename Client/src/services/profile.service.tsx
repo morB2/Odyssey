@@ -6,13 +6,20 @@ const FOLLOW_BASE = "/follow";
 
 const getAuthHeader = (token?: string) => {
   const t = token ?? useUserStore.getState().token;
-  return t ? { Authorization: `Bearer ${t}` } : undefined;
+  return t ? { Authorization: `Bearer ${t}` } : {};
+};
+
+const createHeaders = (token?: string, extra: Record<string, string> = {}) => {
+  return {
+    ...getAuthHeader(token),
+    ...extra,
+  };
 };
 
 export const getProfile = async (userId: string, token?: string) => {
   try {
     const res = await api.get(`${BASE}/${userId}`, {
-      headers: getAuthHeader(token),
+      headers: createHeaders(token),
     });
     return res.data;
   } catch (error) {
@@ -24,7 +31,7 @@ export const getProfile = async (userId: string, token?: string) => {
 export const getTrips = async (userId: string, token?: string) => {
   try {
     const res = await api.get(`${BASE}/${userId}/trips`, {
-      headers: getAuthHeader(token),
+      headers: createHeaders(token),
     });
     return res.data;
   } catch (error) {
@@ -32,22 +39,6 @@ export const getTrips = async (userId: string, token?: string) => {
     throw error;
   }
 };
-
-// export const getUserTrip = async (
-//   userId: string,
-//   tripId: string,
-//   token?: string
-// ) => {
-//   try {
-//     const res = await api.get(`${BASE}/${userId}/trips/${tripId}`, {
-//       headers: getAuthHeader(token),
-//     });
-//     return res.data;
-//   } catch (error) {
-//     console.error("getUserTrip error:", error);
-//     throw error;
-//   }
-// };
 
 export const updateTrip = async (
   userId: string,
@@ -60,7 +51,7 @@ export const updateTrip = async (
     if (payload instanceof FormData) {
       const fullUrl =
         (api.defaults.baseURL || "") + `${BASE}/${userId}/trips/${tripId}`;
-      const headers = (getAuthHeader(token) || {}) as Record<string, string>;
+      const headers = createHeaders(token) as Record<string, string>;
       const res = await fetch(fullUrl, {
         method: "PUT",
         headers,
@@ -73,7 +64,7 @@ export const updateTrip = async (
     }
 
     const res = await api.put(`${BASE}/${userId}/trips/${tripId}`, payload, {
-      headers: getAuthHeader(token),
+      headers: createHeaders(token),
     });
     return res.data;
   } catch (error) {
@@ -89,7 +80,7 @@ export const deleteTrip = async (
 ) => {
   try {
     const res = await api.delete(`${BASE}/${userId}/trips/${tripId}`, {
-      headers: getAuthHeader(token),
+      headers: createHeaders(token),
     });
     return res.data;
   } catch (error) {
@@ -104,47 +95,37 @@ export const uploadAvatar = async (
   avatarUrl?: string,
   token?: string
 ) => {
-  try {
-    const url = `${BASE}/${userId}/avatar`;
+  const url = `${BASE}/${userId}/avatar`;
 
-    if (file) {
-      const fd = new FormData();
-      console.log("avatar\n", file);
+  // Upload a real file
+  if (file) {
+    const fd = new FormData();
+    fd.append("avatar", file);
 
-      // Use fetch for multipart upload so the browser sets the Content-Type boundary correctly
-      fd.append("avatar", file);
-      const fullUrl = (api.defaults.baseURL || "") + url;
-      const headers = getAuthHeader(token) || {};
-      const res = await fetch(fullUrl, {
-        method: "PUT",
-        headers: headers as Record<string, string>,
-        body: fd,
-      });
-      const json = await res.json();
-      if (!res.ok)
-        throw new Error(json?.error || json?.message || "Upload failed");
-      return json;
-    }
+    const res = await fetch(`${api.defaults.baseURL}${url}`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+      body: fd,
+    });
 
-    if (avatarUrl && avatarUrl.trim()) {
-      const res = await api.put(
-        url,
-        { avatarUrl: avatarUrl.trim() },
-        {
-          headers: {
-            ...(getAuthHeader(token) || {}),
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      return res.data;
-    }
-
-    throw new Error("Either file or avatarUrl must be provided");
-  } catch (error) {
-    console.error("uploadAvatar error:", error);
-    throw error;
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || "Upload failed");
+    return json;
   }
+
+  // Upload cloudinary URL
+  if (avatarUrl?.trim()) {
+    const res = await api.put(
+      url,
+      { avatarUrl: avatarUrl.trim() },
+      {
+        headers: createHeaders(token, { "Content-Type": "application/json" }),
+      }
+    );
+    return res.data;
+  }
+
+  throw new Error("Either file or avatarUrl must be provided");
 };
 
 export const changePassword = async (
@@ -157,7 +138,7 @@ export const changePassword = async (
     const res = await api.post(
       `${BASE}/${userId}/changePassword`,
       { currentPassword, newPassword },
-      { headers: getAuthHeader(token) }
+      { headers: createHeaders(token) }
     );
     return res.data;
   } catch (error) {
@@ -188,8 +169,8 @@ export const getFollowing = async (userId: string) => {
 
 export const getLikedTrips = async (userId: string, token?: string) => {
   try {
-    const res = await api.get(`/likes/${userId}`, {
-      headers: getAuthHeader(token),
+    const res = await api.get(`${BASE}/${userId}/liked-trips`, {
+      headers: createHeaders(token),
     });
     return res.data;
   } catch (error) {
@@ -200,24 +181,12 @@ export const getLikedTrips = async (userId: string, token?: string) => {
 
 export const getSavedTrips = async (userId: string, token?: string) => {
   try {
-    const res = await api.get(`/saves/${userId}`, {
-      headers: getAuthHeader(token),
+    const res = await api.get(`${BASE}/${userId}/saved-trips`, {
+      headers: createHeaders(token),
     });
     return res.data;
   } catch (error) {
     console.error("getSavedTrips error:", error);
     throw error;
   }
-};
-
-export default {
-  getProfile,
-  getTrips,
-  // getUserTrip,
-  updateTrip,
-  deleteTrip,
-  uploadAvatar,
-  changePassword,
-  getFollowers,
-  getFollowing,
 };

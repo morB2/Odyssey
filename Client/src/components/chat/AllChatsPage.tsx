@@ -3,7 +3,7 @@ import { Container, Typography, Paper } from '@mui/material';
 import ChatList from './ChatList';
 import { useChat } from '../../context/ChatContext';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../general/Navbar';
+import { Navbar } from '../general/Navbar';
 
 const AllChatsPage: React.FC = () => {
     const { openChat } = useChat();
