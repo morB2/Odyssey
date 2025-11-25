@@ -1,12 +1,20 @@
 import express from "express";
-import { sendEmail } from "../services/sendEmailService.js";
+import { forgotPassword } from "../services/sendEmailService.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
-  await sendEmail("Mh3182100@gmail.com", "בדיקה", "היי! זה מייל ניסיון מהשרת 😊");
-  res.send("המייל נשלח!");
-});
+router.post("/forgotPassword", async (req, res) => {
+  try {
+    const { email, lang } = req.body;
+      console.log("Forgot password for email:", email, "in language:", lang);
+    if (!email) return res.status(400).json({ message: "Email is required" });
 
+    const result = await forgotPassword(email, lang);
+    res.json(result);
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 export default router;
