@@ -14,6 +14,10 @@ import {
   deleteTrip as svcDeleteTrip,
 } from "../../services/profile.service";
 import { useUserStore } from "../../store/userStore";
+import { toast } from "react-toastify";
+// Navbar intentionally not rendered inside this view
+
+const BASE_URL = "http://localhost:3000";
 
 export default function Profile() {
   const storeUser = useUserStore((s) => s.user);

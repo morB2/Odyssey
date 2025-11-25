@@ -1,6 +1,7 @@
 import TripPost from "../social/TripPost";
 import { useUserStore } from "../../store/userStore";
 import type { Trip } from "./types";
+import type { Comment } from "../social/types";
 import { Box, Button } from "@mui/material";
 import { Trash2, Edit } from "lucide-react";
 
@@ -16,22 +17,27 @@ function adaptComments(apiComments: any[]): Comment[] {
     const date = new Date(c.createdAt);
     const time = date.toLocaleString([], {
       year: "numeric",
-      month: "short", 
+      month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
 
+    // Safety checks for user data
+    const firstName = c.user?.firstName || "Unknown";
+    const lastName = c.user?.lastName || "User";
+
     return {
       id: c._id,
       user: {
-        name: `${c.user.firstName} ${c.user.lastName}`,
-        username: ` @${c.user.firstName.toLowerCase()}${c.user.lastName.toLowerCase()}`,
-        avatar: c.user.avatar || "/default-avatar.png",
+        name: `${firstName} ${lastName}`,
+        username: ` @${firstName.toLowerCase()}${lastName.toLowerCase()}`,
+        avatar: c.user?.avatar || "/default-avatar.png",
       },
       text: c.comment,
       timestamp: time, // use formatted time instead of raw timestamp
       reactionsAggregated: c.reactionsAggregated || {}, // Include aggregated reactions
+      replies: c.replies ? adaptComments(c.replies) : [], // Recursively adapt replies
     };
   });
 }
@@ -53,8 +59,8 @@ export default function TripPostAdapter({
     user: {
       _id: String(trip.user?._id || trip.user?.id || ""),
       id: trip.user?.id || "",
-       firstName: trip.user.firstName || "",
-     lastName: trip.user.lastName || "",
+      firstName: trip.user.firstName || "",
+      lastName: trip.user.lastName || "",
       username:
         (trip.user?.firstName + " " + trip.user?.lastName || "").toLowerCase().replace(/\s+/g, "") ||
         trip.user?.id ||
@@ -62,6 +68,7 @@ export default function TripPostAdapter({
       avatar: trip.user?.avatar || "/default-avatar.png",
       isFollowing: !!trip.user?.isFollowing,
     },
+    title: trip.location || "",
     location: trip.location || trip.description || "",
     duration: trip.duration || "",
     description: trip.description || "",
@@ -77,7 +84,7 @@ export default function TripPostAdapter({
 
   return (
     <div>
-      <TripPost trip={mapped} setTrips={setTrips} />
+      <TripPost trip={mapped} />
       {storeUser?._id === trip.user?._id && (
         <Box sx={{ display: "flex", gap: 1.5, mt: 1 }}>
           <Button

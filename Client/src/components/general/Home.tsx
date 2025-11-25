@@ -1,9 +1,28 @@
-import React, { type FC } from 'react';
-import { Box, Container, Typography, Grid, Card, CardContent, Chip, Button, Link, } from '@mui/material';
-import { Map, Sparkles, Calendar, DollarSign, Route, Heart, Users, Globe, } from 'lucide-react';
+import React from 'react';
+import {
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Chip,
+  Button
+} from '@mui/material';
+import {
+  Map,
+  Sparkles,
+  Calendar,
+  DollarSign,
+  Route,
+  Heart,
+  Users,
+  Globe,
+} from 'lucide-react';
+import Navbar from './Navbar';
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
-import  Navbar from './Navbar';
+
 
 
 interface Feature {
@@ -12,7 +31,7 @@ interface Feature {
   description: string;
 }
 
-export const Home: FC = () => {
+export const Home: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -169,47 +188,6 @@ export const Home: FC = () => {
             <Button onClick={() => navigate('/createtrip')} variant="contained" size="large" startIcon={<Sparkles style={{ width: 20, height: 20 }} />} sx={{ bgcolor: 'white', color: '#b45309', '&:hover': { bgcolor: '#f3f4f6' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600 }}>{t('plan_your_trip')}</Button>
             <Button onClick={() => navigate('/feed')} variant="outlined" size="large" sx={{ borderColor: 'white', color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)', borderColor: 'white' }, px: 4, py: 1.5, fontSize: '1.125rem', fontWeight: 600, borderWidth: 2 }}>{t('explore_feed')}</Button>
           </Box>
-        </Container>
-      </Box>
-
-      {/* Footer */}
-      <Box sx={{
-        width: '100%',
-        maxWidth: '100%',
-        boxSizing: 'border-box',
-        bgcolor: '#111827',
-        color: 'white',
-        py: 8,
-        px: { xs: 3, md: 6 }
-      }}>
-        <Container maxWidth="lg">
-          <Grid container spacing={6} sx={{ mb: 6 }}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Typography variant="h5" sx={{ mb: 2, fontWeight: 700, letterSpacing: 1 }}>ODYSSEY</Typography>
-              <Typography sx={{ color: '#9ca3af', mb: 3, maxWidth: 400, lineHeight: 1.7 }}>{t('footer_description')}</Typography>
-              <Typography sx={{ color: '#6b7280' }}>© 2025 Odyssey. All rights reserved.</Typography>
-            </Grid>
-
-            <Grid size={{ xs: 6, md: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>{t('explore')}</Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>{t('feed')}</Link>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>{t('destinations')}</Link>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>{t('groups')}</Link>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>{t('plan_trip')}</Link>
-              </Box>
-            </Grid>
-
-            <Grid size={{ xs: 6, md: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>{t('support')}</Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>{t('help_center')}</Link>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>{t('terms_of_service')}</Link>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>{t('privacy_policy')}</Link>
-                <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>{t('contact')}</Link>
-              </Box>
-            </Grid>
-          </Grid>
         </Container>
       </Box>
     </Box>

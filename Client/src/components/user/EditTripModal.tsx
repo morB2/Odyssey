@@ -15,6 +15,8 @@ import { ConfirmDialog } from "./ConfirmDialog";
 const BASE_URL = "http://localhost:3000";
 import { useUserStore } from "../../store/userStore";
 import { updateTrip } from "../../services/profile.service";
+import { toast } from "react-toastify";
+
 
 interface EditTripModalProps {
   trip: Trip | null;
@@ -197,7 +199,7 @@ export function EditTripModal({
         );
       } catch (e) {
         console.error("Failed to save trip", e);
-        alert(String(e instanceof Error ? e.message : e));
+        toast.error(String(e instanceof Error ? e.message : e));
       }
     })();
   };

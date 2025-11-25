@@ -107,6 +107,10 @@ export async function listUserTripsForViewer(ownerId, viewerId) {
       path: "comments.user",
       select: "_id firstName lastName avatar",
     })
+    .populate({
+      path: "comments.replies.user",
+      select: "_id firstName lastName avatar",
+    })
     .lean();
 
   if (!trips || trips.length === 0) return [];
@@ -175,6 +179,10 @@ export async function getUserTrip(userId, tripId, viewerId) {
     .populate({ path: "user", select: "_id firstName lastName avatar" })
     .populate({
       path: "comments.user",
+      select: "_id firstName lastName avatar",
+    })
+    .populate({
+      path: "comments.replies.user",
       select: "_id firstName lastName avatar",
     })
     .lean();

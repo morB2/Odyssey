@@ -1,28 +1,41 @@
-import React from 'react';
-import { Container, Typography, Paper } from '@mui/material';
-import ChatList from './ChatList';
-import { useChat } from '../../context/ChatContext';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Container, Paper, Box } from '@mui/material';
+import ChatSidebar from './ChatSidebar';
+import ChatWindow from './ChatWindow';
 import Navbar from '../general/Navbar';
 
 const AllChatsPage: React.FC = () => {
-    const { openChat } = useChat();
-    const navigate = useNavigate();
+    const [activeChatUser, setActiveChatUser] = useState<any>(null);
 
     return (
-        <>
-        <Navbar />
-        <Container maxWidth="md" sx={{ mt: 12, mb: 6 }}>
-            <Paper sx={{ height: '70vh', overflow: 'hidden' }} elevation={1}>
-                <ChatList
-                    onSelectChat={(user) => {
-                        openChat(user);
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh',marginTop: 10, overflow: 'hidden' }}>
+            <Navbar />
+            <Container maxWidth="xl" sx={{ mt: 10, mb: 2, flexGrow: 1, display: 'flex', overflow: 'hidden' }}>
+                <Paper
+                    elevation={3}
+                    sx={{
+                        display: 'flex',
+                        width: '100%',
+                        height: '100%',
+                        overflow: 'hidden',
+                        borderRadius: 2
                     }}
-                    onClose={() => navigate('/')}
-                />
-            </Paper>
-        </Container>
-        </>
+                >
+                    {/* Sidebar */}
+                    <Box sx={{ width: { xs: '100%', md: 320 }, borderRight: 1, borderColor: 'divider', display: { xs: activeChatUser ? 'none' : 'block', md: 'block' } }}>
+                        <ChatSidebar
+                            onSelectChat={setActiveChatUser}
+                            activeChatUser={activeChatUser}
+                        />
+                    </Box>
+
+                    {/* Chat Window */}
+                    <Box sx={{ flexGrow: 1, display: { xs: activeChatUser ? 'block' : 'none', md: 'block' } }}>
+                        <ChatWindow activeChatUser={activeChatUser} />
+                    </Box>
+                </Paper>
+            </Container>
+        </Box>
     );
 };
 

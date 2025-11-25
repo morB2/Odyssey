@@ -1,16 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Box, Container, Tabs, Tab, Typography } from '@mui/material';
 import { Shield } from 'lucide-react';
 import UsersManagement from './UsersManagement';
 import PostsManagement from './PostsManagement';
-
-// Replace these with your actual components
-// const UsersManagement = () => <Box sx={{ color: 'white' }}>
-//     <UsersManagement />
-// </Box>;
-// const PostsManagement = () => <Box sx={{ color: 'white' }}>
-//     <PostsManagement />
-// </Box>;
+import ReportsManagement from './ReportsManagement';
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState(0);
@@ -48,7 +41,7 @@ export default function Dashboard() {
       <Container sx={{ py: 4 }}>
         <Tabs
           value={activeTab}
-          onChange={(e, val) => setActiveTab(val)}
+          onChange={(_e, val) => setActiveTab(val)}
           sx={{
             mb: 4,
             borderBottom: '1px solid #27272a',
@@ -84,10 +77,24 @@ export default function Dashboard() {
               }
             }}
           />
+          <Tab
+            label="Reports Management"
+            sx={{
+              color: '#a1a1aa',
+              px: 3,
+              py: 1.5,
+              textTransform: 'none',
+              fontSize: '1rem',
+              '&.Mui-selected': {
+                color: '#ea580c'
+              }
+            }}
+          />
         </Tabs>
 
         {activeTab === 0 && <UsersManagement />}
         {activeTab === 1 && <PostsManagement />}
+        {activeTab === 2 && <ReportsManagement />}
       </Container>
     </Box>
   );

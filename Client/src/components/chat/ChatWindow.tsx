@@ -11,40 +11,43 @@ import {
     Stack
 } from '@mui/material';
 import {
-    Close as CloseIcon,
     Send as SendIcon,
-    Minimize as MinimizeIcon,
-    ArrowBack as ArrowBackIcon,
     Block as BlockIcon,
     Check as CheckIcon
 } from '@mui/icons-material';
-import { useChat } from '../../context/ChatContext';
 import chatService, { type ChatMessage } from '../../services/chat.service';
 import { useUserStore } from '../../store/userStore';
 import { useSocketEvent } from '../../hooks/useSocket';
 import { toast } from 'react-toastify';
-import ChatList from './ChatList';
-import { useLocation } from 'react-router-dom';
 
-export default function ChatWidget() {
-    const { activeChatUser, isChatOpen, closeChat, openChat } = useChat();
+interface ChatWindowProps {
+    activeChatUser: any;
+}
+
+const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
     const { user: currentUser } = useUserStore();
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const [isMinimized, setIsMinimized] = useState(false);
     const [conversationStatus, setConversationStatus] = useState<any>(null);
-    const location = useLocation();
 
-    // Hide widget on AllChatsPage
+    // Scroll to bottom of chat
+    const scrollToBottom = () => {
+        setTimeout(() => {
+            if (messagesEndRef.current) {
+                messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }, 100);
+    };
+
     useEffect(() => {
         scrollToBottom();
-    }, [messages, isChatOpen, isMinimized]);
+    }, [messages]);
 
-    // Fetch conversation when chat opens or active user changes
+    // Fetch conversation when active user changes
     useEffect(() => {
-        if (isChatOpen && activeChatUser && currentUser?._id) {
+        if (activeChatUser && currentUser?._id) {
             const fetchMessages = async () => {
                 setLoading(true);
                 try {
@@ -67,9 +70,9 @@ export default function ChatWidget() {
             };
 
             fetchMessages();
-            setIsMinimized(false); // Auto-maximize on new chat
         }
-    }, [isChatOpen, activeChatUser, currentUser]);
+    }, [activeChatUser, currentUser]);
+
     // Listen for new messages
     useSocketEvent('newMessage', (message: ChatMessage) => {
         if (!currentUser?._id || !activeChatUser) return;
@@ -81,10 +84,8 @@ export default function ChatWidget() {
         ) {
             setMessages((prev) => [...prev, message]);
 
-            // If chat is open, mark as read immediately
-            if (isChatOpen && !isMinimized) {
-                chatService.markAsRead(activeChatUser._id, currentUser._id!).catch(console.error);
-            }
+            // Mark as read immediately since window is open
+            chatService.markAsRead(activeChatUser._id, currentUser._id!).catch(console.error);
         }
     });
 
@@ -95,17 +96,6 @@ export default function ChatWidget() {
         }
     });
 
-    if (location.pathname === '/chats') return null;
-
-    // Scroll to bottom of chat
-    const scrollToBottom = () => {
-        setTimeout(() => {
-            if (messagesEndRef.current) {
-                messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
-            }
-        }, 100);
-    };
-
     const handleSend = async (e?: React.FormEvent) => {
         e?.preventDefault();
         if (!newMessage.trim() || !currentUser?._id || !activeChatUser) return;
@@ -115,7 +105,7 @@ export default function ChatWidget() {
             senderId: {
                 _id: currentUser._id,
                 firstName: currentUser.firstName || 'Me',
-                lastName: '', // UserStore doesn't have lastName currently
+                lastName: '',
                 avatar: currentUser.avatar
             },
             receiverId: {
@@ -163,150 +153,54 @@ export default function ChatWidget() {
         }
     };
 
-    const handleBackToList = () => {
-        openChat(null as any); // Clear active user to show list
-    };
-
-    if (!isChatOpen) return null;
-
-    // Show Chat List if no active user
     if (!activeChatUser) {
         return (
-            <Paper
-                elevation={6}
-                sx={{
-                    position: 'fixed',
-                    bottom: 20,
-                    right: 20,
-                    width: 320,
-                    height: 450,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    zIndex: 1300,
-                    overflow: 'hidden',
-                    borderRadius: 2
-                }}
-            >
-                <ChatList
-                    onSelectChat={(user) => {
-                        openChat(user);
-                    }}
-                    onClose={closeChat}
-                />
-            </Paper>
-        );
-    }
-
-    if (isMinimized) {
-        return (
-            <Paper
-                elevation={3}
-                sx={{
-                    position: 'fixed',
-                    bottom: 20,
-                    right: 20,
-                    width: 250,
-                    zIndex: 1300,
-                    cursor: 'pointer'
-                }}
-                onClick={() => setIsMinimized(false)}
-            >
-                <Box p={1.5} display="flex" alignItems="center" justifyContent="space-between">
-                    <Box display="flex" alignItems="center" gap={1}>
-                        <Avatar
-                            src={activeChatUser.avatar}
-                            sx={{ width: 30, height: 30 }}
-                        />
-                        <Typography variant="subtitle2" noWrap>
-                            {activeChatUser.firstName} {activeChatUser.lastName}
-                        </Typography>
-                    </Box>
-                    <IconButton size="small" onClick={(e) => { e.stopPropagation(); closeChat(); }}>
-                        <CloseIcon fontSize="small" />
-                    </IconButton>
-                </Box>
-            </Paper>
+            <Box display="flex" justifyContent="center" alignItems="center" height="100%" color="text.secondary">
+                <Typography variant="h6">Select a chat to start messaging</Typography>
+            </Box>
         );
     }
 
     const isPending = conversationStatus?.status === 'pending';
     const isBlocked = conversationStatus?.status === 'blocked';
     const isInitiator = conversationStatus?.initiator === currentUser?._id;
-    // const canChat = !isBlocked && (!isPending || isInitiator || conversationStatus?.status === 'accepted');
-    // Actually, if pending, only initiator can send? No, usually if pending, receiver needs to accept.
-    // If pending:
-    // - Initiator sees: "Request sent. Waiting for acceptance." (Input disabled?)
-    // - Receiver sees: "Accept / Block" buttons. (Input disabled)
 
     const showRequestUI = isPending && !isInitiator;
     const showWaitingUI = isPending && isInitiator;
 
     return (
-        <Paper
-            elevation={6}
-            sx={{
-                position: 'fixed',
-                bottom: 20,
-                right: 20,
-                width: 320,
-                height: 450,
-                display: 'flex',
-                flexDirection: 'column',
-                zIndex: 1300,
-                overflow: 'hidden',
-                borderRadius: 2
-            }}
-        >
+        <Box display="flex" flexDirection="column" height="100%" bgcolor="#ffffff">
             {/* Header */}
-            <Box
-                p={1.5}
-                bgcolor="primary.main"
-                color="primary.contrastText"
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
-            >
-                <Box display="flex" alignItems="center" gap={1}>
-                    <IconButton size="small" onClick={handleBackToList} sx={{ color: 'inherit', mr: -1 }}>
-                        <ArrowBackIcon fontSize="small" />
-                    </IconButton>
-                    <Avatar
-                        src={activeChatUser.avatar}
-                        sx={{ width: 32, height: 32, border: '2px solid white' }}
-                    />
-                    <Typography variant="subtitle1" fontWeight={600}>
+            <Paper elevation={1} sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, borderRadius: 0, bgcolor: 'white', color: 'text.primary', borderBottom: 1, borderColor: 'divider' }}>
+                <Avatar src={activeChatUser.avatar} sx={{ width: 40, height: 40, border: '2px solid #ff9800' }}>
+                    {activeChatUser.firstName[0]}
+                </Avatar>
+                <Box>
+                    <Typography variant="subtitle1" fontWeight="bold">
                         {activeChatUser.firstName} {activeChatUser.lastName}
                     </Typography>
                 </Box>
-                <Box>
-                    <IconButton size="small" onClick={() => setIsMinimized(true)} sx={{ color: 'inherit' }}>
-                        <MinimizeIcon />
-                    </IconButton>
-                    <IconButton size="small" onClick={closeChat} sx={{ color: 'inherit' }}>
-                        <CloseIcon />
-                    </IconButton>
-                </Box>
-            </Box>
+            </Paper>
 
             {/* Messages Area */}
             <Box
                 flex={1}
-                p={2}
+                p={3}
                 sx={{
                     overflowY: 'auto',
-                    bgcolor: '#f5f5f5',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: 1
+                    gap: 2,
+                    bgcolor: '#ffffff'
                 }}
             >
                 {loading ? (
                     <Box display="flex" justifyContent="center" alignItems="center" height="100%">
-                        <CircularProgress size={24} />
+                        <CircularProgress sx={{ color: '#ff9800' }} />
                     </Box>
                 ) : messages.length === 0 ? (
                     <Box display="flex" justifyContent="center" alignItems="center" height="100%" color="text.secondary">
-                        <Typography variant="body2">No messages yet. Say hi!</Typography>
+                        <Typography>No messages yet. Say hi!</Typography>
                     </Box>
                 ) : (
                     messages.map((msg, index) => {
@@ -316,31 +210,30 @@ export default function ChatWidget() {
                                 key={msg._id || index}
                                 sx={{
                                     alignSelf: isMe ? 'flex-end' : 'flex-start',
-                                    maxWidth: '80%',
+                                    maxWidth: '70%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: isMe ? 'flex-end' : 'flex-start'
                                 }}
                             >
                                 <Paper
                                     elevation={0}
                                     sx={{
-                                        p: 1.5,
-                                        bgcolor: isMe ? 'primary.main' : 'white',
+                                        p: 2,
+                                        bgcolor: isMe ? '#ff9800' : '#f5f5f5',
                                         color: isMe ? 'white' : 'text.primary',
                                         borderRadius: 2,
                                         borderTopRightRadius: isMe ? 0 : 2,
                                         borderTopLeftRadius: isMe ? 2 : 0,
+                                        boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
                                     }}
                                 >
-                                    <Typography variant="body2">{msg.message}</Typography>
+                                    <Typography variant="body1">{msg.message}</Typography>
                                 </Paper>
                                 <Typography
                                     variant="caption"
                                     color="text.secondary"
-                                    sx={{
-                                        display: 'block',
-                                        textAlign: isMe ? 'right' : 'left',
-                                        mt: 0.5,
-                                        fontSize: '0.7rem'
-                                    }}
+                                    sx={{ mt: 0.5, px: 0.5 }}
                                 >
                                     {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </Typography>
@@ -353,15 +246,14 @@ export default function ChatWidget() {
 
             {/* Request UI */}
             {showRequestUI && (
-                <Box p={2} bgcolor="white" borderTop={1} borderColor="divider" textAlign="center">
-                    <Typography variant="body2" gutterBottom>
+                <Paper elevation={2} sx={{ p: 2, m: 2, textAlign: 'center', bgcolor: 'white', color: 'text.primary', border: 1, borderColor: 'divider' }}>
+                    <Typography variant="body1" gutterBottom>
                         {activeChatUser.firstName} wants to chat with you.
                     </Typography>
                     <Stack direction="row" spacing={2} justifyContent="center">
                         <Button
                             variant="contained"
-                            color="primary"
-                            size="small"
+                            sx={{ bgcolor: '#ff9800', '&:hover': { bgcolor: '#f57c00' } }}
                             startIcon={<CheckIcon />}
                             onClick={() => handleRequestAction('accept')}
                         >
@@ -370,20 +262,19 @@ export default function ChatWidget() {
                         <Button
                             variant="outlined"
                             color="error"
-                            size="small"
                             startIcon={<BlockIcon />}
                             onClick={() => handleRequestAction('block')}
                         >
                             Block
                         </Button>
                     </Stack>
-                </Box>
+                </Paper>
             )}
 
-            {/* Waiting UI - Show as banner if initiator */}
+            {/* Waiting UI */}
             {showWaitingUI && (
-                <Box p={1} bgcolor="#f8f9fa" borderTop={1} borderColor="divider" textAlign="center">
-                    <Typography variant="caption" color="text.secondary">
+                <Box p={1} bgcolor="#fff3e0" textAlign="center">
+                    <Typography variant="body2" color="#ff9800">
                         Request sent. You can keep sending messages while waiting.
                     </Typography>
                 </Box>
@@ -391,8 +282,8 @@ export default function ChatWidget() {
 
             {/* Blocked UI */}
             {isBlocked && (
-                <Box p={2} bgcolor="white" borderTop={1} borderColor="divider" textAlign="center">
-                    <Typography variant="body2" color="error">
+                <Box p={2} bgcolor="#ffebee" textAlign="center">
+                    <Typography variant="body1" color="error">
                         This conversation is blocked.
                     </Typography>
                 </Box>
@@ -400,33 +291,43 @@ export default function ChatWidget() {
 
             {/* Input Area */}
             {(!isBlocked && (!isPending || isInitiator)) && (
-                <Box p={1.5} bgcolor="white" borderTop={1} borderColor="divider">
-                    <form onSubmit={handleSend} style={{ display: 'flex', gap: '8px' }}>
+                <Box p={2} bgcolor="white" borderTop={1} borderColor="divider">
+                    <form onSubmit={handleSend} style={{ display: 'flex', gap: '16px' }}>
                         <TextField
                             fullWidth
-                            size="small"
                             placeholder="Type a message..."
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
                             variant="outlined"
                             sx={{
                                 '& .MuiOutlinedInput-root': {
-                                    borderRadius: 4,
-                                    bgcolor: '#f8f9fa'
+                                    borderRadius: 3,
+                                    bgcolor: '#f8f9fa',
+                                    '&.Mui-focused fieldset': {
+                                        borderColor: '#ff9800',
+                                    },
                                 }
                             }}
                         />
                         <IconButton
-                            color="primary"
                             type="submit"
                             disabled={!newMessage.trim()}
-                            sx={{ bgcolor: 'primary.light', color: 'primary.contrastText', '&:hover': { bgcolor: 'primary.main' } }}
+                            sx={{
+                                bgcolor: '#ff9800',
+                                color: 'white',
+                                width: 56,
+                                height: 56,
+                                '&:hover': { bgcolor: '#f57c00' },
+                                '&.Mui-disabled': { bgcolor: 'action.disabledBackground' }
+                            }}
                         >
-                            <SendIcon fontSize="small" />
+                            <SendIcon />
                         </IconButton>
                     </form>
                 </Box>
             )}
-        </Paper>
+        </Box>
     );
-}
+};
+
+export default ChatWindow;
