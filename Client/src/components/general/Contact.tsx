@@ -18,7 +18,7 @@ const Contact: React.FC = () => {
                 </Box>
 
                 <Grid container spacing={4}>
-                    <Grid item xs={12} md={5}>
+                    <Grid size={{ xs: 12, md: 5 }}>
                         <Paper elevation={0} sx={{ p: 4, height: '100%', borderRadius: 4, bgcolor: '#1f2937', color: 'white' }}>
                             <Typography variant="h5" sx={{ mb: 4, fontWeight: 700 }}>Contact Information</Typography>
 
@@ -54,15 +54,15 @@ const Contact: React.FC = () => {
                         </Paper>
                     </Grid>
 
-                    <Grid item xs={12} md={7}>
+                    <Grid size={{ xs: 12, md: 7 }}>
                         <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, borderRadius: 4 }}>
                             <Typography variant="h5" sx={{ mb: 4, fontWeight: 700, color: '#374151' }}>Send us a Message</Typography>
                             <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
                                         <TextField fullWidth label="First Name" variant="outlined" />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
                                         <TextField fullWidth label="Last Name" variant="outlined" />
                                     </Grid>
                                 </Grid>

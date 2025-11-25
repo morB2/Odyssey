@@ -68,7 +68,6 @@ export default function TripPostAdapter({
       avatar: trip.user?.avatar || "/default-avatar.png",
       isFollowing: !!trip.user?.isFollowing,
     },
-    title: trip.location || "",
     location: trip.location || trip.description || "",
     duration: trip.duration || "",
     title: trip.title || "",
