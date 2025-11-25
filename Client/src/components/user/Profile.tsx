@@ -78,10 +78,22 @@ export default function Profile() {
     };
   }, [storeUser, storeToken, profileId]);
 
+  // Reset to "my-trips" tab when viewing another user's profile
+  useEffect(() => {
+    if (!isOwner) {
+      setActiveTab("my-trips");
+    }
+  }, [isOwner, activeTab]);
+
   useEffect(() => {
     let mounted = true;
     async function fetchForTab() {
       try {
+        // Don't fetch saved trips if viewing another user's profile
+        if (activeTab === "saved" && !isOwner) {
+          return;
+        }
+
         let data: unknown = null;
         if (activeTab === "my-trips") {
           data = await getTrips(profileId as string, storeToken || undefined);
@@ -112,7 +124,7 @@ export default function Profile() {
     return () => {
       mounted = false;
     };
-  }, [activeTab, profileId, storeToken]);
+  }, [activeTab, profileId, storeToken, isOwner]);
 
   const handleSaveTrip = (updatedTrip: Trip) => {
     setTrips((prev) =>
@@ -257,6 +269,7 @@ export default function Profile() {
               setTrips={setTrips}
               onEdit={(trip) => setEditingTrip(trip)}
               onDelete={(tripId) => handleDeleteTrip(tripId)}
+              isOwner={isOwner}
             />
           </Box>
         </Box>

@@ -22,8 +22,8 @@ const upload = multer({ storage });
 
 // --- Middleware to identify owner/viewer (runs AFTER authMiddleware) ---
 const identifyOwnerViewer = (req, res, next) => {
-  const userIdFromUrl = req.params.userId;
   const userIdFromToken = req.user?.userId;
+  const userIdFromUrl = req.params.userId || userIdFromToken;
   if (userIdFromToken && String(userIdFromToken) === String(userIdFromUrl)) {
     // User is viewing their own profile
     req.ownerId = userIdFromToken;

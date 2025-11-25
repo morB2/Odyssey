@@ -87,6 +87,14 @@ export const getProfileLikedTrips = (req, res) =>
 
 export const getProfileSavedTrips = (req, res) =>
   handle(res, async () => {
+    // Saved trips are private - only the owner can view them
+    if (String(req.ownerId) != String(req.viewerId)) {
+      throw Object.assign(
+        new Error("You can only view your own saved trips"),
+        { status: 403 }
+      );
+    }
+
     const trips = await services.getProfileSavedTrips(
       req.ownerId,
       req.viewerId

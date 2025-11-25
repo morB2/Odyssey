@@ -16,7 +16,6 @@ const uploadsDir = path.join(process.cwd(), "uploads");
 // -----------------------------------------------------
 // Helpers
 // -----------------------------------------------------
-
 function normalizeAvatarUrl(url) {
   if (!url) return url;
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
@@ -40,25 +39,19 @@ function deleteLocalFileIfExists(absolutePath) {
   }
 }
 
-/* ------------------------------------------------------------------
-   🔥 פונקציית עזר משותפת — יצירת מטא־דאטה לצפייה (לייקים, שמירות, פולואו)
-------------------------------------------------------------------- */
 async function buildTripMetadata({ trips, ownerId }) {
   const tripIds = trips.map(t => t._id);
 
-  // לייקים
   const liked = ownerId
     ? await Like.find({ user: ownerId, trip: { $in: tripIds } }).select("trip")
     : [];
   const likedSet = new Set(liked.map(l => String(l.trip)));
 
-  // שמירות
   const saved = ownerId
     ? await Save.find({ user: ownerId, trip: { $in: tripIds } }).select("trip")
     : [];
   const savedSet = new Set(saved.map(s => String(s.trip)));
 
-  // פולואו ליוצרי הטיולים
   const authorIds = [...new Set(trips.map(t => String(t.user?._id)))];
   const follows = ownerId
     ? await Follow.find({
@@ -71,9 +64,6 @@ async function buildTripMetadata({ trips, ownerId }) {
   return { likedSet, savedSet, followSet };
 }
 
-/* ------------------------------------------------------------------
-   🔥 פונקציית עזר משותפת — עיבוד טיול יחיד
-------------------------------------------------------------------- */
 function mapTrip(trip, { likedSet, savedSet, followSet, ownerId }) {
   return {
     ...trip,
@@ -181,7 +171,7 @@ export async function getUserTrip(userId, tripId, viewerId) {
 }
 
 // -----------------------------------------------------
-// PROFILE (LIKED + SAVED) — גרסה רפקטורית בעזרת פונקציה אחת
+// PROFILE (LIKED + SAVED) 
 // -----------------------------------------------------
 
 async function fetchProfileTripCollection({

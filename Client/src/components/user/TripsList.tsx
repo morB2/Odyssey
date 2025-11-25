@@ -12,6 +12,7 @@ interface TripsListProps {
   setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
   onEdit: (trip: Trip) => void;
   onDelete: (tripId: string) => void;
+  isOwner: boolean; // New prop to determine if user is viewing their own profile
 }
 
 export function TripsList({
@@ -21,21 +22,23 @@ export function TripsList({
   setTrips,
   onEdit,
   onDelete,
+  isOwner,
 }: TripsListProps) {
   // defensive: ensure we always work with an array
   const list = Array.isArray(trips) ? trips : [];
-  const tabsMap = {
-    "my-trips": 0,
-    liked: 1,
-    saved: 2,
-  };
+
+  // Build tabs array based on whether user is owner
+  const availableTabs = isOwner
+    ? ["my-trips", "liked", "saved"]
+    : ["my-trips", "liked"];
+
+  const tabsMap: Record<string, number> = {};
+  availableTabs.forEach((tab, index) => {
+    tabsMap[tab] = index;
+  });
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    const tabs: ("my-trips" | "liked" | "saved")[] = [
-      "my-trips",
-      "liked",
-      "saved",
-    ];
+    const tabs: ("my-trips" | "liked" | "saved")[] = availableTabs as any;
     onTabChange(tabs[newValue]);
   };
 
@@ -106,29 +109,32 @@ export function TripsList({
               },
             }}
           />
-          <Tab
-            icon={<Bookmark size={20} />}
-            iconPosition="start"
-            label="Saved"
-            sx={{
-              textTransform: "none",
-              fontSize: "1rem",
-              px: 3,
-              py: 1.5,
-              minHeight: "auto",
-              color: "#525252",
-              transition: "color 0.2s",
-              "&:hover": {
-                color: "#171717",
-              },
-              "&.Mui-selected": {
-                color: "#f97316",
-              },
-              "& .MuiTab-iconWrapper": {
-                mr: 1,
-              },
-            }}
-          />
+          {/* Only show Saved tab if user is viewing their own profile */}
+          {isOwner && (
+            <Tab
+              icon={<Bookmark size={20} />}
+              iconPosition="start"
+              label="Saved"
+              sx={{
+                textTransform: "none",
+                fontSize: "1rem",
+                px: 3,
+                py: 1.5,
+                minHeight: "auto",
+                color: "#525252",
+                transition: "color 0.2s",
+                "&:hover": {
+                  color: "#171717",
+                },
+                "&.Mui-selected": {
+                  color: "#f97316",
+                },
+                "& .MuiTab-iconWrapper": {
+                  mr: 1,
+                },
+              }}
+            />
+          )}
         </Tabs>
       </Box>
 
