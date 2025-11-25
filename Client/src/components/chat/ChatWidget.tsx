@@ -38,17 +38,6 @@ export default function ChatWidget() {
     const location = useLocation();
 
     // Hide widget on AllChatsPage
-    if (location.pathname === '/chats') return null;
-
-    // Scroll to bottom of chat
-    const scrollToBottom = () => {
-        setTimeout(() => {
-            if (messagesEndRef.current) {
-                messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
-            }
-        }, 100);
-    };
-
     useEffect(() => {
         scrollToBottom();
     }, [messages, isChatOpen, isMinimized]);
@@ -81,7 +70,6 @@ export default function ChatWidget() {
             setIsMinimized(false); // Auto-maximize on new chat
         }
     }, [isChatOpen, activeChatUser, currentUser]);
-
     // Listen for new messages
     useSocketEvent('newMessage', (message: ChatMessage) => {
         if (!currentUser?._id || !activeChatUser) return;
@@ -106,6 +94,17 @@ export default function ChatWidget() {
             setConversationStatus(conversation);
         }
     });
+
+    if (location.pathname === '/chats') return null;
+
+    // Scroll to bottom of chat
+    const scrollToBottom = () => {
+        setTimeout(() => {
+            if (messagesEndRef.current) {
+                messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
+            }
+        }, 100);
+    };
 
     const handleSend = async (e?: React.FormEvent) => {
         e?.preventDefault();
@@ -233,7 +232,7 @@ export default function ChatWidget() {
     const isPending = conversationStatus?.status === 'pending';
     const isBlocked = conversationStatus?.status === 'blocked';
     const isInitiator = conversationStatus?.initiator === currentUser?._id;
-    const canChat = !isBlocked && (!isPending || isInitiator || conversationStatus?.status === 'accepted');
+    // const canChat = !isBlocked && (!isPending || isInitiator || conversationStatus?.status === 'accepted');
     // Actually, if pending, only initiator can send? No, usually if pending, receiver needs to accept.
     // If pending:
     // - Initiator sees: "Request sent. Waiting for acceptance." (Input disabled?)

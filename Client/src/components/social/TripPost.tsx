@@ -158,36 +158,36 @@ export default function TripPost({ trip }: TripPostProps) {
         }
     }, [isFollowing, trip.user._id, trip.currentUserId, trip.user.firstName]);
 
-    const handleAddComment = useCallback(async (commentText: string) => {
-        if (!trip.currentUserId || trip.currentUserId.trim() === '') {
-            toast.info("Please log in to comment.");
-            return;
-        }
+    // const handleAddComment = useCallback(async (commentText: string) => {
+    //     if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+    //         toast.info("Please log in to comment.");
+    //         return;
+    //     }
 
-        try {
-            const response = await addComment(trip._id, trip.currentUserId, commentText.trim());
+    //     try {
+    //         const response = await addComment(trip._id, trip.currentUserId, commentText.trim());
 
-            // Create and apply optimistic comment
-            const newComment: Comment = {
-                id: response._id,
-                user: {
-                    name: response.user.firstName + " " + response.user.lastName,
-                    username: '@' + response.user.firstName + response.user.lastName,
-                    avatar: user?.avatar || '/default-avatar.png',
-                },
-                text: commentText.trim(),
-                timestamp: response.createdAt,
-                replies: []
-            };
+    //         // Create and apply optimistic comment
+    //         const newComment: Comment = {
+    //             id: response._id,
+    //             user: {
+    //                 name: response.user.firstName + " " + response.user.lastName,
+    //                 username: '@' + response.user.firstName + response.user.lastName,
+    //                 avatar: user?.avatar || '/default-avatar.png',
+    //             },
+    //             text: commentText.trim(),
+    //             timestamp: response.createdAt,
+    //             replies: []
+    //         };
 
-            setComments((prev) => [newComment, ...prev]);
-            toast.success("Comment added!");
-        } catch (error) {
-            console.error('Error adding comment:', error);
-            toast.error("Failed to add comment. Please try again.");
-            // In a real app, you might remove the optimistic comment on failure
-        }
-    }, [trip._id, trip.currentUserId, user?.avatar]);
+    //         setComments((prev) => [newComment, ...prev]);
+    //         toast.success("Comment added!");
+    //     } catch (error) {
+    //         console.error('Error adding comment:', error);
+    //         toast.error("Failed to add comment. Please try again.");
+    //         // In a real app, you might remove the optimistic comment on failure
+    //     }
+    // }, [trip._id, trip.currentUserId, user?.avatar]);
 
     const handleEmojiReaction = useCallback(async (commentId: string, emoji: string) => {
         if (!trip.currentUserId || trip.currentUserId.trim() === '') {
@@ -216,45 +216,75 @@ export default function TripPost({ trip }: TripPostProps) {
             // In a real app, you might decrement the count on failure
         }
     }, [trip._id, trip.currentUserId]);
+const handleAddComment = useCallback(async (commentText: string) => {
+    if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+        toast.info("Please log in to comment.");
+        return;
+    }
 
-    const handleAddReply = useCallback(async (commentId: string, replyText: string) => {
-        if (!trip.currentUserId || trip.currentUserId.trim() === '') {
-            toast.info("Please log in to reply.");
-            return;
-        }
+    try {
+        await addComment(trip._id, trip.currentUserId, commentText.trim());
+        // Removed the optimistic update - useTripRealtime will handle it
+        toast.success("Comment added!");
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        toast.error("Failed to add comment. Please try again.");
+    }
+}, [trip._id, trip.currentUserId]); // Also removed user?.avatar from dependencies
 
-        try {
-            const response = await addReply(trip._id, commentId, trip.currentUserId, replyText.trim());
+const handleAddReply = useCallback(async (commentId: string, replyText: string) => {
+    if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+        toast.info("Please log in to reply.");
+        return;
+    }
 
-            // Optimistic update for reply
-            const newReply: Comment = {
-                id: response._id,
-                user: {
-                    name: response.user.firstName + " " + response.user.lastName,
-                    username: '@' + response.user.firstName + response.user.lastName,
-                    avatar: user?.avatar || '/default-avatar.png',
-                },
-                text: replyText.trim(),
-                timestamp: response.createdAt,
-            };
+    try {
+        await addReply(trip._id, commentId, trip.currentUserId, replyText.trim());
+        // Removed the optimistic update - useTripRealtime will handle it
+        toast.success("Reply added!");
+    } catch (error) {
+        console.error('Error adding reply:', error);
+        toast.error("Failed to add reply.");
+    }
+}, [trip._id, trip.currentUserId]); // Also removed user?.avatar from dependencies
+    // const handleAddReply = useCallback(async (commentId: string, replyText: string) => {
+    //     if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+    //         toast.info("Please log in to reply.");
+    //         return;
+    //     }
 
-            setComments((prev) =>
-                prev.map((comment) => {
-                    if (comment.id === commentId) {
-                        return {
-                            ...comment,
-                            replies: [...(comment.replies || []), newReply],
-                        };
-                    }
-                    return comment;
-                })
-            );
-            toast.success("Reply added!");
-        } catch (error) {
-            console.error('Error adding reply:', error);
-            toast.error("Failed to add reply.");
-        }
-    }, [trip._id, trip.currentUserId, user?.avatar]);
+    //     try {
+    //         const response = await addReply(trip._id, commentId, trip.currentUserId, replyText.trim());
+
+    //         // Optimistic update for reply
+    //         const newReply: Comment = {
+    //             id: response._id,
+    //             user: {
+    //                 name: response.user.firstName + " " + response.user.lastName,
+    //                 username: '@' + response.user.firstName + response.user.lastName,
+    //                 avatar: user?.avatar || '/default-avatar.png',
+    //             },
+    //             text: replyText.trim(),
+    //             timestamp: response.createdAt,
+    //         };
+
+    //         setComments((prev) =>
+    //             prev.map((comment) => {
+    //                 if (comment.id === commentId) {
+    //                     return {
+    //                         ...comment,
+    //                         replies: [...(comment.replies || []), newReply],
+    //                     };
+    //                 }
+    //                 return comment;
+    //             })
+    //         );
+    //         toast.success("Reply added!");
+    //     } catch (error) {
+    //         console.error('Error adding reply:', error);
+    //         toast.error("Failed to add reply.");
+    //     }
+    // }, [trip._id, trip.currentUserId, user?.avatar]);
 
 
     // --- Dialog Handlers ---

@@ -7,8 +7,7 @@ import {
   Card,
   CardContent,
   Chip,
-  Button,
-  Link,
+  Button
 } from '@mui/material';
 import {
   Map,

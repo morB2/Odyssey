@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import { AppBar, Toolbar, Box, Button, Link, Typography, IconButton, Badge } from '@mui/material';
 import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { BookImage, Sparkles, MessageCircleMore } from 'lucide-react';

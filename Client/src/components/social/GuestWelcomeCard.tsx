@@ -1,4 +1,4 @@
-import { Card, CardContent, Typography, Button, Stack, Box } from '@mui/material';
+import { Card, CardContent, Typography, Button, Stack } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 interface GuestWelcomeCardProps {
