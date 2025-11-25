@@ -30,7 +30,14 @@ export const getReports = async (req, res) => {
         // In a real app, you might want to check for admin role here
         const reports = await Report.find()
             .populate("reporter", "firstName lastName email")
-            .populate("reportedTrip", "title")
+            .populate({
+                path: "reportedTrip",
+                select: "title description images activities notes optimizedRoute user createdAt",
+                populate: {
+                    path: "user",
+                    select: "firstName lastName username"
+                }
+            })
             .sort({ createdAt: -1 });
         res.json(reports);
     } catch (error) {

@@ -35,6 +35,23 @@ interface Report {
     reportedTrip: {
         _id: string;
         title: string;
+        description?: string;
+        images?: string[];
+        activities?: string[];
+        notes?: string;
+        optimizedRoute?: {
+            ordered_route: Array<{
+                name: string;
+                lat: number;
+                lon: number;
+            }>;
+        };
+        user?: {
+            firstName: string;
+            lastName: string;
+            username: string;
+        };
+        createdAt?: string;
     };
     reason: string;
     status: 'pending' | 'reviewed' | 'resolved';
@@ -299,11 +316,12 @@ export default function ReportsManagement() {
             <Dialog
                 open={viewDialogOpen}
                 onClose={() => setViewDialogOpen(false)}
+                maxWidth="md"
+                fullWidth
                 PaperProps={{
                     sx: {
                         bgcolor: '#18181b',
                         border: '1px solid #27272a',
-                        minWidth: 500
                     }
                 }}
             >
@@ -312,10 +330,11 @@ export default function ReportsManagement() {
                 </DialogTitle>
                 <DialogContent sx={{ mt: 2 }}>
                     {selectedReport && (
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                            {/* Reporter Info */}
                             <Box>
-                                <Typography variant="caption" sx={{ color: '#71717a' }}>
-                                    Reporter
+                                <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
+                                    REPORTER
                                 </Typography>
                                 <Typography sx={{ color: 'white' }}>
                                     {selectedReport.reporter.firstName} {selectedReport.reporter.lastName}
@@ -324,25 +343,21 @@ export default function ReportsManagement() {
                                     {selectedReport.reporter.email}
                                 </Typography>
                             </Box>
+
+                            {/* Report Reason */}
                             <Box>
-                                <Typography variant="caption" sx={{ color: '#71717a' }}>
-                                    Reported Post
+                                <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
+                                    REPORT REASON
                                 </Typography>
-                                <Typography sx={{ color: 'white' }}>
-                                    {selectedReport.reportedTrip?.title || 'Deleted Post'}
-                                </Typography>
-                            </Box>
-                            <Box>
-                                <Typography variant="caption" sx={{ color: '#71717a' }}>
-                                    Reason
-                                </Typography>
-                                <Typography sx={{ color: 'white' }}>
+                                <Typography sx={{ color: 'white', mt: 0.5 }}>
                                     {selectedReport.reason}
                                 </Typography>
                             </Box>
+
+                            {/* Report Status */}
                             <Box>
-                                <Typography variant="caption" sx={{ color: '#71717a' }}>
-                                    Status
+                                <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
+                                    STATUS
                                 </Typography>
                                 <Box sx={{ mt: 0.5 }}>
                                     <Chip
@@ -352,14 +367,159 @@ export default function ReportsManagement() {
                                     />
                                 </Box>
                             </Box>
+
+                            {/* Reported Date */}
                             <Box>
-                                <Typography variant="caption" sx={{ color: '#71717a' }}>
-                                    Reported On
+                                <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
+                                    REPORTED ON
                                 </Typography>
-                                <Typography sx={{ color: 'white' }}>
+                                <Typography sx={{ color: 'white', mt: 0.5 }}>
                                     {new Date(selectedReport.createdAt).toLocaleString()}
                                 </Typography>
                             </Box>
+
+                            {/* Divider */}
+                            <Box sx={{ borderTop: '2px solid #27272a', my: 1 }} />
+
+                            {/* Post Content Section */}
+                            <Typography variant="h6" sx={{ color: '#ea580c', fontWeight: 600 }}>
+                                Reported Post Content
+                            </Typography>
+
+                            {selectedReport.reportedTrip ? (
+                                <>
+                                    {/* Post Author */}
+                                    {selectedReport.reportedTrip.user && (
+                                        <Box>
+                                            <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
+                                                POST AUTHOR
+                                            </Typography>
+                                            <Typography sx={{ color: 'white', mt: 0.5 }}>
+                                                {selectedReport.reportedTrip.user.firstName} {selectedReport.reportedTrip.user.lastName}
+                                            </Typography>
+                                            <Typography variant="caption" sx={{ color: '#71717a' }}>
+                                                @{selectedReport.reportedTrip.user.username}
+                                            </Typography>
+                                        </Box>
+                                    )}
+
+                                    {/* Post Title */}
+                                    <Box>
+                                        <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
+                                            TITLE
+                                        </Typography>
+                                        <Typography sx={{ color: 'white', mt: 0.5, fontSize: '1.1rem', fontWeight: 500 }}>
+                                            {selectedReport.reportedTrip.title}
+                                        </Typography>
+                                    </Box>
+
+                                    {/* Post Description */}
+                                    {selectedReport.reportedTrip.description && (
+                                        <Box>
+                                            <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
+                                                DESCRIPTION
+                                            </Typography>
+                                            <Typography sx={{ color: 'white', mt: 0.5, whiteSpace: 'pre-wrap' }}>
+                                                {selectedReport.reportedTrip.description}
+                                            </Typography>
+                                        </Box>
+                                    )}
+
+                                    {/* Post Images */}
+                                    {selectedReport.reportedTrip.images && selectedReport.reportedTrip.images.length > 0 && (
+                                        <Box>
+                                            <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
+                                                IMAGES ({selectedReport.reportedTrip.images.length})
+                                            </Typography>
+                                            <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+                                                {selectedReport.reportedTrip.images.map((img, idx) => (
+                                                    <Box
+                                                        key={idx}
+                                                        component="img"
+                                                        src={img}
+                                                        alt={`Post image ${idx + 1}`}
+                                                        sx={{
+                                                            width: 150,
+                                                            height: 150,
+                                                            objectFit: 'cover',
+                                                            borderRadius: 1,
+                                                            border: '1px solid #27272a'
+                                                        }}
+                                                    />
+                                                ))}
+                                            </Box>
+                                        </Box>
+                                    )}
+
+                                    {/* Activities */}
+                                    {selectedReport.reportedTrip.activities && selectedReport.reportedTrip.activities.length > 0 && (
+                                        <Box>
+                                            <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
+                                                ACTIVITIES
+                                            </Typography>
+                                            <Box sx={{ mt: 0.5, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                {selectedReport.reportedTrip.activities.map((activity, idx) => (
+                                                    <Chip
+                                                        key={idx}
+                                                        label={activity}
+                                                        size="small"
+                                                        sx={{
+                                                            bgcolor: '#27272a',
+                                                            color: '#ea580c',
+                                                            border: '1px solid #3f3f46'
+                                                        }}
+                                                    />
+                                                ))}
+                                            </Box>
+                                        </Box>
+                                    )}
+
+                                    {/* Notes */}
+                                    {selectedReport.reportedTrip.notes && (
+                                        <Box>
+                                            <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
+                                                NOTES
+                                            </Typography>
+                                            <Typography sx={{ color: 'white', mt: 0.5, whiteSpace: 'pre-wrap' }}>
+                                                {selectedReport.reportedTrip.notes}
+                                            </Typography>
+                                        </Box>
+                                    )}
+
+                                    {/* Route Locations */}
+                                    {selectedReport.reportedTrip.optimizedRoute?.ordered_route &&
+                                        selectedReport.reportedTrip.optimizedRoute.ordered_route.length > 0 && (
+                                            <Box>
+                                                <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
+                                                    ROUTE LOCATIONS ({selectedReport.reportedTrip.optimizedRoute.ordered_route.length})
+                                                </Typography>
+                                                <Box sx={{ mt: 0.5 }}>
+                                                    {selectedReport.reportedTrip.optimizedRoute.ordered_route.map((location, idx) => (
+                                                        <Typography key={idx} sx={{ color: '#a1a1aa', fontSize: '0.875rem' }}>
+                                                            {idx + 1}. {location.name}
+                                                        </Typography>
+                                                    ))}
+                                                </Box>
+                                            </Box>
+                                        )}
+
+                                    {/* Post Created Date */}
+                                    {selectedReport.reportedTrip.createdAt && (
+                                        <Box>
+                                            <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
+                                                POST CREATED
+                                            </Typography>
+                                            <Typography sx={{ color: 'white', mt: 0.5 }}>
+                                                {new Date(selectedReport.reportedTrip.createdAt).toLocaleString()}
+                                            </Typography>
+                                        </Box>
+                                    )}
+                                </>
+                            ) : (
+                                <Typography sx={{ color: '#71717a', fontStyle: 'italic' }}>
+                                    This post has been deleted
+                                </Typography>
+                            )}
                         </Box>
                     )}
                 </DialogContent>
