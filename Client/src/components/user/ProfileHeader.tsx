@@ -10,7 +10,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   List,
   ListItem,
   ListItemAvatar,
@@ -28,6 +27,7 @@ import {
 } from "../../services/profile.service";
 import { toast } from "react-toastify";
 const BASE_URL = "http://localhost:3000";
+import { CloudinaryUploadWidget } from "../common/CloudinaryUploadWidget";
 type SimpleFollow = {
   _id?: string;
   id?: string;
@@ -425,22 +425,13 @@ export function ProfileHeader({
               />
             )}
 
-            <input
-              id="avatar-file"
-              type="file"
-              accept="image/*"
-              style={{ display: "block" }}
-              onChange={(e) => {
-                const f = e.target.files && e.target.files[0];
-                if (f) setAvatarFile(f);
+            <CloudinaryUploadWidget
+              onUpload={(url) => {
+                setAvatarUrl(url);
+                setPreview(url);
               }}
-            />
-
-            <TextField
-              label="Or paste image URL"
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-              fullWidth
+              folder="odyssey/avatars"
+              buttonText="Upload New Avatar"
             />
           </Box>
         </DialogContent>

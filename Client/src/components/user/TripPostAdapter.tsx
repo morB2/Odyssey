@@ -71,6 +71,7 @@ export default function TripPostAdapter({
     title: trip.location || "",
     location: trip.location || trip.description || "",
     duration: trip.duration || "",
+    title: trip.title || "",
     description: trip.description || "",
     activities: trip.activities || [],
     images: trip.images || [],

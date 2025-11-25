@@ -62,6 +62,12 @@ export interface Trip {
   detailedData?: any;
   optimizedRoute?: any;
   currentUserId?: string;
+  title?: string;
+  notes?: string;
+  visibility?: "public" | "private";
+  route?: string[];
+  routeInstructions?: RouteInstruction[];
+  mode?: "car" | "walk" | "transit";
 }
 
 export type ServerTrip = {

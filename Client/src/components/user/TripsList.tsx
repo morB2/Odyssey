@@ -156,7 +156,7 @@ export function TripsList({
                 trip={trip}
                 setTrips={setTrips}
                 onEdit={() => onEdit && onEdit(trip)}
-                onDelete={() => onDelete && onDelete(trip.id)}
+                onDelete={() => onDelete && onDelete(trip._id)}
               />
             </Box>
           ))}

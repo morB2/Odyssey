@@ -18,10 +18,12 @@ import { toast } from "react-toastify";
 // Navbar intentionally not rendered inside this view
 
 const BASE_URL = "http://localhost:3000";
+import api from "../../services/httpService";
 
 export default function Profile() {
   const storeUser = useUserStore((s) => s.user);
   const storeToken = useUserStore((s) => s.token);
+  const setUserStore = useUserStore((s) => s.setUser);
   const params = useParams();
   const viewedUserId = (params.userId as string) || undefined;
   const profileId = viewedUserId || storeUser?._id || "";
@@ -179,12 +181,32 @@ export default function Profile() {
           isOwner={isOwner}
           onEditClick={() => isOwner && setIsEditModalOpen(true)}
           onAvatarSaved={(updatedUser) => {
+            // Process avatar URL if it's a local path
+            let newAvatar = updatedUser.avatar;
+            if (
+              newAvatar &&
+              !newAvatar.startsWith("http") &&
+              !newAvatar.startsWith("data:")
+            ) {
+              const baseUrl = api.defaults.baseURL || "";
+              // Remove double slashes if present
+              newAvatar = `${baseUrl}${newAvatar.startsWith("/") ? "" : "/"
+                }${newAvatar}`;
+            }
+
+            const userWithFullAvatar = { ...updatedUser, avatar: newAvatar };
+
+            // Update global store
+            if (isOwner) {
+              setUserStore(userWithFullAvatar, storeToken || undefined);
+            }
+
             // Merge with existing user to preserve counts if they are missing in the update
             setUser((prev) => {
-              if (!prev) return updatedUser;
+              if (!prev) return userWithFullAvatar;
               return {
                 ...prev,
-                ...updatedUser,
+                ...userWithFullAvatar,
                 // Preserve counts if missing in updatedUser
                 followersCount:
                   updatedUser.followersCount ?? prev.followersCount,
@@ -205,7 +227,7 @@ export default function Profile() {
                     ...t,
                     user: {
                       ...t.user,
-                      avatar: updatedUser.avatar,
+                      avatar: newAvatar,
                     },
                   };
                 }

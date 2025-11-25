@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { Trip, ServerTrip } from "./types";
 import { Modal } from "./Modal";
 import {
@@ -10,13 +10,13 @@ import {
   Chip,
   IconButton,
 } from "@mui/material";
-import { Save, X, Upload, Trash2, Lock, Globe, Plus } from "lucide-react";
+import { Save, X, Trash2, Lock, Globe, Plus } from "lucide-react";
 import { ConfirmDialog } from "./ConfirmDialog";
-const BASE_URL = "http://localhost:3000";
 import { useUserStore } from "../../store/userStore";
 import { updateTrip } from "../../services/profile.service";
 import { toast } from "react-toastify";
 
+import { CloudinaryUploadWidget } from "../common/CloudinaryUploadWidget";
 
 interface EditTripModalProps {
   trip: Trip | null;
@@ -48,9 +48,6 @@ export function EditTripModal({
   const [pendingVisibility, setPendingVisibility] = useState<
     "public" | "private"
   >("public");
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const newFilesRef = useRef<File[]>([]);
-  const newPreviewsRef = useRef<string[]>([]);
 
   // Keep local form state in sync when a different trip is loaded into the modal.
   // Use an effect so user edits don't get immediately overwritten on every render.
@@ -72,16 +69,6 @@ export function EditTripModal({
     setImages(trip.images || []);
     setActivities(trip.activities || []);
     setVisibility(trip.visibility || "public");
-    // clear any staged uploads when loading a different trip
-    newFilesRef.current = [];
-    if (newPreviewsRef.current && newPreviewsRef.current.length) {
-      newPreviewsRef.current.forEach((p) => {
-        try {
-          URL.revokeObjectURL(p);
-        } catch (e) { }
-      });
-    }
-    newPreviewsRef.current = [];
   }, [trip]);
 
   const handleSave = () => {
@@ -102,46 +89,22 @@ export function EditTripModal({
           payload.activities = activities;
         if (visibility !== trip.visibility) payload.visabilityStatus = visibility;
 
-        if (Object.keys(payload).length === 0 && newFilesRef.current.length === 0) {
+        if (Object.keys(payload).length === 0) {
           onClose();
           return;
         }
 
-        let res;
-        if (newFilesRef.current && newFilesRef.current.length > 0) {
-          const fd = new FormData();
-
-          const existingImages = (images || []).filter(
-            (img) =>
-              typeof img === "string" &&
-              img.trim() !== "" &&
-              !img.startsWith("blob:") &&
-              !img.startsWith("data:")
-          );
-          fd.append("imagesExisting", JSON.stringify(existingImages));
-
-          newFilesRef.current.forEach((f) => fd.append("images", f));
-
-          for (const k of Object.keys(payload)) {// images מטופל בנפרד
-            const v = (payload as any)[k];
-            if (v === undefined) continue;
-            if (Array.isArray(v) || (typeof v === "object" && v !== null)) {
-              fd.append(k, JSON.stringify(v));
-            } else {
-              fd.append(k, String(v));
-            }
-          }
-
-          res = await updateTrip(userId as string, trip._id, fd, storeToken || undefined);
-        } else {
-
-          res = await updateTrip(
-            userId as string,
-            String(trip._id || trip.id),
-            payload,
-            storeToken || undefined
-          );
+        // Add images to payload if they changed
+        if (JSON.stringify(images) !== JSON.stringify(trip.images)) {
+          payload.images = images;
         }
+
+        const res = await updateTrip(
+          userId as string,
+          String(trip._id || trip.id),
+          payload,
+          storeToken || undefined
+        );
 
         const serverTrip: ServerTrip = (res && (res.trip || res)) as ServerTrip;
 
@@ -153,6 +116,7 @@ export function EditTripModal({
           m === "driving" ? "car" : m === "walking" ? "walk" : "transit";
 
         const mapped: Trip = {
+          ...trip,
           id: serverTrip._id || serverTrip.id || trip.id,
           _id: String(serverTrip._id || serverTrip.id || trip._id || trip.id || ""),
           title: serverTrip.title || title,
@@ -180,15 +144,6 @@ export function EditTripModal({
 
         onSave(mapped);
 
-        // נקה קבצים ו-previews
-        newPreviewsRef.current.forEach((p) => {
-          try {
-            URL.revokeObjectURL(p);
-          } catch { }
-        });
-        newPreviewsRef.current = [];
-        newFilesRef.current = [];
-
         onClose();
 
         // עדכון רשימת טיולים בהורה
@@ -204,57 +159,17 @@ export function EditTripModal({
     })();
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
+  const handleImageUpload = (url: string) => {
     const remainingSlots = 3 - images.length;
     if (remainingSlots <= 0) {
       alert("Maximum 3 images allowed");
       return;
     }
-
-    // Handle only the first file since we removed 'multiple'
-    const file = files[0];
-    const preview = URL.createObjectURL(file);
-    newFilesRef.current.push(file);
-    newPreviewsRef.current.push(preview);
-
-    setImages((prev) => [...prev, preview]);
-
-    // Reset input so the same file can be selected again if needed (though unlikely immediately)
-    e.target.value = "";
+    setImages((prev) => [...prev, url]);
   };
 
-  // const handleRemoveImage = (index: number) => {
-  //   const img = images[index];
-  //   const previewIdx = newPreviewsRef.current.indexOf(img);
-  //   if (previewIdx !== -1) {
-  //     try {
-  //       URL.revokeObjectURL(newPreviewsRef.current[previewIdx]);
-  //     } catch (e) {
-  //       console.warn(e);
-  //     }
-  //     newPreviewsRef.current.splice(previewIdx, 1);
-  //     newFilesRef.current.splice(previewIdx, 1);
-  //   }
-  //   setImages(images.filter((_, i) => i !== index));
-  // };
   const handleRemoveImage = (index: number) => {
-    const img = images[index];
-    // אם זה URL קיים, נסיר אותו מ-existingImages
-    if (!img.startsWith("blob:")) {
-      setImages(prev => prev.filter((_, i) => i !== index));
-      return;
-    }
-    // אחרת, זה preview של file חדש
-    const previewIdx = newPreviewsRef.current.indexOf(img);
-    if (previewIdx !== -1) {
-      URL.revokeObjectURL(newPreviewsRef.current[previewIdx]);
-      newPreviewsRef.current.splice(previewIdx, 1);
-      newFilesRef.current.splice(previewIdx, 1);
-    }
-    setImages(prev => prev.filter((_, i) => i !== index));
+    setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
 
@@ -376,31 +291,12 @@ export function EditTripModal({
                 Images (max 3)
               </Typography>
               {images.length < 3 && (
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={() => fileInputRef.current?.click()}
-                  sx={{
-                    borderColor: "#d4d4d4",
-                    color: "#171717",
-                    textTransform: "none",
-                    "&:hover": {
-                      borderColor: "#a3a3a3",
-                      backgroundColor: "#fafafa",
-                    },
-                  }}
-                >
-                  <Upload size={16} style={{ marginRight: "8px" }} />
-                  Upload
-                </Button>
+                <CloudinaryUploadWidget
+                  onUpload={handleImageUpload}
+                  folder="odyssey/trips"
+                  buttonText="Upload"
+                />
               )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                style={{ display: "none" }}
-                onChange={handleImageUpload}
-              />
             </Box>
 
             {images.length === 0 ? (
