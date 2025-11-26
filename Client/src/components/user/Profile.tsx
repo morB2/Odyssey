@@ -15,7 +15,6 @@ import { useTranslation } from 'react-i18next';
 const BASE_URL = "http://localhost:3000";
 import api from "../../services/httpService";
 import Navbar from "../general/Navbar";
-import { toast } from "react-toastify";
 
 // Shared styles
 const containerStyle = {
