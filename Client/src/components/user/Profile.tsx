@@ -12,7 +12,7 @@ import api from "../../services/httpService";
 import Navbar from "../general/Navbar";
 
 // Shared styles
-const containerStyle = { minHeight: "100vh", bgcolor: "#000000ff", display: "flex", flexDirection: "column", pt: 17 };
+const containerStyle = { minHeight: "100vh", display: "flex", flexDirection: "column" };
 const paperStyle = { p: 4, borderRadius: 4, bgcolor: "background.paper" };
 const errorBoxStyle = { mb: 2, p: 2, border: "1px solid #fdecea", backgroundColor: "#fff5f5", borderRadius: 1 };
 const guestUser = { id: "", firstName: "Guest", lastName: "guest", email: "", avatar: "" };
