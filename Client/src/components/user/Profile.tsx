@@ -48,12 +48,19 @@ export default function Profile() {
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [trips, setTrips] = useState<Trip[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalTrips, setTotalTrips] = useState(0);
   const [loading, setLoading] = useState(true);
   const [tripsLoading, setTripsLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
   const [activeTab, setActiveTab] = useState<"my-trips" | "liked" | "saved">("my-trips");
 
+  const TRIPS_PER_PAGE = 12;
+
+  // Initial load
   useEffect(() => {
     let mounted = true;
     async function loadData() {
@@ -61,14 +68,20 @@ export default function Profile() {
       try {
         const [userRes, tripsRes] = await Promise.all([
           getProfile(profileId, storeToken || undefined).catch((e) => ({ success: false, error: String(e) })),
-          getTrips(profileId as string, storeToken || undefined).catch((e) => ({ success: false, error: String(e) })),
+          getTrips(profileId as string, storeToken || undefined, 1, TRIPS_PER_PAGE).catch((e) => ({ success: false, error: String(e) })),
         ]);
 
         if (!mounted) return;
         if (!userRes || !userRes.success) throw new Error(userRes?.error || "Failed to load user");
 
         setUser(userRes.user);
-        setTrips(normalizeTrips(tripsRes));
+
+        // Handle pagination response
+        const tripsData = normalizeTrips(tripsRes.trips || tripsRes);
+        setTrips(tripsData);
+        setPage(1);
+        setHasMore(tripsRes.pagination?.hasMore ?? true);
+        setTotalTrips(tripsRes.pagination?.total ?? tripsData.length);
       } catch (e) {
         if (!mounted) return;
         const errorMsg = String(e instanceof Error ? e.message : e);
@@ -86,23 +99,32 @@ export default function Profile() {
     if (!isOwner) setActiveTab("my-trips");
   }, [isOwner]);
 
+  // Fetch trips when tab changes
   useEffect(() => {
     let mounted = true;
     async function fetchForTab() {
       setTripsLoading(true);
+      setPage(1);
       try {
         if (activeTab === "saved" && !isOwner) return;
 
         let data: unknown = null;
         if (activeTab === "my-trips") {
-          data = await getTrips(profileId as string, storeToken || undefined);
+          data = await getTrips(profileId as string, storeToken || undefined, 1, TRIPS_PER_PAGE);
         } else if (activeTab === "liked") {
-          data = await getLikedTrips(profileId as string, storeToken || undefined);
+          data = await getLikedTrips(profileId as string, storeToken || undefined, 1, TRIPS_PER_PAGE);
         } else {
-          data = await getSavedTrips(profileId as string, storeToken || undefined);
+          data = await getSavedTrips(profileId as string, storeToken || undefined, 1, TRIPS_PER_PAGE);
         }
 
-        if (mounted) setTrips(normalizeTrips(data));
+        if (mounted) {
+          const response = data as any;
+          const tripsData = normalizeTrips(response.trips || response);
+          setTrips(tripsData);
+          setPage(1);
+          setHasMore(response.pagination?.hasMore ?? true);
+          setTotalTrips(response.pagination?.total ?? tripsData.length);
+        }
       } catch (e) {
         console.error("failed to load trips", e);
         toast.error("Failed to load trips");
@@ -114,6 +136,36 @@ export default function Profile() {
     fetchForTab();
     return () => { mounted = false; };
   }, [activeTab, profileId, storeToken, isOwner]);
+
+  const loadMoreTrips = async () => {
+    if (loadingMore || !hasMore) return;
+
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      let data: unknown = null;
+
+      if (activeTab === "my-trips") {
+        data = await getTrips(profileId as string, storeToken || undefined, nextPage, TRIPS_PER_PAGE);
+      } else if (activeTab === "liked") {
+        data = await getLikedTrips(profileId as string, storeToken || undefined, nextPage, TRIPS_PER_PAGE);
+      } else {
+        data = await getSavedTrips(profileId as string, storeToken || undefined, nextPage, TRIPS_PER_PAGE);
+      }
+
+      const response = data as any;
+      const newTrips = normalizeTrips(response.trips || response);
+
+      setTrips((prev) => [...prev, ...newTrips]);
+      setPage(nextPage);
+      setHasMore(response.pagination?.hasMore ?? false);
+    } catch (e) {
+      console.error("Failed to load more trips", e);
+      toast.error("Failed to load more trips");
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const handleSaveTrip = (updatedTrip: Trip) => {
     setTrips((prev) => prev.map((t) => t.id === updatedTrip.id || t._id === updatedTrip._id ? { ...t, ...updatedTrip } : t));
@@ -173,10 +225,23 @@ export default function Profile() {
       <Navbar />
       <Box sx={containerStyle}>
         <Paper elevation={3} sx={paperStyle}>
-          <ProfileHeader user={user || guestUser} isOwner={isOwner} onEditClick={() => isOwner && setIsEditModalOpen(true)} tripsCount={trips.length} loading={loading} />
+          <ProfileHeader user={user || guestUser} isOwner={isOwner} onEditClick={() => isOwner && setIsEditModalOpen(true)} tripsCount={totalTrips} loading={loading} />
 
           <Box sx={{ mt: 4 }}>
-            <TripsList trips={trips} activeTab={activeTab} onTabChange={setActiveTab} onTripClick={() => { }} setTrips={setTrips} onEdit={(trip) => setEditingTrip(trip)} onDelete={(tripId) => handleDeleteTrip(tripId)} isOwner={isOwner} loading={tripsLoading} />
+            <TripsList
+              trips={trips}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              onTripClick={() => { }}
+              setTrips={setTrips}
+              onEdit={(trip) => setEditingTrip(trip)}
+              onDelete={(tripId) => handleDeleteTrip(tripId)}
+              isOwner={isOwner}
+              loading={tripsLoading}
+              loadingMore={loadingMore}
+              onLoadMore={loadMoreTrips}
+              hasMore={hasMore}
+            />
           </Box>
         </Paper>
 

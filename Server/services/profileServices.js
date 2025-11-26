@@ -122,15 +122,29 @@ export async function getProfile(userId) {
 // TRIPS - LIST
 // -----------------------------------------------------
 
-export async function listUserTripsForViewer(ownerId, viewerId) {
+export async function listUserTripsForViewer(ownerId, viewerId, page = 1, limit = 12) {
   if (!ownerId) throw new Error("ownerId required");
 
-  const cacheKey = `profile:${ownerId}:trips:${viewerId || "none"}`;
-  const cached = await redis.get(cacheKey);
-  if (cached) return JSON.parse(cached);
+  // Calculate skip for pagination
+  const skip = (page - 1) * limit;
+
+  // Don't cache paginated results - too many cache keys
+  const cacheKey = page === 1 && limit === 12
+    ? `profile:${ownerId}:trips:${viewerId || "none"}`
+    : null;
+
+  if (cacheKey) {
+    const cached = await redis.get(cacheKey);
+    if (cached) return JSON.parse(cached);
+  }
+
+  // Get total count for pagination metadata
+  const total = await Trip.countDocuments({ user: ownerId });
 
   const trips = await Trip.find({ user: ownerId })
     .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
     .populate({ path: "user", select: "_id firstName lastName avatar" })
     .populate({ path: "comments.user", select: "_id firstName lastName avatar" })
     .lean();
@@ -140,12 +154,27 @@ export async function listUserTripsForViewer(ownerId, viewerId) {
     ownerId: viewerId,
   });
 
-  await redis.setEx(cacheKey, 60, JSON.stringify(result));
-  return result;
+  const response = {
+    trips: result,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      hasMore: skip + trips.length < total,
+    },
+  };
+
+  // Only cache first page with default limit
+  if (cacheKey) {
+    await redis.setEx(cacheKey, 60, JSON.stringify(response));
+  }
+
+  return response;
 }
 
-export async function listUserTrips(ownerId, viewerId) {
-  return listUserTripsForViewer(ownerId, viewerId);
+export async function listUserTrips(ownerId, viewerId, page, limit) {
+  return listUserTripsForViewer(ownerId, viewerId, page, limit);
 }
 
 // -----------------------------------------------------
@@ -179,15 +208,30 @@ async function fetchProfileTripCollection({
   viewerId,
   model,
   cachePrefix,
+  page = 1,
+  limit = 12,
 }) {
   if (!ownerId) throw new Error("ownerId required");
 
-  const cacheKey = `${cachePrefix}:${ownerId}:${viewerId || "none"}`;
-  const cached = await redis.get(cacheKey);
-  if (cached) return JSON.parse(cached);
+  const skip = (page - 1) * limit;
+
+  // Only cache first page with default limit
+  const cacheKey = page === 1 && limit === 12
+    ? `${cachePrefix}:${ownerId}:${viewerId || "none"}`
+    : null;
+
+  if (cacheKey) {
+    const cached = await redis.get(cacheKey);
+    if (cached) return JSON.parse(cached);
+  }
+
+  // Get total count
+  const total = await model.countDocuments({ user: ownerId });
 
   const items = await model
     .find({ user: ownerId })
+    .skip(skip)
+    .limit(limit)
     .populate({
       path: "trip",
       populate: [
@@ -204,25 +248,43 @@ async function fetchProfileTripCollection({
     ownerId: viewerId,
   });
 
-  await redis.setEx(cacheKey, 60, JSON.stringify(result));
-  return result;
+  const response = {
+    trips: result,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      hasMore: skip + trips.length < total,
+    },
+  };
+
+  if (cacheKey) {
+    await redis.setEx(cacheKey, 60, JSON.stringify(response));
+  }
+
+  return response;
 }
 
-export async function getProfileLikedTrips(ownerId, viewerId) {
+export async function getProfileLikedTrips(ownerId, viewerId, page, limit) {
   return fetchProfileTripCollection({
     ownerId,
     viewerId,
     model: Like,
     cachePrefix: "profile:liked",
+    page,
+    limit,
   });
 }
 
-export async function getProfileSavedTrips(ownerId, viewerId) {
+export async function getProfileSavedTrips(ownerId, viewerId, page, limit) {
   return fetchProfileTripCollection({
     ownerId,
     viewerId,
     model: Save,
     cachePrefix: "profile:saved",
+    page,
+    limit,
   });
 }
 

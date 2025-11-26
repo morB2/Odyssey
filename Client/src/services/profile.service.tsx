@@ -28,10 +28,11 @@ export const getProfile = async (userId: string, token?: string) => {
   }
 };
 
-export const getTrips = async (userId: string, token?: string) => {
+export const getTrips = async (userId: string, token?: string, page: number = 1, limit: number = 12) => {
   try {
     const res = await api.get(`${BASE}/${userId}/trips`, {
       headers: createHeaders(token),
+      params: { page, limit },
     });
     return res.data;
   } catch (error) {
@@ -167,10 +168,11 @@ export const getFollowing = async (userId: string) => {
   }
 };
 
-export const getLikedTrips = async (userId: string, token?: string) => {
+export const getLikedTrips = async (userId: string, token?: string, page: number = 1, limit: number = 12) => {
   try {
     const res = await api.get(`${BASE}/${userId}/liked-trips`, {
       headers: createHeaders(token),
+      params: { page, limit },
     });
     return res.data;
   } catch (error) {
@@ -179,10 +181,11 @@ export const getLikedTrips = async (userId: string, token?: string) => {
   }
 };
 
-export const getSavedTrips = async (userId: string, token?: string) => {
+export const getSavedTrips = async (userId: string, token?: string, page: number = 1, limit: number = 12) => {
   try {
     const res = await api.get(`${BASE}/${userId}/saved-trips`, {
       headers: createHeaders(token),
+      params: { page, limit },
     });
     return res.data;
   } catch (error) {

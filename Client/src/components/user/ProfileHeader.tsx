@@ -264,18 +264,6 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, tripsCount =
                 <Typography sx={{ fontSize: '0.8rem' }}>Following</Typography>
               </Box>
 
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  color: '#555',
-                }}
-              >
-                <MapPin size={16} />
-                <Typography sx={{ fontWeight: 600 }}>{tripsCount}</Typography>
-                <Typography sx={{ fontSize: '0.8rem' }}>Trips</Typography>
-              </Box>
             </Box>
           </Box>
         </Box>

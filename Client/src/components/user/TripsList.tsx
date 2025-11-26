@@ -1,7 +1,8 @@
 import type { Trip } from "./types";
 import TripPostAdapter from "./TripPostAdapter";
-import { Box, Tabs, Tab, Typography, Grid, Skeleton, Card } from "@mui/material";
+import { Box, Tabs, Tab, Typography, Grid, Skeleton, Card, CircularProgress } from "@mui/material";
 import { User, Heart, Bookmark } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 interface TripsListProps {
   trips: Trip[];
@@ -13,9 +14,14 @@ interface TripsListProps {
   onDelete: (tripId: string) => void;
   isOwner: boolean;
   loading?: boolean;
+  loadingMore?: boolean;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
 }
 
-export function TripsList({ trips = [], activeTab, onTabChange, setTrips, onEdit, onDelete, isOwner, loading = false }: TripsListProps) {
+export function TripsList({ trips = [], activeTab, onTabChange, setTrips, onEdit, onDelete, isOwner, loading = false, loadingMore = false, onLoadMore, hasMore = true }: TripsListProps) {
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
   const availableTabs = [
     { key: "my-trips", label: "My Trips", icon: <User size={20} /> },
     { key: "liked", label: "Liked", icon: <Heart size={20} /> },
@@ -43,6 +49,26 @@ export function TripsList({ trips = [], activeTab, onTabChange, setTrips, onEdit
     </Card>
   );
 
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    if (!onLoadMore || !hasMore || loadingMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loadingMore) {
+          onLoadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sentinelRef.current) {
+      observer.observe(sentinelRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [onLoadMore, hasMore, loadingMore]);
+
   return (
     <Box>
       <Box sx={{ mb: 5, borderBottom: "1px solid #e5e5e5" }}>
@@ -52,9 +78,9 @@ export function TripsList({ trips = [], activeTab, onTabChange, setTrips, onEdit
       </Box>
 
       {loading ? (
-        <Grid container spacing={3}>
-          {[1, 2, 3].map((i) => (
-            <Grid key={i} item xs={12} sm={6} md={4}>
+        <Grid container spacing={2}>
+          {[1, 2, 3, 4].map((i) => (
+            <Grid key={i} sx={{ width: { xs: "100%", sm: "50%", md: "33.333%" } }}>
               <SkeletonCard />
             </Grid>
           ))}
@@ -64,13 +90,25 @@ export function TripsList({ trips = [], activeTab, onTabChange, setTrips, onEdit
           <Typography sx={{ color: "#737373", fontSize: "1rem" }}>No trips to display yet.</Typography>
         </Box>
       ) : (
-        <Grid container spacing={3}>
-          {trips.map((trip) => (
-            <Grid key={trip.id} sx={{ width: { xs: "100%", sm: "50%", md: "33.333%" } }}>
-              <TripPostAdapter trip={trip} setTrips={setTrips} onEdit={() => onEdit(trip)} onDelete={() => onDelete(trip._id)} />
-            </Grid>
-          ))}
-        </Grid>
+        <>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+            {trips.map((trip) => (
+              <Box key={trip.id} sx={{ flex: '1 0 20%', minWidth: 150 }}>
+                <TripPostAdapter trip={trip} setTrips={setTrips} onEdit={() => onEdit(trip)} onDelete={() => onDelete(trip._id)} />
+              </Box>
+            ))}
+          </Box>
+
+          {/* Sentinel element for infinite scroll */}
+          {hasMore && <div ref={sentinelRef} style={{ height: '20px', margin: '20px 0' }} />}
+
+          {/* Loading spinner */}
+          {loadingMore && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress size={40} sx={{ color: '#f97316' }} />
+            </Box>
+          )}
+        </>
       )}
     </Box>
   );

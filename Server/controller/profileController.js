@@ -29,8 +29,10 @@ export const updatePassword = (req, res) =>
 
 export const listUserTrips = (req, res) =>
   handle(res, async () => {
-    const trips = await services.listUserTrips(req.ownerId, req.viewerId);
-    return { trips };
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 12;
+    const result = await services.listUserTrips(req.ownerId, req.viewerId, page, limit);
+    return result;
   });
 
 export const getUserTrip = (req, res) =>
@@ -78,11 +80,15 @@ export const updateProfileAvatar = (req, res) =>
 
 export const getProfileLikedTrips = (req, res) =>
   handle(res, async () => {
-    const trips = await services.getProfileLikedTrips(
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 12;
+    const result = await services.getProfileLikedTrips(
       req.ownerId,
-      req.viewerId
+      req.viewerId,
+      page,
+      limit
     );
-    return { trips };
+    return result;
   });
 
 export const getProfileSavedTrips = (req, res) =>
@@ -95,10 +101,14 @@ export const getProfileSavedTrips = (req, res) =>
       );
     }
 
-    const trips = await services.getProfileSavedTrips(
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 12;
+    const result = await services.getProfileSavedTrips(
       req.ownerId,
-      req.viewerId
+      req.viewerId,
+      page,
+      limit
     );
-    return { trips };
+    return result;
   });
 
