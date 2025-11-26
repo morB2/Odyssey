@@ -27,12 +27,6 @@ export async function search(query, viewerId = null, userLimit = 5, tripLimit = 
     if (!query || query.trim().length === 0) {
         return { users: [], trips: [] };
     }
-
-    // Log the search query for debugging
-    console.log('Search query:', query.trim());
-    console.log('Query length:', query.trim().length);
-    console.log('Query bytes:', Buffer.from(query.trim(), 'utf8'));
-
     // Use MongoDB's $regex operator directly for better Unicode support
     const searchPattern = query.trim();
 
