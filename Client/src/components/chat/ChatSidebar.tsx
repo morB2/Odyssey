@@ -25,6 +25,7 @@ import userService from '../../services/user.service';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
+import { useTranslation } from 'react-i18next';
 
 interface ChatSidebarProps {
     onSelectChat: (user: any) => void;
@@ -32,6 +33,7 @@ interface ChatSidebarProps {
 }
 
 const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectChat, activeChatUser }) => {
+    const { t } = useTranslation();
     const { user } = useUserStore();
     const [conversations, setConversations] = useState<any[]>([]);
     const [tabValue, setTabValue] = useState(0);
@@ -109,7 +111,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectChat, activeChatUser 
     return (
         <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', borderRight: 1, borderColor: 'divider', bgcolor: 'white' }}>
             <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: 'white', color: 'text.primary', borderBottom: 1, borderColor: 'divider' }}>
-                <Typography variant="h6" fontWeight="bold">Chats</Typography>
+                <Typography variant="h6" fontWeight="bold">{t('chat.chats')}</Typography>
                 <Button
                     variant="contained"
                     size="small"
@@ -122,7 +124,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectChat, activeChatUser 
                         '&:hover': { bgcolor: '#f57c00' }
                     }}
                 >
-                    New Chat
+                    {t('chat.newChat')}
                 </Button>
             </Box>
 
@@ -139,10 +141,10 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectChat, activeChatUser 
                     '& .MuiTabs-indicator': { bgcolor: '#ff9800' }
                 }}
             >
-                <Tab label="All" />
+                <Tab label={t('chat.all')} />
                 <Tab label={
                     <Badge badgeContent={conversations.filter(c => c.status === 'pending' && c.initiator !== user._id).length} color="error">
-                        Requests
+                        {t('chat.requests')}
                     </Badge>
                 } />
             </Tabs>
@@ -151,7 +153,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectChat, activeChatUser 
                 {filteredConversations.length === 0 ? (
                     <Box sx={{ p: 3, textAlign: 'center' }}>
                         <Typography variant="body2" color="text.secondary">
-                            {tabValue === 0 ? 'No conversations yet' : 'No new requests'}
+                            {tabValue === 0 ? t('chat.noChatsYet') : t('chat.noNewRequests')}
                         </Typography>
                     </Box>
                 ) : (
@@ -191,9 +193,9 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectChat, activeChatUser 
                                                 component="span"
                                                 variant="body2"
                                                 color="text.secondary"
-                                                sx={{ display: 'inline', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%'}}
+                                                sx={{ display: 'inline', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}
                                             >
-                                                {conv.lastMessage ? conv.lastMessage.message : 'No messages'}
+                                                {conv.lastMessage ? conv.lastMessage.message : t('chat.noMessagesYet')}
                                             </Typography>
                                         }
                                     />
@@ -208,7 +210,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectChat, activeChatUser 
             <Dialog open={isNewChatOpen} onClose={() => setIsNewChatOpen(false)} maxWidth="sm" fullWidth>
                 <DialogTitle>
                     <Box display="flex" justifyContent="space-between" alignItems="center">
-                        New Chat
+                        {t('chat.newChat')}
                         <IconButton onClick={() => setIsNewChatOpen(false)}>
                             <CloseIcon />
                         </IconButton>
@@ -217,7 +219,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectChat, activeChatUser 
                 <DialogContent>
                     <TextField
                         fullWidth
-                        placeholder="Search users..."
+                        placeholder={t('chat.searchUsers')}
                         value={searchTerm}
                         onChange={handleSearch}
                         margin="dense"
@@ -242,7 +244,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectChat, activeChatUser 
                         ))}
                         {searchResults.length === 0 && (
                             <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 2 }}>
-                                No users found
+                                {t('UsersManagement.noUsersFound')}
                             </Typography>
                         )}
                     </List>

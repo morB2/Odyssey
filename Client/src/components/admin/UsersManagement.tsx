@@ -8,9 +8,11 @@ import { Search, UserPlus, Trash2, Edit } from "lucide-react";
 import { getAllUsers, updateUser } from "../../services/user.service";
 import type { User, UserRole } from "../../models/user.model";
 import { CheckBox, CheckBoxOutlineBlank } from "@mui/icons-material";
+import { useTranslation } from "react-i18next";
 
 
 export default function UsersManagement() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -90,7 +92,7 @@ export default function UsersManagement() {
               fullWidth
               variant="outlined"
               size="small"
-              placeholder="Search users by name or email..."
+              placeholder={t('UsersManagement.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               sx={{
@@ -121,12 +123,12 @@ export default function UsersManagement() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ color: "white" }}><b>Name</b></TableCell>
-              <TableCell sx={{ color: "white" }}><b>Email</b></TableCell>
-              <TableCell sx={{ color: "white" }}><b>Role</b></TableCell>
-              <TableCell sx={{ color: "white" }}><b>Status</b></TableCell>
-              <TableCell sx={{ color: "white" }}><b>Join Date</b></TableCell>
-              <TableCell align="right" sx={{ color: "white" }}><b>Actions</b></TableCell>
+              <TableCell sx={{ color: "white" }}><b>{t('UsersManagement.table.name')}</b></TableCell>
+              <TableCell sx={{ color: "white" }}><b>{t('UsersManagement.table.email')}</b></TableCell>
+              <TableCell sx={{ color: "white" }}><b>{t('UsersManagement.table.role')}</b></TableCell>
+              <TableCell sx={{ color: "white" }}><b>{t('UsersManagement.table.status')}</b></TableCell>
+              <TableCell sx={{ color: "white" }}><b>{t('UsersManagement.table.joinDate')}</b></TableCell>
+              <TableCell align="right" sx={{ color: "white" }}><b>{t('UsersManagement.table.actions')}</b></TableCell>
             </TableRow>
           </TableHead>
 
@@ -136,7 +138,7 @@ export default function UsersManagement() {
                 <TableCell sx={{ color: "white" }}>{user.firstName} {user.lastName}</TableCell>
                 <TableCell sx={{ color: "white" }}>{user.email}</TableCell>
                 <TableCell>
-                  <Chip label={user.role} color={getRoleColor(user.role)} />
+                  <Chip label={t(`UsersManagement.roles.${user.role}`)} color={getRoleColor(user.role)} />
                 </TableCell>
                 <TableCell>
                   <Checkbox
@@ -164,7 +166,7 @@ export default function UsersManagement() {
 
       {filteredUsers.length === 0 && (
         <Typography textAlign="center" color="text.secondary" sx={{ mt: 4 }}>
-          No users found matching your search.
+          {t('UsersManagement.noUsersFound')}
         </Typography>
       )}
 
@@ -219,35 +221,35 @@ export default function UsersManagement() {
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle sx={{ padding: "10px" }}>Edit User</DialogTitle>
+        <DialogTitle sx={{ padding: "10px" }}>{t('UsersManagement.editUser')}</DialogTitle>
         <DialogContent sx={{ display: "flex", padding: '16px', flexDirection: "column", gap: 3, pt: 2, mb: 2, mt: 1 }}>
           {editingUser && (
             <>
               <TextField
-                label="Name"
+                label={t('UsersManagement.labels.name')}
                 value={editingUser.firstName}
                 onChange={(e) => setEditingUser({ ...editingUser, firstName: e.target.value })}
                 fullWidth
               />
               <TextField
-                label="Email"
+                label={t('UsersManagement.labels.email')}
                 value={editingUser.email}
                 onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
                 type="email"
                 fullWidth
               />
               <TextField
-                label="Role"
+                label={t('UsersManagement.labels.role')}
                 select
                 value={editingUser.role}
                 onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as UserRole })}
                 fullWidth
               >
-                <MenuItem value="user">User</MenuItem>
-                <MenuItem value="admin">Admin</MenuItem>
+                <MenuItem value="user">{t('UsersManagement.roles.user')}</MenuItem>
+                <MenuItem value="admin">{t('UsersManagement.roles.admin')}</MenuItem>
               </TextField>
               <TextField
-                label="Status"
+                label={t('UsersManagement.labels.status')}
                 select
                 value={editingUser.status ? "true" : "false"}
                 onChange={(e) =>
@@ -255,16 +257,16 @@ export default function UsersManagement() {
                 }
                 fullWidth
               >
-                <MenuItem value="true">Active</MenuItem>
-                <MenuItem value="false">Inactive</MenuItem>
+                <MenuItem value="true">{t('UsersManagement.status.active')}</MenuItem>
+                <MenuItem value="false">{t('UsersManagement.status.inactive')}</MenuItem>
               </TextField>
             </>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditingUser(null)}>Cancel</Button>
+          <Button onClick={() => setEditingUser(null)}>{t('UsersManagement.buttons.cancel')}</Button>
           <Button onClick={handleEditUser} variant="contained" color="warning">
-            Save Changes
+            {t('UsersManagement.buttons.saveChanges')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -25,8 +25,10 @@ import { useSocketEvent } from '../../hooks/useSocket';
 import { toast } from 'react-toastify';
 import ChatList from './ChatList';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function ChatWidget() {
+    const { t } = useTranslation();
     const { activeChatUser, isChatOpen, closeChat, openChat } = useChat();
     const { user: currentUser } = useUserStore();
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -69,7 +71,7 @@ export default function ChatWidget() {
                     await chatService.markAsRead(activeChatUser._id, currentUser._id!);
                 } catch (error) {
                     console.error('Error fetching messages:', error);
-                    toast.error('Failed to load chat history');
+                    toast.error(t('chat.failedToLoadChat'));
                 } finally {
                     setLoading(false);
                 }
@@ -145,7 +147,7 @@ export default function ChatWidget() {
             }
         } catch (error: any) {
             console.error('Error sending message:', error);
-            toast.error(error.response?.data?.error || 'Failed to send message');
+            toast.error(error.response?.data?.error || t('chat.failedToSendMessage'));
             // Remove failed message
             setMessages((prev) => prev.filter(m => m._id !== tempMessage._id));
         }
@@ -156,10 +158,10 @@ export default function ChatWidget() {
         try {
             const updatedConv = await chatService.handleRequest(conversationStatus._id, action, currentUser._id);
             setConversationStatus(updatedConv);
-            toast.success(action === 'accept' ? 'Chat request accepted' : 'User blocked');
+            toast.success(action === 'accept' ? t('chat.chatRequestAccepted') : t('chat.userBlocked'));
         } catch (error) {
             console.error('Error handling request:', error);
-            toast.error('Failed to update request');
+            toast.error(t('chat.failedToUpdateRequest'));
         }
     };
 
@@ -306,7 +308,7 @@ export default function ChatWidget() {
                     </Box>
                 ) : messages.length === 0 ? (
                     <Box display="flex" justifyContent="center" alignItems="center" height="100%" color="text.secondary">
-                        <Typography variant="body2">No messages yet. Say hi!</Typography>
+                        <Typography variant="body2">{t('chat.noMessagesYet')}</Typography>
                     </Box>
                 ) : (
                     messages.map((msg, index) => {
@@ -355,7 +357,7 @@ export default function ChatWidget() {
             {showRequestUI && (
                 <Box p={2} bgcolor="white" borderTop={1} borderColor="divider" textAlign="center">
                     <Typography variant="body2" gutterBottom>
-                        {activeChatUser.firstName} wants to chat with you.
+                        {activeChatUser.firstName} {t('chat.wantsToChat')}
                     </Typography>
                     <Stack direction="row" spacing={2} justifyContent="center">
                         <Button
@@ -365,7 +367,7 @@ export default function ChatWidget() {
                             startIcon={<CheckIcon />}
                             onClick={() => handleRequestAction('accept')}
                         >
-                            Accept
+                            {t('chat.accept')}
                         </Button>
                         <Button
                             variant="outlined"
@@ -374,7 +376,7 @@ export default function ChatWidget() {
                             startIcon={<BlockIcon />}
                             onClick={() => handleRequestAction('block')}
                         >
-                            Block
+                            {t('chat.block')}
                         </Button>
                     </Stack>
                 </Box>
@@ -384,7 +386,7 @@ export default function ChatWidget() {
             {showWaitingUI && (
                 <Box p={1} bgcolor="#f8f9fa" borderTop={1} borderColor="divider" textAlign="center">
                     <Typography variant="caption" color="text.secondary">
-                        Request sent. You can keep sending messages while waiting.
+                        {t('chat.requestSent')}
                     </Typography>
                 </Box>
             )}
@@ -393,7 +395,7 @@ export default function ChatWidget() {
             {isBlocked && (
                 <Box p={2} bgcolor="white" borderTop={1} borderColor="divider" textAlign="center">
                     <Typography variant="body2" color="error">
-                        This conversation is blocked.
+                        {t('chat.conversationBlocked')}
                     </Typography>
                 </Box>
             )}
@@ -405,7 +407,7 @@ export default function ChatWidget() {
                         <TextField
                             fullWidth
                             size="small"
-                            placeholder="Type a message..."
+                            placeholder={t('chat.typeMessage')}
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
                             variant="outlined"

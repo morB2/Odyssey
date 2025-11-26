@@ -3,6 +3,7 @@ import TripPostAdapter from "./TripPostAdapter";
 import { Box, Tabs, Tab, Typography } from "@mui/material";
 import { Grid } from "@mui/material";
 import { User, Heart, Bookmark } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 interface TripsListProps {
   trips: Trip[];
@@ -22,6 +23,7 @@ export function TripsList({
   onEdit,
   onDelete,
 }: TripsListProps) {
+  const { t } = useTranslation();
   // defensive: ensure we always work with an array
   const list = Array.isArray(trips) ? trips : [];
   const tabsMap = {
@@ -63,7 +65,7 @@ export function TripsList({
           <Tab
             icon={<User size={20} />}
             iconPosition="start"
-            label="My Trips"
+            label={t('profile.myTrips')}
             sx={{
               textTransform: "none",
               fontSize: "1rem",
@@ -86,7 +88,7 @@ export function TripsList({
           <Tab
             icon={<Heart size={20} />}
             iconPosition="start"
-            label="Liked"
+            label={t('profile.likedTrips')}
             sx={{
               textTransform: "none",
               fontSize: "1rem",
@@ -109,7 +111,7 @@ export function TripsList({
           <Tab
             icon={<Bookmark size={20} />}
             iconPosition="start"
-            label="Saved"
+            label={t('profile.savedTrips')}
             sx={{
               textTransform: "none",
               fontSize: "1rem",
@@ -142,7 +144,7 @@ export function TripsList({
           }}
         >
           <Typography sx={{ color: "#737373", fontSize: "1rem" }}>
-            No trips to display yet.
+            {t('profile.noTripsYet')}
           </Typography>
         </Box>
       ) : (

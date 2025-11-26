@@ -26,6 +26,7 @@ import {
   getFollowing as svcGetFollowing,
 } from "../../services/profile.service";
 import { toast } from "react-toastify";
+import { useTranslation } from 'react-i18next';
 const BASE_URL = "http://localhost:3000";
 import { CloudinaryUploadWidget } from "../common/CloudinaryUploadWidget";
 type SimpleFollow = {
@@ -53,6 +54,7 @@ export function ProfileHeader({
   onEditClick,
   onAvatarSaved,
 }: ProfileHeaderProps) {
+  const { t } = useTranslation();
   const token = useUserStore((s) => s.token);
   const [openDialog, setOpenDialog] = useState<
     "followers" | "following" | null
@@ -208,7 +210,7 @@ export function ProfileHeader({
         maxWidth="xs"
       >
         <DialogTitle>
-          {type === "followers" ? "Followers" : "Following"}
+          {type === "followers" ? t('profile.followers') : t('profile.following')}
         </DialogTitle>
         <DialogContent>
           <List>
@@ -340,7 +342,7 @@ export function ProfileHeader({
                       <Users size={16} />
                     </IconButton>
                     <Typography variant="body2">
-                      {followersCount || followers.length} followers
+                      {followersCount || followers.length} {t('profile.followers')}
                     </Typography>
                   </Box>
 
@@ -353,7 +355,7 @@ export function ProfileHeader({
                       <UserPlus size={16} />
                     </IconButton>
                     <Typography variant="body2">
-                      {followingCount || following.length} following
+                      {followingCount || following.length} {t('profile.following')}
                     </Typography>
                   </Box>
                 </Box>
@@ -380,7 +382,7 @@ export function ProfileHeader({
                 }}
               >
                 <Edit size={16} style={{ marginRight: 8 }} />
-                Change Password
+                {t('profile.changePassword')}
               </Button>
             )}
           </Box>
@@ -396,7 +398,7 @@ export function ProfileHeader({
         fullWidth
         maxWidth="xs"
       >
-        <DialogTitle>Change Profile Picture</DialogTitle>
+        <DialogTitle>{t('profile.changeProfilePicture')}</DialogTitle>
         <DialogContent>
           <Box
             sx={{
@@ -431,18 +433,18 @@ export function ProfileHeader({
                 setPreview(url);
               }}
               folder="odyssey/avatars"
-              buttonText="Upload New Avatar"
+              buttonText={t('profile.uploadNewAvatar')}
             />
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAvatarDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setAvatarDialogOpen(false)}>{t('profile.cancel')}</Button>
           <Button
             onClick={handleSaveAvatar}
             variant="contained"
             disabled={savingAvatar}
           >
-            Save
+            {t('profile.save')}
           </Button>
         </DialogActions>
       </Dialog>

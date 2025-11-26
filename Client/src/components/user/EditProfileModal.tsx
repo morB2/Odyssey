@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { Modal } from "./Modal";
 import { Box, Button, TextField, Typography, Divider } from "@mui/material";
 import { useUserStore } from "../../store/userStore";
+import { changePassword } from "../../services/profile.service";
+import { useTranslation } from 'react-i18next';
+
 interface ChangePasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -11,6 +14,7 @@ export function ChangePasswordModal({
   isOpen,
   onClose,
 }: ChangePasswordModalProps) {
+  const { t } = useTranslation();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -40,34 +44,24 @@ export function ChangePasswordModal({
     setSuccess(null);
 
     if (newPassword !== confirmPassword) {
-      setError("New passwords do not match");
+      setError(t('profile.passwordsDoNotMatch'));
       return;
     }
     if (!currentPassword) {
-      setError("Please enter your current password");
+      setError(t('profile.enterCurrentPassword'));
       return;
     }
 
     setLoading(true);
     try {
-      const res = await svcChangePassword(
+      await changePassword(
         user?._id as string,
         currentPassword || undefined,
         newPassword,
         storeToken || undefined
       );
-      const body = res;
-      if (!res || (res.success === false && (body as any).error)) {
-        const msg =
-          (body as any)?.error ||
-          (body as any)?.message ||
-          "Failed to change password";
-        setError(String(msg));
-        setLoading(false);
-        return;
-      }
 
-      setSuccess("Password changed successfully");
+      setSuccess(t('profile.passwordChangedSuccessfully'));
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -78,7 +72,7 @@ export function ChangePasswordModal({
       }, 2500);
     } catch (e) {
       console.error("Failed to change password", e);
-      setError("Failed to change password");
+      setError(t('profile.failedToChangePassword'));
     } finally {
       setLoading(false);
     }
@@ -88,7 +82,7 @@ export function ChangePasswordModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Change Password"
+      title={t('profile.changePassword')}
       maxWidth="sm"
     >
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -118,7 +112,7 @@ export function ChangePasswordModal({
                   color: "#171717",
                 }}
               >
-                Current Password
+                {t('profile.currentPassword')}
               </Typography>
               <TextField
                 id="currentPassword"
@@ -129,7 +123,8 @@ export function ChangePasswordModal({
                   setCurrentPassword(e.target.value);
                   if (error) setError(null);
                 }}
-                placeholder="Enter current password"
+
+                placeholder={t('profile.enterCurrentPasswordPlaceholder')}
               />
             </Box>
 
@@ -145,7 +140,7 @@ export function ChangePasswordModal({
                   color: "#171717",
                 }}
               >
-                New Password
+                {t('profile.newPassword')}
               </Typography>
               <TextField
                 id="newPassword"
@@ -156,7 +151,7 @@ export function ChangePasswordModal({
                   setNewPassword(e.target.value);
                   if (error) setError(null);
                 }}
-                placeholder="Enter new password"
+                placeholder={t('profile.enterNewPasswordPlaceholder')}
               />
             </Box>
 
@@ -172,7 +167,7 @@ export function ChangePasswordModal({
                   color: "#171717",
                 }}
               >
-                Confirm New Password
+                {t('profile.confirmNewPassword')}
               </Typography>
               <TextField
                 id="confirmPassword"
@@ -183,7 +178,7 @@ export function ChangePasswordModal({
                   setConfirmPassword(e.target.value);
                   if (error) setError(null);
                 }}
-                placeholder="Confirm new password"
+                placeholder={t('profile.confirmNewPasswordPlaceholder')}
               />
             </Box>
 
@@ -196,7 +191,7 @@ export function ChangePasswordModal({
               }
               sx={{ textTransform: "none" }}
             >
-              {loading ? "Changing..." : "Change Password"}
+              {loading ? t('profile.changing') : t('profile.changePassword')}
             </Button>
           </Box>
         </Box>
@@ -227,10 +222,10 @@ export function ChangePasswordModal({
             onClick={onClose}
             sx={{ textTransform: "none" }}
           >
-            Cancel
+            {t('profile.cancel')}
           </Button>
         </Box>
       </Box>
-    </Modal>
+    </Modal >
   );
 }

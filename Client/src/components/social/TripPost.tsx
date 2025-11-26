@@ -16,6 +16,7 @@ import TripDetailsDialog from './TripDetailsDialog';
 import { toggleLike, toggleSave, toggleFollow, addComment, addReaction, addReply } from '../../services/tripPost.service';
 import { useTripRealtime } from '../../hooks/useTripRealtime';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 
 const theme = createTheme({
     palette: {
@@ -42,6 +43,7 @@ const initializeReactions = (comments: Comment[]): Record<string, Record<string,
 
 
 export default function TripPost({ trip }: TripPostProps) {
+    const { t } = useTranslation();
     // --- Post State ---
     const [isLiked, setIsLiked] = useState(trip.isLiked);
     const [likesCount, setLikesCount] = useState(trip.likes);
@@ -87,7 +89,7 @@ export default function TripPost({ trip }: TripPostProps) {
     // --- API Handlers ---
     const postLike = useCallback(async () => {
         if (!trip.currentUserId || trip.currentUserId.trim() === '') {
-            toast.info("Please log in to like trips.");
+            toast.info(t('social.pleaseLoginToLike'));
             return;
         }
 
@@ -105,16 +107,16 @@ export default function TripPost({ trip }: TripPostProps) {
             await toggleLike(trip._id, trip.currentUserId, originalIsLiked);
         } catch (error) {
             console.error('Error toggling like, rolling back:', error);
-            toast.error("Failed to like trip. Please try again.");
+            toast.error(t('social.failedToLike'));
             // Rollback on API error
             setIsLiked(originalIsLiked);
             setLikesCount(originalLikesCount);
         }
-    }, [isLiked, likesCount, trip._id, trip.currentUserId]);
+    }, [isLiked, likesCount, trip._id, trip.currentUserId, t]);
 
     const postSave = useCallback(async () => {
         if (!trip.currentUserId || trip.currentUserId.trim() === '') {
-            toast.info("Please log in to save trips.");
+            toast.info(t('social.pleaseLoginToSave'));
             return;
         }
 
@@ -124,20 +126,20 @@ export default function TripPost({ trip }: TripPostProps) {
         try {
             await toggleSave(trip._id, trip.currentUserId, isSaved);
             if (newIsSaved) {
-                toast.success("Trip saved!");
+                toast.success(t('social.tripSaved'));
             } else {
-                toast.info("Trip unsaved.");
+                toast.info(t('social.tripUnsaved'));
             }
         } catch (error) {
             console.error('Error toggling save:', error);
-            toast.error("Failed to save trip. Please try again.");
+            toast.error(t('social.failedToSave'));
             setIsSaved(!newIsSaved); // Rollback optimistic update
         }
-    }, [isSaved, trip._id, trip.currentUserId]);
+    }, [isSaved, trip._id, trip.currentUserId, t]);
 
     const postFollow = useCallback(async () => {
         if (!trip.currentUserId || trip.currentUserId.trim() === '') {
-            toast.info("Please log in to follow users.");
+            toast.info(t('social.pleaseLoginToFollow'));
             return;
         }
 
@@ -147,16 +149,16 @@ export default function TripPost({ trip }: TripPostProps) {
         try {
             await toggleFollow(trip.user._id, trip.currentUserId, isFollowing);
             if (newIsFollowing) {
-                toast.success(`Following ${trip.user.firstName}`);
+                toast.success(`${t('social.followingUser')} ${trip.user.firstName}`);
             } else {
-                toast.info(`Unfollowed ${trip.user.firstName}`);
+                toast.info(`${t('social.unfollowedUser')} ${trip.user.firstName}`);
             }
         } catch (error) {
             console.error('Error toggling follow:', error);
-            toast.error("Failed to follow user. Please try again.");
+            toast.error(t('social.failedToFollow'));
             setIsFollowing(!newIsFollowing); // Rollback optimistic update
         }
-    }, [isFollowing, trip.user._id, trip.currentUserId, trip.user.firstName]);
+    }, [isFollowing, trip.user._id, trip.currentUserId, trip.user.firstName, t]);
 
     // const handleAddComment = useCallback(async (commentText: string) => {
     //     if (!trip.currentUserId || trip.currentUserId.trim() === '') {
@@ -191,7 +193,7 @@ export default function TripPost({ trip }: TripPostProps) {
 
     const handleEmojiReaction = useCallback(async (commentId: string, emoji: string) => {
         if (!trip.currentUserId || trip.currentUserId.trim() === '') {
-            toast.info("Please log in to react.");
+            toast.info(t('social.pleaseLoginToReact'));
             return;
         }
 
@@ -212,41 +214,41 @@ export default function TripPost({ trip }: TripPostProps) {
             await addReaction(trip._id, commentId, trip.currentUserId, emoji);
         } catch (error) {
             console.error('Error adding reaction:', error);
-            toast.error("Failed to add reaction.");
+            toast.error(t('social.failedToReact'));
             // In a real app, you might decrement the count on failure
         }
-    }, [trip._id, trip.currentUserId]);
-const handleAddComment = useCallback(async (commentText: string) => {
-    if (!trip.currentUserId || trip.currentUserId.trim() === '') {
-        toast.info("Please log in to comment.");
-        return;
-    }
+    }, [trip._id, trip.currentUserId, t]);
+    const handleAddComment = useCallback(async (commentText: string) => {
+        if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+            toast.info(t('social.pleaseLoginToComment'));
+            return;
+        }
 
-    try {
-        await addComment(trip._id, trip.currentUserId, commentText.trim());
-        // Removed the optimistic update - useTripRealtime will handle it
-        toast.success("Comment added!");
-    } catch (error) {
-        console.error('Error adding comment:', error);
-        toast.error("Failed to add comment. Please try again.");
-    }
-}, [trip._id, trip.currentUserId]); // Also removed user?.avatar from dependencies
+        try {
+            await addComment(trip._id, trip.currentUserId, commentText.trim());
+            // Removed the optimistic update - useTripRealtime will handle it
+            toast.success(t('social.commentAdded'));
+        } catch (error) {
+            console.error('Error adding comment:', error);
+            toast.error(t('social.failedToComment'));
+        }
+    }, [trip._id, trip.currentUserId, t]); // Also removed user?.avatar from dependencies
 
-const handleAddReply = useCallback(async (commentId: string, replyText: string) => {
-    if (!trip.currentUserId || trip.currentUserId.trim() === '') {
-        toast.info("Please log in to reply.");
-        return;
-    }
+    const handleAddReply = useCallback(async (commentId: string, replyText: string) => {
+        if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+            toast.info(t('social.pleaseLoginToReply'));
+            return;
+        }
 
-    try {
-        await addReply(trip._id, commentId, trip.currentUserId, replyText.trim());
-        // Removed the optimistic update - useTripRealtime will handle it
-        toast.success("Reply added!");
-    } catch (error) {
-        console.error('Error adding reply:', error);
-        toast.error("Failed to add reply.");
-    }
-}, [trip._id, trip.currentUserId]); // Also removed user?.avatar from dependencies
+        try {
+            await addReply(trip._id, commentId, trip.currentUserId, replyText.trim());
+            // Removed the optimistic update - useTripRealtime will handle it
+            toast.success(t('social.replyAdded'));
+        } catch (error) {
+            console.error('Error adding reply:', error);
+            toast.error(t('social.failedToReply'));
+        }
+    }, [trip._id, trip.currentUserId, t]); // Also removed user?.avatar from dependencies
     // const handleAddReply = useCallback(async (commentId: string, replyText: string) => {
     //     if (!trip.currentUserId || trip.currentUserId.trim() === '') {
     //         toast.info("Please log in to reply.");

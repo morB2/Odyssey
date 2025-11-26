@@ -19,12 +19,14 @@ import chatService, { type ChatMessage } from '../../services/chat.service';
 import { useUserStore } from '../../store/userStore';
 import { useSocketEvent } from '../../hooks/useSocket';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 
 interface ChatWindowProps {
     activeChatUser: any;
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
+    const { t } = useTranslation();
     const { user: currentUser } = useUserStore();
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
@@ -63,7 +65,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
                     await chatService.markAsRead(activeChatUser._id, currentUser._id!);
                 } catch (error) {
                     console.error('Error fetching messages:', error);
-                    toast.error('Failed to load chat history');
+                    toast.error(t('chat.failedToLoadChat'));
                 } finally {
                     setLoading(false);
                 }
@@ -71,7 +73,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
 
             fetchMessages();
         }
-    }, [activeChatUser, currentUser]);
+    }, [activeChatUser, currentUser, t]);
 
     // Listen for new messages
     useSocketEvent('newMessage', (message: ChatMessage) => {
@@ -135,7 +137,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
             }
         } catch (error: any) {
             console.error('Error sending message:', error);
-            toast.error(error.response?.data?.error || 'Failed to send message');
+            toast.error(error.response?.data?.error || t('chat.failedToSendMessage'));
             // Remove failed message
             setMessages((prev) => prev.filter(m => m._id !== tempMessage._id));
         }
@@ -146,17 +148,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
         try {
             const updatedConv = await chatService.handleRequest(conversationStatus._id, action, currentUser._id);
             setConversationStatus(updatedConv);
-            toast.success(action === 'accept' ? 'Chat request accepted' : 'User blocked');
+            toast.success(action === 'accept' ? t('chat.chatRequestAccepted') : t('chat.userBlocked'));
         } catch (error) {
             console.error('Error handling request:', error);
-            toast.error('Failed to update request');
+            toast.error(t('chat.failedToUpdateRequest'));
         }
     };
 
     if (!activeChatUser) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" height="100%" color="text.secondary">
-                <Typography variant="h6">Select a chat to start messaging</Typography>
+                <Typography variant="h6">{t('chat.selectChat')}</Typography>
             </Box>
         );
     }
@@ -200,7 +202,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
                     </Box>
                 ) : messages.length === 0 ? (
                     <Box display="flex" justifyContent="center" alignItems="center" height="100%" color="text.secondary">
-                        <Typography>No messages yet. Say hi!</Typography>
+                        <Typography>{t('chat.noMessagesYet')}</Typography>
                     </Box>
                 ) : (
                     messages.map((msg, index) => {
@@ -248,7 +250,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
             {showRequestUI && (
                 <Paper elevation={2} sx={{ p: 2, m: 2, textAlign: 'center', bgcolor: 'white', color: 'text.primary', border: 1, borderColor: 'divider' }}>
                     <Typography variant="body1" gutterBottom>
-                        {activeChatUser.firstName} wants to chat with you.
+                        {activeChatUser.firstName} {t('chat.wantsToChat')}
                     </Typography>
                     <Stack direction="row" spacing={2} justifyContent="center">
                         <Button
@@ -257,7 +259,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
                             startIcon={<CheckIcon />}
                             onClick={() => handleRequestAction('accept')}
                         >
-                            Accept
+                            {t('chat.accept')}
                         </Button>
                         <Button
                             variant="outlined"
@@ -265,7 +267,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
                             startIcon={<BlockIcon />}
                             onClick={() => handleRequestAction('block')}
                         >
-                            Block
+                            {t('chat.block')}
                         </Button>
                     </Stack>
                 </Paper>
@@ -275,7 +277,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
             {showWaitingUI && (
                 <Box p={1} bgcolor="#fff3e0" textAlign="center">
                     <Typography variant="body2" color="#ff9800">
-                        Request sent. You can keep sending messages while waiting.
+                        {t('chat.requestSent')}
                     </Typography>
                 </Box>
             )}
@@ -284,7 +286,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
             {isBlocked && (
                 <Box p={2} bgcolor="#ffebee" textAlign="center">
                     <Typography variant="body1" color="error">
-                        This conversation is blocked.
+                        {t('chat.conversationBlocked')}
                     </Typography>
                 </Box>
             )}
@@ -295,7 +297,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
                     <form onSubmit={handleSend} style={{ display: 'flex', gap: '16px' }}>
                         <TextField
                             fullWidth
-                            placeholder="Type a message..."
+                            placeholder={t('chat.typeMessage')}
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
                             variant="outlined"

@@ -4,8 +4,10 @@ import { Shield } from 'lucide-react';
 import UsersManagement from './UsersManagement';
 import PostsManagement from './PostsManagement';
 import ReportsManagement from './ReportsManagement';
+import { useTranslation } from 'react-i18next';
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(0);
 
   return (
@@ -27,10 +29,10 @@ export default function Dashboard() {
             </Box>
             <Box>
               <Typography variant="h6" sx={{ color: 'white', fontWeight: 500 }}>
-                Admin Dashboard
+                {t('admin.adminDashboard')}
               </Typography>
               <Typography variant="body2" sx={{ color: '#a1a1aa' }}>
-                Manage your website content
+                {t('admin.manageWebsiteContent')}
               </Typography>
             </Box>
           </Box>
@@ -52,7 +54,7 @@ export default function Dashboard() {
           }}
         >
           <Tab
-            label="Users Management"
+            label={t('admin.usersManagement')}
             sx={{
               color: '#a1a1aa',
               px: 3,
@@ -65,7 +67,7 @@ export default function Dashboard() {
             }}
           />
           <Tab
-            label="Posts Management"
+            label={t('admin.postsManagement')}
             sx={{
               color: '#a1a1aa',
               px: 3,
@@ -78,7 +80,7 @@ export default function Dashboard() {
             }}
           />
           <Tab
-            label="Reports Management"
+            label={t('admin.reportsManagement')}
             sx={{
               color: '#a1a1aa',
               px: 3,

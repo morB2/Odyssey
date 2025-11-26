@@ -7,6 +7,7 @@ import useDebounce from '../../hooks/useDebounce';
 import SearchResults from './SearchResults';
 import { searchAll, type SearchResults as SearchResultsType } from '../../api/searchApi';
 import { useUserStore } from '../../store/userStore';
+import { useTranslation } from 'react-i18next';
 
 const OrangeTextField = styled(TextField)({
   '& label': {
@@ -52,7 +53,7 @@ const Search: React.FC<SearchProps> = ({
   const debouncedSearchTerm = useDebounce(instantSearchTerm, debounceDelay);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const user = useUserStore((state) => state.user);
-
+  const { t } = useTranslation();
   // Perform search when debounced term changes
   useEffect(() => {
     const performSearch = async () => {
@@ -115,7 +116,7 @@ const Search: React.FC<SearchProps> = ({
   return (
     <div ref={searchContainerRef} style={{ position: 'relative', width: 600 }}>
       <OrangeTextField
-        label={placeholder}
+        label={t('general.searchPlaceholder')}
         variant="outlined"
         size="small"
         fullWidth

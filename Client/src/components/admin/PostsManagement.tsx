@@ -18,10 +18,11 @@ import {
     Typography,
     Chip,
     IconButton,
-    InputAdornment,
     MenuItem,
 } from "@mui/material";
 import { Search, Plus, Trash2, Edit, Eye } from "lucide-react";
+import { useTranslation } from "react-i18next";
+
 
 type Post = {
     id: string;
@@ -52,6 +53,7 @@ export default function PostsManagement() {
         status: "Draft" as Post["status"],
         category: "",
     });
+    const { t } = useTranslation();
 
     const filteredPosts = posts.filter(
         (post) =>
@@ -97,30 +99,28 @@ export default function PostsManagement() {
     };
 
     return (
-        <Box sx={{ p: 3,backgroundColor:"black" }}>
+        <Box sx={{ p: 3, backgroundColor: "black" }}>
             {/* Header Actions */}
             <Grid container spacing={2} alignItems="center" justifyContent="space-between">
-                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 ,bgcolor:"#18181B",p:1,borderRadius:1}}>
-                           <Search size={18} color="white" />
-                           <TextField
-                           sx={{color:"white"}}
-                             fullWidth
-                             variant="outlined"
-                             size="small"
-                             placeholder="Search posts by title, author or category..."
-                             value={searchQuery}
-                             onChange={(e) => setSearchQuery(e.target.value)}
-                           />
-                         </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, bgcolor: "#18181B", p: 1, borderRadius: 1 }}>
+                    <Search size={18} color="white" />
+                    <TextField
+                        sx={{ color: "white" }}
+                        fullWidth
+                        variant="outlined"
+                        size="small"
+                        placeholder={t("PostsManagement.search_placeholder")} onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </Box>
 
-                <Grid size={{ xs: 12, md: "auto" }}>
+                <Grid size={{xs:12, md:"auto"}}>
                     <Button
                         variant="contained"
                         color="warning"
                         startIcon={<Plus size={18} />}
                         onClick={() => setIsAddDialogOpen(true)}
                     >
-                        Add Post
+                        {t("PostsManagement.add_post")}
                     </Button>
                 </Grid>
             </Grid>
@@ -130,26 +130,29 @@ export default function PostsManagement() {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell sx={{color:"white"}}>Title</TableCell>
-                            <TableCell sx={{color:"white"}}   >Author</TableCell>
-                            <TableCell sx={{color:"white"}}>Category</TableCell>
-                            <TableCell sx={{color:"white"}}>Status</TableCell>
-                            <TableCell sx={{color:"white"}}>Date</TableCell>
-                            <TableCell sx={{color:"white"}}>Views</TableCell>
-                            <TableCell align="right" sx={{color:"white"}}>Actions</TableCell>
+                            <TableCell sx={{ color: "white" }}>{t("PostsManagement.title")}</TableCell>
+                            <TableCell sx={{ color: "white" }}>{t("PostsManagement.author")}</TableCell>
+                            <TableCell sx={{ color: "white" }}>{t("PostsManagement.category")}</TableCell>
+                            <TableCell sx={{ color: "white" }}>{t("PostsManagement.status")}</TableCell>
+                            <TableCell sx={{ color: "white" }}>{t("PostsManagement.date")}</TableCell>
+                            <TableCell sx={{ color: "white" }}>{t("PostsManagement.views")}</TableCell>
+                            <TableCell align="right" sx={{ color: "white" }}>{t("PostsManagement.actions")}</TableCell>
                         </TableRow>
                     </TableHead>
 
                     <TableBody>
                         {filteredPosts.map((post) => (
-                            <TableRow key={post.id} sx={{color:"white"}}>
-                                <TableCell sx={{color:"white"}}>{post.title}</TableCell>
-                                <TableCell sx={{color:"white"}}>{post.author}</TableCell>
-                                <TableCell sx={{color:"white"}}>{post.category}</TableCell>
+                            <TableRow key={post.id} sx={{ color: "white" }}>
+                                <TableCell sx={{ color: "white" }}>{post.title}</TableCell>
+                                <TableCell sx={{ color: "white" }}>{post.author}</TableCell>
+                                <TableCell sx={{ color: "white" }}>{post.category}</TableCell>
                                 <TableCell>
-                                    <Chip label={post.status} color={getStatusChipColor(post.status)} />
+                                    <Chip
+                                        label={t(`PostsManagement.${post.status.toLowerCase()}`)}
+                                        color={getStatusChipColor(post.status)}
+                                    />
                                 </TableCell>
-                                <TableCell sx={{color:"white"}}>{post.date}</TableCell>
+                                <TableCell sx={{ color: "white" }}>{post.date}</TableCell>
                                 <TableCell>
                                     <Box display="flex" alignItems="center" gap={1}>
                                         <Eye size={16} />
@@ -171,51 +174,51 @@ export default function PostsManagement() {
 
                 {filteredPosts.length === 0 && (
                     <Typography align="center" sx={{ py: 3, color: "text.secondary" }}>
-                        No posts found matching your search.
+                        {t("PostsManagement.no_results")}
                     </Typography>
                 )}
             </TableContainer>
 
             {/* Add Dialog */}
             <Dialog open={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false)} fullWidth maxWidth="sm">
-                <DialogTitle>Add New Post</DialogTitle>
+                <DialogTitle>{t("PostsManagement.add_new_post")}</DialogTitle>
                 <DialogContent>
                     <Box display="flex" flexDirection="column" gap={2} mt={1}>
                         <TextField
-                            label="Title"
+                            label={t("PostsManagement.title")}
                             fullWidth
                             value={newPost.title}
                             onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
                         />
                         <TextField
-                            label="Author"
+                            label={t("PostsManagement.author")}
                             fullWidth
                             value={newPost.author}
                             onChange={(e) => setNewPost({ ...newPost, author: e.target.value })}
                         />
                         <TextField
-                            label="Category"
+                            label={t("PostsManagement.category")}
                             fullWidth
                             value={newPost.category}
                             onChange={(e) => setNewPost({ ...newPost, category: e.target.value })}
                         />
                         <TextField
                             select
-                            label="Status"
+                            label={t("PostsManagement.status")}
                             fullWidth
                             value={newPost.status}
                             onChange={(e) => setNewPost({ ...newPost, status: e.target.value as Post["status"] })}
                         >
-                            <MenuItem value="Draft">Draft</MenuItem>
-                            <MenuItem value="Published">Published</MenuItem>
-                            <MenuItem value="Archived">Archived</MenuItem>
+                            <MenuItem value="Draft">{t("PostsManagement.draft")}</MenuItem>
+                            <MenuItem value="Published">{t("PostsManagement.published")}</MenuItem>
+                            <MenuItem value="Archived">{t("PostsManagement.archived")}</MenuItem>
                         </TextField>
                     </Box>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={() => setIsAddDialogOpen(false)}>{t("PostsManagement.cancel")}</Button>
                     <Button variant="contained" color="warning" onClick={handleAddPost}>
-                        Add Post
+                        {t("PostsManagement.add_post")}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -223,44 +226,44 @@ export default function PostsManagement() {
             {/* Edit Dialog */}
             {editingPost && (
                 <Dialog open={!!editingPost} onClose={() => setEditingPost(null)} fullWidth maxWidth="sm">
-                    <DialogTitle>Edit Post</DialogTitle>
+                    <DialogTitle>{t("PostsManagement.edit_post")}</DialogTitle>
                     <DialogContent>
                         <Box display="flex" flexDirection="column" gap={2} mt={1}>
                             <TextField
-                                label="Title"
+                                label={t("PostsManagement.title")}
                                 fullWidth
                                 value={editingPost.title}
                                 onChange={(e) => setEditingPost({ ...editingPost, title: e.target.value })}
                             />
                             <TextField
-                                label="Author"
+                                label={t("PostsManagement.author")}
                                 fullWidth
                                 value={editingPost.author}
                                 onChange={(e) => setEditingPost({ ...editingPost, author: e.target.value })}
                             />
                             <TextField
-                                label="Category"
+                                label={t("PostsManagement.category")}
                                 fullWidth
                                 value={editingPost.category}
                                 onChange={(e) => setEditingPost({ ...editingPost, category: e.target.value })}
                             />
                             <TextField
                                 select
-                                label="Status"
+                                label={t("PostsManagement.status")}
                                 fullWidth
                                 value={editingPost.status}
                                 onChange={(e) => setEditingPost({ ...editingPost, status: e.target.value as Post["status"] })}
                             >
-                                <MenuItem value="Draft">Draft</MenuItem>
-                                <MenuItem value="Published">Published</MenuItem>
-                                <MenuItem value="Archived">Archived</MenuItem>
+                                <MenuItem value="Draft">{t("PostsManagement.draft")}</MenuItem>
+                                <MenuItem value="Published">{t("PostsManagement.published")}</MenuItem>
+                                <MenuItem value="Archived">{t("PostsManagement.archived")}</MenuItem>
                             </TextField>
                         </Box>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => setEditingPost(null)}>Cancel</Button>
+                        <Button onClick={() => setEditingPost(null)}>{t("PostsManagement.cancel")}</Button>
                         <Button variant="contained" color="warning" onClick={handleEditPost}>
-                            Save Changes
+                            {t("PostsManagement.save_changes")}
                         </Button>
                     </DialogActions>
                 </Dialog>

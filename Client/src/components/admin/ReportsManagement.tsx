@@ -23,6 +23,7 @@ import {
 import { AlertTriangle, Trash2, CheckCircle, Eye } from 'lucide-react';
 import { getReports, updateReportStatus, deleteReportedPost } from '../../services/report.service';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 
 interface Report {
     _id: string;
@@ -59,6 +60,7 @@ interface Report {
 }
 
 export default function ReportsManagement() {
+    const { t } = useTranslation();
     const [reports, setReports] = useState<Report[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -79,8 +81,8 @@ export default function ReportsManagement() {
             setReports(data);
             setError(null);
         } catch (err: any) {
-            setError(err.response?.data?.error || 'Failed to fetch reports');
-            toast.error('Failed to fetch reports');
+            setError(err.response?.data?.error || t('admin.failedToFetchReports'));
+            toast.error(t('admin.failedToFetchReports'));
         } finally {
             setLoading(false);
         }
@@ -90,10 +92,10 @@ export default function ReportsManagement() {
         try {
             setActionLoading(true);
             await updateReportStatus(reportId, 'reviewed');
-            toast.success('Report dismissed');
+            toast.success(t('admin.reportDismissed'));
             fetchReports();
         } catch (err: any) {
-            toast.error(err.response?.data?.error || 'Failed to dismiss report');
+            toast.error(err.response?.data?.error || t('admin.failedToDismissReport'));
         } finally {
             setActionLoading(false);
         }
@@ -105,12 +107,12 @@ export default function ReportsManagement() {
         try {
             setActionLoading(true);
             await deleteReportedPost(selectedReport.reportedTrip._id);
-            toast.success('Post deleted successfully');
+            toast.success(t('admin.postDeletedSuccessfully'));
             setDeleteDialogOpen(false);
             setSelectedReport(null);
             fetchReports();
         } catch (err: any) {
-            toast.error(err.response?.data?.error || 'Failed to delete post');
+            toast.error(err.response?.data?.error || t('admin.failedToDeletePost'));
         } finally {
             setActionLoading(false);
         }
@@ -151,7 +153,7 @@ export default function ReportsManagement() {
 
             <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="h5" sx={{ color: 'white', fontWeight: 500 }}>
-                    Reports Management
+                    {t('admin.reportsManagement')}
                 </Typography>
                 <Tabs
                     value={filterStatus}
@@ -162,7 +164,7 @@ export default function ReportsManagement() {
                 >
                     <Tab
                         value="all"
-                        label="All"
+                        label={t('admin.all')}
                         sx={{
                             color: '#a1a1aa',
                             '&.Mui-selected': { color: '#ea580c' }
@@ -170,7 +172,7 @@ export default function ReportsManagement() {
                     />
                     <Tab
                         value="pending"
-                        label="Pending"
+                        label={t('admin.pending')}
                         sx={{
                             color: '#a1a1aa',
                             '&.Mui-selected': { color: '#ea580c' }
@@ -178,7 +180,7 @@ export default function ReportsManagement() {
                     />
                     <Tab
                         value="reviewed"
-                        label="Reviewed"
+                        label={t('admin.reviewed')}
                         sx={{
                             color: '#a1a1aa',
                             '&.Mui-selected': { color: '#ea580c' }
@@ -186,7 +188,7 @@ export default function ReportsManagement() {
                     />
                     <Tab
                         value="resolved"
-                        label="Resolved"
+                        label={t('admin.resolved')}
                         sx={{
                             color: '#a1a1aa',
                             '&.Mui-selected': { color: '#ea580c' }
@@ -199,19 +201,19 @@ export default function ReportsManagement() {
                 <Table>
                     <TableHead>
                         <TableRow sx={{ bgcolor: '#09090b' }}>
-                            <TableCell sx={{ color: '#a1a1aa', fontWeight: 600 }}>Reporter</TableCell>
-                            <TableCell sx={{ color: '#a1a1aa', fontWeight: 600 }}>Post Title</TableCell>
-                            <TableCell sx={{ color: '#a1a1aa', fontWeight: 600 }}>Reason</TableCell>
-                            <TableCell sx={{ color: '#a1a1aa', fontWeight: 600 }}>Status</TableCell>
-                            <TableCell sx={{ color: '#a1a1aa', fontWeight: 600 }}>Date</TableCell>
-                            <TableCell sx={{ color: '#a1a1aa', fontWeight: 600 }}>Actions</TableCell>
+                            <TableCell sx={{ color: '#a1a1aa', fontWeight: 600 }}>{t('admin.reporter')}</TableCell>
+                            <TableCell sx={{ color: '#a1a1aa', fontWeight: 600 }}>{t('admin.postTitle')}</TableCell>
+                            <TableCell sx={{ color: '#a1a1aa', fontWeight: 600 }}>{t('admin.reason')}</TableCell>
+                            <TableCell sx={{ color: '#a1a1aa', fontWeight: 600 }}>{t('admin.status')}</TableCell>
+                            <TableCell sx={{ color: '#a1a1aa', fontWeight: 600 }}>{t('admin.date')}</TableCell>
+                            <TableCell sx={{ color: '#a1a1aa', fontWeight: 600 }}>{t('admin.actions')}</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {filteredReports.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={6} sx={{ textAlign: 'center', py: 4, color: '#71717a' }}>
-                                    No reports found
+                                    {t('admin.noReportsFound')}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -232,7 +234,7 @@ export default function ReportsManagement() {
                                         </Typography>
                                     </TableCell>
                                     <TableCell sx={{ color: 'white' }}>
-                                        {report.reportedTrip?.title || 'Deleted Post'}
+                                        {report.reportedTrip?.title || t('admin.deletedPost')}
                                     </TableCell>
                                     <TableCell sx={{ color: 'white', maxWidth: 300 }}>
                                         <Typography
@@ -270,7 +272,7 @@ export default function ReportsManagement() {
                                                     '&:hover': { bgcolor: '#27272a', color: 'white' }
                                                 }}
                                             >
-                                                View
+                                                {t('admin.view')}
                                             </Button>
                                             {report.status === 'pending' && (
                                                 <>
@@ -284,7 +286,7 @@ export default function ReportsManagement() {
                                                             '&:hover': { bgcolor: '#27272a' }
                                                         }}
                                                     >
-                                                        Dismiss
+                                                        {t('admin.dismiss')}
                                                     </Button>
                                                     <Button
                                                         size="small"
@@ -299,7 +301,7 @@ export default function ReportsManagement() {
                                                             '&:hover': { bgcolor: '#27272a' }
                                                         }}
                                                     >
-                                                        Delete Post
+                                                        {t('admin.deletePost')}
                                                     </Button>
                                                 </>
                                             )}
@@ -326,7 +328,7 @@ export default function ReportsManagement() {
                 }}
             >
                 <DialogTitle sx={{ color: 'white', borderBottom: '1px solid #27272a' }}>
-                    Report Details
+                    {t('admin.reportDetails')}
                 </DialogTitle>
                 <DialogContent sx={{ mt: 2 }}>
                     {selectedReport && (
@@ -334,7 +336,7 @@ export default function ReportsManagement() {
                             {/* Reporter Info */}
                             <Box>
                                 <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
-                                    REPORTER
+                                    {t('admin.reporter').toUpperCase()}
                                 </Typography>
                                 <Typography sx={{ color: 'white' }}>
                                     {selectedReport.reporter.firstName} {selectedReport.reporter.lastName}
@@ -347,7 +349,7 @@ export default function ReportsManagement() {
                             {/* Report Reason */}
                             <Box>
                                 <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
-                                    REPORT REASON
+                                    {t('admin.reportReason').toUpperCase()}
                                 </Typography>
                                 <Typography sx={{ color: 'white', mt: 0.5 }}>
                                     {selectedReport.reason}
@@ -357,7 +359,7 @@ export default function ReportsManagement() {
                             {/* Report Status */}
                             <Box>
                                 <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
-                                    STATUS
+                                    {t('admin.status').toUpperCase()}
                                 </Typography>
                                 <Box sx={{ mt: 0.5 }}>
                                     <Chip
@@ -371,7 +373,7 @@ export default function ReportsManagement() {
                             {/* Reported Date */}
                             <Box>
                                 <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
-                                    REPORTED ON
+                                    {t('admin.reportedOn').toUpperCase()}
                                 </Typography>
                                 <Typography sx={{ color: 'white', mt: 0.5 }}>
                                     {new Date(selectedReport.createdAt).toLocaleString()}
@@ -383,7 +385,7 @@ export default function ReportsManagement() {
 
                             {/* Post Content Section */}
                             <Typography variant="h6" sx={{ color: '#ea580c', fontWeight: 600 }}>
-                                Reported Post Content
+                                {t('admin.reportedPostContent')}
                             </Typography>
 
                             {selectedReport.reportedTrip ? (
@@ -392,7 +394,7 @@ export default function ReportsManagement() {
                                     {selectedReport.reportedTrip.user && (
                                         <Box>
                                             <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
-                                                POST AUTHOR
+                                                {t('admin.postAuthor').toUpperCase()}
                                             </Typography>
                                             <Typography sx={{ color: 'white', mt: 0.5 }}>
                                                 {selectedReport.reportedTrip.user.firstName} {selectedReport.reportedTrip.user.lastName}
@@ -406,7 +408,7 @@ export default function ReportsManagement() {
                                     {/* Post Title */}
                                     <Box>
                                         <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
-                                            TITLE
+                                            {t('admin.title').toUpperCase()}
                                         </Typography>
                                         <Typography sx={{ color: 'white', mt: 0.5, fontSize: '1.1rem', fontWeight: 500 }}>
                                             {selectedReport.reportedTrip.title}
@@ -417,7 +419,7 @@ export default function ReportsManagement() {
                                     {selectedReport.reportedTrip.description && (
                                         <Box>
                                             <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
-                                                DESCRIPTION
+                                                {t('admin.description').toUpperCase()}
                                             </Typography>
                                             <Typography sx={{ color: 'white', mt: 0.5, whiteSpace: 'pre-wrap' }}>
                                                 {selectedReport.reportedTrip.description}
@@ -429,7 +431,7 @@ export default function ReportsManagement() {
                                     {selectedReport.reportedTrip.images && selectedReport.reportedTrip.images.length > 0 && (
                                         <Box>
                                             <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
-                                                IMAGES ({selectedReport.reportedTrip.images.length})
+                                                {t('admin.images').toUpperCase()} ({selectedReport.reportedTrip.images.length})
                                             </Typography>
                                             <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
                                                 {selectedReport.reportedTrip.images.map((img, idx) => (
@@ -455,7 +457,7 @@ export default function ReportsManagement() {
                                     {selectedReport.reportedTrip.activities && selectedReport.reportedTrip.activities.length > 0 && (
                                         <Box>
                                             <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
-                                                ACTIVITIES
+                                                {t('admin.activities').toUpperCase()}
                                             </Typography>
                                             <Box sx={{ mt: 0.5, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                                 {selectedReport.reportedTrip.activities.map((activity, idx) => (
@@ -478,7 +480,7 @@ export default function ReportsManagement() {
                                     {selectedReport.reportedTrip.notes && (
                                         <Box>
                                             <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
-                                                NOTES
+                                                {t('admin.notes').toUpperCase()}
                                             </Typography>
                                             <Typography sx={{ color: 'white', mt: 0.5, whiteSpace: 'pre-wrap' }}>
                                                 {selectedReport.reportedTrip.notes}
@@ -491,7 +493,7 @@ export default function ReportsManagement() {
                                         selectedReport.reportedTrip.optimizedRoute.ordered_route.length > 0 && (
                                             <Box>
                                                 <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
-                                                    ROUTE LOCATIONS ({selectedReport.reportedTrip.optimizedRoute.ordered_route.length})
+                                                    {t('admin.routeLocations').toUpperCase()} ({selectedReport.reportedTrip.optimizedRoute.ordered_route.length})
                                                 </Typography>
                                                 <Box sx={{ mt: 0.5 }}>
                                                     {selectedReport.reportedTrip.optimizedRoute.ordered_route.map((location, idx) => (
@@ -507,7 +509,7 @@ export default function ReportsManagement() {
                                     {selectedReport.reportedTrip.createdAt && (
                                         <Box>
                                             <Typography variant="caption" sx={{ color: '#71717a', fontWeight: 600 }}>
-                                                POST CREATED
+                                                {t('admin.postCreated').toUpperCase()}
                                             </Typography>
                                             <Typography sx={{ color: 'white', mt: 0.5 }}>
                                                 {new Date(selectedReport.reportedTrip.createdAt).toLocaleString()}
@@ -517,7 +519,7 @@ export default function ReportsManagement() {
                                 </>
                             ) : (
                                 <Typography sx={{ color: '#71717a', fontStyle: 'italic' }}>
-                                    This post has been deleted
+                                    {t('admin.postDeleted')}
                                 </Typography>
                             )}
                         </Box>
@@ -528,7 +530,7 @@ export default function ReportsManagement() {
                         onClick={() => setViewDialogOpen(false)}
                         sx={{ color: '#a1a1aa' }}
                     >
-                        Close
+                        {t('admin.close')}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -546,12 +548,11 @@ export default function ReportsManagement() {
             >
                 <DialogTitle sx={{ color: 'white', display: 'flex', alignItems: 'center', gap: 1 }}>
                     <AlertTriangle size={24} color="#ef4444" />
-                    Delete Reported Post
+                    {t('admin.deleteReportedPost')}
                 </DialogTitle>
                 <DialogContent>
                     <Typography sx={{ color: '#a1a1aa' }}>
-                        Are you sure you want to delete this post? This action cannot be undone.
-                        All reports for this post will be marked as resolved.
+                        {t('admin.deleteReportedPostConfirm')}
                     </Typography>
                 </DialogContent>
                 <DialogActions sx={{ borderTop: '1px solid #27272a', p: 2 }}>
@@ -560,7 +561,7 @@ export default function ReportsManagement() {
                         disabled={actionLoading}
                         sx={{ color: '#a1a1aa' }}
                     >
-                        Cancel
+                        {t('admin.cancel')}
                     </Button>
                     <Button
                         onClick={handleDeletePost}
@@ -571,7 +572,7 @@ export default function ReportsManagement() {
                             '&:hover': { bgcolor: '#dc2626' }
                         }}
                     >
-                        {actionLoading ? <CircularProgress size={20} /> : 'Delete Post'}
+                        {actionLoading ? <CircularProgress size={20} /> : t('admin.deletePost')}
                     </Button>
                 </DialogActions>
             </Dialog>
