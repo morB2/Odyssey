@@ -1,16 +1,24 @@
 import { useState, useEffect, useRef } from "react";
 import { Modal } from "./Modal";
-import { Box, Button, TextField, Typography, Divider } from "@mui/material";
+import { Box, Button, TextField, Typography, Divider, Avatar } from "@mui/material";
 import { useUserStore } from "../../store/userStore";
+import { changePassword, uploadAvatar } from "../../services/profile.service";
+import { CloudinaryUploadWidget } from "../common/CloudinaryUploadWidget";
+import type { UserProfile } from "./types";
+
 interface ChangePasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
+  user: UserProfile;
+  onAvatarSaved?: (user: UserProfile) => void;
 }
 
-export function ChangePasswordModal({
-  isOpen,
-  onClose,
-}: ChangePasswordModalProps) {
+// Shared styles
+const labelStyle = { display: "block", mb: 1, fontSize: "0.875rem", fontWeight: 500, color: "#171717" };
+const dividerStyle = { backgroundColor: "#e5e5e5" };
+const sectionBoxStyle = { display: "flex", flexDirection: "column", gap: 2, borderRadius: 2, border: "1px solid #e5e5e5", backgroundColor: "#fafafa", p: 2 };
+
+export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: ChangePasswordModalProps) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -18,6 +26,11 @@ export function ChangePasswordModal({
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const closeTimer = useRef<number | null>(null);
+
+  // Avatar states
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [preview, setPreview] = useState<string | null>(null);
+  const [savingAvatar, setSavingAvatar] = useState(false);
 
   useEffect(() => {
     if (!isOpen && closeTimer.current) {
@@ -33,7 +46,7 @@ export function ChangePasswordModal({
   }, [isOpen]);
 
   const storeToken = useUserStore((s) => s.token);
-  const user = useUserStore((s) => s.user);
+  const storeUser = useUserStore((s) => s.user);
 
   const handleChangePassword = async () => {
     setError(null);
@@ -50,18 +63,10 @@ export function ChangePasswordModal({
 
     setLoading(true);
     try {
-      const res = await svcChangePassword(
-        user?._id as string,
-        currentPassword || undefined,
-        newPassword,
-        storeToken || undefined
-      );
+      const res = await changePassword(storeUser?._id as string, currentPassword || undefined, newPassword, storeToken || undefined);
       const body = res;
       if (!res || (res.success === false && (body as any).error)) {
-        const msg =
-          (body as any)?.error ||
-          (body as any)?.message ||
-          "Failed to change password";
+        const msg = (body as any)?.error || (body as any)?.message || "Failed to change password";
         setError(String(msg));
         setLoading(false);
         return;
@@ -74,7 +79,6 @@ export function ChangePasswordModal({
 
       closeTimer.current = window.setTimeout(() => {
         setSuccess(null);
-        onClose();
       }, 2500);
     } catch (e) {
       console.error("Failed to change password", e);
@@ -84,151 +88,101 @@ export function ChangePasswordModal({
     }
   };
 
+  const handleSaveAvatar = async () => {
+    const uid = (user as any).id || (user as any)._id || "";
+    if (!user || !uid || !avatarUrl) return;
+
+    setSavingAvatar(true);
+    try {
+      if (!storeToken) {
+        alert("You must be signed in to change your avatar.");
+        setSavingAvatar(false);
+        return;
+      }
+
+      const result = await uploadAvatar(uid, undefined, avatarUrl || undefined, storeToken);
+      const payload = result?.data ?? result;
+      if (payload && payload.success && payload.user) {
+        if (typeof onAvatarSaved === "function") {
+          onAvatarSaved(payload.user as unknown as UserProfile);
+        }
+        setSuccess("Avatar updated successfully");
+        setAvatarUrl("");
+        setPreview(null);
+
+        closeTimer.current = window.setTimeout(() => {
+          setSuccess(null);
+        }, 2500);
+      }
+    } catch (e) {
+      console.error("Failed to save avatar", e);
+      setError(String(e instanceof Error ? e.message : e));
+    } finally {
+      setSavingAvatar(false);
+    }
+  };
+
+  const PasswordField = ({ id, label, value, onChange }: { id: string; label: string; value: string; onChange: (val: string) => void }) => (
+    <Box>
+      <Typography component="label" htmlFor={id} sx={labelStyle}>{label}</Typography>
+      <TextField id={id} type="password" fullWidth value={value} onChange={(e) => { onChange(e.target.value); if (error) setError(null); }} placeholder={`Enter ${label.toLowerCase()}`} />
+    </Box>
+  );
+
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Change Password"
-      maxWidth="sm"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Edit Profile" maxWidth="sm">
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <Divider sx={{ backgroundColor: "#e5e5e5" }} />
+        <Divider sx={dividerStyle} />
 
+        {/* Avatar Section */}
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-              borderRadius: 2,
-              border: "1px solid #e5e5e5",
-              backgroundColor: "#fafafa",
-              p: 2,
-            }}
-          >
-            <Box>
-              <Typography
-                component="label"
-                htmlFor="currentPassword"
-                sx={{
-                  display: "block",
-                  mb: 1,
-                  fontSize: "0.875rem",
-                  fontWeight: 500,
-                  color: "#171717",
-                }}
-              >
-                Current Password
-              </Typography>
-              <TextField
-                id="currentPassword"
-                type="password"
-                fullWidth
-                value={currentPassword}
-                onChange={(e) => {
-                  setCurrentPassword(e.target.value);
-                  if (error) setError(null);
-                }}
-                placeholder="Enter current password"
-              />
+          <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#171717" }}>Profile Picture</Typography>
+          <Box sx={sectionBoxStyle}>
+            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+              <Avatar src={preview || user.avatar || undefined} sx={{ width: 100, height: 100, border: "2px solid #e5e5e5" }} />
+              <CloudinaryUploadWidget onUpload={(url) => { setAvatarUrl(url); setPreview(url); }} folder="odyssey/avatars" buttonText="Upload New Avatar" />
+              {avatarUrl && (
+                <Button onClick={handleSaveAvatar} variant="outlined" fullWidth disabled={savingAvatar} sx={{ textTransform: "none" }}>
+                  {savingAvatar ? "Saving..." : "Save Avatar"}
+                </Button>
+              )}
             </Box>
+          </Box>
+        </Box>
 
-            <Box>
-              <Typography
-                component="label"
-                htmlFor="newPassword"
-                sx={{
-                  display: "block",
-                  mb: 1,
-                  fontSize: "0.875rem",
-                  fontWeight: 500,
-                  color: "#171717",
-                }}
-              >
-                New Password
-              </Typography>
-              <TextField
-                id="newPassword"
-                type="password"
-                fullWidth
-                value={newPassword}
-                onChange={(e) => {
-                  setNewPassword(e.target.value);
-                  if (error) setError(null);
-                }}
-                placeholder="Enter new password"
-              />
-            </Box>
+        <Divider sx={dividerStyle} />
 
-            <Box>
-              <Typography
-                component="label"
-                htmlFor="confirmPassword"
-                sx={{
-                  display: "block",
-                  mb: 1,
-                  fontSize: "0.875rem",
-                  fontWeight: 500,
-                  color: "#171717",
-                }}
-              >
-                Confirm New Password
-              </Typography>
-              <TextField
-                id="confirmPassword"
-                type="password"
-                fullWidth
-                value={confirmPassword}
-                onChange={(e) => {
-                  setConfirmPassword(e.target.value);
-                  if (error) setError(null);
-                }}
-                placeholder="Confirm new password"
-              />
-            </Box>
-
-            <Button
-              onClick={handleChangePassword}
-              variant="outlined"
-              fullWidth
-              disabled={
-                loading || !currentPassword || !newPassword || !confirmPassword
-              }
-              sx={{ textTransform: "none" }}
-            >
+        {/* Password Section */}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#171717" }}>Change Password</Typography>
+          <Box sx={sectionBoxStyle}>
+            <PasswordField id="currentPassword" label="Current Password" value={currentPassword} onChange={setCurrentPassword} />
+            <PasswordField id="newPassword" label="New Password" value={newPassword} onChange={setNewPassword} />
+            <PasswordField id="confirmPassword" label="Confirm New Password" value={confirmPassword} onChange={setConfirmPassword} />
+            <Button onClick={handleChangePassword} variant="outlined" fullWidth disabled={loading || !currentPassword || !newPassword || !confirmPassword} sx={{ textTransform: "none" }}>
               {loading ? "Changing..." : "Change Password"}
             </Button>
           </Box>
         </Box>
 
-        <Divider sx={{ backgroundColor: "#e5e5e5" }} />
+        <Divider sx={dividerStyle} />
 
         {error && (
           <>
-            <Typography color="error" sx={{ textAlign: "center" }}>
-              {error}
-            </Typography>
-            <Divider sx={{ backgroundColor: "#e5e5e5" }} />
+            <Typography color="error" sx={{ textAlign: "center" }}>{error}</Typography>
+            <Divider sx={dividerStyle} />
           </>
         )}
 
         {success && (
           <>
-            <Typography color="orange" sx={{ textAlign: "center" }}>
-              {success}
-            </Typography>
-            <Divider sx={{ backgroundColor: "#e5e5e5" }} />
+            <Typography color="orange" sx={{ textAlign: "center" }}>{success}</Typography>
+            <Divider sx={dividerStyle} />
           </>
         )}
 
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
-          <Button
-            variant="outlined"
-            onClick={onClose}
-            sx={{ textTransform: "none" }}
-          >
-            Cancel
-          </Button>
+          <Button variant="outlined" onClick={onClose} sx={{ textTransform: "none" }}>Close</Button>
         </Box>
       </Box>
     </Modal>

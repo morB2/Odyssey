@@ -1,7 +1,6 @@
 import type { Trip } from "./types";
 import TripPostAdapter from "./TripPostAdapter";
-import { Box, Tabs, Tab, Typography } from "@mui/material";
-import { Grid } from "@mui/material";
+import { Box, Tabs, Tab, Typography, Grid } from "@mui/material";
 import { User, Heart, Bookmark } from "lucide-react";
 
 interface TripsListProps {
@@ -12,159 +11,38 @@ interface TripsListProps {
   setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
   onEdit: (trip: Trip) => void;
   onDelete: (tripId: string) => void;
-  isOwner: boolean; // New prop to determine if user is viewing their own profile
+  isOwner: boolean;
 }
 
-export function TripsList({
-  trips,
-  activeTab,
-  onTabChange,
-  setTrips,
-  onEdit,
-  onDelete,
-  isOwner,
-}: TripsListProps) {
-  // defensive: ensure we always work with an array
-  const list = Array.isArray(trips) ? trips : [];
+export function TripsList({ trips = [], activeTab, onTabChange, setTrips, onEdit, onDelete, isOwner }: TripsListProps) {
+  const availableTabs = [
+    { key: "my-trips", label: "My Trips", icon: <User size={20} /> },
+    { key: "liked", label: "Liked", icon: <Heart size={20} /> },
+    ...(isOwner ? [{ key: "saved", label: "Saved", icon: <Bookmark size={20} /> }] : []),
+  ] as const;
 
-  // Build tabs array based on whether user is owner
-  const availableTabs = isOwner
-    ? ["my-trips", "liked", "saved"]
-    : ["my-trips", "liked"];
+  const tabStyle = { textTransform: "none", fontSize: "1rem", px: 3, py: 1.5, minHeight: "auto", color: "#525252", transition: "color 0.2s", "&:hover": { color: "#171717" }, "&.Mui-selected": { color: "#f97316" }, "& .MuiTab-iconWrapper": { mr: 1 } };
 
-  const tabsMap: Record<string, number> = {};
-  availableTabs.forEach((tab, index) => {
-    tabsMap[tab] = index;
-  });
-
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    const tabs: ("my-trips" | "liked" | "saved")[] = availableTabs as any;
-    onTabChange(tabs[newValue]);
-  };
+  const handleTabChange = (_: any, index: number) => onTabChange(availableTabs[index].key);
 
   return (
     <Box>
-      {/* Icon Navigation */}
-      <Box
-        sx={{
-          mb: 5,
-          borderBottom: "1px solid #e5e5e5",
-        }}
-      >
-        <Tabs
-          value={tabsMap[activeTab]}
-          onChange={handleTabChange}
-          centered
-          sx={{
-            "& .MuiTabs-indicator": {
-              backgroundColor: "#f97316",
-              height: "2px",
-            },
-            minHeight: "auto",
-          }}
-        >
-          <Tab
-            icon={<User size={20} />}
-            iconPosition="start"
-            label="My Trips"
-            sx={{
-              textTransform: "none",
-              fontSize: "1rem",
-              px: 3,
-              py: 1.5,
-              minHeight: "auto",
-              color: "#525252",
-              transition: "color 0.2s",
-              "&:hover": {
-                color: "#171717",
-              },
-              "&.Mui-selected": {
-                color: "#f97316",
-              },
-              "& .MuiTab-iconWrapper": {
-                mr: 1,
-              },
-            }}
-          />
-          <Tab
-            icon={<Heart size={20} />}
-            iconPosition="start"
-            label="Liked"
-            sx={{
-              textTransform: "none",
-              fontSize: "1rem",
-              px: 3,
-              py: 1.5,
-              minHeight: "auto",
-              color: "#525252",
-              transition: "color 0.2s",
-              "&:hover": {
-                color: "#171717",
-              },
-              "&.Mui-selected": {
-                color: "#f97316",
-              },
-              "& .MuiTab-iconWrapper": {
-                mr: 1,
-              },
-            }}
-          />
-          {/* Only show Saved tab if user is viewing their own profile */}
-          {isOwner && (
-            <Tab
-              icon={<Bookmark size={20} />}
-              iconPosition="start"
-              label="Saved"
-              sx={{
-                textTransform: "none",
-                fontSize: "1rem",
-                px: 3,
-                py: 1.5,
-                minHeight: "auto",
-                color: "#525252",
-                transition: "color 0.2s",
-                "&:hover": {
-                  color: "#171717",
-                },
-                "&.Mui-selected": {
-                  color: "#f97316",
-                },
-                "& .MuiTab-iconWrapper": {
-                  mr: 1,
-                },
-              }}
-            />
-          )}
+      <Box sx={{ mb: 5, borderBottom: "1px solid #e5e5e5" }}>
+        <Tabs value={availableTabs.findIndex((t) => t.key === activeTab)} onChange={handleTabChange} centered sx={{ "& .MuiTabs-indicator": { backgroundColor: "#f97316", height: 2 } }}>
+          {availableTabs.map((t) => <Tab key={t.key} label={t.label} icon={t.icon} iconPosition="start" sx={tabStyle} />)}
         </Tabs>
       </Box>
 
-      {list.length === 0 ? (
-        <Box
-          sx={{
-            border: "1px solid #e5e5e5",
-            backgroundColor: "#ffffff",
-            p: 6,
-            textAlign: "center",
-          }}
-        >
-          <Typography sx={{ color: "#737373", fontSize: "1rem" }}>
-            No trips to display yet.
-          </Typography>
+      {trips.length === 0 ? (
+        <Box sx={{ border: "1px solid #e5e5e5", backgroundColor: "#fff", p: 6, textAlign: "center" }}>
+          <Typography sx={{ color: "#737373", fontSize: "1rem" }}>No trips to display yet.</Typography>
         </Box>
       ) : (
         <Grid container spacing={3}>
-          {list.map((trip) => (
-            <Box
-              key={trip.id}
-              sx={{ width: { xs: "100%", sm: "50%", md: "33.333%" } }}
-            >
-              <TripPostAdapter
-                trip={trip}
-                setTrips={setTrips}
-                onEdit={() => onEdit && onEdit(trip)}
-                onDelete={() => onDelete && onDelete(trip._id)}
-              />
-            </Box>
+          {trips.map((trip) => (
+            <Grid key={trip.id} sx={{ width: { xs: "100%", sm: "50%", md: "33.333%" } }}>
+              <TripPostAdapter trip={trip} setTrips={setTrips} onEdit={() => onEdit(trip)} onDelete={() => onDelete(trip._id)} />
+            </Grid>
           ))}
         </Grid>
       )}

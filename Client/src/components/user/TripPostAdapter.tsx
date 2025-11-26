@@ -1,8 +1,10 @@
+import { useState } from "react";
 import TripPost from "../social/TripPost";
 import { useUserStore } from "../../store/userStore";
 import type { Trip } from "./types";
-import { Box, Button } from "@mui/material";
+import { Box, IconButton } from "@mui/material";
 import { Trash2, Edit } from "lucide-react";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 interface AdapterProps {
   trip: Trip;
@@ -11,17 +13,14 @@ interface AdapterProps {
   onEdit: () => void;
 }
 
+// Shared styles
+const actionsContainerStyle = { position: "absolute", top: 16, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 1, zIndex: 10 };
+const iconButtonStyle = { color: "#6b7280", backgroundColor: "rgba(255, 255, 255, 0.9)", "&:hover": { backgroundColor: "rgba(255, 255, 255, 1)" } };
+
 function adaptComments(apiComments: any[]): Comment[] {
   return apiComments.map((c) => {
     const date = new Date(c.createdAt);
-    const time = date.toLocaleString([], {
-      year: "numeric",
-      month: "short", 
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
+    const time = date.toLocaleString([], { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
     return {
       id: c._id,
       user: {
@@ -30,22 +29,17 @@ function adaptComments(apiComments: any[]): Comment[] {
         avatar: c.user.avatar || "/default-avatar.png",
       },
       text: c.comment,
-      timestamp: time, // use formatted time instead of raw timestamp
-      reactionsAggregated: c.reactionsAggregated || {}, // Include aggregated reactions
+      timestamp: time,
+      reactionsAggregated: c.reactionsAggregated || {},
     };
   });
 }
 
-export default function TripPostAdapter({
-  trip,
-  setTrips,
-  onDelete,
-  onEdit,
-}: AdapterProps) {
+export default function TripPostAdapter({ trip, setTrips, onDelete, onEdit }: AdapterProps) {
   const storeUser = useUserStore((s) => s.user);
   const currentUserId = storeUser?._id || "";
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Map our client-side Trip to the shape expected by TripPost
   const mapped = {
     _id: String(trip._id || trip.id || ""),
     currentUserId,
@@ -53,12 +47,9 @@ export default function TripPostAdapter({
     user: {
       _id: String(trip.user?._id || trip.user?.id || ""),
       id: trip.user?.id || "",
-       firstName: trip.user.firstName || "",
-     lastName: trip.user.lastName || "",
-      username:
-        (trip.user?.firstName + " " + trip.user?.lastName || "").toLowerCase().replace(/\s+/g, "") ||
-        trip.user?.id ||
-        "",
+      firstName: trip.user.firstName || "",
+      lastName: trip.user.lastName || "",
+      username: (trip.user?.firstName + " " + trip.user?.lastName || "").toLowerCase().replace(/\s+/g, "") || trip.user?.id || "",
       avatar: trip.user?.avatar || "/default-avatar.png",
       isFollowing: !!trip.user?.isFollowing,
     },
@@ -74,48 +65,38 @@ export default function TripPostAdapter({
     optimizedRoute: trip.optimizedRoute,
     comments: adaptComments(trip.comments || []),
   };
-  
+
+  const handleDeleteClick = () => setShowDeleteConfirm(true);
+  const handleDeleteConfirm = () => {
+    onDelete();
+    setShowDeleteConfirm(false);
+  };
+
+  const ActionButton = ({ onClick, Icon, hoverColor }: { onClick: () => void; Icon: any; hoverColor: string }) => (
+    <IconButton onClick={onClick} size="small" sx={{ ...iconButtonStyle, "&:hover": { ...iconButtonStyle["&:hover"], color: hoverColor } }}>
+      <Icon size={18} />
+    </IconButton>
+  );
 
   return (
-    <div>
-      <TripPost trip={mapped} setTrips={setTrips} />
-      {storeUser?._id === trip.user?._id && (
-        <Box sx={{ display: "flex", gap: 1.5, mt: 1 }}>
-          <Button
-            variant="outlined"
-            onClick={() => {
-              onDelete();
-            }}
-            sx={{
-              borderColor: "#fca5a5",
-              color: "#dc2626",
-              textTransform: "none",
-              "&:hover": {
-                borderColor: "#f87171",
-                backgroundColor: "#fef2f2",
-                color: "#b91c1c",
-              },
-            }}
-          >
-            <Trash2 size={16} style={{ marginRight: "8px" }} />
-            Delete
-          </Button>
-          <Button
-            onClick={onEdit}
-            variant="contained"
-            sx={{
-              backgroundColor: "#f97316",
-              textTransform: "none",
-              "&:hover": {
-                backgroundColor: "#ea580c",
-              },
-            }}
-          >
-            <Edit size={16} style={{ marginRight: "8px" }} />
-            Edit Trip
-          </Button>
-        </Box>
-      )}
-    </div>
+    <>
+      <Box sx={{ position: "relative" }}>
+        <TripPost trip={mapped} setTrips={setTrips} />
+        {storeUser?._id === trip.user?._id && (
+          <Box sx={actionsContainerStyle}>
+            <ActionButton onClick={onEdit} Icon={Edit} hoverColor="#374151" />
+            <ActionButton onClick={handleDeleteClick} Icon={Trash2} hoverColor="#dc2626" />
+          </Box>
+        )}
+      </Box>
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Trip"
+        message="Are you sure you want to delete this trip? This action cannot be undone."
+      />
+    </>
   );
 }

@@ -1,9 +1,10 @@
-import axios, { type AxiosInstance  } from 'axios';
+import axios, { type AxiosInstance } from 'axios';
 import { useUserStore } from '../store/userStore';
-// import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+
 const baseURL = import.meta.env.VITE_API_URL;
 const BASE_URL = baseURL ? `${baseURL}` : 'http://localhost:3000';
-// const navigate = useNavigate();
+
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   headers: {
@@ -14,10 +15,15 @@ const api: AxiosInstance = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 403){
+    if (error.response && error.response.status === 403) {
       const clearUser = useUserStore.getState().clearUser;
-        clearUser();
-        // navigate('/401');
+      clearUser();
+
+      // Show notification to user
+      toast.error('Your session has expired. Please log in again.');
+
+      // Redirect to home page
+      window.location.href = '/';
     }
     return Promise.reject(error);
   }
