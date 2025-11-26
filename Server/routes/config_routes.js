@@ -9,6 +9,7 @@ import follow from './followRoutes.js';
 import users from './usersRoute.js';
 import reports from './reportRoutes.js';
 import chat from './chatRoutes.js';
+import search from './searchRoutes.js';
 import { authMiddleware as autoM } from '../middleware/authMiddleware.js';
 
 export function routesInit(app) {
@@ -24,4 +25,5 @@ export function routesInit(app) {
   app.use('/users', users);
   app.use('/reports', reports);
   app.use('/chat', chat);
+  app.use('/api/search', search);
 }

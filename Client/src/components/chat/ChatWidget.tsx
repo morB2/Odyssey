@@ -37,6 +37,15 @@ export default function ChatWidget() {
     const [conversationStatus, setConversationStatus] = useState<any>(null);
     const location = useLocation();
 
+    // Scroll to bottom of chat
+    const scrollToBottom = () => {
+        setTimeout(() => {
+            if (messagesEndRef.current) {
+                messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
+            }
+        }, 100);
+    };
+
     // Hide widget on AllChatsPage
     useEffect(() => {
         scrollToBottom();
@@ -96,15 +105,6 @@ export default function ChatWidget() {
     });
 
     if (location.pathname === '/chats') return null;
-
-    // Scroll to bottom of chat
-    const scrollToBottom = () => {
-        setTimeout(() => {
-            if (messagesEndRef.current) {
-                messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
-            }
-        }, 100);
-    };
 
     const handleSend = async (e?: React.FormEvent) => {
         e?.preventDefault();
