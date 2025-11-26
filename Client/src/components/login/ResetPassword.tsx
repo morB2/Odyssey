@@ -18,13 +18,19 @@ import {
     CheckCircle,
     Cancel,
 } from "@mui/icons-material";
+import { useSearchParams } from "react-router-dom";
+import { resetPassword } from "../../services/login.service";
 
-export default function ResetPasswordPage() {
+export const ResetPasswordPage = () => {
+    const [searchParams] = useSearchParams();
+    const token = searchParams.get("token");
+    const id = searchParams.get("id");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const passwordRequirements = [
         { text: "At least 8 characters", met: password.length >= 8 },
@@ -37,13 +43,20 @@ export default function ResetPasswordPage() {
     const allRequirementsMet = passwordRequirements.every((req) => req.met);
     const canSubmit = allRequirementsMet && passwordsMatch;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (canSubmit) {
+        if (!canSubmit) return;
+
+        try {
+            await resetPassword(id!, token!, password);
             setIsSubmitted(true);
+            setErrorMessage(null);
             setTimeout(() => {
-                // Redirect or reset state here
+                setPassword("");
+                setConfirmPassword("");
             }, 2000);
+        } catch (error: any) {
+            setErrorMessage(error.response?.data?.message || "Something went wrong. Try again.");
         }
     };
 
@@ -143,7 +156,11 @@ export default function ResetPasswordPage() {
                                     </Typography>
                                 </Box>
                             </Box>
-
+                            {errorMessage && (
+                                <Typography color="error" align="center" sx={{ mt: 2 }}>
+                                    {errorMessage}
+                                </Typography>
+                            )}
                             {/* Form */}
                             <Box component="form" onSubmit={handleSubmit}>
                                 {/* Password */}

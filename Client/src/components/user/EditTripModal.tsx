@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { Trip, ServerTrip } from "./types";
 import { Modal } from "./Modal";
 import {
@@ -10,11 +10,13 @@ import {
   Chip,
   IconButton,
 } from "@mui/material";
-import { Save, X, Upload, Trash2, Lock, Globe, Plus } from "lucide-react";
+import { Save, X, Trash2, Lock, Globe, Plus } from "lucide-react";
 import { ConfirmDialog } from "./ConfirmDialog";
-const BASE_URL = "http://localhost:3000";
 import { useUserStore } from "../../store/userStore";
+import { updateTrip } from "../../services/profile.service";
 import { toast } from "react-toastify";
+
+import { CloudinaryUploadWidget } from "../common/CloudinaryUploadWidget";
 
 interface EditTripModalProps {
   trip: Trip | null;
@@ -46,7 +48,6 @@ export function EditTripModal({
   const [pendingVisibility, setPendingVisibility] = useState<
     "public" | "private"
   >("public");
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Keep local form state in sync when a different trip is loaded into the modal.
   // Use an effect so user edits don't get immediately overwritten on every render.
@@ -71,7 +72,6 @@ export function EditTripModal({
   }, [trip]);
 
   const handleSave = () => {
-    // Save to server instead of only local
     (async () => {
       if (!trip) return;
       try {
@@ -80,55 +80,34 @@ export function EditTripModal({
         const userId = storeUser?._id;
         if (!userId) throw new Error("Not authenticated");
 
-        // Build a minimal payload that contains ONLY the fields that changed.
-        // IMPORTANT: do NOT send optimizedRoute.instructions or route summary here
-        // because the UI doesn't allow editing them and sending empty/partial
-        // values would overwrite server data.
         const payload: Partial<ServerTrip> = {};
 
         if (title !== trip.title) payload.title = title;
         if (description !== trip.description) payload.description = description;
         if (notes !== trip.notes) payload.notes = notes;
-        // compare activities arrays shallowly
-        if (
-          JSON.stringify(activities || []) !==
-          JSON.stringify(trip.activities || [])
-        )
+        if (JSON.stringify(activities || []) !== JSON.stringify(trip.activities || []))
           payload.activities = activities;
-        // images
-        if (JSON.stringify(images || []) !== JSON.stringify(trip.images || []))
-          payload.images = images;
-        // visibility -> server expects visabilityStatus
-        if (visibility !== trip.visibility)
-          payload.visabilityStatus = visibility;
+        if (visibility !== trip.visibility) payload.visabilityStatus = visibility;
 
-        // If nothing changed, just close without calling the server
         if (Object.keys(payload).length === 0) {
           onClose();
           return;
         }
 
-        const res = await fetch(
-          `${BASE_URL}/profile/${userId}/trips/${trip._id}`,
-          {
-            method: "PUT",
-            headers: {
-              Authorization: `Bearer ${storeToken}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-          }
+        // Add images to payload if they changed
+        if (JSON.stringify(images) !== JSON.stringify(trip.images)) {
+          payload.images = images;
+        }
+
+        const res = await updateTrip(
+          userId as string,
+          String(trip._id || trip.id),
+          payload,
+          storeToken || undefined
         );
 
-        const body = await res.json().catch(() => ({}));
-        if (!res.ok)
-          throw new Error(
-            body?.error || body?.message || "Failed to save trip"
-          );
+        const serverTrip: ServerTrip = (res && (res.trip || res)) as ServerTrip;
 
-        const serverTrip: ServerTrip = body.trip || body;
-
-        // map serverTrip to client Trip shape (small mapping)
         const ordered = serverTrip.optimizedRoute?.ordered_route || [];
         const modeFromOptimized = serverTrip.optimizedRoute?.mode;
         const mapModeTansit = (m?: string): "car" | "walk" | "tansit" =>
@@ -136,11 +115,10 @@ export function EditTripModal({
         const mapModeTransit = (m?: string): "car" | "walk" | "transit" =>
           m === "driving" ? "car" : m === "walking" ? "walk" : "transit";
 
-        const mapped = {
+        const mapped: Trip = {
+          ...trip,
           id: serverTrip._id || serverTrip.id || trip.id,
-          _id: String(
-            serverTrip._id || serverTrip.id || trip._id || trip.id || ""
-          ),
+          _id: String(serverTrip._id || serverTrip.id || trip._id || trip.id || ""),
           title: serverTrip.title || title,
           description: serverTrip.description || description,
           images: serverTrip.images || images,
@@ -162,11 +140,13 @@ export function EditTripModal({
             serverTrip.visabilityStatus === "public" ? "public" : "private",
           activities: serverTrip.activities || activities,
           notes: serverTrip.notes || notes,
-        } as unknown as Trip;
+        };
 
         onSave(mapped);
+
         onClose();
-        // Also update trips list in parent (match by either id field)
+
+        // עדכון רשימת טיולים בהורה
         setTrips((prevTrips) =>
           prevTrips.map((t) =>
             t.id === mapped.id || t._id === mapped._id ? { ...t, ...mapped } : t
@@ -179,26 +159,19 @@ export function EditTripModal({
     })();
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
+  const handleImageUpload = (url: string) => {
     const remainingSlots = 3 - images.length;
-    if (remainingSlots === 0) {
-      toast.warning("Maximum 3 images allowed");
+    if (remainingSlots <= 0) {
+      alert("Maximum 3 images allowed");
       return;
     }
-
-    // In a real app, you would upload these to a server
-    // For now, we'll create object URLs
-    const filesToAdd = Array.from(files).slice(0, remainingSlots);
-    const newImages = filesToAdd.map((file) => URL.createObjectURL(file));
-    setImages([...images, ...newImages]);
+    setImages((prev) => [...prev, url]);
   };
 
   const handleRemoveImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
+    setImages((prev) => prev.filter((_, i) => i !== index));
   };
+
 
   const handleAddActivity = () => {
     if (newActivity.trim() && !activities.includes(newActivity.trim())) {
@@ -318,32 +291,12 @@ export function EditTripModal({
                 Images (max 3)
               </Typography>
               {images.length < 3 && (
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={() => fileInputRef.current?.click()}
-                  sx={{
-                    borderColor: "#d4d4d4",
-                    color: "#171717",
-                    textTransform: "none",
-                    "&:hover": {
-                      borderColor: "#a3a3a3",
-                      backgroundColor: "#fafafa",
-                    },
-                  }}
-                >
-                  <Upload size={16} style={{ marginRight: "8px" }} />
-                  Upload
-                </Button>
+                <CloudinaryUploadWidget
+                  onUpload={handleImageUpload}
+                  folder="odyssey/trips"
+                  buttonText="Upload"
+                />
               )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                style={{ display: "none" }}
-                onChange={handleImageUpload}
-              />
             </Box>
 
             {images.length === 0 ? (

@@ -1,10 +1,11 @@
 import React from 'react';
 import { Box, Paper, Typography, Stack } from '@mui/material';
 import { Sparkles } from 'lucide-react';
-import { ItinerarySummary } from './ItinerarySummary'; // Imported from original file
-import { TripDisplay } from './TripDisplay'; // Imported from original file
-import { TravelModeSelector } from './TravelModeSelector'; // Extracted
+import { ItinerarySummary } from './ItinerarySummary';
+import { TripDisplay } from './TripDisplay';
+import { TravelModeSelector } from './TravelModeSelector';
 import { type Message, type Itinerary } from './types';
+import { useTranslation } from 'react-i18next';
 
 interface MessageBubbleProps {
     message: Message;
@@ -19,6 +20,8 @@ export default function MessageBubble({
     onSelectItinerary,
     onSelectTravelMode
 }: MessageBubbleProps) {
+
+    const { t } = useTranslation();
 
     const isUser = m.sender === 'user';
     const isRichContent = !!m.content;
@@ -40,7 +43,9 @@ export default function MessageBubble({
                     {!isUser && (
                         <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
                             <Sparkles style={{ width: 14, height: 14, color: '#ff6b35' }} />
-                            <Typography variant="caption" sx={{ opacity: 0.7 }}>AI Assistant</Typography>
+                            <Typography variant="caption" sx={{ opacity: 0.7 }}>
+                                {t('messageBubble.aiAssistant')}
+                            </Typography>
                         </Stack>
                     )}
                     <Typography sx={{ whiteSpace: 'pre-wrap' }}>{m.text}</Typography>
@@ -52,10 +57,25 @@ export default function MessageBubble({
     // --- 2B: Render RICH CONTENT Messages ---
     if (isRichContent) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'flex-start', width: '100%', ml: m.content?.type === 'travelModeSelection' ? 2 : 0 }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    width: '100%',
+                    ml: m.content?.type === 'travelModeSelection' ? 2 : 0
+                }}
+            >
                 {/* Rich Content: Itinerary Suggestions */}
                 {m.content?.type === 'suggestions' && (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2, width: '100%' }}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 3,
+                            mt: 2,
+                            width: '100%'
+                        }}
+                    >
                         {m.content.data.map((s: Itinerary, index: number) => (
                             <Box
                                 key={index}
@@ -76,7 +96,10 @@ export default function MessageBubble({
                                 <ItinerarySummary
                                     title={s.title}
                                     discription={s.description}
-                                    items={s.destinations.map((d: any) => ({ name: d.name, notes: d.note }))}
+                                    items={s.destinations.map((d: any) => ({
+                                        name: d.name,
+                                        notes: d.note
+                                    }))}
                                 />
                             </Box>
                         ))}
@@ -85,9 +108,7 @@ export default function MessageBubble({
 
                 {/* Rich Content: Travel Mode Selection Buttons */}
                 {m.content?.type === 'travelModeSelection' && (
-                    <TravelModeSelector
-                        onSelectMode={onSelectTravelMode}
-                    />
+                    <TravelModeSelector onSelectMode={onSelectTravelMode} />
                 )}
 
                 {/* Rich Content: Trip Display */}

@@ -1,6 +1,7 @@
-import React, {type Dispatch,type SetStateAction } from 'react';
+import React, { type Dispatch, type FC, type SetStateAction } from 'react';
 import { Box, Stack, TextField, Button, Typography } from '@mui/material';
 import { Send } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ChatInputProps {
     inputMessage: string;
@@ -9,12 +10,14 @@ interface ChatInputProps {
     isTyping: boolean;
 }
 
-export default function ChatInput({
+export const ChatInput = ({
     inputMessage,
     setInputMessage,
     handleSendMessage,
     isTyping,
-}: ChatInputProps) {
+}: ChatInputProps) => {
+
+    const { t } = useTranslation();
 
     // Extracted the key press handler
     const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -32,7 +35,7 @@ export default function ChatInput({
             <Stack direction="row" spacing={2}>
                 <TextField
                     fullWidth
-                    placeholder="Type your message..."
+                    placeholder={t("chat_input.placeholder")}
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
@@ -49,7 +52,7 @@ export default function ChatInput({
                 </Button>
             </Stack>
             <Typography variant="caption" color="text.secondary" align="center" sx={{ mt: 1 }}>
-                Press Enter to send • AI will generate your personalized itinerary
+                {t("chat_input.hint")}
             </Typography>
         </Box>
     );

@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import TripPost from './TripPost';
 import { Container, Box } from '@mui/material';
 import { fetchTrips } from '../../services/tripFeed.service';
-import Navbar from '../general/Navbar';
 import { type Comment, type Trip } from './types';
+import Navbar  from '../general/Navbar';
 import TripFeedSkeleton from './TripFeedSkeleton';
 import { useUserStore } from '../../store/userStore';
-import GuestWelcomeCard from './GuestWelcomeCard';
+import { GuestWelcomeCard } from './GuestWelcomeCard';
 import { toast } from 'react-toastify';
 
 function adaptComments(apiComments: any[]): Comment[] {

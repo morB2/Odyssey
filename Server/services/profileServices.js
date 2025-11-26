@@ -4,232 +4,260 @@ import Like from "../models/likesModel.js";
 import Save from "../models/savesModel.js";
 import Follow from "../models/followModel.js";
 import bcrypt from "bcrypt";
-import redis from '../db/redisClient.js';
+import redis from "../db/redisClient.js";
 import { clearUserFeedCache, clearUserProfileCache } from "../utils/cacheUtils.js";
+import path from "path";
+import fs from "fs";
+import { uploadToCloudinary } from "./cloudinaryHelper.js";
 
 const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
+const uploadsDir = path.join(process.cwd(), "uploads");
 
-function normalizeAvatarUrl(avatar) {
-  if (!avatar) return avatar;
-  if (typeof avatar !== "string") return avatar;
-  if (avatar.startsWith("http://") || avatar.startsWith("https://"))
-    return avatar;
-  if (avatar.startsWith("/")) return `${SERVER_URL}${avatar}`;
-  return avatar;
+// -----------------------------------------------------
+// Helpers
+// -----------------------------------------------------
+function normalizeAvatarUrl(url) {
+  if (!url) return url;
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  if (url.startsWith("/")) return SERVER_URL + url;
+  return url;
 }
+
+async function safeJsonParse(value, fallback = []) {
+  try {
+    return typeof value === "string" ? JSON.parse(value) : value;
+  } catch {
+    return fallback;
+  }
+}
+
+function deleteLocalFileIfExists(absolutePath) {
+  try {
+    if (fs.existsSync(absolutePath)) fs.unlinkSync(absolutePath);
+  } catch (err) {
+    console.warn("File delete failed:", absolutePath, err);
+  }
+}
+
+async function buildTripMetadata({ trips, ownerId }) {
+  const tripIds = trips.map(t => t._id);
+
+  const liked = ownerId
+    ? await Like.find({ user: ownerId, trip: { $in: tripIds } }).select("trip")
+    : [];
+  const likedSet = new Set(liked.map(l => String(l.trip)));
+
+  const saved = ownerId
+    ? await Save.find({ user: ownerId, trip: { $in: tripIds } }).select("trip")
+    : [];
+  const savedSet = new Set(saved.map(s => String(s.trip)));
+
+  const authorIds = [...new Set(trips.map(t => String(t.user?._id)))];
+  const follows = ownerId
+    ? await Follow.find({
+      follower: ownerId,
+      following: { $in: authorIds },
+    }).select("following")
+    : [];
+  const followSet = new Set(follows.map(f => String(f.following)));
+
+  return { likedSet, savedSet, followSet };
+}
+
+function mapTrip(trip, { likedSet, savedSet, followSet, ownerId }) {
+  return {
+    ...trip,
+    likes: trip.likes || 0,
+    isLiked: ownerId ? likedSet.has(String(trip._id)) : false,
+    isSaved: ownerId ? savedSet.has(String(trip._id)) : false,
+
+    user: {
+      ...trip.user,
+      avatar: normalizeAvatarUrl(trip.user?.avatar),
+      isFollowing: ownerId
+        ? followSet.has(String(trip.user?._id))
+        : false,
+    },
+
+    comments: (trip.comments || []).map(c => ({
+      ...c,
+      user: {
+        ...c.user,
+        avatar: normalizeAvatarUrl(c.user?.avatar),
+      },
+    })),
+  };
+}
+
+async function fetchAndFormatTrips({ trips, ownerId }) {
+  if (!trips.length) return [];
+
+  const meta = await buildTripMetadata({ trips, ownerId });
+  return trips.map(t => mapTrip(t, { ...meta, ownerId }));
+}
+
+// -----------------------------------------------------
+// PROFILE
+// -----------------------------------------------------
 
 export async function getProfile(userId) {
   if (!userId) throw new Error("userId required");
+
   const user = await User.findById(userId).select("-password -__v").lean();
   if (!user) throw Object.assign(new Error("User not found"), { status: 404 });
-  // normalize avatar to absolute URL for clients
+
   if (user.avatar) user.avatar = normalizeAvatarUrl(user.avatar);
-  // include follower/following counts
+
   try {
     const followersCount = await Follow.countDocuments({ following: user._id });
     const followingCount = await Follow.countDocuments({ follower: user._id });
+
     return { ...user, followersCount, followingCount };
-  } catch (e) {
-    // on error computing counts, return user without counts but log
-    console.warn("failed to compute follow counts for user", userId, e);
+  } catch {
     return user;
   }
 }
 
-export async function updateProfile(userId, updates) {
-  if (!userId) throw new Error("userId required");
-  const allowed = [
-    "firstName",
-    "lastName",
-    // email intentionally excluded: immutable via API
-    "birthday",
-    "preferences",
-    "avatar",
-  ];
-  const payload = {};
-  for (const k of allowed) if (k in updates) payload[k] = updates[k];
-  // If avatar is a local uploads path (starts with '/'), convert to absolute URL
-  if (payload.avatar && typeof payload.avatar === "string") {
-    const a = payload.avatar;
-    if (a.startsWith("/")) payload.avatar = normalizeAvatarUrl(a);
-  }
-  const user = await User.findByIdAndUpdate(userId, payload, { new: true })
-    .select("-password -__v")
-    .lean();
-  if (!user) throw Object.assign(new Error("User not found"), { status: 404 });
-  if (user.avatar) user.avatar = normalizeAvatarUrl(user.avatar);
-  return user;
-}
+// -----------------------------------------------------
+// TRIPS - LIST
+// -----------------------------------------------------
 
-export async function updatePassword(userId, currentPassword, newPassword) {
-  if (!userId) throw new Error("userId required");
-  if (!newPassword) throw new Error("newPassword required");
-
-  const user = await User.findById(userId);
-  if (!user) throw Object.assign(new Error("User not found"), { status: 404 });
-
-  // If user already has a password, require currentPassword
-  if (user.password) {
-    if (!currentPassword)
-      throw Object.assign(new Error("Current password required"), {
-        status: 400,
-      });
-    const ok = await bcrypt.compare(currentPassword, user.password);
-    if (!ok)
-      throw Object.assign(new Error("Current password is incorrect"), {
-        status: 401,
-      });
-  }
-
-  const hashed = await bcrypt.hash(newPassword, 12);
-  user.password = hashed;
-  await user.save();
-  return { success: true };
-}
-
-export async function listUserTrips(userId, viewerId) {
-  // Backwards-compatible wrapper: prefer using listUserTripsForViewer
-  return listUserTripsForViewer(userId, viewerId);
-}
-
-// Enhanced version: returns trips for a specific owner with populated user/comments
-// and optional viewerId to compute isLiked/isSaved/isFollowing flags.
 export async function listUserTripsForViewer(ownerId, viewerId) {
   if (!ownerId) throw new Error("ownerId required");
 
-  const cacheKey = `profile:${ownerId}:trips:viewer:${viewerId || 'none'}`;
-  console.log(`[Profile] Checking cache for user ${ownerId}, viewer ${viewerId}`);
-
-  // Check Redis cache first
+  const cacheKey = `profile:${ownerId}:trips:${viewerId || "none"}`;
   const cached = await redis.get(cacheKey);
-  if (cached) {
-    console.log(`[Profile] Cache hit! Returning cached trips for user ${ownerId}`);
-    return JSON.parse(cached);
-  }
+  if (cached) return JSON.parse(cached);
 
-  console.log(`[Profile] Cache miss. Loading trips from DB for user ${ownerId}`);
-
-  // get trips for owner
   const trips = await Trip.find({ user: ownerId })
     .sort({ createdAt: -1 })
     .populate({ path: "user", select: "_id firstName lastName avatar" })
-    .populate({
-      path: "comments.user",
-      select: "_id firstName lastName avatar",
-    })
-    .populate({
-      path: "comments.replies.user",
-      select: "_id firstName lastName avatar",
-    })
+    .populate({ path: "comments.user", select: "_id firstName lastName avatar" })
     .lean();
 
-  if (!trips || trips.length === 0) return [];
+  const result = await fetchAndFormatTrips({
+    trips,
+    ownerId: viewerId,
+  });
 
-  const tripIds = trips.map((t) => t._id);
-
-  // prepare sets for likes and saves for this viewer (if provided)
-  const likedTripIds = new Set();
-  const savedTripIds = new Set();
-  const followingUserIds = new Set();
-
-  if (viewerId) {
-    const likes = await Like.find({
-      user: viewerId,
-      trip: { $in: tripIds },
-    }).select("trip");
-    const saves = await Save.find({
-      user: viewerId,
-      trip: { $in: tripIds },
-    }).select("trip");
-    likes.forEach((l) => likedTripIds.add(String(l.trip)));
-    saves.forEach((s) => savedTripIds.add(String(s.trip)));
-
-    // check follows for the owner
-    if (trips[0].user && trips[0].user._id) {
-      const f = await Follow.findOne({
-        follower: viewerId,
-        following: trips[0].user._id,
-      }).select("following");
-      if (f) followingUserIds.add(String(trips[0].user._id));
-    }
-  }
-
-  const tripsWithStatus = trips.map((trip) => ({
-    ...trip,
-    likes: trip.likes || 0,
-    isLiked: viewerId ? likedTripIds.has(String(trip._id)) : false,
-    isSaved: viewerId ? savedTripIds.has(String(trip._id)) : false,
-    user: {
-      ...trip.user,
-      isFollowing: viewerId
-        ? followingUserIds.has(String(trip.user?._id))
-        : false,
-    },
-    comments: trip.comments || [],
-  }));
-
-  // normalize avatars in returned trips
-  for (const t of tripsWithStatus) {
-    if (t.user && t.user.avatar)
-      t.user.avatar = normalizeAvatarUrl(t.user.avatar);
-    if (Array.isArray(t.comments)) {
-      for (const c of t.comments) {
-        if (c.user && c.user.avatar)
-          c.user.avatar = normalizeAvatarUrl(c.user.avatar);
-      }
-    }
-  }
-
-  // Cache result for 60 seconds
-  console.log(`[Profile] Caching trips for user ${ownerId} for 60 seconds`);
-  await redis.setEx(cacheKey, 60, JSON.stringify(tripsWithStatus));
-
-  return tripsWithStatus;
+  await redis.setEx(cacheKey, 60, JSON.stringify(result));
+  return result;
 }
 
-export async function getUserTrip(userId, tripId, viewerId) {
-  if (!userId || !tripId) throw new Error("userId and tripId required");
+export async function listUserTrips(ownerId, viewerId) {
+  return listUserTripsForViewer(ownerId, viewerId);
+}
 
-  // populate owner info and comment users
+// -----------------------------------------------------
+// TRIPS - GET SINGLE
+// -----------------------------------------------------
+
+export async function getUserTrip(userId, tripId, viewerId) {
+  if (!userId || !tripId) throw new Error("Missing parameters");
+
   const trip = await Trip.findOne({ _id: tripId, user: userId })
     .populate({ path: "user", select: "_id firstName lastName avatar" })
-    .populate({
-      path: "comments.user",
-      select: "_id firstName lastName avatar",
-    })
-    .populate({
-      path: "comments.replies.user",
-      select: "_id firstName lastName avatar",
-    })
+    .populate({ path: "comments.user", select: "_id firstName lastName avatar" })
     .lean();
 
   if (!trip) throw Object.assign(new Error("Trip not found"), { status: 404 });
 
-  // If a viewerId is provided, compute social flags (isLiked, isSaved, isFollowing)
-  if (viewerId) {
-    try {
-      const like = await Like.findOne({ user: viewerId, trip: trip._id }).select("_id");
-      trip.isLiked = !!like;
+  const meta = await buildTripMetadata({ trips: [trip], ownerId: viewerId });
 
-      const save = await Save.findOne({ user: viewerId, trip: trip._id }).select("_id");
-      trip.isSaved = !!save;
-
-      if (trip.user && trip.user._id) {
-        const follow = await Follow.findOne({ follower: viewerId, following: trip.user._id }).select("_id");
-        trip.user.isFollowing = !!follow;
-      }
-    } catch (e) {
-      // don't fail the whole request if social lookups fail
-      console.warn("social flags lookup failed", e);
-    }
-  }
-
-  return trip;
+  return mapTrip(trip, {
+    ...meta,
+    ownerId: viewerId,
+  });
 }
 
-export async function updateUserTrip(userId, tripId, updates) {
-  if (!userId || !tripId) throw new Error("userId and tripId required");
-  const allowed = [
+// -----------------------------------------------------
+// PROFILE (LIKED + SAVED) 
+// -----------------------------------------------------
+
+async function fetchProfileTripCollection({
+  ownerId,
+  viewerId,
+  model,
+  cachePrefix,
+}) {
+  if (!ownerId) throw new Error("ownerId required");
+
+  const cacheKey = `${cachePrefix}:${ownerId}:${viewerId || "none"}`;
+  const cached = await redis.get(cacheKey);
+  if (cached) return JSON.parse(cached);
+
+  const items = await model
+    .find({ user: ownerId })
+    .populate({
+      path: "trip",
+      populate: [
+        { path: "user", select: "_id firstName lastName avatar" },
+        { path: "comments.user", select: "_id firstName lastName avatar" },
+      ],
+    })
+    .lean();
+
+  const trips = items.map(x => x.trip).filter(Boolean);
+
+  const result = await fetchAndFormatTrips({
+    trips,
+    ownerId: viewerId,
+  });
+
+  await redis.setEx(cacheKey, 60, JSON.stringify(result));
+  return result;
+}
+
+export async function getProfileLikedTrips(ownerId, viewerId) {
+  return fetchProfileTripCollection({
+    ownerId,
+    viewerId,
+    model: Like,
+    cachePrefix: "profile:liked",
+  });
+}
+
+export async function getProfileSavedTrips(ownerId, viewerId) {
+  return fetchProfileTripCollection({
+    ownerId,
+    viewerId,
+    model: Save,
+    cachePrefix: "profile:saved",
+  });
+}
+
+export async function updatePassword(userId, authUser, currentPassword, newPassword) {
+  if (!userId || !newPassword) throw new Error("Missing parameters");
+
+  if (!authUser || String(authUser._id || authUser.userId) !== String(userId))
+    throw Object.assign(new Error("Forbidden"), { status: 403 });
+
+  const user = await User.findById(userId);
+  if (!user) throw Object.assign(new Error("User not found"), { status: 404 });
+
+  // Compare current password if exists
+  if (user.password) {
+    if (!currentPassword)
+      throw Object.assign(new Error("Current password required"), { status: 400 });
+
+    const ok = await bcrypt.compare(currentPassword, user.password);
+    if (!ok)
+      throw Object.assign(new Error("Current password incorrect"), { status: 401 });
+  }
+
+  user.password = await bcrypt.hash(newPassword, 12);
+  await user.save();
+
+  return { success: true };
+}
+
+export async function updateUserTrip(userId, tripId, authUser, updates, files) {
+  if (!userId || !tripId) throw new Error("Missing parameters");
+
+  if (!authUser || String(authUser._id || authUser.userId) !== String(userId))
+    throw Object.assign(new Error("Forbidden"), { status: 403 });
+
+  const allowedFields = [
     "chosenTrip",
     "title",
     "description",
@@ -237,35 +265,122 @@ export async function updateUserTrip(userId, tripId, updates) {
     "activities",
     "status",
     "visabilityStatus",
+    "images",
     "notes",
   ];
+
   const payload = {};
-  for (const k of allowed) if (k in updates) payload[k] = updates[k];
-  const trip = await Trip.findOneAndUpdate(
+  allowedFields.forEach(key => {
+    if (key in updates) payload[key] = updates[key];
+  });
+
+  // Parse client existing images
+  if ("imagesExisting" in updates) {
+    payload.images = await safeJsonParse(updates.imagesExisting, []);
+  } else if (typeof payload.images === "string") {
+    payload.images = await safeJsonParse(payload.images, []);
+  }
+
+  // Upload new images to Cloudinary
+  if (files?.length) {
+    const newUrls = [];
+
+    for (const f of files) {
+      const abs = path.join(uploadsDir, f.filename);
+      try {
+        const uploaded = await uploadToCloudinary(abs, "odyssey/trips");
+        if (uploaded) newUrls.push(uploaded);
+      } catch (err) {
+        console.error("Cloudinary upload failed:", err);
+      }
+    }
+
+    payload.images = [...(payload.images || []), ...newUrls];
+  }
+
+  // Remove local files that are no longer in images
+  const currentTrip = await Trip.findById(tripId).lean();
+  if (!currentTrip) throw Object.assign(new Error("Trip not found"), { status: 404 });
+
+  if (payload.images) {
+    const missing = (currentTrip.images || []).filter(old => !payload.images.includes(old));
+
+    missing.forEach(img => {
+      if (img.includes("/uploads/")) {
+        const filename = img.split("/uploads/")[1];
+        deleteLocalFileIfExists(path.join(uploadsDir, filename));
+      }
+    });
+  }
+
+  const updated = await Trip.findOneAndUpdate(
     { _id: tripId, user: userId },
     { $set: payload },
     { new: true }
   ).lean();
-  if (!trip) throw Object.assign(new Error("Trip not found"), { status: 404 });
 
-  // Invalidate caches when trip is updated
   await clearUserFeedCache(userId);
   await clearUserProfileCache(userId);
 
-  return trip;
+  return updated;
 }
 
-export async function deleteUserTrip(userId, tripId) {
-  if (!userId || !tripId) throw new Error("userId and tripId required");
-  const trip = await Trip.findOneAndDelete({
-    _id: tripId,
-    user: userId,
-  }).lean();
-  if (!trip) throw Object.assign(new Error("Trip not found"), { status: 404 });
+// -----------------------------------------------------
+// TRIPS - DELETE
+// -----------------------------------------------------
 
-  // Invalidate caches when trip is deleted
+export async function deleteUserTrip(userId, tripId, authUser) {
+  if (!userId || !tripId) throw new Error("Missing parameters");
+
+  if (!authUser || String(authUser._id || authUser.userId) !== String(userId))
+    throw Object.assign(new Error("Forbidden"), { status: 403 });
+
+  const deleted = await Trip.findOneAndDelete({ _id: tripId, user: userId }).lean();
+  if (!deleted) throw Object.assign(new Error("Trip not found"), { status: 404 });
+
   await clearUserFeedCache(userId);
   await clearUserProfileCache(userId);
 
-  return trip;
+  return deleted;
 }
+
+// -----------------------------------------------------
+// AVATAR
+// -----------------------------------------------------
+
+export async function updateProfileAvatar(userId, authUser, file, avatarUrl) {
+  if (!userId) throw new Error("Missing userId");
+
+  if (!authUser || String(authUser._id || authUser.userId) !== String(userId))
+    throw Object.assign(new Error("Forbidden"), { status: 403 });
+
+  let newAvatar = avatarUrl;
+
+  if (file) {
+    const fileAbs = path.join(uploadsDir, file.filename);
+    newAvatar = await uploadToCloudinary(fileAbs, "odyssey/avatars");
+  }
+
+  if (!newAvatar)
+    throw Object.assign(new Error("No avatar provided"), { status: 400 });
+
+  const previous = await User.findById(userId).lean();
+
+  // Delete old local avatar if needed
+  const prev = previous?.avatar;
+  if (prev && prev.includes("/uploads/") && prev !== newAvatar) {
+    const fileName = prev.split("/uploads/")[1];
+    deleteLocalFileIfExists(path.join(uploadsDir, fileName));
+  }
+
+  const avatarToSave = newAvatar.startsWith("/") ? normalizeAvatarUrl(newAvatar) : newAvatar;
+
+  return User.findByIdAndUpdate(
+    userId,
+    { avatar: avatarToSave },
+    { new: true }
+  )
+    .select("-password -__v")
+    .lean();
+}
+

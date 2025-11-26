@@ -68,9 +68,9 @@ export default function TripPostAdapter({
       avatar: trip.user?.avatar || "/default-avatar.png",
       isFollowing: !!trip.user?.isFollowing,
     },
-    title: trip.location || "",
     location: trip.location || trip.description || "",
     duration: trip.duration || "",
+    title: trip.title || "",
     description: trip.description || "",
     activities: trip.activities || [],
     images: trip.images || [],
@@ -80,9 +80,7 @@ export default function TripPostAdapter({
     optimizedRoute: trip.optimizedRoute,
     comments: adaptComments(trip.comments || []),
   };
-
-  console.log("server trip\n", trip.user, "map\n", mapped.user);
-
+  
 
   return (
     <div>

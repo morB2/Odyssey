@@ -1,6 +1,6 @@
 import client from '../config/googleClient.js';
 import { config } from '../config/secret.js';
-import { googleLoginS, loginUserS, registerUserS } from '../services/loginService.js';
+import { googleLoginS, loginUserS, registerUserS, resetPasswordS } from '../services/loginService.js';
 
 export async function loginUser(userData) {
     const { email, password } = userData;
@@ -19,4 +19,9 @@ export async function googleLogin(token) {
     });
 
     return await googleLoginS(ticket);
+}
+
+export async function resetPassword(data) {
+    const { id, token, password } = data;
+    return await resetPasswordS(id, token, password);
 }

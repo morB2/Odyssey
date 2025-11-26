@@ -30,9 +30,7 @@ export const initializeSocket = (server) => {
         }
 
         try {
-            console.log('token', token)
             const decoded = jwt.verify(token, config.jwtSecret);
-            console.log('decoded', decoded)
             socket.userId = decoded.userId;
             next();
         } catch (err) {
@@ -43,7 +41,6 @@ export const initializeSocket = (server) => {
     });
 
     io.on('connection', (socket) => {
-        console.log(`Socket connected: ${socket.id}, User: ${socket.userId || 'anonymous'}`);
 
         // Log all connected users whenever someone connects
         logConnectedUsers();
@@ -51,20 +48,17 @@ export const initializeSocket = (server) => {
         // Join user-specific room for direct messaging
         if (socket.userId) {
             socket.join(`user:${socket.userId}`);
-            console.log(`User ${socket.userId} joined their personal room`);
         }
 
         // Join a trip-specific room
         socket.on('joinTrip', (tripId) => {
             socket.join(`trip:${tripId}`);
-            console.log(`User ${socket.userId} joined trip room: ${tripId}`);
             logConnectedUsers();
         });
 
         // Leave a trip-specific room
         socket.on('leaveTrip', (tripId) => {
             socket.leave(`trip:${tripId}`);
-            console.log(`User ${socket.userId} left trip room: ${tripId}`);
             logConnectedUsers();
         });
 
@@ -128,11 +122,6 @@ export const logConnectedUsers = () => {
             rooms: Array.from(socket.rooms).filter(room => room !== socket.id), // Exclude default room
         });
     });
-
-    console.log('\n📊 === CONNECTED USERS ===');
-    console.log(`Total connections: ${connectedUsers.length}`);
-    console.log('Users:', JSON.stringify(connectedUsers, null, 2));
-    console.log('=========================\n');
 
     return connectedUsers;
 };

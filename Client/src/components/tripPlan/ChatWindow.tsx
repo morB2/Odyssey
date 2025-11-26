@@ -6,20 +6,22 @@ import { type Message, type Itinerary } from './types';
 interface ChatWindowProps {
     messages: Message[];
     isTyping: boolean;
-    scrollAreaRef: RefObject<HTMLDivElement | null> | null;
+    scrollAreaRef: React.RefObject<HTMLDivElement | null>;
+    // scrollAreaRef: RefObject<HTMLDivElement | null> | null;
     selectedItinerary: Itinerary | null;
     onSelectItinerary: (itinerary: Itinerary) => void;
     onSelectTravelMode: (mode: string) => void;
 }
 
-export default function ChatWindow({
+export const ChatWindow = ({
     messages,
     isTyping,
     scrollAreaRef,
     selectedItinerary,
     onSelectItinerary,
     onSelectTravelMode,
-}: ChatWindowProps) {
+}: ChatWindowProps) => {
+
     return (
         <Box 
             ref={scrollAreaRef} 
