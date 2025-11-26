@@ -5,7 +5,7 @@ import { useUserStore } from "../../store/userStore";
 import { changePassword, uploadAvatar } from "../../services/profile.service";
 import { CloudinaryUploadWidget } from "../common/CloudinaryUploadWidget";
 import type { UserProfile } from "./types";
-
+import { useTranslation } from "react-i18next";
 interface ChangePasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -26,7 +26,7 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const closeTimer = useRef<number | null>(null);
-
+  const { t } = useTranslation();
   // Avatar states
   const [avatarUrl, setAvatarUrl] = useState("");
   const [preview, setPreview] = useState<string | null>(null);

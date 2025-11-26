@@ -445,5 +445,19 @@
     "termsOfService": "תנאי שימוש",
     "privacyPolicy": "מדיניות פרטיות",
     "contact": "צור קשר"
+  },
+    "editProfile": {
+    "title": "עריכת פרופיל",
+    "profilePicture": "תמונת פרופיל",
+    "uploadAvatar": "העלה תמונת פרופיל חדשה",
+    "saveAvatar": "שמור תמונת פרופיל",
+    "changePassword": "שנה סיסמה",
+    "currentPassword": "סיסמה נוכחית",
+    "newPassword": "סיסמה חדשה",
+    "confirmPassword": "אשר סיסמה חדשה",
+    "changePasswordButton": "שנה סיסמה",
+    "changingPassword": "משנה...",
+    "savingAvatar": "שומר...",
+    "close": "סגור"
   }
 }

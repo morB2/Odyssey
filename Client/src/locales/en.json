@@ -438,5 +438,19 @@
       "Intellectual property violation": "Intellectual property violation",
       "Other": "Other"
     }
+  },
+  "editProfile": {
+    "title": "Edit Profile",
+    "profilePicture": "Profile Picture",
+    "uploadAvatar": "Upload New Avatar",
+    "saveAvatar": "Save Avatar",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "changePasswordButton": "Change Password",
+    "changingPassword": "Changing...",
+    "savingAvatar": "Saving...",
+    "close": "Close"
   }
 }
