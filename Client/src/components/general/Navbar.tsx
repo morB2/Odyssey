@@ -1,96 +1,219 @@
-import React from 'react'
+import type { FC } from 'react';
+import  { useEffect, useState } from 'react';
+import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { AppBar, Toolbar, Box, Button, Link, Typography } from '@mui/material';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { BookImage, Sparkles, MessageCircleMore } from 'lucide-react';
+
 import { useUserStore } from '../../store/userStore';
+import ProfileMenu from '../user/ProfileMenu';
+import LanguageSwitcher from './LanguageSwitcher';
+import Search from './Search';
+import { useTranslation } from 'react-i18next';
+import chatService from '../../services/chat.service';
 
-function Navbar() {
+const Navbar: FC = () => {
   const navigate = useNavigate();
-  const user = useUserStore(state => state.user);
+  const location = useLocation();
+  const { t } = useTranslation();
+  const user = useUserStore((state) => state.user);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
 
-  const handleLogout = () => {
-    const clearUser = useUserStore.getState().clearUser;
-    clearUser();
-    navigate("/");
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchUnread = async () => {
+      if (!user?._id) {
+        setUnreadCount(0);
+        return;
+      }
+      try {
+        const data = await chatService.getUnreadCount(user._id);
+        const count = typeof data === 'number' ? data : data?.unread ?? 0;
+        if (mounted) setUnreadCount(count);
+      } catch (err) {
+        console.error('Failed to fetch unread count', err);
+      }
+    };
+
+    fetchUnread();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user]);
+
+  const navItemStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    cursor: 'pointer',
+    color: 'white',
+    transition: 'all 0.3s ease',
+    padding: '8px 12px',
+    borderRadius: '12px',
+    '&:hover': {
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      transform: 'translateY(-2px)',
+    },
   };
 
   return (
-      <AppBar position="absolute" elevation={0} sx={{ background: 'transparent' }}>
-        <Toolbar sx={{ px: { xs: 2, md: 6 }, py: 2, justifyContent: 'space-between' }}>
+    <>
+      <AppBar
+        position="fixed"
+        elevation={0}
+        sx={{
+          background: 'linear-gradient(135deg, rgba(75, 27, 2, 0.95) 0%, rgba(174, 131, 66, 0.95) 100%)',
+          backdropFilter: 'blur(10px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.3)',
+        }}
+      >
+        <Toolbar sx={{ px: { xs: 2, md: 6 }, py: 1.5, justifyContent: 'space-between' }}>
+          {/* Logo */}
+          <Link
+            component={RouterLink}
+            to="/"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              textDecoration: 'none',
+              cursor: 'pointer',
+              '&:hover': { opacity: 0.9 },
+              transition: 'opacity 0.2s',
+            }}
+          >
+            <Box
+              component="img"
+              src="/logo-white.png"
+              alt="Odyssey Logo"
+              sx={{ height: { xs: 80, md: 100 }, objectFit: 'contain' }}
+            />
+          </Link>
 
-          {/* Left side: Logo */}
-          <Box component="img" src="/logo-white.png" alt="Odyssey Logo" sx={{ height: { xs: 90, md: 110 }, objectFit: 'contain' }} />
+          {/* Right side */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Search onSearch={(s) => console.log('Search term:', s)} />
 
-          {/* Right side: Links + Buttons */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 3, mr: 3 }}>
-              <Link
-                component={RouterLink}
-                to="/features"
-                underline="none"
-                sx={{ color: 'white', '&:hover': { color: '#fcd34d' }, transition: 'color 0.3s' }}
-              >
-                Features
-              </Link>
+            {user && (
+              <>
+                {/* Feed */}
+                <Box onClick={() => navigate('/feed')} sx={navItemStyle}>
+                  <BookImage size={24} />
+                  <Typography variant="caption" sx={{ mt: 0.5, fontSize: '0.75rem', fontWeight: 500 }}>
+                    {t('feed')}
+                  </Typography>
+                </Box>
 
-              <Link
-                component={RouterLink}
-                to="/about"
-                underline="none"
-                sx={{ color: 'white', '&:hover': { color: '#fcd34d' }, transition: 'color 0.3s' }}
-              >
-                About
-              </Link>
+                {/* Create Trip */}
+                <Box onClick={() => navigate('/createtrip')} sx={navItemStyle}>
+                  <Sparkles size={24} />
+                  <Typography variant="caption" sx={{ mt: 0.5, fontSize: '0.75rem', fontWeight: 500 }}>
+                    {t('createTrip')}
+                  </Typography>
+                </Box>
 
-              {user && (
-                <Link
-                  component={RouterLink}
-                  to="/profile"
-                  underline="none"
-                  sx={{ color: 'white', '&:hover': { color: '#fcd34d' }, transition: 'color 0.3s' }}
+                {/* Messages */}
+                <Box onClick={() => navigate('/chats')} sx={{ ...navItemStyle, position: 'relative' }}>
+                  <MessageCircleMore size={24} />
+
+                  {/* Unread badge */}
+                  {unreadCount > 0 && (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 4,
+                        right: 8,
+                        background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+                        color: 'white',
+                        borderRadius: '50%',
+                        width: 20,
+                        height: 20,
+                        fontSize: '0.7rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 'bold',
+                        boxShadow: '0 2px 8px rgba(249, 115, 22, 0.4)',
+                        border: '2px solid rgba(15, 23, 42, 0.95)',
+                      }}
+                    >
+                      {unreadCount}
+                    </Box>
+                  )}
+
+                  <Typography variant="caption" sx={{ mt: 0.5, fontSize: '0.75rem', fontWeight: 500 }}>
+                    {t('messages') ?? 'Messages'}
+                  </Typography>
+                </Box>
+              </>
+            )}
+
+            <LanguageSwitcher />
+
+            {/* Auth / Profile */}
+            {user ? (
+              <ProfileMenu />
+            ) : (
+              <Box sx={{ display: 'flex', gap: 1.5, minWidth: 'fit-content', flexShrink: 0 }}>
+                <Button
+                  variant="text"
+                  onClick={() =>
+                    navigate('/login?tab=login', {
+                      state: { backgroundLocation: location.pathname },
+                    })
+                  }
+                  sx={{
+                    color: 'white',
+                    minWidth: 'auto',
+                    px: 2.5,
+                    py: 1,
+                    borderRadius: '10px',
+                    fontWeight: 500,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                      transform: 'translateY(-2px)',
+                    },
+                  }}
                 >
-                  My account
-                </Link>
-              )}
-            </Box>
-          </Box>
-          {user ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Typography sx={{ color: 'white' }}>Welcome, {user.firstName}!</Typography>
-              <Button
-                variant="outlined"
-                onClick={handleLogout}
-                sx={{
-                  color: 'white',
-                  borderColor: 'white',
-                  '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)', bgcolor: '#d97706' },
-                }}
-              >
-                Log Out
-              </Button>
-            </Box>
-          ) : (
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                variant="text"
-                onClick={() => navigate("/login?tab=login", { state: { backgroundLocation: location.pathname } })}
-                sx={{ color: 'white', mr: 1, '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
-              >
-                Log In
-              </Button>
-              <Button
-                variant="contained"
-                onClick={() => navigate("/login?tab=signup", { state: { backgroundLocation: location.pathname } })}
-                sx={{ bgcolor: '#d97706', '&:hover': { bgcolor: '#b45309' }, fontWeight: 600 }}
-              >
-                Sign Up
-              </Button>
-            </Box>
-          )}
-        {/* </Box> */}
-      </Toolbar>
-    </AppBar>
- 
-  )
-}
+                  {t('logIn')}
+                </Button>
 
-export default Navbar
+                <Button
+                  variant="contained"
+                  onClick={() =>
+                    navigate('/login?tab=signup', {
+                      state: { backgroundLocation: location.pathname },
+                    })
+                  }
+                  sx={{
+                    background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+                    fontWeight: 600,
+                    minWidth: 'auto',
+                    px: 3,
+                    py: 1,
+                    borderRadius: '10px',
+                    boxShadow: '0 4px 15px rgba(249, 115, 22, 0.3)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
+                      boxShadow: '0 6px 20px rgba(249, 115, 22, 0.4)',
+                      transform: 'translateY(-2px)',
+                    },
+                  }}
+                >
+                  {t('signUp')}
+                </Button>
+              </Box>
+            )}
+          </Box>
+        </Toolbar>
+      </AppBar>
+      {/* Spacer to prevent content from being hidden behind fixed navbar */}
+      <Toolbar sx={{ py: 1.5, height: { xs: 80, md: 100 } }} />
+    </>
+  );
+};
+
+export default Navbar;

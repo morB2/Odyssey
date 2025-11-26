@@ -1,259 +1,258 @@
 import { useState, useEffect } from "react";
-import { Container, Box, Paper, Typography } from "@mui/material";
+import { useParams } from "react-router-dom";
+import { Box, Paper } from "@mui/material";
 import { ProfileHeader } from "./ProfileHeader";
 import { TripsList } from "./TripsList";
-import { EditProfileModal } from "./EditProfileModal";
-import { TripDetailsModal } from "./TripDetailsModal";
+import { ChangePasswordModal } from "./EditProfileModal";
 import { EditTripModal } from "./EditTripModal";
-import type { Trip, UserProfile, ServerTrip } from "./types";
+import type { Trip, UserProfile } from "./types";
+import { getProfile, getTrips, getLikedTrips, getSavedTrips, deleteTrip as svcDeleteTrip } from "../../services/profile.service";
 import { useUserStore } from "../../store/userStore";
+import { toast } from "react-toastify";
+import { useTranslation } from 'react-i18next';
+// Navbar intentionally not rendered inside this view
 
 const BASE_URL = "http://localhost:3000";
+import api from "../../services/httpService";
+import Navbar from "../general/Navbar";
 
-// We'll fetch the real user and trips from the server using the profile APIs.
-// If no logged-in user is available in the store, the component falls back to a guest view.
+// Shared styles
+const containerStyle = {
+  minHeight: "100vh",
+  display: "flex",
+  flexDirection: "column",
+  background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fcd34d 100%)',
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    inset: 0,
+    background: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+    opacity: 0.5
+  }
+};
+const paperStyle = { p: { xs: 2, md: 4 }, borderRadius: 4, bgcolor: "rgba(255, 255, 255, 0.95)", backdropFilter: 'blur(10px)', boxShadow: '0 8px 32px rgba(0,0,0,0.1)', position: 'relative', zIndex: 1 };
+const guestUser = { id: "", firstName: "Guest", lastName: "guest", email: "", avatar: "" };
+
+// Helper function to normalize trips response
+const normalizeTrips = (data: unknown): Trip[] => {
+  if (Array.isArray(data)) return data;
+  const trips = (data as { trips?: Trip[] })?.trips;
+  return Array.isArray(trips) ? trips : [];
+};
 
 export default function Profile() {
+  const { t } = useTranslation();
   const storeUser = useUserStore((s) => s.user);
   const storeToken = useUserStore((s) => s.token);
+  const setUserStore = useUserStore((s) => s.setUser);
+  const params = useParams();
+  const viewedUserId = (params.userId as string) || undefined;
+  const profileId = viewedUserId || storeUser?._id || "";
+  const isOwner = Boolean(storeUser?._id && viewedUserId ? storeUser._id === viewedUserId : !viewedUserId);
+
   const [user, setUser] = useState<UserProfile | null>(null);
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalTrips, setTotalTrips] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [tripsLoading, setTripsLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
-  const [activeTab, setActiveTab] = useState<"my-trips" | "liked" | "saved">(
-    "my-trips"
-  );
+  const [activeTab, setActiveTab] = useState<"my-trips" | "liked" | "saved">("my-trips");
 
-  // load profile and trips from server
+  const TRIPS_PER_PAGE = 12;
+
+  // Initial load
   useEffect(() => {
     let mounted = true;
     async function loadData() {
+      setLoading(true);
       try {
-        const userId = storeUser?._id;
-        if (!userId) {
-          setError("Not signed in");
-          return;
-        }
-
         const [userRes, tripsRes] = await Promise.all([
-          fetch(`${BASE_URL}/profile/${userId}`, {
-            headers: {
-              Authorization: `Bearer ${storeToken}`,
-            },
-          })
-            .then((r) => r.json())
-            .catch((e) => ({ success: false, error: String(e) })),
-          fetch(`${BASE_URL}/profile/${userId}/trips`, {
-            headers: {
-              Authorization: `Bearer ${storeToken}`,
-            },
-          })
-            .then((r) => r.json())
-            .catch((e) => ({ success: false, error: String(e) })),
+          getProfile(profileId, storeToken || undefined).catch((e) => ({ success: false, error: String(e) })),
+          getTrips(profileId as string, storeToken || undefined, 1, TRIPS_PER_PAGE).catch((e) => ({ success: false, error: String(e) })),
         ]);
 
         if (!mounted) return;
-        if (!userRes.success)
-          throw new Error(userRes.error || "Failed to load user");
-        if (!tripsRes.success)
-          throw new Error(tripsRes.error || "Failed to load trips");
+        if (!userRes || !userRes.success) throw new Error(userRes?.error || t('general.error'));
 
         setUser(userRes.user);
-        const serverTrips = tripsRes.trips || [];
-        // Map server Trip schema to client Trip shape used by the UI
-        const mapTrip = (t: ServerTrip): Trip => {
-          const ordered = t.optimizedRoute?.ordered_route || [];
-          const modeFromOptimized = t.optimizedRoute?.mode;
-          return {
-            id: t._id || t.id || "",
-            title: t.title || "",
-            description: t.description || "",
-            images: t.images || [],
-            route: ordered.length
-              ? ordered.map((r) => r.name || "")
-              : t.route || [],
-            routeInstructions: t.optimizedRoute?.instructions
-              ? t.optimizedRoute.instructions.map((ins, i) => ({
-                  step: i + 1,
-                  instruction: ins,
-                  mode:
-                    modeFromOptimized === "driving"
-                      ? "car"
-                      : modeFromOptimized === "walking"
-                      ? "walk"
-                      : "transit",
-                  distance: "",
-                }))
-              : t.routeInstructions || [],
-            mode: modeFromOptimized
-              ? modeFromOptimized === "driving"
-                ? "car"
-                : modeFromOptimized === "walking"
-                ? "walk"
-                : "transit"
-              : t.mode || "car",
-            visibility: t.visabilityStatus === "public" ? "public" : "private",
-            activities: t.activities || [],
-            notes: t.notes || "",
-          } as Trip;
-        };
 
-        setTrips(serverTrips.map(mapTrip));
+        // Handle pagination response
+        const tripsData = normalizeTrips(tripsRes.trips || tripsRes);
+        setTrips(tripsData);
+        setPage(1);
+        setHasMore(tripsRes.pagination?.hasMore ?? true);
+        setTotalTrips(tripsRes.pagination?.total ?? tripsData.length);
       } catch (e) {
-        setError(String(e instanceof Error ? e.message : e));
+        if (!mounted) return;
+        const errorMsg = String(e instanceof Error ? e.message : e);
+        toast.error(errorMsg);
+      } finally {
+        if (mounted) setLoading(false);
       }
     }
+
     loadData();
-    return () => {
-      mounted = false;
-    };
-  }, [storeUser]);
+    return () => { mounted = false; };
+  }, [storeUser, storeToken, profileId]);
 
-  const getCurrentTrips = () => {
-    switch (activeTab) {
-      case "my-trips":
-        return trips;
-      case "liked":
-        return [];
-      case "saved":
-        return [];
-      default:
-        return trips;
+  useEffect(() => {
+    if (!isOwner) setActiveTab("my-trips");
+  }, [isOwner]);
+
+  // Fetch trips when tab changes
+  useEffect(() => {
+    let mounted = true;
+    async function fetchForTab() {
+      setTripsLoading(true);
+      setPage(1);
+      try {
+        if (activeTab === "saved" && !isOwner) return;
+
+        let data: unknown = null;
+        if (activeTab === "my-trips") {
+          data = await getTrips(profileId as string, storeToken || undefined, 1, TRIPS_PER_PAGE);
+        } else if (activeTab === "liked") {
+          data = await getLikedTrips(profileId as string, storeToken || undefined, 1, TRIPS_PER_PAGE);
+        } else {
+          data = await getSavedTrips(profileId as string, storeToken || undefined, 1, TRIPS_PER_PAGE);
+        }
+
+        if (mounted) {
+          const response = data as any;
+          const tripsData = normalizeTrips(response.trips || response);
+          setTrips(tripsData);
+          setPage(1);
+          setHasMore(response.pagination?.hasMore ?? true);
+          setTotalTrips(response.pagination?.total ?? tripsData.length);
+        }
+      } catch (e) {
+        console.error("failed to load trips", e);
+        toast.error("Failed to load trips");
+      } finally {
+        if (mounted) setTripsLoading(false);
+      }
     }
-  };
 
-  const handleSaveProfile = (updatedUser: UserProfile) => {
-    setUser(updatedUser);
-    setIsEditModalOpen(false);
+    fetchForTab();
+    return () => { mounted = false; };
+  }, [activeTab, profileId, storeToken, isOwner]);
+
+  const loadMoreTrips = async () => {
+    if (loadingMore || !hasMore) return;
+
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      let data: unknown = null;
+
+      if (activeTab === "my-trips") {
+        data = await getTrips(profileId as string, storeToken || undefined, nextPage, TRIPS_PER_PAGE);
+      } else if (activeTab === "liked") {
+        data = await getLikedTrips(profileId as string, storeToken || undefined, nextPage, TRIPS_PER_PAGE);
+      } else {
+        data = await getSavedTrips(profileId as string, storeToken || undefined, nextPage, TRIPS_PER_PAGE);
+      }
+
+      const response = data as any;
+      const newTrips = normalizeTrips(response.trips || response);
+
+      setTrips((prev) => [...prev, ...newTrips]);
+      setPage(nextPage);
+      setHasMore(response.pagination?.hasMore ?? false);
+    } catch (e) {
+      console.error("Failed to load more trips", e);
+      toast.error("Failed to load more trips");
+    } finally {
+      setLoadingMore(false);
+    }
   };
 
   const handleSaveTrip = (updatedTrip: Trip) => {
-    setTrips(trips.map((t) => (t.id === updatedTrip.id ? updatedTrip : t)));
+    setTrips((prev) => prev.map((t) => t.id === updatedTrip.id || t._id === updatedTrip._id ? { ...t, ...updatedTrip } : t));
     setEditingTrip(null);
-    setSelectedTrip(updatedTrip);
+    toast.success("Trip updated successfully!");
   };
 
-  const handleDeleteTrip = (tripId: string) => {
-    (async () => {
-      try {
-        const userId = storeUser?._id;
-        const token = storeToken;
-        if (!userId) throw new Error("Not authenticated");
+  const handleDeleteTrip = async (tripId: string) => {
+    try {
+      const userId = storeUser?._id;
+      const token = storeToken || undefined;
+      if (!userId) throw new Error("Not authenticated");
 
-        const res = await fetch(
-          `${BASE_URL}/profile/${userId}/trips/${tripId}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+      const res = await svcDeleteTrip(userId as string, tripId, token);
+      const body = res as unknown as Record<string, unknown>;
+      if (!body || (body.success === false && body["error"])) throw new Error((body["error"] as string) || (body["message"] as string) || "Failed to delete trip");
 
-        const body = await res.json().catch(() => ({}));
-        if (!res.ok)
-          throw new Error(
-            body?.error || body?.message || "Failed to delete trip"
-          );
+      setTrips((prev) => prev.filter((t) => t.id !== tripId && t._id !== tripId));
+      toast.success("Trip deleted successfully!");
+    } catch (e) {
+      console.error("Failed to delete trip", e);
+      const errorMsg = String(e instanceof Error ? e.message : e);
+      toast.error(errorMsg);
+    }
+  };
 
-        // remove locally on success
-        setTrips((prev) => prev.filter((t) => t.id !== tripId));
-        setSelectedTrip(null);
-      } catch (e) {
-        console.error("Failed to delete trip", e);
-        alert(String(e instanceof Error ? e.message : e));
+  const handleAvatarSaved = (updatedUser: UserProfile) => {
+    let newAvatar = updatedUser.avatar;
+    if (newAvatar && !newAvatar.startsWith("http") && !newAvatar.startsWith("data:")) {
+      const baseUrl = api.defaults.baseURL || "";
+      newAvatar = `${baseUrl}${newAvatar.startsWith("/") ? "" : "/"}${newAvatar}`;
+    }
+
+    const userWithFullAvatar = { ...updatedUser, avatar: newAvatar };
+
+    if (isOwner) {
+      setUserStore(userWithFullAvatar, storeToken || undefined);
+    }
+
+    setUser((prev) => {
+      if (!prev) return userWithFullAvatar;
+      return { ...prev, ...userWithFullAvatar, followersCount: updatedUser.followersCount ?? prev.followersCount, followingCount: updatedUser.followingCount ?? prev.followingCount };
+    });
+
+    setTrips((prevTrips) => prevTrips.map((t) => {
+      if (t.user && (t.user._id === updatedUser.id || t.user._id === (updatedUser as any)._id)) {
+        return { ...t, user: { ...t.user, avatar: newAvatar } };
       }
-    })();
+      return t;
+    }));
+
+    toast.success("Profile updated successfully!");
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        bgcolor: "background.default",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <Container maxWidth="lg" sx={{ py: 6 }}>
-        <Paper
-          elevation={3}
-          sx={{ p: 4, borderRadius: 4, bgcolor: "background.paper" }}
-        >
-          <ProfileHeader
-            user={
-              user
-                ? user
-                : {
-                    id: "",
-                    firstName: "Guest",
-                    lastName: "guest",
-                    email: "",
-                    avatar: "",
-                  }
-            }
-            onEditClick={() => setIsEditModalOpen(true)}
-          />
-
-          {error && (
-            <Box
-              sx={{
-                mb: 2,
-                p: 2,
-                border: "1px solid #fdecea",
-                backgroundColor: "#fff5f5",
-                borderRadius: 1,
-              }}
-            >
-              <Typography color="error">{error}</Typography>
-            </Box>
-          )}
+    <>
+      <Navbar />
+      <Box sx={containerStyle}>
+        <Paper elevation={3} sx={paperStyle}>
+          <ProfileHeader user={user || guestUser} isOwner={isOwner} onEditClick={() => isOwner && setIsEditModalOpen(true)} tripsCount={totalTrips} loading={loading} />
 
           <Box sx={{ mt: 4 }}>
-            <Box sx={{ mt: 3 }}>
-              <TripsList
-                trips={getCurrentTrips()}
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                onTripClick={setSelectedTrip}
-              />
-            </Box>
+            <TripsList
+              trips={trips}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              onTripClick={() => { }}
+              setTrips={setTrips}
+              onEdit={(trip) => setEditingTrip(trip)}
+              onDelete={(tripId) => handleDeleteTrip(tripId)}
+              isOwner={isOwner}
+              loading={tripsLoading}
+              loadingMore={loadingMore}
+              onLoadMore={loadMoreTrips}
+              hasMore={hasMore}
+            />
           </Box>
         </Paper>
-      </Container>
 
-      {/* Modals */}
-      <EditProfileModal
-        user={
-          user ?? {
-            id: "",
-            firstName: "",
-            lastName: "",
-            email: "",
-            avatar: "",
-          }
-        }
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        onSave={handleSaveProfile}
-      />
-
-      <TripDetailsModal
-        trip={selectedTrip}
-        isOpen={!!selectedTrip}
-        onClose={() => setSelectedTrip(null)}
-        onEdit={() => setEditingTrip(selectedTrip)}
-        onDelete={() => selectedTrip && handleDeleteTrip(selectedTrip.id)}
-      />
-
-      <EditTripModal
-        trip={editingTrip}
-        isOpen={!!editingTrip}
-        onClose={() => setEditingTrip(null)}
-        onSave={handleSaveTrip}
-      />
-    </Box>
+        <ChangePasswordModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} user={user || guestUser} onAvatarSaved={handleAvatarSaved} />
+        <EditTripModal trip={editingTrip} isOpen={!!editingTrip} onClose={() => setEditingTrip(null)} onSave={handleSaveTrip} setTrips={setTrips} />
+      </Box>
+    </>
   );
 }

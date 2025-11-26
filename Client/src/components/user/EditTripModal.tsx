@@ -1,55 +1,46 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { Trip, ServerTrip } from "./types";
 import { Modal } from "./Modal";
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Divider,
-  Chip,
-  IconButton,
-} from "@mui/material";
-import { Save, X, Upload, Trash2, Lock, Globe, Plus } from "lucide-react";
+import { Box, Button, TextField, Typography, Divider, Chip, IconButton } from "@mui/material";
+import { Save, X, Trash2, Lock, Globe, Plus } from "lucide-react";
 import { ConfirmDialog } from "./ConfirmDialog";
-const BASE_URL = "http://localhost:3000";
 import { useUserStore } from "../../store/userStore";
+import { updateTrip } from "../../services/profile.service";
+import { toast } from "react-toastify";
+
+import { CloudinaryUploadWidget } from "../common/CloudinaryUploadWidget";
 
 interface EditTripModalProps {
   trip: Trip | null;
   isOpen: boolean;
   onClose: () => void;
   onSave: (trip: Trip) => void;
+  setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
 }
 
-export function EditTripModal({
-  trip,
-  isOpen,
-  onClose,
-  onSave,
-}: EditTripModalProps) {
+// Shared styles
+const labelStyle = { display: "block", mb: 1, fontSize: "0.875rem", fontWeight: 500, color: "#171717" };
+const textFieldStyle = {
+  "& .MuiOutlinedInput-root": {
+    "& fieldset": { borderColor: "#d4d4d4" },
+    "&:hover fieldset": { borderColor: "#a3a3a3" },
+  },
+};
+const dividerStyle = { backgroundColor: "#e5e5e5" };
+
+export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditTripModalProps) {
   const [title, setTitle] = useState(trip?.title || "");
   const [description, setDescription] = useState(trip?.description || "");
   const [notes, setNotes] = useState(trip?.notes || "");
   const [images, setImages] = useState<string[]>(trip?.images || []);
-  const [activities, setActivities] = useState<string[]>(
-    trip?.activities || []
-  );
+  const [activities, setActivities] = useState<string[]>(trip?.activities || []);
   const [newActivity, setNewActivity] = useState("");
-  const [visibility, setVisibility] = useState<"public" | "private">(
-    trip?.visibility || "public"
-  );
+  const [visibility, setVisibility] = useState<"public" | "private">(trip?.visibility || "public");
   const [showVisibilityConfirm, setShowVisibilityConfirm] = useState(false);
-  const [pendingVisibility, setPendingVisibility] = useState<
-    "public" | "private"
-  >("public");
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingVisibility, setPendingVisibility] = useState<"public" | "private">("public");
 
-  // Keep local form state in sync when a different trip is loaded into the modal.
-  // Use an effect so user edits don't get immediately overwritten on every render.
   useEffect(() => {
     if (!trip) {
-      // clear when no trip
       setTitle("");
       setDescription("");
       setNotes("");
@@ -58,7 +49,6 @@ export function EditTripModal({
       setVisibility("public");
       return;
     }
-
     setTitle(trip.title || "");
     setDescription(trip.description || "");
     setNotes(trip.notes || "");
@@ -68,7 +58,6 @@ export function EditTripModal({
   }, [trip]);
 
   const handleSave = () => {
-    // Save to server instead of only local
     (async () => {
       if (!trip) return;
       try {
@@ -77,136 +66,91 @@ export function EditTripModal({
         const userId = storeUser?._id;
         if (!userId) throw new Error("Not authenticated");
 
-        // Build a minimal payload that contains ONLY the fields that changed.
-        // IMPORTANT: do NOT send optimizedRoute.instructions or route summary here
-        // because the UI doesn't allow editing them and sending empty/partial
-        // values would overwrite server data.
         const payload: Partial<ServerTrip> = {};
-
         if (title !== trip.title) payload.title = title;
         if (description !== trip.description) payload.description = description;
         if (notes !== trip.notes) payload.notes = notes;
-        // compare activities arrays shallowly
-        if (
-          JSON.stringify(activities || []) !==
-          JSON.stringify(trip.activities || [])
-        )
-          payload.activities = activities;
-        // images
-        if (JSON.stringify(images || []) !== JSON.stringify(trip.images || []))
-          payload.images = images;
-        // visibility -> server expects visabilityStatus
-        if (visibility !== trip.visibility)
-          payload.visabilityStatus = visibility;
+        if (JSON.stringify(activities || []) !== JSON.stringify(trip.activities || [])) payload.activities = activities;
+        if (visibility !== trip.visibility) payload.visabilityStatus = visibility;
+        if (JSON.stringify(images) !== JSON.stringify(trip.images)) payload.images = images;
 
-        // If nothing changed, just close without calling the server
         if (Object.keys(payload).length === 0) {
           onClose();
           return;
         }
 
-        const res = await fetch(
-          `${BASE_URL}/profile/${userId}/trips/${trip.id}`,
-          {
-            method: "PUT",
-            headers: {
-              Authorization: `Bearer ${storeToken}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-          }
-        );
+        const res = await updateTrip(userId as string, String(trip._id || trip.id), payload, storeToken || undefined);
+        const serverTrip: ServerTrip = (res && (res.trip || res)) as ServerTrip;
 
-        const body = await res.json().catch(() => ({}));
-        if (!res.ok)
-          throw new Error(
-            body?.error || body?.message || "Failed to save trip"
-          );
-
-        const serverTrip: ServerTrip = body.trip || body;
-
-        // map serverTrip to client Trip shape (small mapping)
         const ordered = serverTrip.optimizedRoute?.ordered_route || [];
         const modeFromOptimized = serverTrip.optimizedRoute?.mode;
-        const mapModeTansit = (m?: string): "car" | "walk" | "tansit" =>
-          m === "driving" ? "car" : m === "walking" ? "walk" : "tansit";
-        const mapModeTransit = (m?: string): "car" | "walk" | "transit" =>
-          m === "driving" ? "car" : m === "walking" ? "walk" : "transit";
+        const mapModeTansit = (m?: string): "car" | "walk" | "tansit" => m === "driving" ? "car" : m === "walking" ? "walk" : "tansit";
+        const mapModeTransit = (m?: string): "car" | "walk" | "transit" => m === "driving" ? "car" : m === "walking" ? "walk" : "transit";
 
         const mapped: Trip = {
+          ...trip,
           id: serverTrip._id || serverTrip.id || trip.id,
+          _id: String(serverTrip._id || serverTrip.id || trip._id || trip.id || ""),
           title: serverTrip.title || title,
           description: serverTrip.description || description,
           images: serverTrip.images || images,
-          route: ordered.length
-            ? ordered.map((r: { name?: string }) => r.name || "")
-            : serverTrip.route || [],
-          routeInstructions: (
-            ((serverTrip.optimizedRoute?.instructions as string[]) ||
-              (serverTrip.routeInstructions as string[]) ||
-              []) as string[]
-          ).map((ins: string, i: number) => ({
+          route: ordered.length ? ordered.map((r: { name?: string }) => r.name || "") : serverTrip.route || [],
+          routeInstructions: (((serverTrip.optimizedRoute?.instructions as string[]) || (serverTrip.routeInstructions as string[]) || []) as string[]).map((ins: string, i: number) => ({
             step: i + 1,
             instruction: ins || "",
             mode: mapModeTansit(modeFromOptimized),
             distance: "",
           })),
           mode: mapModeTransit(modeFromOptimized || serverTrip.mode),
-          visibility:
-            serverTrip.visabilityStatus === "public" ? "public" : "private",
+          visibility: serverTrip.visabilityStatus === "public" ? "public" : "private",
           activities: serverTrip.activities || activities,
           notes: serverTrip.notes || notes,
         };
 
         onSave(mapped);
         onClose();
+        setTrips((prevTrips) => prevTrips.map((t) => t.id === mapped.id || t._id === mapped._id ? { ...t, ...mapped } : t));
       } catch (e) {
         console.error("Failed to save trip", e);
-        alert(String(e instanceof Error ? e.message : e));
+        toast.error(String(e instanceof Error ? e.message : e));
       }
     })();
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
-    const remainingSlots = 3 - images.length;
-    if (remainingSlots === 0) {
+  const handleImageUpload = (url: string) => {
+    if (images.length >= 3) {
       alert("Maximum 3 images allowed");
       return;
     }
-
-    // In a real app, you would upload these to a server
-    // For now, we'll create object URLs
-    const filesToAdd = Array.from(files).slice(0, remainingSlots);
-    const newImages = filesToAdd.map((file) => URL.createObjectURL(file));
-    setImages([...images, ...newImages]);
+    setImages((prev) => [...prev, url]);
   };
 
-  const handleRemoveImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
-  };
-
+  const handleRemoveImage = (index: number) => setImages((prev) => prev.filter((_, i) => i !== index));
   const handleAddActivity = () => {
     if (newActivity.trim() && !activities.includes(newActivity.trim())) {
       setActivities([...activities, newActivity.trim()]);
       setNewActivity("");
     }
   };
-
-  const handleRemoveActivity = (activity: string) => {
-    setActivities(activities.filter((a) => a !== activity));
-  };
-
+  const handleRemoveActivity = (activity: string) => setActivities(activities.filter((a) => a !== activity));
   const handleVisibilityChange = (newVisibility: "public" | "private") => {
     setPendingVisibility(newVisibility);
     setShowVisibilityConfirm(true);
   };
-
   const confirmVisibilityChange = () => {
     setVisibility(pendingVisibility);
     setShowVisibilityConfirm(false);
+  };
+
+  const VisibilityButton = ({ type }: { type: "public" | "private" }) => {
+    const isActive = visibility === type;
+    const Icon = type === "public" ? Globe : Lock;
+    return (
+      <Box component="button" onClick={() => handleVisibilityChange(type)} sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 1, borderRadius: 2, border: isActive ? "1px solid #f97316" : "1px solid #e5e5e5", backgroundColor: isActive ? "#ffedd5" : "#ffffff", color: isActive ? "#ea580c" : "#525252", p: 2, cursor: "pointer", transition: "all 0.2s", "&:hover": { borderColor: isActive ? "#f97316" : "#d4d4d4" } }}>
+        <Icon size={20} />
+        <Typography sx={{ fontSize: "1rem" }}>{type === "public" ? "Public" : "Private"}</Typography>
+      </Box>
+    );
   };
 
   if (!trip) return null;
@@ -217,442 +161,91 @@ export function EditTripModal({
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {/* Title */}
           <Box>
-            <Typography
-              component="label"
-              htmlFor="title"
-              sx={{
-                display: "block",
-                mb: 1,
-                fontSize: "0.875rem",
-                fontWeight: 500,
-                color: "#171717",
-              }}
-            >
-              Title
-            </Typography>
-            <TextField
-              id="title"
-              fullWidth
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter trip title"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": {
-                    borderColor: "#d4d4d4",
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "#a3a3a3",
-                  },
-                },
-              }}
-            />
+            <Typography component="label" htmlFor="title" sx={labelStyle}>Title</Typography>
+            <TextField id="title" fullWidth value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Enter trip title" sx={textFieldStyle} />
           </Box>
 
           {/* Description */}
           <Box>
-            <Typography
-              component="label"
-              htmlFor="description"
-              sx={{
-                display: "block",
-                mb: 1,
-                fontSize: "0.875rem",
-                fontWeight: 500,
-                color: "#171717",
-              }}
-            >
-              Description
-            </Typography>
-            <TextField
-              id="description"
-              fullWidth
-              multiline
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe your trip"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": {
-                    borderColor: "#d4d4d4",
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "#a3a3a3",
-                  },
-                },
-              }}
-            />
+            <Typography component="label" htmlFor="description" sx={labelStyle}>Description</Typography>
+            <TextField id="description" fullWidth multiline rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe your trip" sx={textFieldStyle} />
           </Box>
 
-          <Divider sx={{ backgroundColor: "#e5e5e5" }} />
+          <Divider sx={dividerStyle} />
 
           {/* Images */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <Typography
-                sx={{
-                  fontSize: "0.875rem",
-                  fontWeight: 500,
-                  color: "#171717",
-                }}
-              >
-                Images (max 3)
-              </Typography>
-              {images.length < 3 && (
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={() => fileInputRef.current?.click()}
-                  sx={{
-                    borderColor: "#d4d4d4",
-                    color: "#171717",
-                    textTransform: "none",
-                    "&:hover": {
-                      borderColor: "#a3a3a3",
-                      backgroundColor: "#fafafa",
-                    },
-                  }}
-                >
-                  <Upload size={16} style={{ marginRight: "8px" }} />
-                  Upload
-                </Button>
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                style={{ display: "none" }}
-                onChange={handleImageUpload}
-              />
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Typography sx={{ fontSize: "0.875rem", fontWeight: 500, color: "#171717" }}>Images (max 3)</Typography>
+              {images.length < 3 && <CloudinaryUploadWidget onUpload={handleImageUpload} folder="odyssey/trips" buttonText="Upload" />}
             </Box>
 
             {images.length === 0 ? (
-              <Box
-                sx={{
-                  borderRadius: 2,
-                  border: "1px solid #e5e5e5",
-                  backgroundColor: "#fafafa",
-                  p: 4,
-                  textAlign: "center",
-                }}
-              >
-                <Typography sx={{ color: "#737373", fontSize: "0.875rem" }}>
-                  No images yet. Click "Upload" to add images.
-                </Typography>
+              <Box sx={{ borderRadius: 2, border: "1px solid #e5e5e5", backgroundColor: "#fafafa", p: 4, textAlign: "center" }}>
+                <Typography sx={{ color: "#737373", fontSize: "0.875rem" }}>No images yet. Click "Upload" to add images.</Typography>
               </Box>
             ) : (
-              <Box
-                sx={{
-                  display: "grid",
-                  gap: 1.5,
-                  gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
-                }}
-              >
+              <Box sx={{ display: "grid", gap: 1.5, gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" } }}>
                 {images.map((image, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      position: "relative",
-                      overflow: "hidden",
-                      borderRadius: 2,
-                      border: "1px solid #e5e5e5",
-                      "&:hover .overlay": {
-                        backgroundColor: "rgba(0, 0, 0, 0.4)",
-                      },
-                      "&:hover .delete-btn": {
-                        opacity: 1,
-                      },
-                    }}
-                  >
-                    <Box
-                      component="img"
-                      src={image}
-                      alt={`Trip image ${index + 1}`}
-                      sx={{
-                        aspectRatio: "16/9",
-                        width: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                    <Box
-                      className="overlay"
-                      sx={{
-                        position: "absolute",
-                        inset: 0,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor: "rgba(0, 0, 0, 0)",
-                        transition: "background-color 0.2s",
-                      }}
-                    >
-                      <IconButton
-                        className="delete-btn"
-                        onClick={() => handleRemoveImage(index)}
-                        sx={{
-                          backgroundColor: "#ffffff",
-                          opacity: 0,
-                          transition: "opacity 0.2s",
-                          boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                          "&:hover": {
-                            backgroundColor: "#ffffff",
-                          },
-                        }}
-                      >
+                  <Box key={index} sx={{ position: "relative", overflow: "hidden", borderRadius: 2, border: "1px solid #e5e5e5", "&:hover .overlay": { backgroundColor: "rgba(0, 0, 0, 0.4)" }, "&:hover .delete-btn": { opacity: 1 } }}>
+                    <Box component="img" src={image} alt={`Trip image ${index + 1}`} sx={{ aspectRatio: "16/9", width: "100%", objectFit: "cover" }} />
+                    <Box className="overlay" sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0, 0, 0, 0)", transition: "background-color 0.2s" }}>
+                      <IconButton className="delete-btn" onClick={() => handleRemoveImage(index)} sx={{ backgroundColor: "#ffffff", opacity: 0, transition: "opacity 0.2s", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", "&:hover": { backgroundColor: "#ffffff" } }}>
                         <Trash2 size={16} color="#dc2626" />
                       </IconButton>
                     </Box>
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        left: 8,
-                        top: 8,
-                        borderRadius: 1,
-                        backgroundColor: "rgba(0, 0, 0, 0.6)",
-                        backdropFilter: "blur(4px)",
-                        px: 1,
-                        py: 0.5,
-                        color: "#ffffff",
-                        fontSize: "0.75rem",
-                      }}
-                    >
-                      {index + 1}
-                    </Box>
+                    <Box sx={{ position: "absolute", left: 8, top: 8, borderRadius: 1, backgroundColor: "rgba(0, 0, 0, 0.6)", backdropFilter: "blur(4px)", px: 1, py: 0.5, color: "#ffffff", fontSize: "0.75rem" }}>{index + 1}</Box>
                   </Box>
                 ))}
               </Box>
             )}
           </Box>
 
-          <Divider sx={{ backgroundColor: "#e5e5e5" }} />
+          <Divider sx={dividerStyle} />
 
           {/* Activities */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-            <Typography
-              sx={{
-                fontSize: "0.875rem",
-                fontWeight: 500,
-                color: "#171717",
-              }}
-            >
-              Activities
-            </Typography>
+            <Typography sx={{ fontSize: "0.875rem", fontWeight: 500, color: "#171717" }}>Activities</Typography>
             <Box sx={{ display: "flex", gap: 1 }}>
-              <TextField
-                fullWidth
-                value={newActivity}
-                onChange={(e) => setNewActivity(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddActivity();
-                  }
-                }}
-                placeholder="Add an activity"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    "& fieldset": {
-                      borderColor: "#d4d4d4",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#a3a3a3",
-                    },
-                  },
-                }}
-              />
-              <Button
-                variant="outlined"
-                onClick={handleAddActivity}
-                sx={{
-                  borderColor: "#d4d4d4",
-                  color: "#171717",
-                  minWidth: "auto",
-                  px: 2,
-                  "&:hover": {
-                    borderColor: "#a3a3a3",
-                    backgroundColor: "#fafafa",
-                  },
-                }}
-              >
+              <TextField fullWidth value={newActivity} onChange={(e) => setNewActivity(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddActivity(); } }} placeholder="Add an activity" sx={textFieldStyle} />
+              <Button variant="outlined" onClick={handleAddActivity} sx={{ borderColor: "#d4d4d4", color: "#171717", minWidth: "auto", px: 2, "&:hover": { borderColor: "#a3a3a3", backgroundColor: "#fafafa" } }}>
                 <Plus size={16} />
               </Button>
             </Box>
             {activities.length > 0 && (
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
                 {activities.map((activity, index) => (
-                  <Chip
-                    key={index}
-                    label={activity}
-                    onDelete={() => handleRemoveActivity(activity)}
-                    deleteIcon={<X size={12} />}
-                    sx={{
-                      border: "1px solid #e5e5e5",
-                      backgroundColor: "#f5f5f5",
-                      color: "#404040",
-                      "& .MuiChip-deleteIcon": {
-                        color: "#404040",
-                        "&:hover": {
-                          color: "#dc2626",
-                        },
-                      },
-                    }}
-                  />
+                  <Chip key={index} label={activity} onDelete={() => handleRemoveActivity(activity)} deleteIcon={<X size={12} />} sx={{ border: "1px solid #e5e5e5", backgroundColor: "#f5f5f5", color: "#404040", "& .MuiChip-deleteIcon": { color: "#404040", "&:hover": { color: "#dc2626" } } }} />
                 ))}
               </Box>
             )}
           </Box>
 
-          <Divider sx={{ backgroundColor: "#e5e5e5" }} />
+          <Divider sx={dividerStyle} />
 
           {/* Notes */}
           <Box>
-            <Typography
-              component="label"
-              htmlFor="notes"
-              sx={{
-                display: "block",
-                mb: 1,
-                fontSize: "0.875rem",
-                fontWeight: 500,
-                color: "#171717",
-              }}
-            >
-              Notes
-            </Typography>
-            <TextField
-              id="notes"
-              fullWidth
-              multiline
-              rows={3}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Add any notes or tips for this trip"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": {
-                    borderColor: "#d4d4d4",
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "#a3a3a3",
-                  },
-                },
-              }}
-            />
+            <Typography component="label" htmlFor="notes" sx={labelStyle}>Notes</Typography>
+            <TextField id="notes" fullWidth multiline rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Add any notes or tips for this trip" sx={textFieldStyle} />
           </Box>
 
-          <Divider sx={{ backgroundColor: "#e5e5e5" }} />
+          <Divider sx={dividerStyle} />
 
           {/* Visibility */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-            <Typography
-              sx={{
-                fontSize: "0.875rem",
-                fontWeight: 500,
-                color: "#171717",
-              }}
-            >
-              Visibility
-            </Typography>
+            <Typography sx={{ fontSize: "0.875rem", fontWeight: 500, color: "#171717" }}>Visibility</Typography>
             <Box sx={{ display: "flex", gap: 1.5 }}>
-              <Box
-                component="button"
-                onClick={() => handleVisibilityChange("public")}
-                sx={{
-                  flex: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 1,
-                  borderRadius: 2,
-                  border:
-                    visibility === "public"
-                      ? "1px solid #f97316"
-                      : "1px solid #e5e5e5",
-                  backgroundColor:
-                    visibility === "public" ? "#ffedd5" : "#ffffff",
-                  color: visibility === "public" ? "#ea580c" : "#525252",
-                  p: 2,
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                  "&:hover": {
-                    borderColor:
-                      visibility === "public" ? "#f97316" : "#d4d4d4",
-                  },
-                }}
-              >
-                <Globe size={20} />
-                <Typography sx={{ fontSize: "1rem" }}>Public</Typography>
-              </Box>
-              <Box
-                component="button"
-                onClick={() => handleVisibilityChange("private")}
-                sx={{
-                  flex: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 1,
-                  borderRadius: 2,
-                  border:
-                    visibility === "private"
-                      ? "1px solid #f97316"
-                      : "1px solid #e5e5e5",
-                  backgroundColor:
-                    visibility === "private" ? "#ffedd5" : "#ffffff",
-                  color: visibility === "private" ? "#ea580c" : "#525252",
-                  p: 2,
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                  "&:hover": {
-                    borderColor:
-                      visibility === "private" ? "#f97316" : "#d4d4d4",
-                  },
-                }}
-              >
-                <Lock size={20} />
-                <Typography sx={{ fontSize: "1rem" }}>Private</Typography>
-              </Box>
+              <VisibilityButton type="public" />
+              <VisibilityButton type="private" />
             </Box>
           </Box>
 
-          <Divider sx={{ backgroundColor: "#e5e5e5" }} />
+          <Divider sx={dividerStyle} />
 
           {/* Action Buttons */}
           <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
-            <Button
-              variant="outlined"
-              onClick={onClose}
-              sx={{
-                borderColor: "#d4d4d4",
-                color: "#171717",
-                textTransform: "none",
-                "&:hover": {
-                  borderColor: "#a3a3a3",
-                  backgroundColor: "#fafafa",
-                },
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSave}
-              variant="contained"
-              sx={{
-                backgroundColor: "#f97316",
-                textTransform: "none",
-                "&:hover": {
-                  backgroundColor: "#ea580c",
-                },
-              }}
-            >
+            <Button variant="outlined" onClick={onClose} sx={{ borderColor: "#d4d4d4", color: "#171717", textTransform: "none", "&:hover": { borderColor: "#a3a3a3", backgroundColor: "#fafafa" } }}>Cancel</Button>
+            <Button onClick={handleSave} variant="contained" sx={{ backgroundColor: "#f97316", textTransform: "none", "&:hover": { backgroundColor: "#ea580c" } }}>
               <Save size={16} style={{ marginRight: "8px" }} />
               Save Changes
             </Button>
@@ -660,13 +253,7 @@ export function EditTripModal({
         </Box>
       </Modal>
 
-      <ConfirmDialog
-        isOpen={showVisibilityConfirm}
-        onClose={() => setShowVisibilityConfirm(false)}
-        onConfirm={confirmVisibilityChange}
-        title="Change Visibility"
-        message="Are you sure you want to change the trip's visibility?"
-      />
+      <ConfirmDialog isOpen={showVisibilityConfirm} onClose={() => setShowVisibilityConfirm(false)} onConfirm={confirmVisibilityChange} title="Change Visibility" message="Are you sure you want to change the trip's visibility?" />
     </>
   );
 }

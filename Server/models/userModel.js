@@ -10,9 +10,13 @@ const userSchema = new mongoose.Schema(
     preferences: { type: [mongoose.Schema.Types.Mixed], default: [] },
     googleId: { type: String, unique: true, sparse: true },
     avatar: { type: String },
-    password: { type: String }, 
+    password: { type: String },
+    status: { type: Boolean, default: true },
+    resetToken: { type: String },
+    resetTokenExpire: { type: Date },
+
   },
-  { timestamps: true } 
+  { timestamps: true }
 );
 
 export default mongoose.model("User", userSchema);

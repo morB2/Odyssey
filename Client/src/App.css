@@ -1,47 +1,38 @@
-/* #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+html,
+body {
+  background-color: #FFF7ED;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+/* Everything is hidden by default when printing */
+@media print {
+  body * {
+    visibility: hidden !important;
   }
-  to {
-    transform: rotate(360deg);
+
+  /* Only show the trip display */
+  .trip-print-container, 
+  .trip-print-container * {
+    visibility: visible !important;
+  }
+
+  /* Make it full width on print */
+  .trip-print-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  /* Hide the print/save buttons */
+  .trip-print-container button,
+  .trip-print-container .MuiCardActions-root {
+    display: none !important;
+  }
+
+  /* Hide dialogs entirely */
+  .MuiDialog-root,
+  .MuiDialog-root * {
+    display: none !important;
+    visibility: hidden !important;
   }
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
-
-html, body {
-  overflow-x: hidden  !important;
-} */

@@ -1,46 +1,103 @@
-import react from 'react'
-import Home from './components/general/Home'
-import Login from './components/login/Login';
-import { Route, Routes, useLocation } from 'react-router-dom';
 
-import GLogin from './components/login/GoogleLogin'
-import { GoogleOAuthProvider } from '@react-oauth/google'
+import React, { useEffect } from 'react';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import Profile from './components/user/Profile';
-import MainPage from './components/tripPlan/MainPage';
 import { TripFeed } from './components/social/TripFeed';
 import ForgotPassword from './components/login/ForgotPassword';
-const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID!;
+import Dashboard from './components/admin/Dashboard';
+import { useTranslation } from 'react-i18next';
+import { Login } from './components/login/Login';
+import { Home } from './components/general/Home';
+import { getTheme } from './theme/theme';
+import { CacheProvider } from '@emotion/react';
+import { cacheRtl } from './theme/rtl';
+import { ThemeProvider } from '@mui/material/styles';
 
+import Page404 from './components/general/404Page';
+import Page401 from './components/general/401Page';
+import TermsOfService from './components/general/TermsOfService';
+import PrivacyPolicy from './components/general/PrivacyPolicy';
+import HelpCenter from './components/general/HelpCenter';
+import Contact from './components/general/Contact';
+import Footer from './components/general/Footer';
+import { MainPage } from './components/tripPlan/MainPage';
+
+import { initializeSocket } from './services/socketService';
+import { useUserStore } from './store/userStore';
+
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './App.css';
+
+import { ChatProvider } from './context/ChatContext';
+import ChatWidget from './components/chat/ChatWidget';
+import { Box } from '@mui/material';
+import AllChatsPage from './components/chat/AllChatsPage';
+import { ResetPasswordPage } from './components/login/ResetPassword';
 
 function App() {
   const location = useLocation();
+  const { token } = useUserStore();
+
+  useEffect(() => {
+    if (token) {
+      console.log('🔌 Initializing Socket.IO connection...');
+      initializeSocket(token);
+    }
+  }, [token]);
+
+  const { i18n } = useTranslation();
+  const theme = getTheme(i18n.language);
+
+  useEffect(() => {
+    document.body.dir = i18n.language === 'he' ? 'rtl' : 'ltr';
+  }, [i18n.language]);
 
   const state = location.state as { backgroundLocation?: string };
-
   const background = state?.backgroundLocation
     ? { pathname: state.backgroundLocation }
     : location;
 
-
   return (
-    <>
-      <Routes location={background}>
-        <Route path="/" element={<Home />} />
-        <Route path="/createtrip" element={<MainPage />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/feed" element={<TripFeed />} />
-        <Route path="/forgotPassword" element={<ForgotPassword />} />
+    <ChatProvider>
+      <CacheProvider value={cacheRtl}>
+        <ThemeProvider theme={theme}>
+          <ToastContainer position="top-right" autoClose={3000} />
+          <ChatWidget />
 
-      </Routes>
+          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+            {/* Main Routes */}
+            <Routes location={background}>
+              <Route path="/" element={<Home />} />
+              <Route path="/chats" element={<AllChatsPage />} />
+              <Route path="/createtrip" element={<MainPage />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile/:userId" element={<Profile />} />
+              <Route path="/feed" element={<TripFeed />} />
+              <Route path="/forgotPassword" element={<ForgotPassword />} />
+              <Route path="/resetPassword" element={<ResetPasswordPage />} />
+              <Route path="/admin" element={<Dashboard />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/help" element={<HelpCenter />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/401" element={<Page401 />} />
+              <Route path="*" element={<Page404 />} />
+            </Routes>
+            
+            {/* Modal routes (login popup) */}
+            {state?.backgroundLocation && (
+              <Routes>
+                <Route path="/login" element={<Login />} />
+              </Routes>
+            )}
 
-      {state?.backgroundLocation && (
-        <Routes>
-          <Route path="/login" element={<Login />} />
-        </Routes>
-      )}
-
-    </>
-  )
+            <Footer />
+          </Box>
+        </ThemeProvider>
+      </CacheProvider>
+    </ChatProvider>
+  );
 }
 
-export default App
+export default App;

@@ -1,34 +1,23 @@
-
 import {
-    Avatar,
-    Button,
     Card,
     CardContent,
-    CardActions,
-    IconButton,
-    Typography,
-    Box,
-    Chip,
     createTheme,
-    Dialog,
-    DialogContent,
-    DialogTitle,
-    Grid,
-    Divider,
-    ThemeProvider
+    ThemeProvider,
 } from '@mui/material';
-import {
-    Favorite,
-    FavoriteBorder,
-    ChatBubbleOutline,
-    BookmarkBorder,
-    Bookmark,
-    ChevronLeft,
-    ChevronRight,
-    Close,
-} from '@mui/icons-material';
-import { useState } from 'react';
-import axios from 'axios';
+import { useState, useEffect, useCallback } from 'react';
+import { type Comment, type Trip } from './types';
+import { useUserStore } from '../../store/userStore';
+import TripPostHeader from './TripPostHeader';
+import TripImageCarousel from './TripImageCarousel';
+import TripPostActions from './TripPostActions';
+import TripPostContent from './TripPostContent';
+import TripCommentsSection from './TripCommentsSection';
+import TripDetailsDialog from './TripDetailsDialog';
+import { toggleLike, toggleSave, toggleFollow, addComment, addReaction, addReply } from '../../services/tripPost.service';
+import { useTripRealtime } from '../../hooks/useTripRealtime';
+import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
+
 const theme = createTheme({
     palette: {
         primary: {
@@ -37,473 +26,369 @@ const theme = createTheme({
     },
 });
 
-interface Trip {
-    id: string;
-    user: {
-        id:string,
-        name: string;
-        username: string;
-        avatar: string;
-        isFollowing: boolean;
-    };
-    location: string;
-    duration: string;
-    description: string;
-    activities: string[];
-    images: string[];
-    likes: number;
-    comments?: object[];
-    isLiked: boolean;
-    isSaved: boolean;
-    detailedData?: any;
-    optimizedRoute?: any;
-    currentUserId?: string;
-}
-
 interface TripPostProps {
     trip: Trip;
-    onLike: (id: string) => void;
-    onSave: (id: string) => void;
-    onFollow: (username: string) => void;
 }
 
-export default function TripPost({ trip, onLike, onSave, onFollow }: TripPostProps) {
+// Helper to initialize comment reactions
+const initializeReactions = (comments: Comment[]): Record<string, Record<string, number>> => {
+    const reactions: Record<string, Record<string, number>> = {};
+    comments.forEach((comment) => {
+        if (comment.id && comment.reactionsAggregated) {
+            reactions[comment.id] = comment.reactionsAggregated;
+        }
+    });
+    return reactions;
+};
+
+
+export default function TripPost({ trip }: TripPostProps) {
+    const { t } = useTranslation();
+    // --- Post State ---
+    const [isLiked, setIsLiked] = useState(trip.isLiked);
+    const [likesCount, setLikesCount] = useState(trip.likes);
+    const [isSaved, setIsSaved] = useState(trip.isSaved);
+    const [isFollowing, setIsFollowing] = useState(trip.user.isFollowing);
+    const [showComments, setShowComments] = useState(false);
+    const [comments, setComments] = useState<Comment[]>(trip.comments || []);
+    const [commentReactions, setCommentReactions] = useState<Record<string, Record<string, number>>>(
+        initializeReactions(trip.comments || [])
+    );
+    const { user } = useUserStore(); // Current logged-in user
+
+    // --- Image/Dialog State ---
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogImageIndex, setDialogImageIndex] = useState(0);
-    console.log(trip);
-    const handleCardClick = (e: any) => {
-        // Don't open dialog if clicking on interactive elements
-        if (e.target.closest('button') || e.target.closest('a')) {
+
+    // Update local state when trip prop changes
+    useEffect(() => {
+        setIsLiked(trip.isLiked);
+        setLikesCount(trip.likes);
+        setIsSaved(trip.isSaved);
+        setIsFollowing(trip.user.isFollowing);
+        setComments(trip.comments || []);
+        setCommentReactions(initializeReactions(trip.comments || []));
+    }, [trip.isLiked, trip.likes, trip.isSaved, trip.user.isFollowing, trip.comments]);
+
+    useTripRealtime({
+        tripId: trip._id,
+        onNewComment: (newComment) => setComments((prev) => [newComment, ...prev]),
+        onNewReaction: (commentId, reactions) =>
+            setCommentReactions((prev) => ({ ...prev, [commentId]: reactions })),
+        onNewReply: (commentId, reply) =>
+            setComments((prev) =>
+                prev.map((c) =>
+                    c.id === commentId
+                        ? { ...c, replies: [...(c.replies || []), reply] }
+                        : c
+                )
+            ),
+        onLikeUpdate: (likes) => setLikesCount(likes),
+    });
+    // --- API Handlers ---
+    const postLike = useCallback(async () => {
+        if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+            toast.info(t('social.pleaseLoginToLike'));
+            return;
+        }
+
+        const originalIsLiked = isLiked;
+        const originalLikesCount = likesCount;
+
+        // Optimistic UI update
+        const newIsLiked = !originalIsLiked;
+        const newLikesCount = originalIsLiked ? originalLikesCount - 1 : originalLikesCount + 1;
+
+        setIsLiked(newIsLiked);
+        setLikesCount(newLikesCount);
+
+        try {
+            await toggleLike(trip._id, trip.currentUserId, originalIsLiked);
+        } catch (error) {
+            console.error('Error toggling like, rolling back:', error);
+            toast.error(t('social.failedToLike'));
+            // Rollback on API error
+            setIsLiked(originalIsLiked);
+            setLikesCount(originalLikesCount);
+        }
+    }, [isLiked, likesCount, trip._id, trip.currentUserId, t]);
+
+    const postSave = useCallback(async () => {
+        if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+            toast.info(t('social.pleaseLoginToSave'));
+            return;
+        }
+
+        const newIsSaved = !isSaved;
+        setIsSaved(newIsSaved); // Optimistic UI update
+
+        try {
+            await toggleSave(trip._id, trip.currentUserId, isSaved);
+            if (newIsSaved) {
+                toast.success(t('social.tripSaved'));
+            } else {
+                toast.info(t('social.tripUnsaved'));
+            }
+        } catch (error) {
+            console.error('Error toggling save:', error);
+            toast.error(t('social.failedToSave'));
+            setIsSaved(!newIsSaved); // Rollback optimistic update
+        }
+    }, [isSaved, trip._id, trip.currentUserId, t]);
+
+    const postFollow = useCallback(async () => {
+        if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+            toast.info(t('social.pleaseLoginToFollow'));
+            return;
+        }
+
+        const newIsFollowing = !isFollowing;
+        setIsFollowing(newIsFollowing); // Optimistic UI update
+
+        try {
+            await toggleFollow(trip.user._id, trip.currentUserId, isFollowing);
+            if (newIsFollowing) {
+                toast.success(`${t('social.followingUser')} ${trip.user.firstName}`);
+            } else {
+                toast.info(`${t('social.unfollowedUser')} ${trip.user.firstName}`);
+            }
+        } catch (error) {
+            console.error('Error toggling follow:', error);
+            toast.error(t('social.failedToFollow'));
+            setIsFollowing(!newIsFollowing); // Rollback optimistic update
+        }
+    }, [isFollowing, trip.user._id, trip.currentUserId, trip.user.firstName, t]);
+
+    // const handleAddComment = useCallback(async (commentText: string) => {
+    //     if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+    //         toast.info("Please log in to comment.");
+    //         return;
+    //     }
+
+    //     try {
+    //         const response = await addComment(trip._id, trip.currentUserId, commentText.trim());
+
+    //         // Create and apply optimistic comment
+    //         const newComment: Comment = {
+    //             id: response._id,
+    //             user: {
+    //                 name: response.user.firstName + " " + response.user.lastName,
+    //                 username: '@' + response.user.firstName + response.user.lastName,
+    //                 avatar: user?.avatar || '/default-avatar.png',
+    //             },
+    //             text: commentText.trim(),
+    //             timestamp: response.createdAt,
+    //             replies: []
+    //         };
+
+    //         setComments((prev) => [newComment, ...prev]);
+    //         toast.success("Comment added!");
+    //     } catch (error) {
+    //         console.error('Error adding comment:', error);
+    //         toast.error("Failed to add comment. Please try again.");
+    //         // In a real app, you might remove the optimistic comment on failure
+    //     }
+    // }, [trip._id, trip.currentUserId, user?.avatar]);
+
+    const handleEmojiReaction = useCallback(async (commentId: string, emoji: string) => {
+        if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+            toast.info(t('social.pleaseLoginToReact'));
+            return;
+        }
+
+        // Optimistic UI update for reaction count
+        setCommentReactions((prev) => {
+            const commentReacts = prev[commentId] || {};
+            const currentCount = commentReacts[emoji] || 0;
+            return {
+                ...prev,
+                [commentId]: {
+                    ...commentReacts,
+                    [emoji]: currentCount + 1,
+                },
+            };
+        });
+
+        try {
+            await addReaction(trip._id, commentId, trip.currentUserId, emoji);
+        } catch (error) {
+            console.error('Error adding reaction:', error);
+            toast.error(t('social.failedToReact'));
+            // In a real app, you might decrement the count on failure
+        }
+    }, [trip._id, trip.currentUserId, t]);
+    const handleAddComment = useCallback(async (commentText: string) => {
+        if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+            toast.info(t('social.pleaseLoginToComment'));
+            return;
+        }
+
+        try {
+            await addComment(trip._id, trip.currentUserId, commentText.trim());
+            // Removed the optimistic update - useTripRealtime will handle it
+            toast.success(t('social.commentAdded'));
+        } catch (error) {
+            console.error('Error adding comment:', error);
+            toast.error(t('social.failedToComment'));
+        }
+    }, [trip._id, trip.currentUserId, t]); // Also removed user?.avatar from dependencies
+
+    const handleAddReply = useCallback(async (commentId: string, replyText: string) => {
+        if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+            toast.info(t('social.pleaseLoginToReply'));
+            return;
+        }
+
+        try {
+            await addReply(trip._id, commentId, trip.currentUserId, replyText.trim());
+            // Removed the optimistic update - useTripRealtime will handle it
+            toast.success(t('social.replyAdded'));
+        } catch (error) {
+            console.error('Error adding reply:', error);
+            toast.error(t('social.failedToReply'));
+        }
+    }, [trip._id, trip.currentUserId, t]); // Also removed user?.avatar from dependencies
+    // const handleAddReply = useCallback(async (commentId: string, replyText: string) => {
+    //     if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+    //         toast.info("Please log in to reply.");
+    //         return;
+    //     }
+
+    //     try {
+    //         const response = await addReply(trip._id, commentId, trip.currentUserId, replyText.trim());
+
+    //         // Optimistic update for reply
+    //         const newReply: Comment = {
+    //             id: response._id,
+    //             user: {
+    //                 name: response.user.firstName + " " + response.user.lastName,
+    //                 username: '@' + response.user.firstName + response.user.lastName,
+    //                 avatar: user?.avatar || '/default-avatar.png',
+    //             },
+    //             text: replyText.trim(),
+    //             timestamp: response.createdAt,
+    //         };
+
+    //         setComments((prev) =>
+    //             prev.map((comment) => {
+    //                 if (comment.id === commentId) {
+    //                     return {
+    //                         ...comment,
+    //                         replies: [...(comment.replies || []), newReply],
+    //                     };
+    //                 }
+    //                 return comment;
+    //             })
+    //         );
+    //         toast.success("Reply added!");
+    //     } catch (error) {
+    //         console.error('Error adding reply:', error);
+    //         toast.error("Failed to add reply.");
+    //     }
+    // }, [trip._id, trip.currentUserId, user?.avatar]);
+
+
+    // --- Dialog Handlers ---
+    const handleCardClick = (e: React.MouseEvent) => {
+        // Prevent opening dialog when clicking on interactive elements
+        if (
+            e.target instanceof HTMLElement && (
+                e.target.closest('button') ||
+                e.target.closest('a') ||
+                e.target.closest('input') ||
+                e.target.closest('textarea') ||
+                e.target.getAttribute?.('role') === 'button'
+            )
+        ) {
             return;
         }
         setDialogOpen(true);
+        setDialogImageIndex(currentImageIndex); // Open dialog to the current image
     };
 
-    const handleCloseDialog = () => {
-        setDialogOpen(false);
-    };
+    const handleCloseDialog = () => setDialogOpen(false);
 
-    const nextDialogImage = () => {
-        setDialogImageIndex((prev) =>
-            prev === trip.images.length - 1 ? 0 : prev + 1
-        );
-    };
-
-    const prevDialogImage = () => {
-        setDialogImageIndex((prev) =>
-            prev === 0 ? trip.images.length - 1 : prev - 1
-        );
-    };
-    const postLike = async () => {
-        // Implement like functionality here
-        let response;
-        try {
-            if (!trip.isLiked) {
-                response = await axios.post(`http://localhost:3000/likes/${trip.id}/like`, {
-                    userId: trip.currentUserId, // Replace with actual user ID
-
-                });
-            }
-            else {
-                response = await axios.post(`http://localhost:3000/likes/${trip.id}/unlike`, {
-                    userId: trip.currentUserId, // Replace with actual user ID
-                });
-            }
-            console.log('Like toggled:', response.data);
-        }
-        catch (error) {
-            console.error('Error toggling like:', error);
-        }
-    };
-    const postSave = async () => {
-        // Implement like functionality here
-        let response;
-        try {
-            if (!trip.isSaved) {
-                response = await axios.post(`http://localhost:3000/saves/${trip.id}/save`, {
-                    userId: trip.currentUserId, // Replace with actual user ID
-
-                });
-            }
-            else {
-                response = await axios.post(`http://localhost:3000/saves/${trip.id}/unsave`, {
-                    userId: trip.currentUserId, // Replace with actual user ID
-                });
-            }
-            console.log('save toggled:', response.data);
-        }
-        catch (error) {
-            console.error('Error toggling save:', error);
-        }
-    };
-    const postFollow = async () => {
-        // Implement follow functionality here
-        let response;   
-        try{
-              response = await axios.post(`http://localhost:3000/follow/${trip.user.id}/follow`, {
-                    userId: trip.currentUserId, // Replace with actual user ID
-
-                }); 
-        }
-        catch(error){
-            console.log(error);
-        }
-    }
 
     return (
-        <>
-            <ThemeProvider theme={theme}>
-                <Card
-                    sx={{
-                        maxWidth: { xs: '100%', sm: 600, md: 700 },
-                        mx: 'auto',
-                        mb: 3,
-                        borderRadius: '16px',
-                        boxShadow: '0 6px 18px rgba(0,0,0,0.08)',
-                        overflow: 'hidden',
-                        cursor: 'pointer',
-                        transition: 'transform 0.2s',
-                        '&:hover': {
-                            transform: 'translateY(-4px)',
-                            boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                        }
-                    }}
-                    onClick={handleCardClick}
-                >
-                    {/* Header */}
-                    <CardContent>
-                        <Box display="flex" alignItems="center" justifyContent="space-between">
-                            <Box display="flex" alignItems="center" gap={1.5}>
-                                <Avatar src={trip.user.avatar} alt={trip.user.name}>
-                                    {trip.user.name[0]}
-                                </Avatar>
-                                <Box>
-                                    <Typography variant="body1" fontWeight={500}>
-                                        {trip.user.name}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        @{trip.user.username}
-                                    </Typography>
-                                </Box>
-                            </Box>
-                            <Button
-                                variant={trip.user.isFollowing ? 'outlined' : 'contained'}
-                                size="small"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onFollow(trip.user.username);
-                                    postFollow();
-                                }}
-                            >
-                                {trip.user.isFollowing ? 'Following' : 'Follow'}
-                            </Button>
-                        </Box>
-                    </CardContent>
+        <ThemeProvider theme={theme}>
+            <Card
+                sx={{
+                    maxWidth: { xs: '100%', sm: 600, md: 700 },
+                    mx: 'auto',
+                    mb: 3,
+                    borderRadius: '16px',
+                    boxShadow: '0 6px 18px rgba(0,0,0,0.08)',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s',
+                    '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                    },
+                }}
+                onClick={handleCardClick}
+            >
+                {/* Header */}
+                <TripPostHeader
+                    user={trip.user}
+                    currentUserId={trip.currentUserId || " "}
+                    isFollowing={isFollowing}
+                    onFollow={postFollow}
+                    tripId={trip._id}
+                />
 
-                    {/* Image Carousel */}
-                    <Box position="relative" sx={{ bgcolor: 'grey.200' }}>
-                        <Box sx={{ display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory' }}>
-                            {trip.images && trip.images.map((image, index) => (
-                                <Box
-                                    key={index}
-                                    sx={{
-                                        minWidth: '100%',
-                                        aspectRatio: '4/3',
-                                        scrollSnapAlign: 'start',
-                                    }}
-                                >
-                                    <img
-                                        src={image}
-                                        alt={`${trip.location} - ${index + 1}`}
-                                        style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            objectFit: 'cover',
-                                            display: 'block',
-                                        }}
-                                    />
-                                </Box>
-                            ))}
-                        </Box>
+                {/* Image Carousel */}
+                <TripImageCarousel
+                    images={trip.images}
+                    currentImageIndex={currentImageIndex}
+                    setCurrentImageIndex={setCurrentImageIndex}
+                    title={trip.title}
+                />
 
-                        {trip.images && trip.images.length > 1 && (
-                            <Box
-                                position="absolute"
-                                bottom={12}
-                                left="50%"
-                                sx={{ transform: 'translateX(-50%)' }}
-                                display="flex"
-                                gap={0.75}
-                            >
-                                {trip.images.map((_, index) => (
-                                    <Box
-                                        key={index}
-                                        component="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setCurrentImageIndex(index);
-                                        }}
-                                        aria-label={`Go to image ${index + 1}`}
-                                        sx={{
-                                            height: 6,
-                                            width: index === currentImageIndex ? 24 : 6,
-                                            borderRadius: 3,
-                                            border: 'none',
-                                            bgcolor:
-                                                index === currentImageIndex
-                                                    ? '#ff6b35'
-                                                    : 'rgba(255, 255, 255, 0.6)',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.3s',
-                                            '&:hover': {
-                                                bgcolor:
-                                                    index === currentImageIndex
-                                                        ? '#ff6b35'
-                                                        : 'rgba(255, 255, 255, 0.8)',
-                                            },
-                                        }}
-                                    />
-                                ))}
-                            </Box>
-                        )}
-                    </Box>
+                {/* Actions */}
+                <TripPostActions
+                    isLiked={isLiked}
+                    likesCount={likesCount}
+                    isSaved={isSaved}
+                    commentsCount={comments.length}
+                    onLike={postLike}
+                    onSave={postSave}
+                    showComments={showComments}
+                    setShowComments={setShowComments}
+                />
 
-                    {/* Actions */}
-                    <CardActions sx={{ justifyContent: 'space-between', px: 2 }}>
-                        <Box display="flex" gap={2}>
-                            <Box display="flex" alignItems="center">
-                                <IconButton
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        postLike();
-                                        onLike(trip.id);
-                                    }}
-                                    aria-label={trip.isLiked ? 'Unlike' : 'Like'}
-                                    color={trip.isLiked ? 'primary' : 'default'}
-                                >
-                                    {trip.isLiked ? <Favorite /> : <FavoriteBorder />}
-                                </IconButton>
-                                <Typography variant="body2">{trip.likes}</Typography>
-                            </Box>
-                            <Box display="flex" alignItems="center">
-                                <IconButton aria-label="Comments">
-                                    <ChatBubbleOutline />
-                                </IconButton>
-                                <Typography variant="body2">{trip.comments?.length}</Typography>
-                            </Box>
-                        </Box>
-                        <IconButton
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onSave(trip.id);
-                                postSave();
-                            }}
-                            aria-label={trip.isSaved ? 'Unsave' : 'Save'}
-                            color={trip.isSaved ? 'primary' : 'default'}
-                        >
-                            {trip.isSaved ? <Bookmark /> : <BookmarkBorder />}
-                        </IconButton>
-                    </CardActions>
+                {/* Content */}
+                <CardContent>
+                    <TripPostContent
+                        title={trip.title}
+                        duration={trip.duration || ''}
+                        description={trip.description}
+                        activities={trip.activities}
+                    />
+                </CardContent>
 
-                    {/* Content */}
-                    <CardContent>
-                        <Box mb={1.5}>
-                            <Typography variant="h6" gutterBottom>
-                                {trip.location}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                {trip.duration}
-                            </Typography>
-                        </Box>
-                        <Typography variant="body1" paragraph>
-                            {trip.description}
-                        </Typography>
+                {/* Comments Section (togglable) */}
+                {showComments && (
+                    <TripCommentsSection
+                        comments={comments}
+                        commentReactions={commentReactions}
+                        userAvatar={user?.avatar}
+                        onAddComment={handleAddComment}
+                        onReact={handleEmojiReaction}
+                        onReply={handleAddReply}
+                    />
+                )}
+            </Card>
 
-                        {/* Hashtags from activities */}
-                        <Box display="flex" flexWrap="wrap" gap={1}>
-                            {trip.activities.map((activity, index) => (
-                                <Chip
-                                    key={index}
-                                    label={`#${activity.toLowerCase().replace(/\s+/g, '')}`}
-                                    size="small"
-                                    clickable
-                                    color="primary"
-                                    variant="outlined"
-                                />
-                            ))}
-                        </Box>
-                    </CardContent>
-                </Card>
-
-                {/* Detailed Trip Dialog */}
-                <Dialog
-                    open={dialogOpen}
-                    onClose={handleCloseDialog}
-                    maxWidth="lg"
-                    fullWidth
-                >
-                    <DialogTitle>
-                        <Box display="flex" justifyContent="space-between" alignItems="center">
-                            <Typography variant="h5" fontWeight={600}>
-                                {trip.detailedData?.title || trip.location}
-                            </Typography>
-                            <IconButton onClick={handleCloseDialog} edge="end">
-                                <Close />
-                            </IconButton>
-                        </Box>
-                    </DialogTitle>
-                    <DialogContent dividers>
-                        <Grid container spacing={3}>
-                            {/* Left Side - Images */}
-                            <Grid size={{ xs: 12, md: 6 }}>
-                                {trip.images && <Box position="relative" sx={{ bgcolor: 'grey.200', borderRadius: 2, overflow: 'hidden' }}>
-                                    <img
-                                        src={trip.images[dialogImageIndex]}
-                                        alt={`${trip.location} - ${dialogImageIndex + 1}`}
-                                        style={{
-                                            width: '100%',
-                                            height: '400px',
-                                            objectFit: 'cover',
-                                            display: 'block',
-                                        }}
-                                    />
-
-                                    {trip.images.length > 1 && (
-                                        <>
-                                            <IconButton
-                                                onClick={prevDialogImage}
-                                                sx={{
-                                                    position: 'absolute',
-                                                    left: 8,
-                                                    top: '50%',
-                                                    transform: 'translateY(-50%)',
-                                                    bgcolor: 'rgba(0, 0, 0, 0.5)',
-                                                    color: 'white',
-                                                    '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
-                                                }}
-                                            >
-                                                <ChevronLeft />
-                                            </IconButton>
-                                            <IconButton
-                                                onClick={nextDialogImage}
-                                                sx={{
-                                                    position: 'absolute',
-                                                    right: 8,
-                                                    top: '50%',
-                                                    transform: 'translateY(-50%)',
-                                                    bgcolor: 'rgba(0, 0, 0, 0.5)',
-                                                    color: 'white',
-                                                    '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
-                                                }}
-                                            >
-                                                <ChevronRight />
-                                            </IconButton>
-
-                                            <Box
-                                                position="absolute"
-                                                bottom={12}
-                                                left="50%"
-                                                sx={{ transform: 'translateX(-50%)' }}
-                                                display="flex"
-                                                gap={0.75}
-                                            >
-                                                {trip.images && trip.images.map((_, index) => (
-                                                    <Box
-                                                        key={index}
-                                                        sx={{
-                                                            height: 6,
-                                                            width: index === dialogImageIndex ? 24 : 6,
-                                                            borderRadius: 3,
-                                                            bgcolor: index === dialogImageIndex ? '#ff6b35' : 'rgba(255, 255, 255, 0.6)',
-                                                        }}
-                                                    />
-                                                ))}
-                                            </Box>
-                                        </>
-                                    )}
-                                </Box>}
-                            </Grid>
-
-                            {/* Right Side - Trip Details */}
-                            <Grid size={{ xs: 12, md: 6 }}>
-                                <Box>
-                                    <Typography variant="body1" paragraph>
-                                        {trip.description || trip.description}
-                                    </Typography>
-
-                                    <Divider sx={{ my: 2 }} />
-
-                                    {/* Optimized Route */}
-                                    {trip.optimizedRoute && (
-                                        <>
-                                            <Typography variant="h6" gutterBottom fontWeight={600}>
-                                                Itinerary
-                                            </Typography>
-                                            {trip.optimizedRoute.ordered_route?.map((stop: any, index: number) => (
-                                                <Box key={index} sx={{ mb: 2, pl: 2, borderLeft: '3px solid #ff6b35' }}>
-                                                    <Typography variant="subtitle1" fontWeight={600}>
-                                                        {index + 1}. {stop.name}
-                                                    </Typography>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        {stop.note}
-                                                    </Typography>
-                                                </Box>
-                                            ))}
-
-                                            <Divider sx={{ my: 2 }} />
-
-                                            {/* Instructions */}
-                                            {trip.optimizedRoute.instructions && (
-                                                <>
-                                                    <Typography variant="h6" gutterBottom fontWeight={600}>
-                                                        Directions
-                                                    </Typography>
-                                                    {trip.optimizedRoute.instructions.map((instruction: string, index: number) => (
-                                                        <Typography key={index} variant="body2" paragraph>
-                                                            • {instruction}
-                                                        </Typography>
-                                                    ))}
-                                                    <Divider sx={{ my: 2 }} />
-                                                </>
-                                            )}
-                                        </>
-                                    )}
-
-                                    {/* Activities */}
-                                    <Typography variant="h6" gutterBottom fontWeight={600}>
-                                        Activities
-                                    </Typography>
-                                    <Box display="flex" flexWrap="wrap" gap={1} mb={2}>
-                                        {(trip.activities || trip.activities).map((activity: string, index: number) => (
-                                            <Chip
-                                                key={index}
-                                                label={activity}
-                                                size="small"
-                                                color="primary"
-                                                variant="outlined"
-                                            />
-                                        ))}
-                                    </Box>
-
-                                    {/* Google Maps Link */}
-                                    {trip.optimizedRoute?.google_maps_url && (
-                                        <Button
-                                            variant="contained"
-                                            fullWidth
-                                            href={trip.optimizedRoute.google_maps_url}
-                                            target="_blank"
-                                            sx={{ mt: 2 }}
-                                        >
-                                            Open in Google Maps
-                                        </Button>
-                                    )}
-                                </Box>
-                            </Grid>
-                        </Grid>
-                    </DialogContent>
-                </Dialog>
-            </ThemeProvider>
-        </>
+            {/* Detailed Trip Dialog */}
+            <TripDetailsDialog
+                open={dialogOpen}
+                onClose={handleCloseDialog}
+                trip={trip}
+                dialogImageIndex={dialogImageIndex}
+                setDialogImageIndex={setDialogImageIndex}
+            />
+        </ThemeProvider>
     );
 }

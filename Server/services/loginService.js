@@ -15,7 +15,7 @@ function generateToken(user) {
     );
 }
 
-export async function loginUserS(email) {
+export async function loginUserS(email, password) {
     const user = await usersModel.findOne({ email });
     console.log("user", user)
     if (!user) {
@@ -23,7 +23,6 @@ export async function loginUserS(email) {
         error.status = 404;
         throw error;
     }
-
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
         const error = new Error('Invalid password');
@@ -110,4 +109,30 @@ export async function googleLoginS(ticket) {
     delete userToReturn.password;
 
     return { success: true, user: userToReturn, token };
+}
+
+export async function resetPasswordS(id, token, newPassword) {
+  const user = await usersModel.findOne({
+    _id: id,
+    resetToken: token,
+    resetTokenExpire: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    const error = new Error("Invalid or expired token");
+    error.status = 400;
+    throw error;
+  }
+
+  // Hash the new password
+  const hashedPassword = await bcrypt.hash(newPassword, config.saltRounds);
+  user.password = hashedPassword;
+  user.resetToken = null;
+  user.resetTokenExpire = null;
+  await user.save();
+
+  const userToReturn = user.toObject();
+  delete userToReturn.password;
+
+  return { success: true, message: "Password updated successfully", user: userToReturn };
 }

@@ -1,112 +1,76 @@
 import express from "express";
-import {
-  getProfile,
-  listUserTrips,
-  updateUserTrip,
-  deleteUserTrip,
-  updatePassword,
-} from "../controller/profileController.js";
+import path from "path";
+import multer from "multer";
+import fs from "fs";
+import { authMiddleware } from "../middleware/authMiddleware.js";
+import * as controller from "../controller/profileController.js";
 
 const router = express.Router();
 
-// GET /profile/:userId - get user details
-router.get("/:userId", async (req, res) => {
-  try {
-    const user = await getProfile(req.params.userId);
-    res.json({ success: true, user });
-  } catch (err) {
-    console.error("get profile error", err);
-    return res
-      .status(err.status || 500)
-      .json({ success: false, error: String(err) });
-  }
+// --- Multer setup ---
+const uploadsDir = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: uploadsDir,
+  filename: (req, file, cb) => {
+    const name = `${Date.now()}-${file.originalname.replace(/\s+/g, "-")}`;
+    cb(null, name);
+  },
 });
+const upload = multer({ storage });
 
-// PUT /profile/:userId - update user details (protected)
-// router.put("/:userId", async (req, res) => {
-//   try {
-//     const updated = await updateProfile(req.params.userId, req.body || {});
-//     res.json({ success: true, user: updated });
-//   } catch (err) {
-//     console.error("update profile error", err);
-//     return res
-//       .status(err.status || 500)
-//       .json({ success: false, error: String(err) });
-//   }
-// });
-
-// POST /profile/:userId/changePassword - change user password (protected)
-router.post("/:userId/changePassword", async (req, res) => {
-  try {
-    const { currentPassword, newPassword } = req.body || {};
-    const result = await updatePassword(
-      req.params.userId,
-      currentPassword,
-      newPassword
-    );
-    res.json({ success: true, ...result });
-  } catch (err) {
-    console.error("change password error", err);
-    return res
-      .status(err.status || 500)
-      .json({ success: false, error: String(err) });
+// --- Middleware to identify owner/viewer (runs AFTER authMiddleware) ---
+const identifyOwnerViewer = (req, res, next) => {
+  const userIdFromToken = req.user?.userId;
+  const userIdFromUrl = req.params.userId || userIdFromToken;
+  if (userIdFromToken && String(userIdFromToken) === String(userIdFromUrl)) {
+    // User is viewing their own profile
+    req.ownerId = userIdFromToken;
+    req.viewerId = userIdFromToken;
+  } else {
+    // User is viewing someone else's profile (or not authenticated)
+    req.ownerId = userIdFromUrl;
+    req.viewerId = userIdFromToken || null;
   }
-});
 
-// GET /profile/:userId/trips - list trips
-router.get("/:userId/trips", async (req, res) => {
-  try {
-    const trips = await listUserTrips(req.params.userId);
-    res.json({ success: true, trips });
-  } catch (err) {
-    console.error("list trips error", err);
-    return res
-      .status(err.status || 500)
-      .json({ success: false, error: String(err) });
-  }
-});
+  next();
+};
 
-// GET single trip
-// router.get("/:userId/trips/:tripId", async (req, res) => {
-//   try {
-//     const trip = await getUserTrip(req.params.userId, req.params.tripId);
-//     res.json({ success: true, trip });
-//   } catch (err) {
-//     console.error("get user trip error", err);
-//     return res
-//       .status(err.status || 500)
-//       .json({ success: false, error: String(err) });
-//   }
-// });
+// --- Profile routes ---
 
-// PUT update trip
-router.put("/:userId/trips/:tripId", async (req, res) => {
-  try {
-    const trip = await updateUserTrip(
-      req.params.userId,
-      req.params.tripId,
-      req.body || {}
-    );
-    res.json({ success: true, trip });
-  } catch (err) {
-    console.error("update trip error", err);
-    return res
-      .status(err.status || 500)
-      .json({ success: false, error: String(err) });
-  }
-});
+router.get("/:userId", controller.getProfile);
 
-// DELETE trip
-router.delete("/:userId/trips/:tripId", async (req, res) => {
-  try {
-    const trip = await deleteUserTrip(req.params.userId, req.params.tripId);
-    res.json({ success: true, trip });
-  } catch (err) {
-    console.error("delete trip error", err);
-    return res
-      .status(err.status || 500)
-      .json({ success: false, error: String(err) });
-  }
-});
+router.post("/:userId/changePassword", authMiddleware, identifyOwnerViewer, controller.updatePassword);
+
+// Trips
+
+router.get("/:userId/trips", authMiddleware, identifyOwnerViewer, controller.listUserTrips);
+
+router.get("/:userId/trips/:tripId", controller.getUserTrip);
+
+router.put(
+  "/:userId/trips/:tripId",
+  authMiddleware,
+  identifyOwnerViewer,
+  upload.array("images", 3),
+  controller.updateUserTrip
+);
+
+router.delete("/:userId/trips/:tripId", authMiddleware, identifyOwnerViewer, controller.deleteUserTrip);
+
+router.get("/:userId/liked-trips", authMiddleware, identifyOwnerViewer, controller.getProfileLikedTrips);
+
+router.get("/:userId/saved-trips", authMiddleware, identifyOwnerViewer, controller.getProfileSavedTrips);
+
+// Avatar
+
+router.put(
+  "/:userId/avatar",
+  authMiddleware,
+  identifyOwnerViewer,
+  upload.single("avatar"),
+  controller.updateProfileAvatar
+);
 
 export default router;

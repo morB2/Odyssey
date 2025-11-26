@@ -1,5 +1,31 @@
 import mongoose from "mongoose";
 
+const replySchema = new mongoose.Schema(
+  {
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    comment: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now },
+  },
+  { _id: true }
+);
+
+const commentSchema = new mongoose.Schema(
+  {
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    comment: { type: String, required: true },
+    reactions: [
+      {
+        emoji: { type: String, required: true },
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+        createdAt: { type: Date, default: Date.now }
+      }
+    ],
+    replies: [replySchema],
+    createdAt: { type: Date, default: Date.now },
+  },
+  { _id: true } // enable comment IDs for editing/deleting later
+);
+
 const TripSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", index: true },
@@ -29,14 +55,8 @@ const TripSchema = new mongoose.Schema(
       enum: ["private", "public"],
       default: "private",
     },
-    // New fields
-    comments: [
-      {
-        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-        comment: { type: String },
-        createdAt: { type: Date, default: Date.now },
-      },
-    ],
+    // ✅ Use sub-schema here
+    comments: [commentSchema],
     likes: { type: Number, default: 0 },
     images: {
       type: [String],
@@ -46,7 +66,6 @@ const TripSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Custom validator for images array
 function arrayLimit(val) {
   return val.length <= 3;
 }

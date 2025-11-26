@@ -13,8 +13,6 @@ export const loginUser = async (data: any) => {
 };
 
 export const registerUser = async (data: any) => {
-    console.log("Registering user with data:", data);
-    console.log("API Base URL:", `${BASE_URL}/register`);
   try {
     const res = await api.post(`${BASE_URL}/register`, data);
     return res.data;
@@ -34,8 +32,19 @@ export const googleLogin = async (token: string) => {
   }
 };
 
+export const resetPassword = async (id: string, token: string, password: string) => {
+  try {
+  const res = await api.post(`${BASE_URL}/resetPassword`, { id, token, password });
+    return res.data;
+  } catch (error) {
+    console.error("Error during reset password:", error);
+    throw error;
+  }
+};
+
 export default {
   loginUser,
   registerUser,
   googleLogin,
+  resetPassword,
 };
