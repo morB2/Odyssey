@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Box, Paper, Typography } from "@mui/material";
+import { Box, Paper } from "@mui/material";
 import { ProfileHeader } from "./ProfileHeader";
 import { TripsList } from "./TripsList";
 import { ChangePasswordModal } from "./EditProfileModal";
@@ -10,11 +10,24 @@ import { getProfile, getTrips, getLikedTrips, getSavedTrips, deleteTrip as svcDe
 import { useUserStore } from "../../store/userStore";
 import api from "../../services/httpService";
 import Navbar from "../general/Navbar";
+import { toast } from "react-toastify";
 
 // Shared styles
-const containerStyle = { minHeight: "100vh", display: "flex", flexDirection: "column" };
-const paperStyle = { p: 4, borderRadius: 4, bgcolor: "background.paper" };
-const errorBoxStyle = { mb: 2, p: 2, border: "1px solid #fdecea", backgroundColor: "#fff5f5", borderRadius: 1 };
+const containerStyle = {
+  minHeight: "100vh",
+  display: "flex",
+  flexDirection: "column",
+  background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fcd34d 100%)',
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    inset: 0,
+    background: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+    opacity: 0.5
+  }
+};
+const paperStyle = { p: { xs: 2, md: 4 }, borderRadius: 4, bgcolor: "rgba(255, 255, 255, 0.95)", backdropFilter: 'blur(10px)', boxShadow: '0 8px 32px rgba(0,0,0,0.1)', position: 'relative', zIndex: 1 };
 const guestUser = { id: "", firstName: "Guest", lastName: "guest", email: "", avatar: "" };
 
 // Helper function to normalize trips response
@@ -35,7 +48,8 @@ export default function Profile() {
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [tripsLoading, setTripsLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
   const [activeTab, setActiveTab] = useState<"my-trips" | "liked" | "saved">("my-trips");
@@ -43,6 +57,7 @@ export default function Profile() {
   useEffect(() => {
     let mounted = true;
     async function loadData() {
+      setLoading(true);
       try {
         const [userRes, tripsRes] = await Promise.all([
           getProfile(profileId, storeToken || undefined).catch((e) => ({ success: false, error: String(e) })),
@@ -56,7 +71,10 @@ export default function Profile() {
         setTrips(normalizeTrips(tripsRes));
       } catch (e) {
         if (!mounted) return;
-        setError(String(e instanceof Error ? e.message : e));
+        const errorMsg = String(e instanceof Error ? e.message : e);
+        toast.error(errorMsg);
+      } finally {
+        if (mounted) setLoading(false);
       }
     }
 
@@ -71,6 +89,7 @@ export default function Profile() {
   useEffect(() => {
     let mounted = true;
     async function fetchForTab() {
+      setTripsLoading(true);
       try {
         if (activeTab === "saved" && !isOwner) return;
 
@@ -86,6 +105,9 @@ export default function Profile() {
         if (mounted) setTrips(normalizeTrips(data));
       } catch (e) {
         console.error("failed to load trips", e);
+        toast.error("Failed to load trips");
+      } finally {
+        if (mounted) setTripsLoading(false);
       }
     }
 
@@ -96,6 +118,7 @@ export default function Profile() {
   const handleSaveTrip = (updatedTrip: Trip) => {
     setTrips((prev) => prev.map((t) => t.id === updatedTrip.id || t._id === updatedTrip._id ? { ...t, ...updatedTrip } : t));
     setEditingTrip(null);
+    toast.success("Trip updated successfully!");
   };
 
   const handleDeleteTrip = async (tripId: string) => {
@@ -109,9 +132,11 @@ export default function Profile() {
       if (!body || (body.success === false && body["error"])) throw new Error((body["error"] as string) || (body["message"] as string) || "Failed to delete trip");
 
       setTrips((prev) => prev.filter((t) => t.id !== tripId && t._id !== tripId));
+      toast.success("Trip deleted successfully!");
     } catch (e) {
       console.error("Failed to delete trip", e);
-      alert(String(e instanceof Error ? e.message : e));
+      const errorMsg = String(e instanceof Error ? e.message : e);
+      toast.error(errorMsg);
     }
   };
 
@@ -139,6 +164,8 @@ export default function Profile() {
       }
       return t;
     }));
+
+    toast.success("Profile updated successfully!");
   };
 
   return (
@@ -146,18 +173,10 @@ export default function Profile() {
       <Navbar />
       <Box sx={containerStyle}>
         <Paper elevation={3} sx={paperStyle}>
-          <ProfileHeader user={user || guestUser} isOwner={isOwner} onEditClick={() => isOwner && setIsEditModalOpen(true)} />
-
-          {error && (
-            <Box sx={errorBoxStyle}>
-              <Typography color="error">{error}</Typography>
-            </Box>
-          )}
+          <ProfileHeader user={user || guestUser} isOwner={isOwner} onEditClick={() => isOwner && setIsEditModalOpen(true)} tripsCount={trips.length} loading={loading} />
 
           <Box sx={{ mt: 4 }}>
-            <Box sx={{ mt: 3 }}>
-              <TripsList trips={trips} activeTab={activeTab} onTabChange={setActiveTab} onTripClick={() => { }} setTrips={setTrips} onEdit={(trip) => setEditingTrip(trip)} onDelete={(tripId) => handleDeleteTrip(tripId)} isOwner={isOwner} />
-            </Box>
+            <TripsList trips={trips} activeTab={activeTab} onTabChange={setActiveTab} onTripClick={() => { }} setTrips={setTrips} onEdit={(trip) => setEditingTrip(trip)} onDelete={(tripId) => handleDeleteTrip(tripId)} isOwner={isOwner} loading={tripsLoading} />
           </Box>
         </Paper>
 

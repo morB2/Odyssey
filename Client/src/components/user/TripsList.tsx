@@ -1,6 +1,6 @@
 import type { Trip } from "./types";
 import TripPostAdapter from "./TripPostAdapter";
-import { Box, Tabs, Tab, Typography, Grid } from "@mui/material";
+import { Box, Tabs, Tab, Typography, Grid, Skeleton, Card } from "@mui/material";
 import { User, Heart, Bookmark } from "lucide-react";
 
 interface TripsListProps {
@@ -12,9 +12,10 @@ interface TripsListProps {
   onEdit: (trip: Trip) => void;
   onDelete: (tripId: string) => void;
   isOwner: boolean;
+  loading?: boolean;
 }
 
-export function TripsList({ trips = [], activeTab, onTabChange, setTrips, onEdit, onDelete, isOwner }: TripsListProps) {
+export function TripsList({ trips = [], activeTab, onTabChange, setTrips, onEdit, onDelete, isOwner, loading = false }: TripsListProps) {
   const availableTabs = [
     { key: "my-trips", label: "My Trips", icon: <User size={20} /> },
     { key: "liked", label: "Liked", icon: <Heart size={20} /> },
@@ -25,6 +26,23 @@ export function TripsList({ trips = [], activeTab, onTabChange, setTrips, onEdit
 
   const handleTabChange = (_: any, index: number) => onTabChange(availableTabs[index].key);
 
+  const SkeletonCard = () => (
+    <Card sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+      <Skeleton variant="rectangular" height={300} />
+      <Box sx={{ p: 2 }}>
+        <Skeleton width="60%" height={30} sx={{ mb: 1 }} />
+        <Skeleton width="40%" height={20} sx={{ mb: 2 }} />
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Skeleton variant="circular" width={40} height={40} />
+          <Box sx={{ flex: 1 }}>
+            <Skeleton width="80%" height={20} />
+            <Skeleton width="50%" height={16} />
+          </Box>
+        </Box>
+      </Box>
+    </Card>
+  );
+
   return (
     <Box>
       <Box sx={{ mb: 5, borderBottom: "1px solid #e5e5e5" }}>
@@ -33,8 +51,16 @@ export function TripsList({ trips = [], activeTab, onTabChange, setTrips, onEdit
         </Tabs>
       </Box>
 
-      {trips.length === 0 ? (
-        <Box sx={{ border: "1px solid #e5e5e5", backgroundColor: "#fff", p: 6, textAlign: "center" }}>
+      {loading ? (
+        <Grid container spacing={3}>
+          {[1, 2, 3].map((i) => (
+            <Grid key={i} item xs={12} sm={6} md={4}>
+              <SkeletonCard />
+            </Grid>
+          ))}
+        </Grid>
+      ) : trips.length === 0 ? (
+        <Box sx={{ border: "1px solid #e5e5e5", backgroundColor: "#fff", p: 6, textAlign: "center", borderRadius: 3 }}>
           <Typography sx={{ color: "#737373", fontSize: "1rem" }}>No trips to display yet.</Typography>
         </Box>
       ) : (
