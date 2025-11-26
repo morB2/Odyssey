@@ -3,6 +3,7 @@ import TripPostAdapter from "./TripPostAdapter";
 import { Box, Tabs, Tab, Typography, Grid, Skeleton, Card, CircularProgress } from "@mui/material";
 import { User, Heart, Bookmark } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { useTranslation } from 'react-i18next';
 
 interface TripsListProps {
   trips: Trip[];
@@ -21,11 +22,12 @@ interface TripsListProps {
 
 export function TripsList({ trips = [], activeTab, onTabChange, setTrips, onEdit, onDelete, isOwner, loading = false, loadingMore = false, onLoadMore, hasMore = true }: TripsListProps) {
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   const availableTabs = [
-    { key: "my-trips", label: "My Trips", icon: <User size={20} /> },
-    { key: "liked", label: "Liked", icon: <Heart size={20} /> },
-    ...(isOwner ? [{ key: "saved", label: "Saved", icon: <Bookmark size={20} /> }] : []),
+    { key: "my-trips", label: t('profile.myTrips'), icon: <User size={20} /> },
+    { key: "liked", label: t('profile.likedTrips'), icon: <Heart size={20} /> },
+    ...(isOwner ? [{ key: "saved", label: t('profile.savedTrips'), icon: <Bookmark size={20} /> }] : []),
   ] as const;
 
   const tabStyle = { textTransform: "none", fontSize: "1rem", px: 3, py: 1.5, minHeight: "auto", color: "#525252", transition: "color 0.2s", "&:hover": { color: "#171717" }, "&.Mui-selected": { color: "#f97316" }, "& .MuiTab-iconWrapper": { mr: 1 } };
@@ -87,7 +89,7 @@ export function TripsList({ trips = [], activeTab, onTabChange, setTrips, onEdit
         </Grid>
       ) : trips.length === 0 ? (
         <Box sx={{ border: "1px solid #e5e5e5", backgroundColor: "#fff", p: 6, textAlign: "center", borderRadius: 3 }}>
-          <Typography sx={{ color: "#737373", fontSize: "1rem" }}>No trips to display yet.</Typography>
+          <Typography sx={{ color: "#737373", fontSize: "1rem" }}>{t('profile.noTripsYet')}</Typography>
         </Box>
       ) : (
         <>

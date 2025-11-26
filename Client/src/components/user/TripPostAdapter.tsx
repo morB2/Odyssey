@@ -3,6 +3,7 @@ import TripPost from "../social/TripPost";
 import { useUserStore } from "../../store/userStore";
 import type { Trip } from "./types";
 import { Box, IconButton } from "@mui/material";
+import type { Comment } from "../social/types";
 import { Trash2, Edit } from "lucide-react";
 import { ConfirmDialog } from "./ConfirmDialog";
 
@@ -21,16 +22,21 @@ function adaptComments(apiComments: any[]): Comment[] {
   return apiComments.map((c) => {
     const date = new Date(c.createdAt);
     const time = date.toLocaleString([], { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    // Safety checks for user data
+    const firstName = c.user?.firstName || "Unknown";
+    const lastName = c.user?.lastName || "User";
     return {
       id: c._id,
       user: {
-        name: `${c.user.firstName} ${c.user.lastName}`,
-        username: ` @${c.user.firstName.toLowerCase()}${c.user.lastName.toLowerCase()}`,
-        avatar: c.user.avatar || "/default-avatar.png",
+        name: `${firstName} ${lastName}`,
+        username: ` @${firstName.toLowerCase()}${lastName.toLowerCase()}`,
+        avatar: c.user?.avatar || "/default-avatar.png",
       },
       text: c.comment,
       timestamp: time,
       reactionsAggregated: c.reactionsAggregated || {},
+      replies: c.replies ? adaptComments(c.replies) : [], // Recursively adapt replies
+
     };
   });
 }
@@ -81,7 +87,7 @@ export default function TripPostAdapter({ trip, setTrips, onDelete, onEdit }: Ad
   return (
     <>
       <Box sx={{ position: "relative" }}>
-        <TripPost trip={mapped} setTrips={setTrips} />
+        <TripPost trip={mapped} />
         {storeUser?._id === trip.user?._id && (
           <Box sx={actionsContainerStyle}>
             <ActionButton onClick={onEdit} Icon={Edit} hoverColor="#374151" />

@@ -3,6 +3,7 @@ import { Box, List, ListItem, ListItemAvatar, ListItemText, Avatar, Typography, 
 import { useUserStore } from '../../store/userStore';
 import chatService from '../../services/chat.service';
 import CloseIcon from '@mui/icons-material/Close';
+import { useTranslation } from 'react-i18next';
 
 interface ChatListProps {
     onSelectChat: (user: any) => void;
@@ -10,6 +11,7 @@ interface ChatListProps {
 }
 
 const ChatList: React.FC<ChatListProps> = ({ onSelectChat, onClose }) => {
+    const { t } = useTranslation();
     const { user } = useUserStore();
     const [conversations, setConversations] = useState<any[]>([]);
     const [tabValue, setTabValue] = useState(0);
@@ -51,10 +53,10 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, onClose }) => {
         <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1, borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={tabValue} onChange={handleTabChange} aria-label="chat tabs">
-                    <Tab label="Chats" />
+                    <Tab label={t('chat.chats')} />
                     <Tab label={
                         <Badge badgeContent={conversations.filter(c => c.status === 'pending' && c.initiator !== user._id).length} color="error">
-                            Requests
+                            {t('chat.requests')}
                         </Badge>
                     } />
                 </Tabs>
@@ -67,7 +69,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, onClose }) => {
                 {filteredConversations.length === 0 ? (
                     <Box sx={{ p: 2, textAlign: 'center' }}>
                         <Typography variant="body2" color="text.secondary">
-                            {tabValue === 0 ? 'No conversations yet' : 'No new requests'}
+                            {tabValue === 0 ? t('chat.noChatsYet') : t('chat.noNewRequests')}
                         </Typography>
                     </Box>
                 ) : (
@@ -96,7 +98,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, onClose }) => {
                                                 color="text.primary"
                                                 sx={{ display: 'inline', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                                             >
-                                                {conv.lastMessage ? conv.lastMessage.message : 'No messages'}
+                                                {conv.lastMessage ? conv.lastMessage.message : t('chat.noMessagesYet')}
                                             </Typography>
                                         }
                                     />

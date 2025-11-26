@@ -1,18 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Box, Container, Tabs, Tab, Typography } from '@mui/material';
 import { Shield } from 'lucide-react';
 import UsersManagement from './UsersManagement';
 import PostsManagement from './PostsManagement';
-
-// Replace these with your actual components
-// const UsersManagement = () => <Box sx={{ color: 'white' }}>
-//     <UsersManagement />
-// </Box>;
-// const PostsManagement = () => <Box sx={{ color: 'white' }}>
-//     <PostsManagement />
-// </Box>;
+import ReportsManagement from './ReportsManagement';
+import { useTranslation } from 'react-i18next';
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(0);
 
   return (
@@ -34,10 +29,10 @@ export default function Dashboard() {
             </Box>
             <Box>
               <Typography variant="h6" sx={{ color: 'white', fontWeight: 500 }}>
-                Admin Dashboard
+                {t('admin.adminDashboard')}
               </Typography>
               <Typography variant="body2" sx={{ color: '#a1a1aa' }}>
-                Manage your website content
+                {t('admin.manageWebsiteContent')}
               </Typography>
             </Box>
           </Box>
@@ -48,7 +43,7 @@ export default function Dashboard() {
       <Container sx={{ py: 4 }}>
         <Tabs
           value={activeTab}
-          onChange={(e, val) => setActiveTab(val)}
+          onChange={(_e, val) => setActiveTab(val)}
           sx={{
             mb: 4,
             borderBottom: '1px solid #27272a',
@@ -59,7 +54,7 @@ export default function Dashboard() {
           }}
         >
           <Tab
-            label="Users Management"
+            label={t('admin.usersManagement')}
             sx={{
               color: '#a1a1aa',
               px: 3,
@@ -72,7 +67,20 @@ export default function Dashboard() {
             }}
           />
           <Tab
-            label="Posts Management"
+            label={t('admin.postsManagement')}
+            sx={{
+              color: '#a1a1aa',
+              px: 3,
+              py: 1.5,
+              textTransform: 'none',
+              fontSize: '1rem',
+              '&.Mui-selected': {
+                color: '#ea580c'
+              }
+            }}
+          />
+          <Tab
+            label={t('admin.reportsManagement')}
             sx={{
               color: '#a1a1aa',
               px: 3,
@@ -88,6 +96,7 @@ export default function Dashboard() {
 
         {activeTab === 0 && <UsersManagement />}
         {activeTab === 1 && <PostsManagement />}
+        {activeTab === 2 && <ReportsManagement />}
       </Container>
     </Box>
   );

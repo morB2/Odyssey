@@ -58,9 +58,10 @@ export const useTripRealtime = ({
                     username: `@${data.reply.user.firstName}${data.reply.user.lastName}`,
                     avatar: data.reply.user.avatar || '/default-avatar.png',
                 },
-                text: data.reply.reply,
+                text: data.reply.comment,
                 timestamp: data.reply.createdAt,
             };
+            console.log("new reply\n", newReply);
             onNewReply(data.commentId, newReply);
         }
     }, [tripId, onNewReply]));

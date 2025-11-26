@@ -47,6 +47,7 @@ export async function getFeedForUser(userId, page = 1, limit = 20) {
     const allTrips = await Trip.find({ visabilityStatus: "public" })
         .populate("user", "_id firstName lastName avatar")
         .populate("comments.user", "_id firstName lastName avatar")
+        .populate("comments.replies.user", "_id firstName lastName avatar")
         .sort({ createdAt: -1 })
         .lean();
     console.log(`[Feed] Found ${allTrips.length} public trips`);

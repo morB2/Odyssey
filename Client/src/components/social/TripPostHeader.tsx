@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 import { MoreVert as MoreVertIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import { type Trip } from './types';
-import ReportDialog from './ReportDialog';
-
+import { ReportDialog } from './ReportDialog';
+import { useTranslation } from 'react-i18next';
 import { useChat } from '../../context/ChatContext';
 
 interface TripPostHeaderProps {
@@ -17,6 +17,7 @@ interface TripPostHeaderProps {
 }
 
 export default function TripPostHeader({ user, currentUserId, isFollowing, onFollow, tripId }: TripPostHeaderProps) {
+    const { t } = useTranslation();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [reportOpen, setReportOpen] = useState(false);
     const open = Boolean(anchorEl);
@@ -73,7 +74,7 @@ export default function TripPostHeader({ user, currentUserId, isFollowing, onFol
                                 onFollow();
                             }}
                         >
-                            {isFollowing ? 'Following' : 'Follow'}
+                            {isFollowing ? t('social.following') : t('social.follow')}
                         </Button>
                     )}
 
@@ -92,9 +93,9 @@ export default function TripPostHeader({ user, currentUserId, isFollowing, onFol
                         onClick={(e) => e.stopPropagation()} // Stop clicks inside menu from bubbling
                     >
                         {user._id !== currentUserId && (
-                            <MenuItem onClick={handleChatClick}>Chat</MenuItem>
+                            <MenuItem onClick={handleChatClick}>{t('social.chat')}</MenuItem>
                         )}
-                        <MenuItem onClick={handleReportClick}>Report</MenuItem>
+                        <MenuItem onClick={handleReportClick}>{t('report.title')}</MenuItem>
                     </Menu>
                 </Box>
             </Box>

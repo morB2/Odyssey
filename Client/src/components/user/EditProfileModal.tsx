@@ -53,11 +53,11 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
     setSuccess(null);
 
     if (newPassword !== confirmPassword) {
-      setError("New passwords do not match");
+      setError(t('profile.passwordsDoNotMatch'));
       return;
     }
     if (!currentPassword) {
-      setError("Please enter your current password");
+      setError(t('profile.enterCurrentPassword'));
       return;
     }
 
@@ -72,7 +72,7 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
         return;
       }
 
-      setSuccess("Password changed successfully");
+      setSuccess(t('profile.passwordChangedSuccessfully'));
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -82,7 +82,7 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
       }, 2500);
     } catch (e) {
       console.error("Failed to change password", e);
-      setError("Failed to change password");
+      setError(t('profile.failedToChangePassword'));
     } finally {
       setLoading(false);
     }
@@ -185,6 +185,6 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
           <Button variant="outlined" onClick={onClose} sx={{ textTransform: "none" }}>Close</Button>
         </Box>
       </Box>
-    </Modal>
+    </Modal >
   );
 }

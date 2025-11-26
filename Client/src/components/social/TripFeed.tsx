@@ -3,11 +3,12 @@ import TripPost from './TripPost';
 import { Container, Box } from '@mui/material';
 import { fetchTrips } from '../../services/tripFeed.service';
 import { type Comment, type Trip } from './types';
-import Navbar  from '../general/Navbar';
+import Navbar from '../general/Navbar';
 import TripFeedSkeleton from './TripFeedSkeleton';
 import { useUserStore } from '../../store/userStore';
-import GuestWelcomeCard from './GuestWelcomeCard';
+import { GuestWelcomeCard } from './GuestWelcomeCard';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 
 function adaptComments(apiComments: any[]): Comment[] {
   return apiComments.map((c) => {
@@ -41,6 +42,7 @@ function adaptComments(apiComments: any[]): Comment[] {
 
 
 export function TripFeed() {
+  const { t } = useTranslation();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
   const [allowGuest, setAllowGuest] = useState(false);
@@ -65,7 +67,7 @@ export function TripFeed() {
         setTrips(tripsData);
       } catch (err) {
         console.error('Failed to fetch trips:', err);
-        toast.error("Failed to load trips. Please refresh the page.");
+        toast.error(t('feed.failedToLoadTrips'));
       } finally {
         setLoading(false);
       }

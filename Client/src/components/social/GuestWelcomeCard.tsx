@@ -1,11 +1,13 @@
 import { Card, CardContent, Typography, Button, Stack, Box } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 interface GuestWelcomeCardProps {
     onViewAsGuest: () => void;
 }
 
-export default function GuestWelcomeCard({ onViewAsGuest }: GuestWelcomeCardProps) {
+export const GuestWelcomeCard = ({ onViewAsGuest }: GuestWelcomeCardProps) => {
+    const {t } = useTranslation();
     const navigate = useNavigate();
 
     return (
@@ -18,14 +20,15 @@ export default function GuestWelcomeCard({ onViewAsGuest }: GuestWelcomeCardProp
                 boxShadow: '0 6px 18px rgba(0,0,0,0.08)',
                 overflow: 'hidden',
                 bgcolor: 'background.paper',
+                marginTop: '20%'
             }}
         >
             <CardContent sx={{ p: 4, textAlign: 'center' }}>
                 <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600, color: 'text.primary' }}>
-                    Welcome to Odyssey
+                    {t('guestWelcome.title')}
                 </Typography>
                 <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                    Join our community to share your adventures, interact with other travelers, and discover amazing trips.
+                    {t('guestWelcome.text')}
                 </Typography>
 
                 <Stack
@@ -43,10 +46,12 @@ export default function GuestWelcomeCard({ onViewAsGuest }: GuestWelcomeCardProp
                             borderRadius: '24px',
                             textTransform: 'none',
                             fontSize: '1rem',
-                            fontWeight: 600
+                            fontWeight: 600,
+                            bgcolor: '#d97706',
+                            '&:hover': { bgcolor: '#b45309' },
                         }}
                     >
-                        Sign In / Sign Up
+                        {t('guestWelcome.signIn')}
                     </Button>
                     <Button
                         variant="outlined"
@@ -57,10 +62,12 @@ export default function GuestWelcomeCard({ onViewAsGuest }: GuestWelcomeCardProp
                             borderRadius: '24px',
                             textTransform: 'none',
                             fontSize: '1rem',
-                            fontWeight: 600
+                            fontWeight: 600,
+                            color:'#d97706',
+                            borderColor: '#d97706',
                         }}
                     >
-                        View as Guest
+                        {t('guestWelcome.viewAsGuest')}
                     </Button>
                 </Stack>
             </CardContent>

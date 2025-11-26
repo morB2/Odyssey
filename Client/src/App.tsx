@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import Profile from './components/user/Profile';
@@ -14,6 +15,11 @@ import { ThemeProvider } from '@mui/material/styles';
 
 import Page404 from './components/general/404Page';
 import Page401 from './components/general/401Page';
+import TermsOfService from './components/general/TermsOfService';
+import PrivacyPolicy from './components/general/PrivacyPolicy';
+import HelpCenter from './components/general/HelpCenter';
+import Contact from './components/general/Contact';
+import Footer from './components/general/Footer';
 import { MainPage } from './components/tripPlan/MainPage';
 
 import { initializeSocket } from './services/socketService';
@@ -25,7 +31,9 @@ import './App.css';
 
 import { ChatProvider } from './context/ChatContext';
 import ChatWidget from './components/chat/ChatWidget';
+import { Box } from '@mui/material';
 import AllChatsPage from './components/chat/AllChatsPage';
+import { ResetPasswordPage } from './components/login/ResetPassword';
 
 function App() {
   const location = useLocation();
@@ -57,24 +65,35 @@ function App() {
           <ToastContainer position="top-right" autoClose={3000} />
           <ChatWidget />
 
-          <Routes location={background}>
-            <Route path="/" element={<Home />} />
-            <Route path="/chats" element={<AllChatsPage />} />
-            <Route path="/createtrip" element={<MainPage />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/profile/:userId" element={<Profile />} />
-            <Route path="/feed" element={<TripFeed />} />
-            <Route path="/forgotPassword" element={<ForgotPassword />} />
-            <Route path="/admin" element={<Dashboard />} />
-            <Route path="/401" element={<Page401 />} />
-            <Route path="*" element={<Page404 />} />
-          </Routes>
-
-          {state?.backgroundLocation && (
-            <Routes>
-              <Route path="/login" element={<Login />} />
+          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+            {/* Main Routes */}
+            <Routes location={background}>
+              <Route path="/" element={<Home />} />
+              <Route path="/chats" element={<AllChatsPage />} />
+              <Route path="/createtrip" element={<MainPage />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile/:userId" element={<Profile />} />
+              <Route path="/feed" element={<TripFeed />} />
+              <Route path="/forgotPassword" element={<ForgotPassword />} />
+              <Route path="/resetPassword" element={<ResetPasswordPage />} />
+              <Route path="/admin" element={<Dashboard />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/help" element={<HelpCenter />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/401" element={<Page401 />} />
+              <Route path="*" element={<Page404 />} />
             </Routes>
-          )}
+            
+            {/* Modal routes (login popup) */}
+            {state?.backgroundLocation && (
+              <Routes>
+                <Route path="/login" element={<Login />} />
+              </Routes>
+            )}
+
+            <Footer />
+          </Box>
         </ThemeProvider>
       </CacheProvider>
     </ChatProvider>

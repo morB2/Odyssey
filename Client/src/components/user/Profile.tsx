@@ -8,6 +8,11 @@ import { EditTripModal } from "./EditTripModal";
 import type { Trip, UserProfile } from "./types";
 import { getProfile, getTrips, getLikedTrips, getSavedTrips, deleteTrip as svcDeleteTrip } from "../../services/profile.service";
 import { useUserStore } from "../../store/userStore";
+import { toast } from "react-toastify";
+import { useTranslation } from 'react-i18next';
+// Navbar intentionally not rendered inside this view
+
+const BASE_URL = "http://localhost:3000";
 import api from "../../services/httpService";
 import Navbar from "../general/Navbar";
 import { toast } from "react-toastify";
@@ -38,6 +43,7 @@ const normalizeTrips = (data: unknown): Trip[] => {
 };
 
 export default function Profile() {
+  const { t } = useTranslation();
   const storeUser = useUserStore((s) => s.user);
   const storeToken = useUserStore((s) => s.token);
   const setUserStore = useUserStore((s) => s.setUser);
@@ -72,7 +78,7 @@ export default function Profile() {
         ]);
 
         if (!mounted) return;
-        if (!userRes || !userRes.success) throw new Error(userRes?.error || "Failed to load user");
+        if (!userRes || !userRes.success) throw new Error(userRes?.error || t('general.error'));
 
         setUser(userRes.user);
 

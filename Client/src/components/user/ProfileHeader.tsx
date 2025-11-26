@@ -4,7 +4,9 @@ import { Button, Card, Avatar, Box, Typography, List, ListItem, ListItemAvatar, 
 import { Link as RouterLink } from "react-router-dom";
 import { Edit, Users, UserPlus, MapPin } from "lucide-react";
 import { getFollowers as svcGetFollowers, getFollowing as svcGetFollowing } from "../../services/profile.service";
-
+import { toast } from "react-toastify";
+import { useTranslation } from 'react-i18next';
+const BASE_URL = "http://localhost:3000";
 type SimpleFollow = {
   _id?: string;
   id?: string;
@@ -31,6 +33,7 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, tripsCount =
   const [following, setFollowing] = useState<SimpleFollow[]>([]);
   const [followersCount, setFollowersCount] = useState<number>(user.followersCount || 0);
   const [followingCount, setFollowingCount] = useState<number>(user.followingCount || 0);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setOpenDialog(null);
@@ -97,7 +100,7 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, tripsCount =
         PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 4px 24px rgba(0,0,0,0.15)' } }}>
 
         <DialogTitle sx={{ textAlign: 'center', fontWeight: 700, fontSize: '1.1rem', color: '#111', py: 2 }}>
-          {type === "followers" ? "Followers" : "Following"}
+          {type === "followers" ? t('profile.followers') : t('profile.following')}
         </DialogTitle>
 
         <DialogContent sx={{ pt: 0 }}>
@@ -245,7 +248,7 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, tripsCount =
               >
                 <Users size={16} />
                 <Typography sx={{ fontWeight: 600 }}>{followersCount}</Typography>
-                <Typography sx={{ fontSize: '0.8rem' }}>Followers</Typography>
+                <Typography sx={{ fontSize: '0.8rem' }}>{t('profile.followers')}</Typography>
               </Box>
 
               <Box
@@ -261,7 +264,7 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, tripsCount =
               >
                 <UserPlus size={16} />
                 <Typography sx={{ fontWeight: 600 }}>{followingCount}</Typography>
-                <Typography sx={{ fontSize: '0.8rem' }}>Following</Typography>
+                <Typography sx={{ fontSize: '0.8rem' }}> {t('profile.following')}</Typography>
               </Box>
 
             </Box>

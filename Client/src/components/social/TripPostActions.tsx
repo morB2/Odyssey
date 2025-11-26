@@ -1,6 +1,7 @@
 import { CardActions, Box, IconButton, Typography } from '@mui/material';
 import type { Dispatch, SetStateAction } from 'react';
 import { Favorite, FavoriteBorder, ChatBubbleOutline, BookmarkBorder, Bookmark } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 
 interface TripPostActionsProps {
     isLiked: boolean;
@@ -23,6 +24,8 @@ export default function TripPostActions({
     onSave,
     setShowComments,
 }: TripPostActionsProps) {
+    const { t } = useTranslation();
+
     return (
         <CardActions sx={{ justifyContent: 'space-between', px: 2 }}>
             <Box display="flex" gap={2}>
@@ -33,14 +36,14 @@ export default function TripPostActions({
                             e.stopPropagation();
                             onLike();
                         }}
-                        aria-label={isLiked ? 'Unlike' : 'Like'}
+                        aria-label={isLiked ? t('feed.unlike') : t('feed.like')}
                         color={isLiked ? 'primary' : 'default'}
                     >
                         {isLiked ? <Favorite /> : <FavoriteBorder />}
                     </IconButton>
                     <Typography variant="body2">{likesCount}</Typography>
                 </Box>
-                
+
                 {/* Comments Button */}
                 <Box display="flex" alignItems="center">
                     <IconButton
@@ -48,7 +51,7 @@ export default function TripPostActions({
                             e.stopPropagation();
                             setShowComments((prev) => !prev);
                         }}
-                        aria-label="Comments"
+                        aria-label={t('feed.comments')}
                     >
                         <ChatBubbleOutline color={showComments ? 'primary' : undefined} />
                     </IconButton>
@@ -62,7 +65,7 @@ export default function TripPostActions({
                     e.stopPropagation();
                     onSave();
                 }}
-                aria-label={isSaved ? 'Unsave' : 'Save'}
+                aria-label={isSaved ? t('feed.unsave') : t('feed.save')}
                 color={isSaved ? 'primary' : 'default'}
             >
                 {isSaved ? <Bookmark /> : <BookmarkBorder />}

@@ -10,6 +10,7 @@ import {
 import { AccountCircle, Logout } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../../store/userStore';
+import { useTranslation } from 'react-i18next';
 
 interface ProfileMenuProps {
     size?: number;
@@ -19,6 +20,7 @@ export default function ProfileMenu({ size = 50 }: ProfileMenuProps) {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const user = useUserStore((state) => state.user);
     const handleClick = (event: MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -115,11 +117,11 @@ export default function ProfileMenu({ size = 50 }: ProfileMenuProps) {
             >
                 <MenuItem onClick={handleMyAccount}>
                     <AccountCircle fontSize="small" />
-                    <Typography variant="body2">My Account</Typography>
+                    <Typography variant="body2">{t('profileMenu.myAccount')}</Typography>
                 </MenuItem>
                 <MenuItem onClick={handleLogout}>
                     <Logout fontSize="small" />
-                    <Typography variant="body2">Logout</Typography>
+                    <Typography variant="body2">{t('profileMenu.logout')}</Typography>
                 </MenuItem>
             </Menu>
         </Box>

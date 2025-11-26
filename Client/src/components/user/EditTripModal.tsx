@@ -6,6 +6,8 @@ import { Save, X, Trash2, Lock, Globe, Plus } from "lucide-react";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { useUserStore } from "../../store/userStore";
 import { updateTrip } from "../../services/profile.service";
+import { toast } from "react-toastify";
+
 import { CloudinaryUploadWidget } from "../common/CloudinaryUploadWidget";
 
 interface EditTripModalProps {
@@ -110,7 +112,7 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
         setTrips((prevTrips) => prevTrips.map((t) => t.id === mapped.id || t._id === mapped._id ? { ...t, ...mapped } : t));
       } catch (e) {
         console.error("Failed to save trip", e);
-        alert(String(e instanceof Error ? e.message : e));
+        toast.error(String(e instanceof Error ? e.message : e));
       }
     })();
   };

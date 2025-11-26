@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { AppBar, Toolbar, Box, Button, Link, Typography } from '@mui/material';
 import { BookImage, Sparkles, MessageCircleMore } from 'lucide-react';
