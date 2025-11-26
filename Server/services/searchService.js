@@ -28,20 +28,28 @@ export async function search(query, viewerId = null, userLimit = 5, tripLimit = 
         return { users: [], trips: [] };
     }
 
-    const searchRegex = new RegExp(query.trim(), "i"); // case-insensitive search
+    // Log the search query for debugging
+    console.log('Search query:', query.trim());
+    console.log('Query length:', query.trim().length);
+    console.log('Query bytes:', Buffer.from(query.trim(), 'utf8'));
+
+    // Use MongoDB's $regex operator directly for better Unicode support
+    const searchPattern = query.trim();
 
     // Search users by firstName, lastName, or email
     const users = await User.find({
         $or: [
-            { firstName: searchRegex },
-            { lastName: searchRegex },
-            { email: searchRegex },
+            { firstName: { $regex: searchPattern, $options: 'i' } },
+            { lastName: { $regex: searchPattern, $options: 'i' } },
+            { email: { $regex: searchPattern, $options: 'i' } },
         ],
-        status: true, // Only active users
+        // status: true, // Only active users
     })
         .select("_id firstName lastName email avatar")
         .limit(userLimit)
         .lean();
+
+    console.log('Found users:', users.length);
 
     // Normalize avatars
     users.forEach((user) => {
@@ -67,9 +75,9 @@ export async function search(query, viewerId = null, userLimit = 5, tripLimit = 
     const trips = await Trip.find({
         visabilityStatus: "public", // Only public trips
         $or: [
-            { title: searchRegex },
-            { description: searchRegex },
-            { activities: searchRegex },
+            { title: { $regex: searchPattern, $options: 'i' } },
+            { description: { $regex: searchPattern, $options: 'i' } },
+            { activities: { $regex: searchPattern, $options: 'i' } },
         ],
     })
         .sort({ createdAt: -1 })
@@ -84,6 +92,8 @@ export async function search(query, viewerId = null, userLimit = 5, tripLimit = 
             select: "_id firstName lastName avatar",
         })
         .lean();
+
+    console.log('Found trips:', trips.length);
 
     // If viewerId is provided, add social flags (isLiked, isSaved, isFollowing)
     if (viewerId && trips.length > 0) {
