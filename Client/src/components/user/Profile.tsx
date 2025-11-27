@@ -12,7 +12,6 @@ import { toast } from "react-toastify";
 import { useTranslation } from 'react-i18next';
 // Navbar intentionally not rendered inside this view
 
-const BASE_URL = "http://localhost:3000";
 import api from "../../services/httpService";
 import Navbar from "../general/Navbar";
 
@@ -230,7 +229,7 @@ export default function Profile() {
       <Navbar />
       <Box sx={containerStyle}>
         <Paper elevation={3} sx={paperStyle}>
-          <ProfileHeader user={user || guestUser} isOwner={isOwner} onEditClick={() => isOwner && setIsEditModalOpen(true)} tripsCount={totalTrips} loading={loading} />
+          <ProfileHeader user={user || guestUser} isOwner={isOwner} onEditClick={() => isOwner && setIsEditModalOpen(true)} loading={loading} />
 
           <Box sx={{ mt: 4 }}>
             <TripsList
