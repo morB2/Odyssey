@@ -1,463 +1,549 @@
 {
-  "welcome": "ברוכים הבאים",
-  "firstName": "שם פרטי",
-  "lastName": "שם משפחה",
-  "signInToYourAccount": "התחברו לחשבונכם",
-  "createANewAccount": "צור חשבון חדש",
-  "signIn": "התחברות",
-  "signUp": "הרשמה",
-  "email": "אימייל",
-  "exampleEmail": "example@email.com",
-  "password": "סיסמה",
-  "confirmPassword": "אימות סיסמה",
-  "birthday": "תאריך לידה (אופציונלי)",
-  "createAccount": "צור חשבון",
-  "forgotPassword": "שכחת סיסמה?",
-  "orContinueWith": "או המשך עם",
-  "Cancel": "בטל",
-  "Confirm": "אשר",
-  "plan_share_explore": "תכנן, שתף וחקור",
-  "odyssey_description": "Odyssey היא הפלטפורמה שלך לטיולים: צור מסלולים מבוססי AI, שתף את ההרפתקאות שלך, עקוב אחר מטיילים אחרים וגלה יעדים מדהימים ברחבי העולם.",
-  "plan_your_trip": "תכנן את הטיול שלך",
-  "explore_feed": "גלה את הפיד",
-  "what_we_offer": "מה אנחנו מציעים",
-  "plan_smarter_share": "תכנן חכם יותר. שתף את ההרפתקאות שלך.",
-  "features_description": "ממסלולי AI ועד שיתוף חברתי – Odyssey מרכזת הכל בשביל חוויות בלתי נשכחות.",
-  "smart_route_planning": "תכנון מסלולים חכם",
-  "smart_route_desc": "AI מחשב את המסלולים היעילים ביותר, חוסך זמן וממקסם את ההרפתקה שלך.",
-  "flexible_scheduling": "תזמון גמיש",
-  "flexible_scheduling_desc": "בנה מסלולי יום-יום שמתאימים לקצב שלך עם אפשרות לשינוי תוכניות בכל עת.",
-  "budget_optimization": "אופטימיזציה של תקציב",
-  "budget_optimization_desc": "קבע תקציב וקבל המלצות חכמות לאופציות חסכוניות.",
-  "traveler_feed": "פיד מטיילים",
-  "traveler_feed_desc": "עקוב אחר חברים ומטיילים אחרים, קרא עדכונים, סיפורים וטיפים מהקהילה.",
-  "share_your_journey": "שתף את המסע שלך",
-  "share_your_journey_desc": "פרסם תמונות, סרטונים ורשומות מסע כדי להשראה לאחרים.",
-  "global_connections": "חיבורים גלובליים",
-  "global_connections_desc": "הצטרף לקבוצות מטיילים, התחבר לחוקרי עולם וגלו יעדים פופולריים ברחבי העולם.",
-  "join_travel_community": "הצטרף לקהילת המטיילים",
-  "community_description": "עקוב אחר מטיילים, שתף את ההרפתקאות שלך, קבל השראה מחוויות אמיתיות וגלה יעדים חמים.",
-  "connect_with_friends": "התחבר עם חברים",
-  "connect_with_friends_desc": "עקוב אחר חברים, הצטרף לקבוצות מטיילים, ותקשר עם חוקרי עולם אחרים.",
-  "share_your_moments": "שתף את הרגעים שלך",
-  "share_your_moments_desc": "העלה תמונות, סרטונים וסיפורים כדי להשראה לקהילה.",
-  "plan_trips_together": "תכנן טיולים יחד",
-  "plan_trips_together_desc": "צור מסלולים, שתף פעולה עם חברים ושתף את המסלולים שתכננת.",
-  "start_planning_sharing": "התחל לתכנן ולשתף היום",
-  "join_odyssey_description": "הצטרף ל-Odyssey כדי לתכנן טיולים חכמים, לשתף מסעות ולהתחבר עם מטיילים בעולם.",
-  "footer_description": "פלטפורמה חברתית לתכנון טיולים, שיתוף הרפתקאות וחיבור עם מטיילים אחרים.",
-  "explore": "חקור",
-  "feed": "פיד",
-  "messages": "הודעות",
-  "destinations": "יעדים",
-  "groups": "קבוצות",
-  "plan_trip": "תכנון טיול",
-  "support": "תמיכה",
-  "help_center": "מרכז עזרה",
-  "terms_of_service": "תנאי שימוש",
-  "privacy_policy": "מדיניות פרטיות",
-  "contact": "צור קשר",
-  "createTrip": "צור טיול",
-  "logIn": "התחברות",
-  "main_page": {
-    "hero_title": "צור את הטיול המושלם שלך בעזרת AI",
-    "hero_subtitle": "שוחח עם העוזר החכם שלנו כדי לתכנן חופשה מושלמת",
-    "chat_header": "עוזר טיולים חכם",
-    "initial_message": "היי! 👋 אני עוזר הטיולים החכם שלך. ספר לי על החופשה שאתה חולם עליה ואבנה עבורך מסלול מותאם אישית. לאן תרצה לנסוע?",
-    "ai_suggestions_intro": "הנה כמה מסלולים מדהימים שמצאתי עבורך 🌍",
-    "ai_suggestions_click": "לחץ על המסלול שמעניין אותך ואני אמצא עבורך את המסלול הטוב ביותר! 🗺️",
-    "ai_travel_question": "מעולה! 🚗 איך תרצה להתנייד?",
-    "ai_route_confirm": "מצוין! 🌍 אתכנן עבורך את מסלול ה{{mode}} הטוב ביותר לטיול \"{{title}}\".",
-    "ai_customize_prompt": "אם תרצה לשנות משהו — רק תגיד ואעדכן עבורך!",
-    "ai_customize_done": "הבנתי! ✏️ עדכנתי את המסלול לפי הבקשה שלך.",
-    "ai_error_unavailable": "מצטערים, שירות ה-AI אינו זמין כרגע. אנא נסה שוב מאוחר יותר. 🙏",
-    "ai_error_busy": "מצטערים, השרת עמוס כרגע... נסה שוב בעוד כמה דקות 😢",
-    "user_selected_itinerary": "בחרתי: {{title}}",
-    "user_selected_mode": "אני מעדיף {{mode}}",
-    "feature_ai_title": "AI חכם",
-    "feature_ai_text": "מערכת AI מתקדמת שמתאימה עבורך מסלולים אישיים",
-    "feature_routes_title": "מסלולים מותאמים",
-    "feature_routes_text": "קבל מסלולים ולוחות זמנים מותאמים לסגנון הטיול שלך",
-    "feature_flexible_title": "תכנון גמיש",
-    "feature_flexible_text": "תכנן טיולים בכל אורך עם מסלולים גמישים שמתאימים ללוח הזמנים שלך"
-  },
-  "quick_actions": {
-    "quick_suggestions_title": "הצעות מהירות:",
-    "quick_beach_label": "חופשת חוף",
-    "quick_beach_action": "אני רוצה חופשת חוף רגועה",
-    "quick_adventure_label": "טיול אתגרי",
-    "quick_adventure_action": "אני רוצה טיול אתגרי עם מסלולי הליכה וחקירה",
-    "quick_culture_label": "חוויה תרבותית",
-    "quick_culture_action": "חוויה תרבותית עם סיורי אוכל מקומי",
-    "quick_week_label": "שבוע",
-    "quick_week_action": "טיול של שבוע",
-    "quick_budget_label": "תקציב בינוני",
-    "quick_budget_action": "תקציב בינוני"
-  },
-  "chat_input": {
-    "placeholder": "הקלד הודעה...",
-    "hint": "לחיצה על Enter תשלח את ההודעה • ה-AI יבנה עבורך מסלול מותאם"
-  },
-  "messageBubble": {
-    "aiAssistant": "עוזר ה-AI"
-  },
-  "itinerarySummary": {
-    "defaultTitle": "מסלול טיול",
-    "noItems": "אין עדיין פריטים במסלול"
-  },
-  "travelModes": {
-    "driving": "נהיגה 🚗",
-    "walking": "הליכה 🚶‍♀️",
-    "transit": "תחבורה ציבורית 🚌"
-  },
-  "tripDisplay": {
-    "noRouteData": "אין נתוני מסלול להצגה",
-    "defaultTravel": "טיול",
-    "tripCover": "תמונת מסלול",
-    "untitledTrip": "טיול ללא שם",
-    "routeStops": "תחנות במסלול",
-    "travelInstructions": "הוראות נסיעה",
-    "activities": "פעילויות",
-    "openInGoogleMaps": "פתח בגוגל מפות",
-    "save": "שמירה",
-    "saveTrip": {
-      "title": "שמור את המסלול",
-      "prompt": "האם ברצונך לשמור את המסלול באופן פרטי או ציבורי?",
-      "private": "שמירה פרטית",
-      "public": "שמירה ציבורית",
-      "success": "המסלול נשמר בהצלחה!",
-      "fail": "שמירת המסלול נכשלה.",
-      "error": "אירעה שגיאה בעת שמירת המסלול."
-    }
-  },
-  "guestWelcome": {
-    "title": "ברוכים הבאים ל-Odyssey",
-    "text": "הצטרפו לקהילה שלנו כדי לשתף את ההרפתקאות שלכם, להתחבר למטיילים אחרים ולגלות טיולים מדהימים.",
-    "signIn": "התחבר / הירשם",
-    "viewAsGuest": "צפה כאורח"
-  },
-  "report": {
-    "title": "דווח על הטיול",
-    "selectReason": "אנא בחר/י סיבה לדיווח על טיול זה:",
-    "reason": "סיבה",
-    "submit": "שלח",
-    "submitting": "שולח...",
-    "cancel": "ביטול",
-    "success": "הדיווח נשלח בהצלחה. תודה.",
-    "fail": "שליחת הדיווח נכשלה. אנא נסה שוב.",
-    "errorNoReason": "אנא בחר/י או הזן סיבה.",
-    "reasons": {
-      "Inappropriate content": "תוכן בלתי הולם",
-      "Spam or misleading": "ספאם או מטעה",
-      "Harassment or hate speech": "הטרדה או לשון שנאה",
-      "Violence or dangerous organizations": "אלימות או ארגונים מסוכנים",
-      "Intellectual property violation": "הפרת קניין רוחני",
-      "Other": "אחר"
-    }
-  },
-   "profileMenu": {
-    "myAccount": "החשבון שלי",
-    "logout": "התנתק"
-  },
-  "comments": {
-    "noComments": "עדיין אין תגובות. תהיה הראשון להגיב!",
-    "addComment": "הוסף תגובה...",
-    "writeReply": "כתוב תגובה...",
-    "reply": "השב",
-    "emojiReactions": {
-      "like": "👍",
-      "love": "❤️",
-      "funny": "🤣",
-      "wow": "😮",
-      "fire": "🔥"
-    }
-  },
-  "forgotPasswordC": {
-    "brand": "Wanderlust Travels",
-    "description": "הרפתקה חדשה מחכה לך! איפוס הסיסמה יאפשר לך להמשיך לחקור את העולם.",
-    "backToLogin": "חזרה להתחברות",
-    "title": "שחזור סיסמה",
-    "subtitle": "אל דאגה, נעזור לך לאפס אותה",
-    "emailLabel": "כתובת אימייל",
-    "emailPlaceholder": "הכנס את האימייל שלך",
-    "helperText": "נשלח לך קישור לאיפוס הסיסמה.",
-    "sendLink": "שלח קישור לאיפוס",
-    "rememberPassword": "זכרת את הסיסמה?",
-    "signIn": "התחבר/י",
-    "checkEmail": "בדוק/י את האימייל שלך",
-    "sentTo": "שלחנו קישור לאיפוס הסיסמה לכתובת",
-    "didNotReceive": "לא קיבלת את המייל? בדוק/י את תיקיית הספאם או",
-    "tryAgain": "נסה/י שוב",
-    "needHelp": "צריך/ה עזרה? פנה/י ל",
-    "contactSupport": "צוות התמיכה שלנו"
-  },
-  "profile": {
-    "profile": "פרופיל",
-    "followers": "עוקבים",
-    "following": "נעקבים",
-    "changePassword": "שינוי סיסמה",
-    "editProfile": "עריכת פרופיל",
-    "myTrips": "הטיולים שלי",
-    "likedTrips": "אהבתי",
-    "savedTrips": "שמורים",
-    "noTripsYet": "אין עדיין טיולים",
-    "changeProfilePicture": "שינוי תמונת פרופיל",
-    "uploadNewAvatar": "העלה תמונה חדשה",
-    "cancel": "ביטול",
-    "save": "שמירה"
-  },
-  "chat": {
-    "typeMessage": "הקלד הודעה...",
-    "noMessagesYet": "אין עדיין הודעות. תגיד שלום!",
-    "sayHi": "תגיד שלום!",
-    "chatRequest": "בקשת צ'אט",
-    "wantsToChat": "רוצה לשוחח איתך.",
-    "accept": "אשר",
-    "block": "חסום",
-    "requestSent": "הבקשה נשלחה. אתה יכול להמשיך לשלוח הודעות בזמן ההמתנה.",
-    "waitingForAcceptance": "ממתין לאישור",
-    "conversationBlocked": "השיחה הזו חסומה.",
-    "chats": "צ'אטים",
-    "noChatsYet": "אין עדיין צ'אטים",
-    "noNewRequests": "אין בקשות צ'אט חדשות",
-    "chatRequestAccepted": "בקשת הצ'אט אושרה",
-    "userBlocked": "המשתמש נחסם",
-    "failedToLoadChat": "נכשל בטעינת היסטוריית הצ'אט",
-    "failedToSendMessage": "נכשל בשליחת ההודעה",
-    "failedToUpdateRequest": "נכשל בעדכון הבקשה",
-    "newChat": "צ'אט חדש",
-    "all": "הכל",
-    "requests": "בקשות",
-    "totalUsers": "סה\"כ משתמשים",
-    "activeUsers": "משתמשים פעילים",
-    "totalPosts": "סה\"כ פוסטים",
-    "pendingReports": "דיווחים ממתינים",
-    "deleteUser": "מחק משתמש",
-    "deletePost": "מחק פוסט",
-    "resolveReport": "פתור דיווח",
-    "viewPost": "צפה בפוסט",
-    "actions": "פעולות",
-    "status": "סטטוס",
-    "reportedBy": "דווח על ידי",
-    "reason": "סיבה",
-    "createdAt": "נוצר ב",
-    "searchUsers": "חפש משתמשים...",
-    "selectChat": "בחר צ'אט כדי להתחיל שיחה"
-  },
-  "admin": {
-    "adminDashboard": "לוח בקרה למנהל",
-    "manageWebsiteContent": "נהל את תוכן האתר",
-    "usersManagement": "ניהול משתמשים",
-    "postsManagement": "ניהול פוסטים",
-    "reportsManagement": "ניהול דיווחים"
-  },
-  "social": {
-    "like": "אהבתי",
-    "unlike": "ביטול אהבתי",
-    "comment": "תגובה",
-    "share": "שיתוף",
-    "save": "שמירה",
-    "unsave": "ביטול שמירה",
-    "follow": "עקוב",
-    "unfollow": "הפסק לעקוב",
-    "following": "עוקב",
-    "likes": "אהבו",
-    "comments": "תגובות",
-    "pleaseLoginTo": "אנא התחבר כדי",
-    "pleaseLoginToLike": "אנא התחבר כדי לאהוב טיולים.",
-    "pleaseLoginToSave": "אנא התחבר כדי לשמור טיולים.",
-    "pleaseLoginToFollow": "אנא התחבר כדי לעקוב אחרי משתמשים.",
-    "pleaseLoginToComment": "אנא התחבר כדי להגיב.",
-    "pleaseLoginToReply": "אנא התחבר כדי להשיב.",
-    "pleaseLoginToReact": "אנא התחבר כדי להגיב.",
-    "tripSaved": "הטיול נשמר!",
-    "tripUnsaved": "הטיול הוסר מהשמורים.",
-    "commentAdded": "התגובה נוספה!",
-    "replyAdded": "התשובה נוספה!",
-    "failedToLike": "נכשל באהבת הטיול. אנא נסה שוב.",
-    "failedToSave": "נכשל בשמירת הטיול. אנא נסה שוב.",
-    "failedToFollow": "נכשל במעקב אחרי המשתמש. אנא נסה שוב.",
-    "failedToComment": "נכשל בהוספת התגובה. אנא נסה שוב.",
-    "failedToReply": "נכשל בהוספת התשובה.",
-    "failedToReact": "נכשל בהוספת התגובה.",
-    "followingUser": "עוקב אחרי",
-    "unfollowedUser": "הפסקת לעקוב אחרי",
-    "chat": "צ'אט"
-  },
-  "general": {
-    "search": "חיפוש",
-    "searchPlaceholder": "חפש...",
-    "searchResults": "תוצאות חיפוש",
-    "noResults": "לא נמצאו תוצאות",
-    "contact": "צור קשר",
-    "helpCenter": "מרכז עזרה",
-    "privacyPolicy": "מדיניות פרטיות",
-    "termsOfService": "תנאי שימוש",
-    "pageNotFound": "הדף לא נמצא",
-    "unauthorized": "לא מורשה",
-    "goHome": "חזור לדף הבית",
-    "sendMessage": "שלח הודעה",
-    "yourMessage": "ההודעה שלך",
-    "loading": "טוען...",
-    "error": "שגיאה"
-  },
-  "PostsManagement": {
-    "search_placeholder": "חפש פוסטים לפי כותרת, מחבר או קטגוריה...",
-    "add_post": "הוסף פוסט",
-    "no_results": "לא נמצאו פוסטים התואמים את החיפוש שלך.",
-    "add_new_post": "הוסף פוסט חדש",
-    "cancel": "ביטול",
-    "save_changes": "שמור שינויים",
-    "edit_post": "ערוך פוסט",
+    "welcome": "ברוכים הבאים",
+    "firstName": "שם פרטי",
+    "lastName": "שם משפחה",
+    "signInToYourAccount": "התחברו לחשבונכם",
+    "createANewAccount": "צור חשבון חדש",
+    "signIn": "התחברות",
+    "signUp": "הרשמה",
+    "email": "אימייל",
+    "exampleEmail": "example@email.com",
+    "password": "סיסמה",
+    "confirmPassword": "אימות סיסמה",
+    "birthday": "תאריך לידה (אופציונלי)",
+    "createAccount": "צור חשבון",
+    "forgotPassword": "שכחת סיסמה?",
+    "orContinueWith": "או המשך עם",
+    "Cancel": "בטל",
+    "Confirm": "אשר",
+    "plan_share_explore": "תכנן, שתף וחקור",
+    "odyssey_description": "Odyssey היא הפלטפורמה שלך לטיולים: צור מסלולים מבוססי AI, שתף את ההרפתקאות שלך, עקוב אחר מטיילים אחרים וגלה יעדים מדהימים ברחבי העולם.",
+    "plan_your_trip": "תכנן את הטיול שלך",
+    "explore_feed": "גלה את הפיד",
+    "what_we_offer": "מה אנחנו מציעים",
+    "plan_smarter_share": "תכנן חכם יותר. שתף את ההרפתקאות שלך.",
+    "features_description": "ממסלולי AI ועד שיתוף חברתי – Odyssey מרכזת הכל בשביל חוויות בלתי נשכחות.",
+    "smart_route_planning": "תכנון מסלולים חכם",
+    "smart_route_desc": "AI מחשב את המסלולים היעילים ביותר, חוסך זמן וממקסם את ההרפתקה שלך.",
+    "flexible_scheduling": "תזמון גמיש",
+    "flexible_scheduling_desc": "בנה מסלולי יום-יום שמתאימים לקצב שלך עם אפשרות לשינוי תוכניות בכל עת.",
+    "budget_optimization": "אופטימיזציה של תקציב",
+    "budget_optimization_desc": "קבע תקציב וקבל המלצות חכמות לאופציות חסכוניות.",
+    "traveler_feed": "פיד מטיילים",
+    "traveler_feed_desc": "עקוב אחר חברים ומטיילים אחרים, קרא עדכונים, סיפורים וטיפים מהקהילה.",
+    "share_your_journey": "שתף את המסע שלך",
+    "share_your_journey_desc": "פרסם תמונות, סרטונים ורשומות מסע כדי להשראה לאחרים.",
+    "global_connections": "חיבורים גלובליים",
+    "global_connections_desc": "הצטרף לקבוצות מטיילים, התחבר לחוקרי עולם וגלו יעדים פופולריים ברחבי העולם.",
+    "join_travel_community": "הצטרף לקהילת המטיילים",
+    "community_description": "עקוב אחר מטיילים, שתף את ההרפתקאות שלך, קבל השראה מחוויות אמיתיות וגלה יעדים חמים.",
+    "connect_with_friends": "התחבר עם חברים",
+    "connect_with_friends_desc": "עקוב אחר חברים, הצטרף לקבוצות מטיילים, ותקשר עם חוקרי עולם אחרים.",
+    "share_your_moments": "שתף את הרגעים שלך",
+    "share_your_moments_desc": "העלה תמונות, סרטונים וסיפורים כדי להשראה לקהילה.",
+    "plan_trips_together": "תכנן טיולים יחד",
+    "plan_trips_together_desc": "צור מסלולים, שתף פעולה עם חברים ושתף את המסלולים שתכננת.",
+    "start_planning_sharing": "התחל לתכנן ולשתף היום",
+    "join_odyssey_description": "הצטרף ל-Odyssey כדי לתכנן טיולים חכמים, לשתף מסעות ולהתחבר עם מטיילים בעולם.",
+    "footer_description": "פלטפורמה חברתית לתכנון טיולים, שיתוף הרפתקאות וחיבור עם מטיילים אחרים.",
+    "explore": "חקור",
+    "feed": "פיד",
+    "messages": "הודעות",
+    "destinations": "יעדים",
+    "groups": "קבוצות",
+    "plan_trip": "תכנון טיול",
+    "support": "תמיכה",
+    "help_center": "מרכז עזרה",
+    "terms_of_service": "תנאי שימוש",
+    "privacy_policy": "מדיניות פרטיות",
+    "createTrip": "צור טיול",
+    "logIn": "התחברות",
+    "main_page": {
+        "hero_title": "צור את הטיול המושלם שלך בעזרת AI",
+        "hero_subtitle": "שוחח עם העוזר החכם שלנו כדי לתכנן חופשה מושלמת",
+        "chat_header": "עוזר טיולים חכם",
+        "initial_message": "היי! 👋 אני עוזר הטיולים החכם שלך. ספר לי על החופשה שאתה חולם עליה ואבנה עבורך מסלול מותאם אישית. לאן תרצה לנסוע?",
+        "ai_suggestions_intro": "הנה כמה מסלולים מדהימים שמצאתי עבורך 🌍",
+        "ai_suggestions_click": "לחץ על המסלול שמעניין אותך ואני אמצא עבורך את המסלול הטוב ביותר! 🗺️",
+        "ai_travel_question": "מעולה! 🚗 איך תרצה להתנייד?",
+        "ai_route_confirm": "מצוין! 🌍 אתכנן עבורך את מסלול ה{{mode}} הטוב ביותר לטיול \"{{title}}\".",
+        "ai_customize_prompt": "אם תרצה לשנות משהו — רק תגיד ואעדכן עבורך!",
+        "ai_customize_done": "הבנתי! ✏️ עדכנתי את המסלול לפי הבקשה שלך.",
+        "ai_error_unavailable": "מצטערים, שירות ה-AI אינו זמין כרגע. אנא נסה שוב מאוחר יותר. 🙏",
+        "ai_error_busy": "מצטערים, השרת עמוס כרגע... נסה שוב בעוד כמה דקות 😢",
+        "user_selected_itinerary": "בחרתי: {{title}}",
+        "user_selected_mode": "אני מעדיף {{mode}}",
+        "feature_ai_title": "AI חכם",
+        "feature_ai_text": "מערכת AI מתקדמת שמתאימה עבורך מסלולים אישיים",
+        "feature_routes_title": "מסלולים מותאמים",
+        "feature_routes_text": "קבל מסלולים ולוחות זמנים מותאמים לסגנון הטיול שלך",
+        "feature_flexible_title": "תכנון גמיש",
+        "feature_flexible_text": "תכנן טיולים בכל אורך עם מסלולים גמישים שמתאימים ללוח הזמנים שלך"
+    },
+    "quick_actions": {
+        "quick_suggestions_title": "הצעות מהירות:",
+        "quick_beach_label": "חופשת חוף",
+        "quick_beach_action": "אני רוצה חופשת חוף רגועה",
+        "quick_adventure_label": "טיול אתגרי",
+        "quick_adventure_action": "אני רוצה טיול אתגרי עם מסלולי הליכה וחקירה",
+        "quick_culture_label": "חוויה תרבותית",
+        "quick_culture_action": "חוויה תרבותית עם סיורי אוכל מקומי",
+        "quick_week_label": "שבוע",
+        "quick_week_action": "טיול של שבוע",
+        "quick_budget_label": "תקציב בינוני",
+        "quick_budget_action": "תקציב בינוני"
+    },
+    "chat_input": {
+        "placeholder": "הקלד הודעה...",
+        "hint": "לחיצה על Enter תשלח את ההודעה • ה-AI יבנה עבורך מסלול מותאם"
+    },
+    "messageBubble": {
+        "aiAssistant": "עוזר ה-AI"
+    },
+    "itinerarySummary": {
+        "defaultTitle": "מסלול טיול",
+        "noItems": "אין עדיין פריטים במסלול"
+    },
+    "travelModes": {
+        "driving": "נהיגה 🚗",
+        "walking": "הליכה 🚶‍♀️",
+        "transit": "תחבורה ציבורית 🚌"
+    },
+    "tripDisplay": {
+        "noRouteData": "אין נתוני מסלול להצגה",
+        "defaultTravel": "טיול",
+        "tripCover": "תמונת מסלול",
+        "untitledTrip": "טיול ללא שם",
+        "routeStops": "תחנות במסלול",
+        "travelInstructions": "הוראות נסיעה",
+        "activities": "פעילויות",
+        "openInGoogleMaps": "פתח בגוגל מפות",
+        "save": "שמירה",
+        "saveTrip": {
+            "title": "שמור את המסלול",
+            "prompt": "האם ברצונך לשמור את המסלול באופן פרטי או ציבורי?",
+            "private": "שמירה פרטית",
+            "public": "שמירה ציבורית",
+            "success": "המסלול נשמר בהצלחה!",
+            "fail": "שמירת המסלול נכשלה.",
+            "error": "אירעה שגיאה בעת שמירת המסלול."
+        }
+    },
+    "guestWelcome": {
+        "title": "ברוכים הבאים ל-Odyssey",
+        "text": "הצטרפו לקהילה שלנו כדי לשתף את ההרפתקאות שלכם, להתחבר למטיילים אחרים ולגלות טיולים מדהימים.",
+        "signIn": "התחבר / הירשם",
+        "viewAsGuest": "צפה כאורח"
+    },
+    "report": {
+        "title": "דווח על הטיול",
+        "selectReason": "אנא בחר/י סיבה לדיווח על טיול זה:",
+        "reason": "סיבה",
+        "submit": "שלח",
+        "submitting": "שולח...",
+        "cancel": "ביטול",
+        "success": "הדיווח נשלח בהצלחה. תודה.",
+        "fail": "שליחת הדיווח נכשלה. אנא נסה שוב.",
+        "errorNoReason": "אנא בחר/י או הזן סיבה.",
+        "reasons": {
+            "Inappropriate content": "תוכן בלתי הולם",
+            "Spam or misleading": "ספאם או מטעה",
+            "Harassment or hate speech": "הטרדה או לשון שנאה",
+            "Violence or dangerous organizations": "אלימות או ארגונים מסוכנים",
+            "Intellectual property violation": "הפרת קניין רוחני",
+            "Other": "אחר"
+        }
+    },
+    "profileMenu": {
+        "myAccount": "החשבון שלי",
+        "logout": "התנתק"
+    },
+    "comments": {
+        "noComments": "עדיין אין תגובות. תהיה הראשון להגיב!",
+        "addComment": "הוסף תגובה...",
+        "writeReply": "כתוב תגובה...",
+        "reply": "השב",
+        "emojiReactions": {
+            "like": "👍",
+            "love": "❤️",
+            "funny": "🤣",
+            "wow": "😮",
+            "fire": "🔥"
+        }
+    },
+    "forgotPasswordC": {
+        "brand": "Wanderlust Travels",
+        "description": "הרפתקה חדשה מחכה לך! איפוס הסיסמה יאפשר לך להמשיך לחקור את העולם.",
+        "backToLogin": "חזרה להתחברות",
+        "title": "שחזור סיסמה",
+        "subtitle": "אל דאגה, נעזור לך לאפס אותה",
+        "emailLabel": "כתובת אימייל",
+        "emailPlaceholder": "הכנס את האימייל שלך",
+        "helperText": "נשלח לך קישור לאיפוס הסיסמה.",
+        "sendLink": "שלח קישור לאיפוס",
+        "rememberPassword": "זכרת את הסיסמה?",
+        "signIn": "התחבר/י",
+        "checkEmail": "בדוק/י את האימייל שלך",
+        "sentTo": "שלחנו קישור לאיפוס הסיסמה לכתובת",
+        "didNotReceive": "לא קיבלת את המייל? בדוק/י את תיקיית הספאם או",
+        "tryAgain": "נסה/י שוב",
+        "needHelp": "צריך/ה עזרה? פנה/י ל",
+        "contactSupport": "צוות התמיכה שלנו"
+    },
+    "profile": {
+        "profile": "פרופיל",
+        "followers": "עוקבים",
+        "following": "נעקבים",
+        "changePassword": "שינוי סיסמה",
+        "editProfile": "עריכת פרופיל",
+        "myTrips": "הטיולים שלי",
+        "likedTrips": "אהבתי",
+        "savedTrips": "שמורים",
+        "noTripsYet": "אין עדיין טיולים",
+        "changeProfilePicture": "שינוי תמונת פרופיל",
+        "uploadNewAvatar": "העלה תמונה חדשה",
+        "cancel": "ביטול",
+        "save": "שמירה"
+    },
+    "chat": {
+        "typeMessage": "הקלד הודעה...",
+        "noMessagesYet": "אין עדיין הודעות. תגיד שלום!",
+        "sayHi": "תגיד שלום!",
+        "chatRequest": "בקשת צ'אט",
+        "wantsToChat": "רוצה לשוחח איתך.",
+        "accept": "אשר",
+        "block": "חסום",
+        "requestSent": "הבקשה נשלחה. אתה יכול להמשיך לשלוח הודעות בזמן ההמתנה.",
+        "waitingForAcceptance": "ממתין לאישור",
+        "conversationBlocked": "השיחה הזו חסומה.",
+        "chats": "צ'אטים",
+        "noChatsYet": "אין עדיין צ'אטים",
+        "noNewRequests": "אין בקשות צ'אט חדשות",
+        "chatRequestAccepted": "בקשת הצ'אט אושרה",
+        "userBlocked": "המשתמש נחסם",
+        "failedToLoadChat": "נכשל בטעינת היסטוריית הצ'אט",
+        "failedToSendMessage": "נכשל בשליחת ההודעה",
+        "failedToUpdateRequest": "נכשל בעדכון הבקשה",
+        "newChat": "צ'אט חדש",
+        "all": "הכל",
+        "requests": "בקשות",
+        "totalUsers": "סה\"כ משתמשים",
+        "activeUsers": "משתמשים פעילים",
+        "totalPosts": "סה\"כ פוסטים",
+        "pendingReports": "דיווחים ממתינים",
+        "deleteUser": "מחק משתמש",
+        "deletePost": "מחק פוסט",
+        "resolveReport": "פתור דיווח",
+        "viewPost": "צפה בפוסט",
+        "actions": "פעולות",
+        "status": "סטטוס",
+        "reportedBy": "דווח על ידי",
+        "reason": "סיבה",
+        "share": "שיתוף",
+        "save": "שמירה",
+        "unsave": "ביטול שמירה",
+        "follow": "עקוב",
+        "unfollow": "הפסק לעקוב",
+        "following": "עוקב",
+        "likes": "אהבו",
+        "comments": "תגובות",
+        "pleaseLoginTo": "אנא התחבר כדי",
+        "pleaseLoginToLike": "אנא התחבר כדי לאהוב טיולים.",
+        "pleaseLoginToSave": "אנא התחבר כדי לשמור טיולים.",
+        "pleaseLoginToFollow": "אנא התחבר כדי לעקוב אחרי משתמשים.",
+        "pleaseLoginToComment": "אנא התחבר כדי להגיב.",
+        "pleaseLoginToReply": "אנא התחבר כדי להשיב.",
+        "pleaseLoginToReact": "אנא התחבר כדי להגיב.",
+        "tripSaved": "הטיול נשמר!",
+        "tripUnsaved": "הטיול הוסר מהשמורים.",
+        "commentAdded": "התגובה נוספה!",
+        "replyAdded": "התשובה נוספה!",
+        "failedToLike": "נכשל באהבת הטיול. אנא נסה שוב.",
+        "failedToSave": "נכשל בשמירת הטיול. אנא נסה שוב.",
+        "failedToFollow": "נכשל במעקב אחרי המשתמש. אנא נסה שוב.",
+        "failedToComment": "נכשל בהוספת התגובה. אנא נסה שוב.",
+        "failedToReply": "נכשל בהוספת התשובה.",
+        "failedToReact": "נכשל בהוספת התגובה.",
+        "followingUser": "עוקב אחרי",
+        "unfollowedUser": "הפסקת לעקוב אחרי",
+        "chat": "צ'אט"
+    },
+    "general": {
+        "search": "חיפוש",
+        "searchPlaceholder": "חפש...",
+        "searchResults": "תוצאות חיפוש",
+        "noResults": "לא נמצאו תוצאות",
+        "contact": "צור קשר",
+        "helpCenter": "מרכז עזרה",
+        "privacyPolicy": "מדיניות פרטיות",
+        "termsOfService": "תנאי שימוש",
+        "pageNotFound": "הדף לא נמצא",
+        "unauthorized": "לא מורשה",
+        "goHome": "חזור לדף הבית",
+        "sendMessage": "שלח הודעה",
+        "yourMessage": "ההודעה שלך",
+        "loading": "טוען...",
+        "error": "שגיאה"
+    },
+    "PostsManagement": {
+        "search_placeholder": "חפש פוסטים לפי כותרת, מחבר או קטגוריה...",
+        "add_post": "הוסף פוסט",
+        "no_results": "לא נמצאו פוסטים התואמים את החיפוש שלך.",
+        "add_new_post": "הוסף פוסט חדש",
+        "cancel": "ביטול",
+        "save_changes": "שמור שינויים",
+        "edit_post": "ערוך פוסט",
+        "status": "סטטוס",
+        "joinDate": "תאריך הצטרפות",
+        "actions": "פעולות"
+    },
+    "UsersManagement": {
+        "noUsersFound": "לא נמצאו משתמשים התואמים לחיפוש שלך.",
+        "editUser": "ערוך משתמש",
+        "labels": {
+            "name": "שם",
+            "email": "אימייל",
+            "role": "תפקיד",
+            "status": "סטטוס"
+        },
+        "roles": {
+            "user": "משתמש",
+            "admin": "מנהל"
+        },
+        "status": {
+            "active": "פעיל",
+            "inactive": "לא פעיל"
+        },
+        "buttons": {
+            "cancel": "ביטול",
+            "saveChanges": "שמור שינויים"
+        }
+    },
+    "404": {
+        "title": "404 - הדף לא נמצא",
+        "description": "מצטערים, הדף שאתה מחפש לא קיים.",
+        "returnHome": "חזור לדף הבית",
+        "exploreTrips": "גלה טיולים"
+    },
+    "HelpCenter": {
+        "title": "מרכז עזרה",
+        "subtitle": "איך נוכל לעזור לך היום?",
+        "searchPlaceholder": "חפש מאמרי עזרה...",
+        "gettingStarted": "תחילת העבודה",
+        "gettingStartedDesc": "למד את היסודות של Odyssey",
+        "planningTrips": "תכנון טיולים",
+        "planningTripsDesc": "כיצד ליצור ולנהל את הטיולים שלך",
+        "accountSettings": "הגדרות חשבון",
+        "accountSettingsDesc": "נהל את הפרופיל והעדפות שלך",
+        "troubleshooting": "פתרון בעיות",
+        "troubleshootingDesc": "מצא פתרונות לבעיות נפוצות",
+        "contactSupport": "צור קשר עם התמיכה",
+        "contactSupportDesc": "צריך עזרה נוספת? אנחנו כאן בשבילך"
+    },
+    "PrivacyPolicy": {
+        "title": "מדיניות פרטיות",
+        "lastUpdated": "עודכן לאחרונה: 24 בנובמבר 2025",
+        "sections": [
+            {
+                "title": "1. מידע שאנו אוספים",
+                "content": "אנו אוספים מידע שאתה מספק ישירות לנו כאשר אתה משתמש ב-Odyssey, כולל כאשר אתה יוצר חשבון, מעדכן את הפרופיל שלך, משתמש בשירותים האינטראקטיביים שלנו, משתתף בסקר או תחרות, מתקשר עם שירות הלקוחות שלנו, או מתקשר איתנו בדרך אחרת."
+            },
+            {
+                "title": "2. כיצד אנו משתמשים במידע שלך",
+                "content": "אנו משתמשים במידע שאנו אוספים כדי לספק, לתחזק ולשפר את השירותים שלנו, לפתח שירותים חדשים, ולהגן על Odyssey ועל המשתמשים שלנו. אנו גם משתמשים במידע זה כדי להציע לך תוכן מותאם אישית."
+            },
+            {
+                "title": "3. שיתוף מידע",
+                "content": "אנו לא משתפים מידע אישי עם חברות, ארגונים ואנשים מחוץ ל-Odyssey למעט במקרים הבאים: עם הסכמתך, לעיבוד חיצוני, או מסיבות משפטיות."
+            },
+            {
+                "title": "4. אבטחת מידע",
+                "content": "אנו עובדים קשה כדי להגן על Odyssey ועל המשתמשים שלנו מפני גישה לא מורשית או שינוי, גילוי או הרס לא מורשים של מידע שאנו מחזיקים."
+            },
+            {
+                "title": "5. הזכויות שלך",
+                "content": "אתה יכול לגשת, לעדכן או למחוק את המידע האישי שלך בכל עת על ידי כניסה לחשבון שלך. אתה גם יכול לבקש מאיתנו למחוק את החשבון שלך."
+            }
+        ]
+    },
+    "TermsOfService": {
+        "title": "תנאי שימוש",
+        "lastUpdated": "עודכן לאחרונה: 24 בנובמבר 2025",
+        "sections": [
+            {
+                "title": "1. קבלת התנאים",
+                "content": "על ידי גישה ושימוש ב-Odyssey (\"השירות\"), אתה מקבל ומסכים להיות כפוף לתנאים ולהוראות של הסכם זה. בנוסף, בעת שימוש בשירותים ספציפיים אלה, תהיה כפוף לכל הנחיות או כללים שפורסמו החלים על שירותים אלה."
+            },
+            {
+                "title": "2. רישיון שימוש",
+                "content": "ניתנת רשות להוריד באופן זמני עותק אחד של החומרים (מידע או תוכנה) באתר Odyssey לצפייה אישית, לא מסחרית וזמנית בלבד. זהו מתן רישיון, לא העברת בעלות, ותחת רישיון זה אינך רשאי:",
+                "list": [
+                    "לשנות או להעתיק את החומרים;",
+                    "להשתמש בחומרים לכל מטרה מסחרית, או לכל תצוגה פומבית (מסחרית או לא מסחרית);",
+                    "לנסות לפרק או לבצע הנדסה לאחור של כל תוכנה הכלולה באתר Odyssey;",
+                    "להסיר כל זכויות יוצרים או סימונים קנייניים אחרים מהחומרים; או",
+                    "להעביר את החומרים לאדם אחר או \"לשקף\" את החומרים בכל שרת אחר."
+                ]
+            },
+            {
+                "title": "3. חשבון משתמש",
+                "content": "כדי לגשת לתכונות מסוימות של השירות, ייתכן שתידרש ליצור חשבון. אתה אחראי לשמירה על סודיות החשבון והסיסמה שלך ולהגבלת הגישה למחשב שלך, ואתה מסכים לקבל אחריות על כל הפעילויות המתרחשות תחת החשבון או הסיסמה שלך."
+            },
+            {
+                "title": "4. תוכן",
+                "content": "השירות שלנו מאפשר לך לפרסם, לקשר, לאחסן, לשתף ולהפוך לזמין בדרך אחרת מידע מסוים, טקסט, גרפיקה, סרטונים או חומר אחר (\"תוכן\"). אתה אחראי לתוכן שאתה מפרסם בשירות, כולל חוקיותו, אמינותו והתאמתו."
+            },
+            {
+                "title": "5. סיום",
+                "content": "אנו רשאים לסיים או להשעות את הגישה לשירות שלנו באופן מיידי, ללא הודעה מוקדמת או חבות, מכל סיבה שהיא, כולל ללא הגבלה אם הפרת את התנאים."
+            }
+        ]
+    },
+    "contact": {
+        "getInTouch": "צור קשר",
+        "haveQuestions": "יש לך שאלות? נשמח לשמוע ממך.",
+        "contactInformation": "פרטי התקשרות",
+        "email": "אימייל",
+        "phone": "טלפון",
+        "office": "משרד",
+        "sendUsMessage": "שלח/י לנו הודעה",
+        "firstName": "שם פרטי",
+        "lastName": "שם משפחה",
+        "emailAddress": "כתובת אימייל",
+        "subject": "נושא",
+        "message": "הודעה",
+        "sendMessage": "שלח הודעה"
+    },
+    "footer": {
+        "description": "פלטפורמה לחיבור מטיילים, יצירת מסעות בלתי נשכחים וגילוי חוויות חדשות ברחבי העולם.",
+        "copyright": "© {{year}} ODYSSEY. כל הזכויות שמורות.",
+        "explore": "גלו",
+        "feed": "פיד",
+        "destinations": "יעדים",
+        "groups": "קבוצות",
+        "planTrip": "תכננו טיול",
+        "support": "תמיכה",
+        "helpCenter": "מרכז העזרה",
+        "termsOfService": "תנאי שימוש",
+        "privacyPolicy": "מדיניות פרטיות",
+        "contact": "צור קשר"
+    },
+    "editProfile": {
+        "title": "עריכת פרופיל",
+        "profilePicture": "תמונת פרופיל",
+        "uploadAvatar": "העלה תמונת פרופיל חדשה",
+        "saveAvatar": "שמור תמונת פרופיל",
+        "changePassword": "שנה סיסמה",
+        "currentPassword": "סיסמה נוכחית",
+        "newPassword": "סיסמה חדשה",
+        "confirmPassword": "אשר סיסמה חדשה",
+        "changePasswordButton": "שנה סיסמה",
+        "changingPassword": "משנה...",
+        "savingAvatar": "שומר...",
+        "close": "סגור"
+    },
+    "admin": {
+  "adminDashboard": "לוח ניהול",
+  "manageWebsiteContent": "ניהול תוכן האתר",
+  "usersManagement": "ניהול משתמשים",
+  "postsManagement": "ניהול פוסטים",
+  "reportsManagement": "ניהול דיווחים",
+   "all": "הכל",
+  "pending": "ממתין",
+  "reviewed": "נבדק",
+  "resolved": "טופל",
+  "reporter": "מדווח",
+  "postTitle": "כותרת הפוסט",
+  "reason": "סיבה",
+  "status": "סטטוס",
+  "date": "תאריך",
+  "actions": "פעולות",
+  "view": "צפייה",
+  "dismiss": "התעלם",
+  "deletePost": "מחיקת פוסט",
+  "reportDetails": "פרטי הדיווח",
+  "reportReason": "סיבת הדיווח",
+  "reportedOn": "דווח בתאריך",
+  "reportedPostContent": "תוכן הפוסט המדווח",
+  "postAuthor": "כותב הפוסט",
+  "title": "כותרת",
+  "description": "תיאור",
+  "images": "תמונות",
+  "activities": "פעילויות",
+  "notes": "הערות",
+  "routeLocations": "מסלול",
+  "postCreated": "תאריך יצירת הפוסט",
+  "postDeleted": "הפוסט נמחק",
+  "close": "סגור",
+  "deleteReportedPost": "מחיקת הפוסט המדווח",
+  "deleteReportedPostConfirm": "האם אתה בטוח שברצונך למחוק פוסט זה? לא ניתן לבטל פעולה זו.",
+  "cancel": "ביטול",
+  "deletedPost": "פוסט שנמחק",
+  "noReportsFound": "לא נמצאו דיווחים.",
+  "postDeletedSuccessfully": "הפוסט נמחק בהצלחה.",
+  "reportDismissed": "הדיווח סומן כטופל.",
+  "failedToFetchReports": "שגיאה בטעינת הדיווחים.",
+  "failedToDismissReport": "שגיאה בסימון הדיווח כטופל.",
+  "failedToDeletePost": "שגיאה במחיקת הפוסט."
+},
+"UsersManagement": {
+  "searchPlaceholder": "חיפוש לפי שם או אימייל...",
+  "noUsersFound": "לא נמצאו משתמשים",
+  "editUser": "עריכת משתמש",
+
+  "table": {
+    "name": "שם",
+    "email": "אימייל",
+    "role": "תפקיד",
     "status": "סטטוס",
     "joinDate": "תאריך הצטרפות",
     "actions": "פעולות"
   },
-  "UsersManagement": {
-    "noUsersFound": "לא נמצאו משתמשים התואמים לחיפוש שלך.",
-    "editUser": "ערוך משתמש",
-    "labels": {
-      "name": "שם",
-      "email": "אימייל",
-      "role": "תפקיד",
-      "status": "סטטוס"
-    },
-    "roles": {
-      "user": "משתמש",
-      "admin": "מנהל"
-    },
-    "status": {
-      "active": "פעיל",
-      "inactive": "לא פעיל"
-    },
-    "buttons": {
-      "cancel": "ביטול",
-      "saveChanges": "שמור שינויים"
-    }
-  },
-  "404": {
-    "title": "404 - הדף לא נמצא",
-    "description": "מצטערים, הדף שאתה מחפש לא קיים.",
-    "returnHome": "חזור לדף הבית",
-    "exploreTrips": "גלה טיולים"
-  },
-  "HelpCenter": {
-    "title": "מרכז עזרה",
-    "subtitle": "איך נוכל לעזור לך היום?",
-    "searchPlaceholder": "חפש מאמרי עזרה...",
-    "gettingStarted": "תחילת העבודה",
-    "gettingStartedDesc": "למד את היסודות של Odyssey",
-    "planningTrips": "תכנון טיולים",
-    "planningTripsDesc": "כיצד ליצור ולנהל את הטיולים שלך",
-    "accountSettings": "הגדרות חשבון",
-    "accountSettingsDesc": "נהל את הפרופיל והעדפות שלך",
-    "troubleshooting": "פתרון בעיות",
-    "troubleshootingDesc": "מצא פתרונות לבעיות נפוצות",
-    "contactSupport": "צור קשר עם התמיכה",
-    "contactSupportDesc": "צריך עזרה נוספת? אנחנו כאן בשבילך"
-  },
-  "PrivacyPolicy": {
-    "title": "מדיניות פרטיות",
-    "lastUpdated": "עודכן לאחרונה: 24 בנובמבר 2025",
-    "sections": [
-      {
-        "title": "1. מידע שאנו אוספים",
-        "content": "אנו אוספים מידע שאתה מספק ישירות לנו כאשר אתה משתמש ב-Odyssey, כולל כאשר אתה יוצר חשבון, מעדכן את הפרופיל שלך, משתמש בשירותים האינטראקטיביים שלנו, משתתף בסקר או תחרות, מתקשר עם שירות הלקוחות שלנו, או מתקשר איתנו בדרך אחרת."
-      },
-      {
-        "title": "2. כיצד אנו משתמשים במידע שלך",
-        "content": "אנו משתמשים במידע שאנו אוספים כדי לספק, לתחזק ולשפר את השירותים שלנו, לפתח שירותים חדשים, ולהגן על Odyssey ועל המשתמשים שלנו. אנו גם משתמשים במידע זה כדי להציע לך תוכן מותאם אישית."
-      },
-      {
-        "title": "3. שיתוף מידע",
-        "content": "אנו לא משתפים מידע אישי עם חברות, ארגונים ואנשים מחוץ ל-Odyssey למעט במקרים הבאים: עם הסכמתך, לעיבוד חיצוני, או מסיבות משפטיות."
-      },
-      {
-        "title": "4. אבטחת מידע",
-        "content": "אנו עובדים קשה כדי להגן על Odyssey ועל המשתמשים שלנו מפני גישה לא מורשית או שינוי, גילוי או הרס לא מורשים של מידע שאנו מחזיקים."
-      },
-      {
-        "title": "5. הזכויות שלך",
-        "content": "אתה יכול לגשת, לעדכן או למחוק את המידע האישי שלך בכל עת על ידי כניסה לחשבון שלך. אתה גם יכול לבקש מאיתנו למחוק את החשבון שלך."
-      }
-    ]
-  },
-  "TermsOfService": {
-    "title": "תנאי שימוש",
-    "lastUpdated": "עודכן לאחרונה: 24 בנובמבר 2025",
-    "sections": [
-      {
-        "title": "1. קבלת התנאים",
-        "content": "על ידי גישה ושימוש ב-Odyssey (\"השירות\"), אתה מקבל ומסכים להיות כפוף לתנאים ולהוראות של הסכם זה. בנוסף, בעת שימוש בשירותים ספציפיים אלה, תהיה כפוף לכל הנחיות או כללים שפורסמו החלים על שירותים אלה."
-      },
-      {
-        "title": "2. רישיון שימוש",
-        "content": "ניתנת רשות להוריד באופן זמני עותק אחד של החומרים (מידע או תוכנה) באתר Odyssey לצפייה אישית, לא מסחרית וזמנית בלבד. זהו מתן רישיון, לא העברת בעלות, ותחת רישיון זה אינך רשאי:",
-        "list": [
-          "לשנות או להעתיק את החומרים;",
-          "להשתמש בחומרים לכל מטרה מסחרית, או לכל תצוגה פומבית (מסחרית או לא מסחרית);",
-          "לנסות לפרק או לבצע הנדסה לאחור של כל תוכנה הכלולה באתר Odyssey;",
-          "להסיר כל זכויות יוצרים או סימונים קנייניים אחרים מהחומרים; או",
-          "להעביר את החומרים לאדם אחר או \"לשקף\" את החומרים בכל שרת אחר."
-        ]
-      },
-      {
-        "title": "3. חשבון משתמש",
-        "content": "כדי לגשת לתכונות מסוימות של השירות, ייתכן שתידרש ליצור חשבון. אתה אחראי לשמירה על סודיות החשבון והסיסמה שלך ולהגבלת הגישה למחשב שלך, ואתה מסכים לקבל אחריות על כל הפעילויות המתרחשות תחת החשבון או הסיסמה שלך."
-      },
-      {
-        "title": "4. תוכן",
-        "content": "השירות שלנו מאפשר לך לפרסם, לקשר, לאחסן, לשתף ולהפוך לזמין בדרך אחרת מידע מסוים, טקסט, גרפיקה, סרטונים או חומר אחר (\"תוכן\"). אתה אחראי לתוכן שאתה מפרסם בשירות, כולל חוקיותו, אמינותו והתאמתו."
-      },
-      {
-        "title": "5. סיום",
-        "content": "אנו רשאים לסיים או להשעות את הגישה לשירות שלנו באופן מיידי, ללא הודעה מוקדמת או חבות, מכל סיבה שהיא, כולל ללא הגבלה אם הפרת את התנאים."
-      }
-    ]
-  },
-   "contact": {
-    "getInTouch": "צור קשר",
-    "haveQuestions": "יש לך שאלות? נשמח לשמוע ממך.",
-    "contactInformation": "פרטי התקשרות",
+
+  "labels": {
+    "name": "שם",
     "email": "אימייל",
-    "phone": "טלפון",
-    "office": "משרד",
-    "sendUsMessage": "שלח/י לנו הודעה",
-    "firstName": "שם פרטי",
-    "lastName": "שם משפחה",
-    "emailAddress": "כתובת אימייל",
-    "subject": "נושא",
-    "message": "הודעה",
-    "sendMessage": "שלח הודעה"
+    "role": "תפקיד",
+    "status": "סטטוס"
   },
-   "footer": {
-    "description": "פלטפורמה לחיבור מטיילים, יצירת מסעות בלתי נשכחים וגילוי חוויות חדשות ברחבי העולם.",
-    "copyright": "© {{year}} ODYSSEY. כל הזכויות שמורות.",
 
-    "explore": "גלו",
-    "feed": "פיד",
-    "destinations": "יעדים",
-    "groups": "קבוצות",
-    "planTrip": "תכננו טיול",
-
-    "support": "תמיכה",
-    "helpCenter": "מרכז העזרה",
-    "termsOfService": "תנאי שימוש",
-    "privacyPolicy": "מדיניות פרטיות",
-    "contact": "צור קשר"
+  "roles": {
+    "admin": "מנהל",
+    "user": "משתמש"
   },
-    "editProfile": {
-    "title": "עריכת פרופיל",
-    "profilePicture": "תמונת פרופיל",
-    "uploadAvatar": "העלה תמונת פרופיל חדשה",
-    "saveAvatar": "שמור תמונת פרופיל",
-    "changePassword": "שנה סיסמה",
-    "currentPassword": "סיסמה נוכחית",
-    "newPassword": "סיסמה חדשה",
-    "confirmPassword": "אשר סיסמה חדשה",
-    "changePasswordButton": "שנה סיסמה",
-    "changingPassword": "משנה...",
-    "savingAvatar": "שומר...",
-    "close": "סגור"
+
+  "status": {
+    "active": "פעיל",
+    "inactive": "לא פעיל"
+  },
+
+  "buttons": {
+    "cancel": "בטל",
+    "saveChanges": "שמור שינויים",
+    "addUser": "הוסף משתמש"
   }
+},"PostsManagement": {
+  "search_placeholder": "חפש פוסטים...",
+  "add_post": "הוסף פוסט",
+  "title": "כותרת",
+  "author": "מחבר",
+  "category": "קטגוריה",
+  "status": "סטטוס",
+  "date": "תאריך",
+  "views": "צפיות",
+  "actions": "פעולות",
+
+  "draft": "טיוטה",
+  "published": "פורסם",
+  "archived": "בארכיון",
+
+  "no_results": "לא נמצאו פוסטים.",
+
+  "add_new_post": "הוסף פוסט חדש",
+  "edit_post": "ערוך פוסט",
+  "cancel": "ביטול",
+  "save_changes": "שמור שינויים"
+}
+
+
 }
