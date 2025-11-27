@@ -269,6 +269,8 @@
         "chat": "צ'אט"
     },
     "general": {
+        "saving": "שומר...",
+        "cancel": "ביטול",
         "search": "חיפוש",
         "searchPlaceholder": "חפש...",
         "searchResults": "תוצאות חיפוש",
@@ -338,7 +340,29 @@
         "troubleshooting": "פתרון בעיות",
         "troubleshootingDesc": "מצא פתרונות לבעיות נפוצות",
         "contactSupport": "צור קשר עם התמיכה",
-        "contactSupportDesc": "צריך עזרה נוספת? אנחנו כאן בשבילך"
+        "contactSupportDesc": "צריך עזרה נוספת? אנחנו כאן בשבילך",
+          "faqs": [
+      {
+        "question": "איך ליצור טיול חדש?",
+        "answer": "כדי ליצור טיול חדש, פשוט לחץ על כפתור 'תכנן את הטיול שלך' בדף הבית או עבור למדור 'תכנון טיול'. תועבר דרך כמה שלבים כדי לקבוע את ההעדפות, התקציב והתאריכים שלך."
+      },
+      {
+        "question": "האם Odyssey חינמית לשימוש?",
+        "answer": "כן, Odyssey כרגע חינמית לשימוש לכל המטיילים. ניתן ליצור מסלולי טיול, לשתף עם חברים ולגלוש ב-feed הקהילתי ללא עלות."
+      },
+      {
+        "question": "האם ניתן לשתף את מסלול הטיול שלי עם חברים?",
+        "answer": "בהחלט! לאחר שיצרת טיול, ניתן לשתף אותו על ידי לחיצה על כפתור 'שתף'. ניתן גם להזמין חברים לשתף בתכנון הטיול."
+      },
+      {
+        "question": "איך לדווח על תוכן לא מתאים?",
+        "answer": "אם אתה רואה תוכן שמפר את כללי הקהילה שלנו, ניתן לדווח עליו על ידי לחיצה על אפשרות 'דווח' הזמינה בכל פוסט ותגובה."
+      },
+      {
+        "question": "האם אפשר להשתמש ב-Odyssey במצב לא מקוון?",
+        "answer": "כרגע, Odyssey דורשת חיבור לאינטרנט כדי לגשת לכל הפיצ'רים, כולל תכנון מסלולים בעזרת AI ו-feed קהילתי. אנחנו עובדים על יכולות עבודה במצב לא מקוון עבור מסלולים שנשמרו."
+      }
+    ]
     },
     "PrivacyPolicy": {
         "title": "מדיניות פרטיות",
@@ -443,107 +467,143 @@
         "close": "סגור"
     },
     "admin": {
-  "adminDashboard": "לוח ניהול",
-  "manageWebsiteContent": "ניהול תוכן האתר",
-  "usersManagement": "ניהול משתמשים",
-  "postsManagement": "ניהול פוסטים",
-  "reportsManagement": "ניהול דיווחים",
-   "all": "הכל",
-  "pending": "ממתין",
-  "reviewed": "נבדק",
-  "resolved": "טופל",
-  "reporter": "מדווח",
-  "postTitle": "כותרת הפוסט",
-  "reason": "סיבה",
-  "status": "סטטוס",
-  "date": "תאריך",
-  "actions": "פעולות",
-  "view": "צפייה",
-  "dismiss": "התעלם",
-  "deletePost": "מחיקת פוסט",
-  "reportDetails": "פרטי הדיווח",
-  "reportReason": "סיבת הדיווח",
-  "reportedOn": "דווח בתאריך",
-  "reportedPostContent": "תוכן הפוסט המדווח",
-  "postAuthor": "כותב הפוסט",
-  "title": "כותרת",
-  "description": "תיאור",
-  "images": "תמונות",
-  "activities": "פעילויות",
-  "notes": "הערות",
-  "routeLocations": "מסלול",
-  "postCreated": "תאריך יצירת הפוסט",
-  "postDeleted": "הפוסט נמחק",
-  "close": "סגור",
-  "deleteReportedPost": "מחיקת הפוסט המדווח",
-  "deleteReportedPostConfirm": "האם אתה בטוח שברצונך למחוק פוסט זה? לא ניתן לבטל פעולה זו.",
-  "cancel": "ביטול",
-  "deletedPost": "פוסט שנמחק",
-  "noReportsFound": "לא נמצאו דיווחים.",
-  "postDeletedSuccessfully": "הפוסט נמחק בהצלחה.",
-  "reportDismissed": "הדיווח סומן כטופל.",
-  "failedToFetchReports": "שגיאה בטעינת הדיווחים.",
-  "failedToDismissReport": "שגיאה בסימון הדיווח כטופל.",
-  "failedToDeletePost": "שגיאה במחיקת הפוסט."
-},
-"UsersManagement": {
-  "searchPlaceholder": "חיפוש לפי שם או אימייל...",
-  "noUsersFound": "לא נמצאו משתמשים",
-  "editUser": "עריכת משתמש",
-
-  "table": {
-    "name": "שם",
-    "email": "אימייל",
-    "role": "תפקיד",
-    "status": "סטטוס",
-    "joinDate": "תאריך הצטרפות",
-    "actions": "פעולות"
-  },
-
-  "labels": {
-    "name": "שם",
-    "email": "אימייל",
-    "role": "תפקיד",
-    "status": "סטטוס"
-  },
-
-  "roles": {
-    "admin": "מנהל",
-    "user": "משתמש"
-  },
-
-  "status": {
-    "active": "פעיל",
-    "inactive": "לא פעיל"
-  },
-
-  "buttons": {
-    "cancel": "בטל",
-    "saveChanges": "שמור שינויים",
-    "addUser": "הוסף משתמש"
-  }
-},"PostsManagement": {
-  "search_placeholder": "חפש פוסטים...",
-  "add_post": "הוסף פוסט",
-  "title": "כותרת",
-  "author": "מחבר",
-  "category": "קטגוריה",
-  "status": "סטטוס",
-  "date": "תאריך",
-  "views": "צפיות",
-  "actions": "פעולות",
-
-  "draft": "טיוטה",
-  "published": "פורסם",
-  "archived": "בארכיון",
-
-  "no_results": "לא נמצאו פוסטים.",
-
-  "add_new_post": "הוסף פוסט חדש",
-  "edit_post": "ערוך פוסט",
-  "cancel": "ביטול",
-  "save_changes": "שמור שינויים"
-}
-
-
+        "adminDashboard": "לוח ניהול",
+        "manageWebsiteContent": "ניהול תוכן האתר",
+        "usersManagement": "ניהול משתמשים",
+        "postsManagement": "ניהול פוסטים",
+        "reportsManagement": "ניהול דיווחים",
+        "all": "הכל",
+        "pending": "ממתין",
+        "reviewed": "נבדק",
+        "resolved": "טופל",
+        "reporter": "מדווח",
+        "postTitle": "כותרת הפוסט",
+        "reason": "סיבה",
+        "status": "סטטוס",
+        "date": "תאריך",
+        "actions": "פעולות",
+        "view": "צפייה",
+        "dismiss": "התעלם",
+        "deletePost": "מחיקת פוסט",
+        "reportDetails": "פרטי הדיווח",
+        "reportReason": "סיבת הדיווח",
+        "reportedOn": "דווח בתאריך",
+        "reportedPostContent": "תוכן הפוסט המדווח",
+        "postAuthor": "כותב הפוסט",
+        "title": "כותרת",
+        "description": "תיאור",
+        "images": "תמונות",
+        "activities": "פעילויות",
+        "notes": "הערות",
+        "routeLocations": "מסלול",
+        "postCreated": "תאריך יצירת הפוסט",
+        "postDeleted": "הפוסט נמחק",
+        "close": "סגור",
+        "deleteReportedPost": "מחיקת הפוסט המדווח",
+        "deleteReportedPostConfirm": "האם אתה בטוח שברצונך למחוק פוסט זה? לא ניתן לבטל פעולה זו.",
+        "cancel": "ביטול",
+        "deletedPost": "פוסט שנמחק",
+        "noReportsFound": "לא נמצאו דיווחים.",
+        "postDeletedSuccessfully": "הפוסט נמחק בהצלחה.",
+        "reportDismissed": "הדיווח סומן כטופל.",
+        "failedToFetchReports": "שגיאה בטעינת הדיווחים.",
+        "failedToDismissReport": "שגיאה בסימון הדיווח כטופל.",
+        "failedToDeletePost": "שגיאה במחיקת הפוסט."
+    },
+    "UsersManagement": {
+        "searchPlaceholder": "חיפוש לפי שם או אימייל...",
+        "noUsersFound": "לא נמצאו משתמשים",
+        "editUser": "עריכת משתמש",
+        "table": {
+            "name": "שם",
+            "email": "אימייל",
+            "role": "תפקיד",
+            "status": "סטטוס",
+            "joinDate": "תאריך הצטרפות",
+            "actions": "פעולות"
+        },
+        "labels": {
+            "name": "שם",
+            "email": "אימייל",
+            "role": "תפקיד",
+            "status": "סטטוס"
+        },
+        "roles": {
+            "admin": "מנהל",
+            "user": "משתמש"
+        },
+        "status": {
+            "active": "פעיל",
+            "inactive": "לא פעיל"
+        },
+        "buttons": {
+            "cancel": "בטל",
+            "saveChanges": "שמור שינויים",
+            "addUser": "הוסף משתמש"
+        }
+    },
+    "PostsManagement": {
+        "search_placeholder": "חפש פוסטים...",
+        "add_post": "הוסף פוסט",
+        "title": "כותרת",
+        "author": "מחבר",
+        "category": "קטגוריה",
+        "status": "סטטוס",
+        "date": "תאריך",
+        "views": "צפיות",
+        "actions": "פעולות",
+        "draft": "טיוטה",
+        "published": "פורסם",
+        "archived": "בארכיון",
+        "no_results": "לא נמצאו פוסטים.",
+        "add_new_post": "הוסף פוסט חדש",
+        "edit_post": "ערוך פוסט",
+        "cancel": "ביטול",
+        "save_changes": "שמור שינויים"
+    },
+    "createTrip": {
+        "title": "יצירת טיול חדש",
+        "subtitle": "תכננו את המסע ידנית",
+        "basic": "מידע בסיסי",
+        "tripTitle": "שם הטיול",
+        "description": "תיאור",
+        "visibility": "נראות",
+        "private": "פרטי",
+        "public": "ציבורי",
+        "travelMode": "אמצעי תנועה",
+        "image": "תמונת כיסוי",
+        "uploadImage": "העלה תמונה",
+        "modes": {
+            "driving": "רכב",
+            "walking": "הליכה",
+            "biking": "אופניים",
+            "transit": "תחבורה ציבורית"
+        },
+        "stops": "תחנות מסלול",
+        "location": "שם המקום",
+        "note": "הערה (אופציונלי)",
+        "addStop": "הוסף תחנה",
+        "activities": "פעילויות",
+        "addActivity": "הוסף פעילות",
+        "instructions": "הוראות נסיעה",
+        "addInstruction": "הוסף הוראה",
+        "mapLink": "קישור Google Maps",
+        "create": "צור טיול",
+        "success": "הטיול נוצר בהצלחה!",
+        "errors": {
+            "login": "עליך להתחבר כדי ליצור טיול.",
+            "noTitle": "יש להזין כותרת.",
+            "noStops": "יש להוסיף לפחות תחנה אחת.",
+            "fail": "שמירת הטיול נכשלה.",
+            "exception": "אירעה שגיאת שרת."
+        },
+        "examples": {
+            "trip": "סופ״ש בפריז",
+            "description": "תאר את הטיול...",
+            "location": "מגדל אייפל",
+            "activity": "טעימות יין",
+            "instruction": "קח קו מטרו 6...",
+            "mapsUrl": "https://maps.google.com/..."
+        }
+    }
 }

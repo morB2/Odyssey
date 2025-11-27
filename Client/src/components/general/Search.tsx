@@ -5,7 +5,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/material/styles';
 import useDebounce from '../../hooks/useDebounce';
 import SearchResults from './SearchResults';
-import { searchAll, type SearchResults as SearchResultsType } from '../../api/searchApi';
+import { searchAll, type SearchResults as SearchResultsType } from '../../services/searchApi';
 import { useUserStore } from '../../store/userStore';
 import { useTranslation } from 'react-i18next';
 

@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import api from './httpService'; // import your Axios instance
 
 export interface SearchUser {
     _id: string;
@@ -42,25 +42,18 @@ export interface SearchResponse {
 }
 
 /**
- * Search for users and trips
+ * Search for users and trips using Axios instance
  * @param query - Search query string
  * @param userId - Optional user ID for personalized results
  * @returns Search results with users and trips
  */
 export async function searchAll(query: string, userId?: string): Promise<SearchResults> {
     try {
-        const params = new URLSearchParams({ q: query });
-        if (userId) {
-            params.append('userId', userId);
-        }
+        const params: Record<string, string> = { q: query };
+        if (userId) params.userId = userId;
 
-        const response = await fetch(`${API_BASE_URL}/api/search?${params.toString()}`);
+        const { data } = await api.get<SearchResponse>('/api/search', { params });
 
-        if (!response.ok) {
-            throw new Error(`Search failed: ${response.statusText}`);
-        }
-
-        const data: SearchResponse = await response.json();
         return data.results;
     } catch (error) {
         console.error('Search API error:', error);

@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Typography, Divider, CircularProgress, Paper } from '@mui/material';
 import UserSearchResult from './UserSearchResult';
 import TripPostAdapter from '../user/TripPostAdapter';
-import type { SearchResults } from '../../api/searchApi';
+import type { SearchResults } from '../../services/searchApi';
 import type { Trip } from '../user/types';
 
 interface SearchResultsProps {

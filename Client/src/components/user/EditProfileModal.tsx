@@ -3,7 +3,7 @@ import { Modal } from "./Modal";
 import { Box, Button, TextField, Typography, Divider, Avatar } from "@mui/material";
 import { useUserStore } from "../../store/userStore";
 import { changePassword, uploadAvatar } from "../../services/profile.service";
-import { CloudinaryUploadWidget } from "../common/CloudinaryUploadWidget";
+import { CloudinaryUploadWidget } from "../general/CloudinaryUploadWidget";
 import type { UserProfile } from "./types";
 import { useTranslation } from "react-i18next";
 interface ChangePasswordModalProps {

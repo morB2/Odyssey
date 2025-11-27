@@ -32,7 +32,7 @@ export function TripsList({ trips = [], activeTab, onTabChange, setTrips, onEdit
 
   const tabStyle = { textTransform: "none", fontSize: "1rem", px: 3, py: 1.5, minHeight: "auto", color: "#525252", transition: "color 0.2s", "&:hover": { color: "#171717" }, "&.Mui-selected": { color: "#f97316" }, "& .MuiTab-iconWrapper": { mr: 1 } };
 
-  const handleTabChange = (_: any, index: number) => onTabChange(availableTabs[index].key);
+  const handleTabChange = (_: any, index: number) => onTabChange(availableTabs[index].key as "my-trips" | "liked" | "saved");
 
   const SkeletonCard = () => (
     <Card sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>

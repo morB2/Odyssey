@@ -8,7 +8,7 @@ import { useUserStore } from "../../store/userStore";
 import { updateTrip } from "../../services/profile.service";
 import { toast } from "react-toastify";
 
-import { CloudinaryUploadWidget } from "../common/CloudinaryUploadWidget";
+import { CloudinaryUploadWidget } from "../general/CloudinaryUploadWidget";
 
 interface EditTripModalProps {
   trip: Trip | null;
