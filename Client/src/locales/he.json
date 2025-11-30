@@ -443,107 +443,99 @@
         "close": "סגור"
     },
     "admin": {
-  "adminDashboard": "לוח ניהול",
-  "manageWebsiteContent": "ניהול תוכן האתר",
-  "usersManagement": "ניהול משתמשים",
-  "postsManagement": "ניהול פוסטים",
-  "reportsManagement": "ניהול דיווחים",
-   "all": "הכל",
-  "pending": "ממתין",
-  "reviewed": "נבדק",
-  "resolved": "טופל",
-  "reporter": "מדווח",
-  "postTitle": "כותרת הפוסט",
-  "reason": "סיבה",
-  "status": "סטטוס",
-  "date": "תאריך",
-  "actions": "פעולות",
-  "view": "צפייה",
-  "dismiss": "התעלם",
-  "deletePost": "מחיקת פוסט",
-  "reportDetails": "פרטי הדיווח",
-  "reportReason": "סיבת הדיווח",
-  "reportedOn": "דווח בתאריך",
-  "reportedPostContent": "תוכן הפוסט המדווח",
-  "postAuthor": "כותב הפוסט",
-  "title": "כותרת",
-  "description": "תיאור",
-  "images": "תמונות",
-  "activities": "פעילויות",
-  "notes": "הערות",
-  "routeLocations": "מסלול",
-  "postCreated": "תאריך יצירת הפוסט",
-  "postDeleted": "הפוסט נמחק",
-  "close": "סגור",
-  "deleteReportedPost": "מחיקת הפוסט המדווח",
-  "deleteReportedPostConfirm": "האם אתה בטוח שברצונך למחוק פוסט זה? לא ניתן לבטל פעולה זו.",
-  "cancel": "ביטול",
-  "deletedPost": "פוסט שנמחק",
-  "noReportsFound": "לא נמצאו דיווחים.",
-  "postDeletedSuccessfully": "הפוסט נמחק בהצלחה.",
-  "reportDismissed": "הדיווח סומן כטופל.",
-  "failedToFetchReports": "שגיאה בטעינת הדיווחים.",
-  "failedToDismissReport": "שגיאה בסימון הדיווח כטופל.",
-  "failedToDeletePost": "שגיאה במחיקת הפוסט."
-},
-"UsersManagement": {
-  "searchPlaceholder": "חיפוש לפי שם או אימייל...",
-  "noUsersFound": "לא נמצאו משתמשים",
-  "editUser": "עריכת משתמש",
-
-  "table": {
-    "name": "שם",
-    "email": "אימייל",
-    "role": "תפקיד",
-    "status": "סטטוס",
-    "joinDate": "תאריך הצטרפות",
-    "actions": "פעולות"
-  },
-
-  "labels": {
-    "name": "שם",
-    "email": "אימייל",
-    "role": "תפקיד",
-    "status": "סטטוס"
-  },
-
-  "roles": {
-    "admin": "מנהל",
-    "user": "משתמש"
-  },
-
-  "status": {
-    "active": "פעיל",
-    "inactive": "לא פעיל"
-  },
-
-  "buttons": {
-    "cancel": "בטל",
-    "saveChanges": "שמור שינויים",
-    "addUser": "הוסף משתמש"
-  }
-},"PostsManagement": {
-  "search_placeholder": "חפש פוסטים...",
-  "add_post": "הוסף פוסט",
-  "title": "כותרת",
-  "author": "מחבר",
-  "category": "קטגוריה",
-  "status": "סטטוס",
-  "date": "תאריך",
-  "views": "צפיות",
-  "actions": "פעולות",
-
-  "draft": "טיוטה",
-  "published": "פורסם",
-  "archived": "בארכיון",
-
-  "no_results": "לא נמצאו פוסטים.",
-
-  "add_new_post": "הוסף פוסט חדש",
-  "edit_post": "ערוך פוסט",
-  "cancel": "ביטול",
-  "save_changes": "שמור שינויים"
-}
-
-
+        "adminDashboard": "לוח ניהול",
+        "manageWebsiteContent": "ניהול תוכן האתר",
+        "usersManagement": "ניהול משתמשים",
+        "postsManagement": "ניהול פוסטים",
+        "reportsManagement": "ניהול דיווחים",
+        "all": "הכל",
+        "pending": "ממתין",
+        "reviewed": "נבדק",
+        "resolved": "טופל",
+        "reporter": "מדווח",
+        "postTitle": "כותרת הפוסט",
+        "reason": "סיבה",
+        "status": "סטטוס",
+        "date": "תאריך",
+        "actions": "פעולות",
+        "view": "צפייה",
+        "dismiss": "התעלם",
+        "deletePost": "מחיקת פוסט",
+        "reportDetails": "פרטי הדיווח",
+        "reportReason": "סיבת הדיווח",
+        "reportedOn": "דווח בתאריך",
+        "reportedPostContent": "תוכן הפוסט המדווח",
+        "postAuthor": "כותב הפוסט",
+        "title": "כותרת",
+        "description": "תיאור",
+        "images": "תמונות",
+        "activities": "פעילויות",
+        "notes": "הערות",
+        "routeLocations": "מסלול",
+        "postCreated": "תאריך יצירת הפוסט",
+        "postDeleted": "הפוסט נמחק",
+        "close": "סגור",
+        "deleteReportedPost": "מחיקת הפוסט המדווח",
+        "deleteReportedPostConfirm": "האם אתה בטוח שברצונך למחוק פוסט זה? לא ניתן לבטל פעולה זו.",
+        "cancel": "ביטול",
+        "deletedPost": "פוסט שנמחק",
+        "noReportsFound": "לא נמצאו דיווחים.",
+        "postDeletedSuccessfully": "הפוסט נמחק בהצלחה.",
+        "reportDismissed": "הדיווח סומן כטופל.",
+        "failedToFetchReports": "שגיאה בטעינת הדיווחים.",
+        "failedToDismissReport": "שגיאה בסימון הדיווח כטופל.",
+        "failedToDeletePost": "שגיאה במחיקת הפוסט."
+    },
+    "UsersManagement": {
+        "searchPlaceholder": "חיפוש לפי שם או אימייל...",
+        "noUsersFound": "לא נמצאו משתמשים",
+        "editUser": "עריכת משתמש",
+        "table": {
+            "name": "שם",
+            "email": "אימייל",
+            "role": "תפקיד",
+            "status": "סטטוס",
+            "joinDate": "תאריך הצטרפות",
+            "actions": "פעולות"
+        },
+        "labels": {
+            "name": "שם",
+            "email": "אימייל",
+            "role": "תפקיד",
+            "status": "סטטוס"
+        },
+        "roles": {
+            "admin": "מנהל",
+            "user": "משתמש"
+        },
+        "status": {
+            "active": "פעיל",
+            "inactive": "לא פעיל"
+        },
+        "buttons": {
+            "cancel": "בטל",
+            "saveChanges": "שמור שינויים",
+            "addUser": "הוסף משתמש"
+        }
+    },
+    "PostsManagement": {
+        "search_placeholder": "חפש פוסטים...",
+        "add_post": "הוסף פוסט",
+        "title": "כותרת",
+        "author": "מחבר",
+        "category": "קטגוריה",
+        "status": "סטטוס",
+        "date": "תאריך",
+        "views": "צפיות",
+        "actions": "פעולות",
+        "published": "פורסם",
+        "draft": "טיוטה",
+        "archived": "בארכיון",
+        "no_results": "לא נמצאו פוסטים.",
+        "add_new_post": "הוסף פוסט חדש",
+        "edit_post": "ערוך פוסט",
+        "cancel": "ביטול",
+        "save_changes": "שמור שינויים",
+        "searchPlaceholder": "חיפוש פוסטים לפי כותרת, מחבר או קטגוריה..."
+    }
 }

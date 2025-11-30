@@ -1,9 +1,10 @@
 import type { FC } from 'react';
-import  { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { AppBar, Toolbar, Box, Button, Link, Typography } from '@mui/material';
 import { BookImage, Sparkles, MessageCircleMore } from 'lucide-react';
-
+import { LayoutDashboard } from "lucide-react";
+import Tooltip from '@mui/material/Tooltip';
 import { useUserStore } from '../../store/userStore';
 import ProfileMenu from '../user/ProfileMenu';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -150,6 +151,16 @@ const Navbar: FC = () => {
             )}
 
             <LanguageSwitcher />
+            {user?.role === "admin" && (
+              <Tooltip title="Admin Dashboard" arrow>
+                <Box onClick={() => navigate('/admin/dashboard')} sx={navItemStyle}>
+                  <LayoutDashboard size={24} />
+                  <Typography variant="caption" sx={{ mt: 0.5, fontSize: '0.75rem', fontWeight: 500 }}>
+                    Admin
+                  </Typography>
+                </Box>
+              </Tooltip>
+            )}
 
             {/* Auth / Profile */}
             {user ? (

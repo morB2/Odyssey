@@ -482,108 +482,99 @@
     "failedToDeletePost": "Failed to delete post"
   },
   "admin": {
-  "adminDashboard": "Admin Dashboard",
-  "manageWebsiteContent": "Manage website content",
-  "usersManagement": "Users Management",
-  "postsManagement": "Posts Management",
-  "reportsManagement": "Reports Management",
-  "all": "All",
-  "pending": "Pending",
-  "reviewed": "Reviewed",
-  "resolved": "Resolved",
-  "reporter": "Reporter",
-  "postTitle": "Post Title",
-  "reason": "Reason",
-  "status": "Status",
-  "date": "Date",
-  "actions": "Actions",
-  "view": "View",
-  "dismiss": "Dismiss",
-  "deletePost": "Delete Post",
-  "reportDetails": "Report Details",
-  "reportReason": "Report Reason",
-  "reportedOn": "Reported On",
-  "reportedPostContent": "Reported Post Content",
-  "postAuthor": "Post Author",
-  "title": "Title",
-  "description": "Description",
-  "images": "Images",
-  "activities": "Activities",
-  "notes": "Notes",
-  "routeLocations": "Route Locations",
-  "postCreated": "Post Created",
-  "postDeleted": "Post Deleted",
-  "close": "Close",
-  "deleteReportedPost": "Delete Reported Post",
-  "deleteReportedPostConfirm": "Are you sure you want to delete this post? This action cannot be undone.",
-  "cancel": "Cancel",
-  "deletedPost": "Deleted Post",
-  "noReportsFound": "No reports found.",
-  "postDeletedSuccessfully": "Post deleted successfully.",
-  "reportDismissed": "Report dismissed.",
-  "failedToFetchReports": "Failed to fetch reports.",
-  "failedToDismissReport": "Failed to dismiss report.",
-  "failedToDeletePost": "Failed to delete post."
-},
-"UsersManagement": {
-  "searchPlaceholder": "Search by name or email...",
-  "noUsersFound": "No users found",
-  "editUser": "Edit User",
-
-  "table": {
-    "name": "Name",
-    "email": "Email",
-    "role": "Role",
+    "adminDashboard": "Admin Dashboard",
+    "manageWebsiteContent": "Manage website content",
+    "usersManagement": "Users Management",
+    "postsManagement": "Posts Management",
+    "reportsManagement": "Reports Management",
+    "all": "All",
+    "pending": "Pending",
+    "reviewed": "Reviewed",
+    "resolved": "Resolved",
+    "reporter": "Reporter",
+    "postTitle": "Post Title",
+    "reason": "Reason",
     "status": "Status",
-    "joinDate": "Join Date",
-    "actions": "Actions"
-  },
-
-  "labels": {
-    "name": "Name",
-    "email": "Email",
-    "role": "Role",
-    "status": "Status"
-  },
-
-  "roles": {
-    "admin": "Admin",
-    "user": "User"
-  },
-
-  "status": {
-    "active": "Active",
-    "inactive": "Inactive"
-  },
-
-  "buttons": {
+    "date": "Date",
+    "actions": "Actions",
+    "view": "View",
+    "dismiss": "Dismiss",
+    "deletePost": "Delete Post",
+    "reportDetails": "Report Details",
+    "reportReason": "Report Reason",
+    "reportedOn": "Reported On",
+    "reportedPostContent": "Reported Post Content",
+    "postAuthor": "Post Author",
+    "title": "Title",
+    "description": "Description",
+    "images": "Images",
+    "activities": "Activities",
+    "notes": "Notes",
+    "routeLocations": "Route Locations",
+    "postCreated": "Post Created",
+    "postDeleted": "Post Deleted",
+    "close": "Close",
+    "deleteReportedPost": "Delete Reported Post",
+    "deleteReportedPostConfirm": "Are you sure you want to delete this post? This action cannot be undone.",
     "cancel": "Cancel",
-    "saveChanges": "Save Changes",
-    "addUser": "Add User"
+    "deletedPost": "Deleted Post",
+    "noReportsFound": "No reports found.",
+    "postDeletedSuccessfully": "Post deleted successfully.",
+    "reportDismissed": "Report dismissed.",
+    "failedToFetchReports": "Failed to fetch reports.",
+    "failedToDismissReport": "Failed to dismiss report.",
+    "failedToDeletePost": "Failed to delete post."
+  },
+  "UsersManagement": {
+    "searchPlaceholder": "Search by name or email...",
+    "noUsersFound": "No users found",
+    "editUser": "Edit User",
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "joinDate": "Join Date",
+      "actions": "Actions"
+    },
+    "labels": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status"
+    },
+    "roles": {
+      "admin": "Admin",
+      "user": "User"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "saveChanges": "Save Changes",
+      "addUser": "Add User"
+    }
+  },
+  "PostsManagement": {
+    "search_placeholder": "Search posts...",
+    "add_post": "Add Post",
+    "title": "Title",
+    "author": "Author",
+    "category": "Category",
+    "status": "Status",
+    "date": "Date",
+    "views": "Views",
+    "actions": "Actions",
+    "draft": "Draft",
+    "published": "Published",
+    "archived": "Archived",
+    "no_results": "No posts found.",
+    "add_new_post": "Add New Post",
+    "edit_post": "Edit Post",
+    "cancel": "Cancel",
+    "save_changes": "Save Changes",
+    "searchPlaceholder": "Search posts by title, author or category..."
   }
-},
-"PostsManagement": {
-  "search_placeholder": "Search posts...",
-  "add_post": "Add Post",
-  "title": "Title",
-  "author": "Author",
-  "category": "Category",
-  "status": "Status",
-  "date": "Date",
-  "views": "Views",
-  "actions": "Actions",
-
-  "draft": "Draft",
-  "published": "Published",
-  "archived": "Archived",
-
-  "no_results": "No posts found.",
-
-  "add_new_post": "Add New Post",
-  "edit_post": "Edit Post",
-  "cancel": "Cancel",
-  "save_changes": "Save Changes"
-}
-
-
 }

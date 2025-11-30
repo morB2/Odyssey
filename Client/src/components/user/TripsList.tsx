@@ -96,7 +96,7 @@ export function TripsList({ trips = [], activeTab, onTabChange, setTrips, onEdit
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
             {trips.map((trip) => (
               <Box key={trip.id} sx={{ flex: '1 0 20%', minWidth: 150 }}>
-                <TripPostAdapter trip={trip} setTrips={setTrips} onEdit={() => onEdit(trip)} onDelete={() => onDelete(trip._id)} />
+                <TripPostAdapter trip={trip} onEdit={() => onEdit(trip)} onDelete={() => onDelete(trip._id)} />
               </Box>
             ))}
           </Box>

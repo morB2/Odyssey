@@ -6,7 +6,7 @@ import { TripsList } from "./TripsList";
 import { ChangePasswordModal } from "./EditProfileModal";
 import { EditTripModal } from "./EditTripModal";
 import type { Trip, UserProfile } from "./types";
-import { getProfile, getTrips, getLikedTrips, getSavedTrips, deleteTrip as svcDeleteTrip } from "../../services/profile.service";
+import { getProfile, getTrips, getLikedTrips, getSavedTrips, deleteTrip as svcDeleteTrip } from "../../services/profile.service.tsx";
 import { useUserStore } from "../../store/userStore";
 import { toast } from "react-toastify";
 import { useTranslation } from 'react-i18next';
@@ -71,8 +71,8 @@ export default function Profile() {
       setLoading(true);
       try {
         const [userRes, tripsRes] = await Promise.all([
-          getProfile(profileId, storeToken || undefined).catch((e) => ({ success: false, error: String(e) })),
-          getTrips(profileId as string, storeToken || undefined, 1, TRIPS_PER_PAGE).catch((e) => ({ success: false, error: String(e) })),
+          getProfile(profileId).catch((e) => ({ success: false, error: String(e) })),
+          getTrips(profileId as string, 1, TRIPS_PER_PAGE).catch((e) => ({ success: false, error: String(e) })),
         ]);
 
         if (!mounted) return;
@@ -114,11 +114,11 @@ export default function Profile() {
 
         let data: unknown = null;
         if (activeTab === "my-trips") {
-          data = await getTrips(profileId as string, storeToken || undefined, 1, TRIPS_PER_PAGE);
+          data = await getTrips(profileId as string, 1, TRIPS_PER_PAGE);
         } else if (activeTab === "liked") {
-          data = await getLikedTrips(profileId as string, storeToken || undefined, 1, TRIPS_PER_PAGE);
+          data = await getLikedTrips(profileId as string, 1, TRIPS_PER_PAGE);
         } else {
-          data = await getSavedTrips(profileId as string, storeToken || undefined, 1, TRIPS_PER_PAGE);
+          data = await getSavedTrips(profileId as string, 1, TRIPS_PER_PAGE);
         }
 
         if (mounted) {
@@ -150,11 +150,11 @@ export default function Profile() {
       let data: unknown = null;
 
       if (activeTab === "my-trips") {
-        data = await getTrips(profileId as string, storeToken || undefined, nextPage, TRIPS_PER_PAGE);
+        data = await getTrips(profileId as string, nextPage, TRIPS_PER_PAGE);
       } else if (activeTab === "liked") {
-        data = await getLikedTrips(profileId as string, storeToken || undefined, nextPage, TRIPS_PER_PAGE);
+        data = await getLikedTrips(profileId as string, nextPage, TRIPS_PER_PAGE);
       } else {
-        data = await getSavedTrips(profileId as string, storeToken || undefined, nextPage, TRIPS_PER_PAGE);
+        data = await getSavedTrips(profileId as string, nextPage, TRIPS_PER_PAGE);
       }
 
       const response = data as any;
@@ -180,10 +180,9 @@ export default function Profile() {
   const handleDeleteTrip = async (tripId: string) => {
     try {
       const userId = storeUser?._id;
-      const token = storeToken || undefined;
       if (!userId) throw new Error("Not authenticated");
 
-      const res = await svcDeleteTrip(userId as string, tripId, token);
+      const res = await svcDeleteTrip(tripId);
       const body = res as unknown as Record<string, unknown>;
       if (!body || (body.success === false && body["error"])) throw new Error((body["error"] as string) || (body["message"] as string) || "Failed to delete trip");
 

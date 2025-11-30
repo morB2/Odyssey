@@ -1,13 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
     Box,
-    Grid,
     TextField,
-    Button,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
     Table,
     TableBody,
     TableCell,
@@ -18,11 +12,19 @@ import {
     Typography,
     Chip,
     IconButton,
-    MenuItem,
+    Pagination,
+    Stack,
+    Dialog,
+    CircularProgress
 } from "@mui/material";
-import { Search, Plus, Trash2, Edit, Eye } from "lucide-react";
+import { Search, Trash2, Eye } from "lucide-react";
 import { useTranslation } from "react-i18next";
-
+import { fetchAdminTrips, deleteAdminTrip } from "../../services/admin.service";
+import { toast } from "react-toastify";
+import TripPost from "../social/TripPost";
+import type { Trip } from "../social/types";
+import { useUserStore } from "../../store/userStore";
+import { ConfirmDialog } from "../user/ConfirmDialog";
 
 type Post = {
     id: string;
@@ -32,60 +34,94 @@ type Post = {
     category: string;
     date: string;
     views: number;
+    _fullData?: any;
 };
 
-const initialPosts: Post[] = [
-    { id: "1", title: "Getting Started with React", author: "John Doe", status: "Published", category: "Tutorial", date: "2024-11-10", views: 1523 },
-    { id: "2", title: "Advanced TypeScript Patterns", author: "Jane Smith", status: "Published", category: "Development", date: "2024-11-08", views: 892 },
-    { id: "3", title: "Building a REST API", author: "Mike Johnson", status: "Draft", category: "Backend", date: "2024-11-12", views: 0 },
-    { id: "4", title: "CSS Grid Layout Guide", author: "Sarah Williams", status: "Published", category: "Design", date: "2024-11-05", views: 2341 },
-    { id: "5", title: "Introduction to Node.js", author: "David Brown", status: "Archived", category: "Backend", date: "2024-10-15", views: 5632 },
-];
+const POSTS_PER_PAGE = 10;
 
 export default function PostsManagement() {
-    const [posts, setPosts] = useState<Post[]>(initialPosts);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-    const [editingPost, setEditingPost] = useState<Post | null>(null);
-    const [newPost, setNewPost] = useState({
-        title: "",
-        author: "",
-        status: "Draft" as Post["status"],
-        category: "",
-    });
     const { t } = useTranslation();
+    const { user } = useUserStore();
 
-    const filteredPosts = posts.filter(
-        (post) =>
-            post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            post.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            post.category.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [page, setPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+    const [viewingTrip, setViewingTrip] = useState<Trip | null>(null);
+    const [isLoadingTrip, setIsLoadingTrip] = useState(false);
+    const [isLoadingPosts, setIsLoadingPosts] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
 
-    const handleAddPost = () => {
-        const post: Post = {
-            id: Date.now().toString(),
-            ...newPost,
-            date: new Date().toISOString().split("T")[0],
-            views: 0,
-        };
-        setPosts([...posts, post]);
-        setNewPost({ title: "", author: "", status: "Draft", category: "" });
-        setIsAddDialogOpen(false);
+    // Debounce search query - wait 500ms after user stops typing
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+            setPage(1); // Reset to first page on new search
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    // Load posts from API with search support
+    const loadPosts = useCallback(async () => {
+        setIsLoadingPosts(true);
+        try {
+            const data = await fetchAdminTrips(page, POSTS_PER_PAGE, debouncedSearch);
+
+            const mappedPosts: Post[] = data.trips.map((trip: any) => ({
+                id: trip._id,
+                title: trip.title || t("PostsManagement.untitledTrip") || "Untitled Trip",
+                author: trip.user ? `${trip.user.firstName} ${trip.user.lastName}` : t("PostsManagement.unknown") || "Unknown",
+                status: trip.visabilityStatus === "public" ? "Published" : "Draft",
+                category: trip.activities?.[0] || t("PostsManagement.general") || "General",
+                date: new Date(trip.createdAt).toISOString().split("T")[0],
+                views: 0,
+                _fullData: trip
+            }));
+
+            setPosts(mappedPosts);
+            setTotalPages(data.pages);
+            setTotalCount(data.total || 0);
+        } catch (error) {
+            console.error("Failed to load posts", error);
+            toast.error(t("PostsManagement.loadError") || "Failed to load posts");
+        } finally {
+            setIsLoadingPosts(false);
+        }
+    }, [page, debouncedSearch, t]);
+
+    useEffect(() => {
+        loadPosts();
+    }, [loadPosts]);
+
+    const handleDeleteClick = (id: string) => {
+        setDeletingPostId(id);
+        setShowDeleteConfirm(true);
     };
 
-    const handleEditPost = () => {
-        if (editingPost) {
-            setPosts(posts.map((p) => (p.id === editingPost.id ? editingPost : p)));
-            setEditingPost(null);
+    const handleDeleteConfirm = async () => {
+        if (!deletingPostId) return;
+
+        try {
+            await deleteAdminTrip(deletingPostId);
+
+            // Reload current page after deletion
+            await loadPosts();
+
+            toast.success(t("PostsManagement.deleteSuccess") || "Post deleted successfully");
+        } catch (error) {
+            console.error("Failed to delete post:", error);
+            toast.error(t("PostsManagement.deleteError") || "Failed to delete post");
+        } finally {
+            setShowDeleteConfirm(false);
+            setDeletingPostId(null);
         }
     };
 
-    const handleDeletePost = (id: string) => {
-        setPosts(posts.filter((p) => p.id !== id));
-    };
-
-    const getStatusChipColor = (status: Post["status"]) => {
+    const getStatusChipColor = (status: Post["status"]): "success" | "warning" | "default" | "info" => {
         switch (status) {
             case "Published":
                 return "success";
@@ -98,176 +134,209 @@ export default function PostsManagement() {
         }
     };
 
+    const handleViewPost = async (tripData: any) => {
+        setIsLoadingTrip(true);
+        try {
+            const formattedTrip: Trip = {
+                _id: tripData._id,
+                user: {
+                    _id: tripData.user._id,
+                    firstName: tripData.user.firstName,
+                    lastName: tripData.user.lastName,
+                    avatar: tripData.user.avatar || '',
+                    isFollowing: false
+                },
+                title: tripData.title || t("PostsManagement.untitledTrip") || "Untitled Trip",
+                description: tripData.description || "",
+                activities: tripData.activities || [],
+                images: tripData.images || [],
+                likes: tripData.likes?.length || 0,
+                comments: tripData.comments || [],
+                isLiked: false,
+                isSaved: false,
+                currentUserId: user?._id || '',
+                duration: tripData.duration || '',
+                notes: tripData.notes || ''
+            };
+            setViewingTrip(formattedTrip);
+        } catch (error) {
+            console.error("Failed to load trip", error);
+            toast.error(t("PostsManagement.viewError") || "Failed to view trip");
+        } finally {
+            setIsLoadingTrip(false);
+        }
+    };
+
+    const handleCloseDialog = () => {
+        setViewingTrip(null);
+    };
+
+    const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+        setPage(value);
+    };
+
     return (
-        <Box sx={{ p: 3, backgroundColor: "black" }}>
-            {/* Header Actions */}
-            <Grid container spacing={2} alignItems="center" justifyContent="space-between">
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, bgcolor: "#18181B", p: 1, borderRadius: 1 }}>
-                    <Search size={18} color="white" />
-                    <TextField
-                        sx={{ color: "white" }}
-                        fullWidth
-                        variant="outlined"
-                        size="small"
-                        placeholder={t("PostsManagement.search_placeholder")} onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </Box>
+        <Box sx={{ p: 3, backgroundColor: "black", minHeight: "100vh" }}>
+            {/* Search Bar */}
+            <Box sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                bgcolor: "#18181B",
+                p: 1.5,
+                borderRadius: 1,
+                mb: 3
+            }}>
+                <Search size={20} color="gray" />
+                <TextField
+                    fullWidth
+                    variant="outlined"
+                    size="small"
+                    placeholder={t('PostsManagement.searchPlaceholder') || 'Search by title, author, or category...'}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    sx={{
+                        '& .MuiInputBase-input': { color: 'white' },
+                        '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                    }}
+                />
+                {isLoadingPosts && searchQuery && (
+                    <CircularProgress size={20} sx={{ color: 'gray' }} />
+                )}
+            </Box>
 
-                <Grid size={{xs:12, md:"auto"}}>
-                    <Button
-                        variant="contained"
-                        color="warning"
-                        startIcon={<Plus size={18} />}
-                        onClick={() => setIsAddDialogOpen(true)}
-                    >
-                        {t("PostsManagement.add_post")}
-                    </Button>
-                </Grid>
-            </Grid>
 
-            {/* Posts Table */}
-            <TableContainer component={Paper} sx={{ mt: 4, bgcolor: "#18181B", color: "white" }}>
+
+            {/* Table */}
+            {isLoadingPosts ? (
+                <CircularProgress size={30} />
+            ) : posts.length === 0 ? (
+                <Typography sx={{ color: "white" }}>
+                    {debouncedSearch
+                        ? t("PostsManagement.noResults") || "No results found"
+                        : t("PostsManagement.noPosts") || "No posts available"
+                    }
+                </Typography>
+            ) : (<TableContainer component={Paper} sx={{ bgcolor: "#18181B", color: "white" }}>
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell sx={{ color: "white" }}>{t("PostsManagement.title")}</TableCell>
-                            <TableCell sx={{ color: "white" }}>{t("PostsManagement.author")}</TableCell>
-                            <TableCell sx={{ color: "white" }}>{t("PostsManagement.category")}</TableCell>
-                            <TableCell sx={{ color: "white" }}>{t("PostsManagement.status")}</TableCell>
-                            <TableCell sx={{ color: "white" }}>{t("PostsManagement.date")}</TableCell>
-                            <TableCell sx={{ color: "white" }}>{t("PostsManagement.views")}</TableCell>
-                            <TableCell align="right" sx={{ color: "white" }}>{t("PostsManagement.actions")}</TableCell>
+                            <TableCell sx={{ color: "white", fontWeight: 600 }}>
+                                {t("PostsManagement.title") || "Title"}
+                            </TableCell>
+                            <TableCell sx={{ color: "white", fontWeight: 600 }}>
+                                {t("PostsManagement.author") || "Author"}
+                            </TableCell>
+                            <TableCell sx={{ color: "white", fontWeight: 600 }}>
+                                {t("PostsManagement.category") || "Category"}
+                            </TableCell>
+                            <TableCell sx={{ color: "white", fontWeight: 600 }}>
+                                {t("PostsManagement.status") || "Status"}
+                            </TableCell>
+                            <TableCell sx={{ color: "white", fontWeight: 600 }}>
+                                {t("PostsManagement.date") || "Date"}
+                            </TableCell>
+                            <TableCell align="right" sx={{ color: "white", fontWeight: 600 }}>
+                                {t("PostsManagement.actions") || "Actions"}
+                            </TableCell>
                         </TableRow>
                     </TableHead>
 
                     <TableBody>
-                        {filteredPosts.map((post) => (
-                            <TableRow key={post.id} sx={{ color: "white" }}>
-                                <TableCell sx={{ color: "white" }}>{post.title}</TableCell>
-                                <TableCell sx={{ color: "white" }}>{post.author}</TableCell>
-                                <TableCell sx={{ color: "white" }}>{post.category}</TableCell>
-                                <TableCell>
-                                    <Chip
-                                        label={t(`PostsManagement.${post.status.toLowerCase()}`)}
-                                        color={getStatusChipColor(post.status)}
-                                    />
-                                </TableCell>
-                                <TableCell sx={{ color: "white" }}>{post.date}</TableCell>
-                                <TableCell>
-                                    <Box display="flex" alignItems="center" gap={1}>
-                                        <Eye size={16} />
-                                        {post.views.toLocaleString()}
-                                    </Box>
-                                </TableCell>
-                                <TableCell align="right">
-                                    <IconButton color="inherit" onClick={() => setEditingPost({ ...post })}>
-                                        <Edit size={18} />
-                                    </IconButton>
-                                    <IconButton color="error" onClick={() => handleDeletePost(post.id)}>
-                                        <Trash2 size={18} />
-                                    </IconButton>
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                        {
+                            posts.map((post) => (
+                                <TableRow
+                                    key={post.id}
+                                    sx={{
+                                        '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)' },
+                                        transition: 'background-color 0.2s'
+                                    }}
+                                >
+                                    <TableCell sx={{ color: "white" }}>{post.title}</TableCell>
+                                    <TableCell sx={{ color: "white" }}>{post.author}</TableCell>
+                                    <TableCell sx={{ color: "white" }}>{post.category}</TableCell>
+                                    <TableCell>
+                                        <Chip
+                                            label={t(`PostsManagement.${post.status.toLowerCase()}`) || post.status}
+                                            color={getStatusChipColor(post.status)}
+                                            size="small"
+                                        />
+                                    </TableCell>
+                                    <TableCell sx={{ color: "white" }}>{post.date}</TableCell>
+                                    <TableCell align="right">
+                                        <IconButton
+                                            color="primary"
+                                            onClick={() => handleViewPost(post._fullData)}
+                                            size="small"
+                                            sx={{ mr: 1 }}
+                                        >
+                                            <Eye size={18} />
+                                        </IconButton>
+                                        <IconButton
+                                            color="error"
+                                            onClick={() => handleDeleteClick(post.id)}
+                                            size="small"
+                                        >
+                                            <Trash2 size={18} />
+                                        </IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        }
                     </TableBody>
                 </Table>
+            </TableContainer>)}
 
-                {filteredPosts.length === 0 && (
-                    <Typography align="center" sx={{ py: 3, color: "text.secondary" }}>
-                        {t("PostsManagement.no_results")}
-                    </Typography>
-                )}
-            </TableContainer>
 
-            {/* Add Dialog */}
-            <Dialog open={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false)} fullWidth maxWidth="sm">
-                <DialogTitle>{t("PostsManagement.add_new_post")}</DialogTitle>
-                <DialogContent>
-                    <Box display="flex" flexDirection="column" gap={2} mt={1}>
-                        <TextField
-                            label={t("PostsManagement.title")}
-                            fullWidth
-                            value={newPost.title}
-                            onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-                        />
-                        <TextField
-                            label={t("PostsManagement.author")}
-                            fullWidth
-                            value={newPost.author}
-                            onChange={(e) => setNewPost({ ...newPost, author: e.target.value })}
-                        />
-                        <TextField
-                            label={t("PostsManagement.category")}
-                            fullWidth
-                            value={newPost.category}
-                            onChange={(e) => setNewPost({ ...newPost, category: e.target.value })}
-                        />
-                        <TextField
-                            select
-                            label={t("PostsManagement.status")}
-                            fullWidth
-                            value={newPost.status}
-                            onChange={(e) => setNewPost({ ...newPost, status: e.target.value as Post["status"] })}
-                        >
-                            <MenuItem value="Draft">{t("PostsManagement.draft")}</MenuItem>
-                            <MenuItem value="Published">{t("PostsManagement.published")}</MenuItem>
-                            <MenuItem value="Archived">{t("PostsManagement.archived")}</MenuItem>
-                        </TextField>
+            {/* Pagination */}
+            {!isLoadingPosts && posts.length > 0 && (
+                <Stack spacing={2} sx={{ mt: 3, alignItems: "center" }}>
+                    <Pagination
+                        count={totalPages}
+                        page={page}
+                        onChange={handlePageChange}
+                        color="primary"
+                        sx={{
+                            "& .MuiPaginationItem-root": { color: "white" },
+                            "& .Mui-selected": {
+                                backgroundColor: "primary.main",
+                                color: "white"
+                            }
+                        }}
+                    />
+                </Stack>
+            )}
+
+            {/* View Trip Dialog */}
+            <Dialog
+                open={!!viewingTrip || isLoadingTrip}
+                onClose={handleCloseDialog}
+                maxWidth="md"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        backgroundColor: '#f5f5f5',
+                        maxHeight: '90vh'
+                    }
+                }}
+            >
+                {isLoadingTrip ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                        <CircularProgress />
                     </Box>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setIsAddDialogOpen(false)}>{t("PostsManagement.cancel")}</Button>
-                    <Button variant="contained" color="warning" onClick={handleAddPost}>
-                        {t("PostsManagement.add_post")}
-                    </Button>
-                </DialogActions>
+                ) : viewingTrip ? (
+                    <TripPost trip={viewingTrip} />
+                ) : null}
             </Dialog>
 
-            {/* Edit Dialog */}
-            {editingPost && (
-                <Dialog open={!!editingPost} onClose={() => setEditingPost(null)} fullWidth maxWidth="sm">
-                    <DialogTitle>{t("PostsManagement.edit_post")}</DialogTitle>
-                    <DialogContent>
-                        <Box display="flex" flexDirection="column" gap={2} mt={1}>
-                            <TextField
-                                label={t("PostsManagement.title")}
-                                fullWidth
-                                value={editingPost.title}
-                                onChange={(e) => setEditingPost({ ...editingPost, title: e.target.value })}
-                            />
-                            <TextField
-                                label={t("PostsManagement.author")}
-                                fullWidth
-                                value={editingPost.author}
-                                onChange={(e) => setEditingPost({ ...editingPost, author: e.target.value })}
-                            />
-                            <TextField
-                                label={t("PostsManagement.category")}
-                                fullWidth
-                                value={editingPost.category}
-                                onChange={(e) => setEditingPost({ ...editingPost, category: e.target.value })}
-                            />
-                            <TextField
-                                select
-                                label={t("PostsManagement.status")}
-                                fullWidth
-                                value={editingPost.status}
-                                onChange={(e) => setEditingPost({ ...editingPost, status: e.target.value as Post["status"] })}
-                            >
-                                <MenuItem value="Draft">{t("PostsManagement.draft")}</MenuItem>
-                                <MenuItem value="Published">{t("PostsManagement.published")}</MenuItem>
-                                <MenuItem value="Archived">{t("PostsManagement.archived")}</MenuItem>
-                            </TextField>
-                        </Box>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setEditingPost(null)}>{t("PostsManagement.cancel")}</Button>
-                        <Button variant="contained" color="warning" onClick={handleEditPost}>
-                            {t("PostsManagement.save_changes")}
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-            )}
+            {/* Delete Confirmation Dialog */}
+            <ConfirmDialog
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={handleDeleteConfirm}
+                title={t("PostsManagement.deleteTitle") || "Delete Trip"}
+                message={t("PostsManagement.deleteMessage") || "Are you sure you want to delete this trip? This action cannot be undone."}
+            />
         </Box>
     );
 }

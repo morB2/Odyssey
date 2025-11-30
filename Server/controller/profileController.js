@@ -19,7 +19,7 @@ export const getProfile = (req, res) =>
 export const updatePassword = (req, res) =>
   handle(res, async () => {
     const result = await services.updatePassword(
-      req.params.userId,
+      req.user.userId,
       req.user,
       req.body.currentPassword,
       req.body.newPassword
@@ -47,8 +47,23 @@ export const getUserTrip = (req, res) =>
 
 export const updateUserTrip = (req, res) =>
   handle(res, async () => {
+    const { tripId } = req.params;
+    const user = req.user;
+
+    // Get trip to verify ownership
+    const tripUser = await services.getTripById(tripId);    
+    if (!tripUser) {
+      throw Object.assign(new Error("Trip not found"), { status: 404 });
+    }
+
+    // Check authorization: owner or admin    
+    const isOwner = String(tripUser.user._id) === String(user.userId);
+
+    if (!isOwner) {
+      throw Object.assign(new Error("Forbidden"), { status: 403 });
+    }
     const trip = await services.updateUserTrip(
-      req.params.userId,
+      req.user.userId,
       req.params.tripId,
       req.user,
       req.body,
@@ -59,18 +74,32 @@ export const updateUserTrip = (req, res) =>
 
 export const deleteUserTrip = (req, res) =>
   handle(res, async () => {
-    const trip = await services.deleteUserTrip(
-      req.params.userId,
-      req.params.tripId,
-      req.user
-    );
-    return { trip };
+    const { tripId } = req.params;
+    const user = req.user;
+
+    // Get trip to verify ownership
+    const trip = await services.getTripById(tripId);
+    if (!trip) {
+      throw Object.assign(new Error("Trip not found"), { status: 404 });
+    }
+
+    // Check authorization: owner or admin
+    const isOwner = String(trip.user._id) === String(user.userId);
+    const isAdmin = user.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+      throw Object.assign(new Error("Forbidden"), { status: 403 });
+    }
+
+    // Delete the trip
+    const deleted = await services.deleteUserTrip(user.userId, tripId);
+    return { trip: deleted };
   });
 
 export const updateProfileAvatar = (req, res) =>
   handle(res, async () => {
     const updatedUser = await services.updateProfileAvatar(
-      req.params.userId,
+      req.user.userId,
       req.user,
       req.file,
       req.body.avatarUrl

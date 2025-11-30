@@ -46,7 +46,6 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
   }, [isOpen]);
 
   const storeToken = useUserStore((s) => s.token);
-  const storeUser = useUserStore((s) => s.user);
 
   const handleChangePassword = async () => {
     setError(null);
@@ -63,7 +62,7 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
 
     setLoading(true);
     try {
-      const res = await changePassword(storeUser?._id as string, currentPassword || undefined, newPassword, storeToken || undefined);
+      const res = await changePassword(currentPassword || undefined, newPassword);
       const body = res;
       if (!res || (res.success === false && (body as any).error)) {
         const msg = (body as any)?.error || (body as any)?.message || "Failed to change password";
@@ -100,7 +99,7 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
         return;
       }
 
-      const result = await uploadAvatar(uid, undefined, avatarUrl || undefined, storeToken);
+      const result = await uploadAvatar(undefined, avatarUrl || undefined, storeToken);
       const payload = result?.data ?? result;
       if (payload && payload.success && payload.user) {
         if (typeof onAvatarSaved === "function") {

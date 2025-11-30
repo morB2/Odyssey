@@ -181,6 +181,14 @@ export async function listUserTrips(ownerId, viewerId, page, limit) {
 // TRIPS - GET SINGLE
 // -----------------------------------------------------
 
+// Helper to get trip by ID only (for authorization checks)
+export async function getTripById(tripId) {
+  if (!tripId) throw new Error("tripId required");
+
+  const trip = await Trip.findById(tripId).select("user").lean();
+  return trip;
+}
+
 export async function getUserTrip(userId, tripId, viewerId) {
   if (!userId || !tripId) throw new Error("Missing parameters");
 
@@ -391,13 +399,9 @@ export async function updateUserTrip(userId, tripId, authUser, updates, files) {
 // TRIPS - DELETE
 // -----------------------------------------------------
 
-export async function deleteUserTrip(userId, tripId, authUser) {
-  if (!userId || !tripId) throw new Error("Missing parameters");
+export async function deleteUserTrip(userId, tripId) {
 
-  if (!authUser || String(authUser._id || authUser.userId) !== String(userId))
-    throw Object.assign(new Error("Forbidden"), { status: 403 });
-
-  const deleted = await Trip.findOneAndDelete({ _id: tripId, user: userId }).lean();
+  const deleted = await Trip.findOneAndDelete({ _id: tripId}).lean();
   if (!deleted) throw Object.assign(new Error("Trip not found"), { status: 404 });
 
   await clearUserFeedCache(userId);

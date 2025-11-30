@@ -79,7 +79,7 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
           return;
         }
 
-        const res = await updateTrip(userId as string, String(trip._id || trip.id), payload, storeToken || undefined);
+        const res = await updateTrip(String(trip._id || trip.id), payload, storeToken || undefined);
         const serverTrip: ServerTrip = (res && (res.trip || res)) as ServerTrip;
 
         const ordered = serverTrip.optimizedRoute?.ordered_route || [];
