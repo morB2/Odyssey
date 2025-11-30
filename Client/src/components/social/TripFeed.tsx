@@ -107,6 +107,7 @@ export function TripFeed() {
                 description: trip.description,
                 activities: trip.activities,
                 images: trip.images,
+                views: trip.views,
                 likes: trip.likes,
                 comments: trip.comments,
                 isLiked: trip.isLiked,

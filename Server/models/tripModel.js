@@ -58,6 +58,7 @@ const TripSchema = new mongoose.Schema(
     // ✅ Use sub-schema here
     comments: [commentSchema],
     likes: { type: Number, default: 0 },
+    views: { type: Number, default: 0 },
     images: {
       type: [String],
       validate: [arrayLimit, "{PATH} exceeds the limit of 3"],

@@ -2,6 +2,7 @@ import { Box, Typography, Avatar, TextField, IconButton } from '@mui/material';
 import { Send } from '@mui/icons-material';
 import { useState } from 'react';
 import { type Comment } from './types'; // Assuming 'types' is in the same directory
+import { Link } from 'react-router-dom';
 
 const emojiOptions = ['👍', '❤️', '🤣', '😮', '🔥'];
 
@@ -42,9 +43,11 @@ const CommentItem = ({ comment, reactions, onReact, onReply, userAvatar }: Comme
                 },
             }}
         >
-            <Avatar src={comment.user.avatar} sx={{ width: 30, height: 30 }}>
+            {/* <Link to={`/profile/${comment.user.}`} style={{ textDecoration: "none" }}> */}
+            <Avatar src={comment.user.avatar} sx={{ width: 30, height: 30, cursor: "pointer" }}>
                 {comment.user.name[0]}
             </Avatar>
+            {/* </Link> */}
             <Box sx={{ flex: 1, position: 'relative' }}>
                 <Typography variant="subtitle2"> {comment.user.name}</Typography>
                 <Typography variant="body2">{comment.text}</Typography>

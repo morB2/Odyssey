@@ -110,7 +110,7 @@ const Navbar: FC = () => {
                 <Box onClick={() => navigate('/createtrip')} sx={navItemStyle}>
                   <Sparkles size={24} />
                   <Typography variant="caption" sx={{ mt: 0.5, fontSize: '0.75rem', fontWeight: 500 }}>
-                    {t('createTrip')}
+                    {t('createTrip.create')}
                   </Typography>
                 </Box>
 

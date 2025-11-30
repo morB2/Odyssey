@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 const HelpCenter: React.FC = () => {
     const { t } = useTranslation();
     const faqs = t('HelpCenter.faqs', { returnObjects: true }) as Array<{ question: string, answer: string }>;
-
+    console.log(faqs);
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#f9fafb' }}>
             <Navbar />
@@ -24,7 +24,7 @@ const HelpCenter: React.FC = () => {
 
                 <Paper elevation={0} sx={{ p: { xs: 3, md: 6 }, borderRadius: 4 }}>
                     <Typography variant="h5" sx={{ mb: 4, fontWeight: 700, color: '#374151' }}>
-                        {t('HelpCenter.faqTitle')}
+                        {t('HelpCenter.subtitle')}
                     </Typography>
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -43,7 +43,7 @@ const HelpCenter: React.FC = () => {
 
                 <Box sx={{ mt: 6, textAlign: 'center' }}>
                     <Typography sx={{ color: '#6b7280' }}>
-                        {t('HelpCenter.stillHaveQuestions')} <a href="/contact" style={{ color: '#d97706', textDecoration: 'none', fontWeight: 600 }}>{t('HelpCenter.contactSupport')}</a>
+                        {t('HelpCenter.contactSupportDesc')} <a href="/contact" style={{ color: '#d97706', textDecoration: 'none', fontWeight: 600 }}>{t('HelpCenter.contactSupport')}</a>
                     </Typography>
                 </Box>
             </Container>

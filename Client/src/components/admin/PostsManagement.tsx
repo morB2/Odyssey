@@ -25,6 +25,7 @@ import TripPost from "../social/TripPost";
 import type { Trip } from "../social/types";
 import { useUserStore } from "../../store/userStore";
 import { ConfirmDialog } from "../user/ConfirmDialog";
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 
 type Post = {
     id: string;
@@ -265,6 +266,12 @@ export default function PostsManagement() {
                                         />
                                     </TableCell>
                                     <TableCell sx={{ color: "white" }}>{post.date}</TableCell>
+                                    <TableCell>
+                                        <Box display="flex" alignItems="center" gap={1}>
+                                            <VisibilityOutlinedIcon />
+                                            {post.views.toLocaleString()}
+                                        </Box>
+                                    </TableCell>
                                     <TableCell align="right">
                                         <IconButton
                                             color="primary"

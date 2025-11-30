@@ -21,6 +21,7 @@ import HelpCenter from './components/general/HelpCenter';
 import Contact from './components/general/Contact';
 import Footer from './components/general/Footer';
 import { MainPage } from './components/tripPlan/MainPage';
+import { CreateTrip } from './components/tripPlan/CreateTrip';
 
 import { initializeSocket } from './services/socketService';
 import { useUserStore } from './store/userStore';
@@ -71,6 +72,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/chats" element={<AllChatsPage />} />
               <Route path="/createtrip" element={<MainPage />} />
+              <Route path="/create-trip-manual" element={<CreateTrip />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/profile/:userId" element={<Profile />} />
               <Route path="/feed" element={<TripFeed />} />
@@ -85,7 +87,7 @@ function App() {
               <Route path="*" element={<Page404 />} />
               <Route path="/admin/dashboard" element={<Dashboard />} />
             </Routes>
-            
+
             {/* Modal routes (login popup) */}
             {state?.backgroundLocation && (
               <Routes>
