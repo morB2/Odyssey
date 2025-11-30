@@ -20,6 +20,7 @@ import {
     IconButton,
     MenuItem,
 } from "@mui/material";
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { Search, Plus, Trash2, Edit, Eye } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -155,7 +156,7 @@ export default function PostsManagement() {
                                 <TableCell sx={{ color: "white" }}>{post.date}</TableCell>
                                 <TableCell>
                                     <Box display="flex" alignItems="center" gap={1}>
-                                        <Eye size={16} />
+                                        <VisibilityOutlinedIcon />
                                         {post.views.toLocaleString()}
                                     </Box>
                                 </TableCell>

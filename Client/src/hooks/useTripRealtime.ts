@@ -8,6 +8,7 @@ interface UseTripRealtimeProps {
     onNewReaction: (commentId: string, reactions: Record<string, number>) => void;
     onNewReply: (commentId: string, reply: Comment) => void;
     onLikeUpdate: (likes: number) => void;
+    onViewUpdate?: (views: number) => void;
 }
 
 /**
@@ -20,6 +21,7 @@ export const useTripRealtime = ({
     onNewReaction,
     onNewReply,
     onLikeUpdate,
+    onViewUpdate,
 }: UseTripRealtimeProps) => {
     // Join the trip room
     useTripRoom(tripId);
@@ -72,4 +74,11 @@ export const useTripRealtime = ({
             onLikeUpdate(data.likes);
         }
     }, [tripId, onLikeUpdate]));
+
+    // Handle view updates
+    useSocketEvent('viewUpdated', useCallback((data: any) => {
+        if (data.tripId === tripId && typeof data.views === 'number' && onViewUpdate) {
+            onViewUpdate(data.views);
+        }
+    }, [tripId, onViewUpdate]));
 };

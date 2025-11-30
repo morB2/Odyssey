@@ -56,6 +56,7 @@ export interface Trip {
   activities: string[];
   images: string[];
   likes: number;
+  views: number;
   comments?: Comment[]; // now typed
   isLiked: boolean;
   isSaved: boolean;

@@ -25,20 +25,20 @@ const SearchResultsComponent: React.FC<SearchResultsProps> = ({
                 sx={{
                     position: 'absolute',
                     top: '100%',
-                    left: 0,
-                    right: 0,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
                     mt: 1,
                     maxHeight: '85vh',
                     overflow: 'auto',
                     zIndex: 1300,
                     backgroundColor: 'white',
-                    borderRadius: 2,
-                    padding: 3,
-                    minWidth: '600px',
-                    width: '600px',
+                    borderRadius: 3,
+                    p: 3,
+                    width: { xs: '95%', sm: '600px' },
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
+                    boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
                 }}
             >
                 <CircularProgress sx={{ color: '#FF9800' }} />
@@ -55,17 +55,17 @@ const SearchResultsComponent: React.FC<SearchResultsProps> = ({
                 sx={{
                     position: 'absolute',
                     top: '100%',
-                    left: 0,
-                    right: 0,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
                     mt: 1,
                     maxHeight: '85vh',
                     overflow: 'auto',
                     zIndex: 1300,
                     backgroundColor: 'white',
-                    borderRadius: 2,
-                    padding: 3,
-                    minWidth: '600px',
-                    width: '600px',
+                    borderRadius: 3,
+                    p: 3,
+                    width: { xs: '95%', sm: '600px' },
+                    boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
                 }}
             >
                 <Typography variant="body2" color="text.secondary" textAlign="center">
@@ -94,6 +94,7 @@ const SearchResultsComponent: React.FC<SearchResultsProps> = ({
         activities: searchTrip.activities || [],
         images: searchTrip.images || [],
         likes: searchTrip.likes || 0,
+        views: searchTrip.views || 0,
         isLiked: searchTrip.isLiked || false,
         isSaved: searchTrip.isSaved || false,
         optimizedRoute: searchTrip.optimizedRoute,
@@ -106,17 +107,17 @@ const SearchResultsComponent: React.FC<SearchResultsProps> = ({
             sx={{
                 position: 'absolute',
                 top: '100%',
-                left: 0,
-                right: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
                 mt: 1,
                 maxHeight: '85vh',
-                overflow: 'auto',
+                overflowY: 'auto',
                 zIndex: 1300,
                 backgroundColor: 'white',
-                borderRadius: 2,
-                padding: 3,
-                minWidth: '600px',
-                width: '600px',
+                borderRadius: 3,
+                p: 3,
+                width: { xs: '95%', sm: '600px' },
+                boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
             }}
         >
             {/* Users Section */}
@@ -128,15 +129,14 @@ const SearchResultsComponent: React.FC<SearchResultsProps> = ({
                             fontWeight: 700,
                             color: '#FF9800',
                             mb: 2,
-                            px: 1,
-                            fontSize: '1.2rem',
+                            fontSize: '1.25rem',
                             textTransform: 'uppercase',
                             letterSpacing: '0.5px',
                         }}
                     >
                         Users
                     </Typography>
-                    <Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         {results.users.map((user) => (
                             <UserSearchResult key={user._id} user={user} onClick={onClose} />
                         ))}
@@ -144,7 +144,7 @@ const SearchResultsComponent: React.FC<SearchResultsProps> = ({
                 </Box>
             )}
 
-            {/* Divider between sections */}
+            {/* Divider */}
             {results.users.length > 0 && results.trips.length > 0 && (
                 <Divider sx={{ my: 3, borderColor: '#FF9800', borderWidth: 1 }} />
             )}
@@ -158,30 +158,34 @@ const SearchResultsComponent: React.FC<SearchResultsProps> = ({
                             fontWeight: 700,
                             color: '#FF9800',
                             mb: 2,
-                            px: 1,
-                            fontSize: '1.2rem',
+                            fontSize: '1.25rem',
                             textTransform: 'uppercase',
                             letterSpacing: '0.5px',
                         }}
                     >
                         Posts
                     </Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         {results.trips.map((trip) => (
                             <Box
                                 key={trip._id}
-                                onClick={onClose}
                                 sx={{
-                                    transform: 'scale(1.1)',
-                                    transformOrigin: 'top left',
-                                    mb: 2,
+                                    p: 2,
+                                    borderRadius: 3,
+                                    boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+                                    backgroundColor: '#fff',
+                                    transition: 'transform 0.2s, box-shadow 0.2s',
+                                    '&:hover': {
+                                        transform: 'scale(1.02)',
+                                        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                                    },
                                 }}
                             >
                                 <TripPostAdapter
                                     trip={convertToTrip(trip)}
-                                    setTrips={() => { }}
-                                    onDelete={() => { }}
-                                    onEdit={() => { }}
+                                    setTrips={() => {}}
+                                    onDelete={() => {}}
+                                    onEdit={() => {}}
                                 />
                             </Box>
                         ))}

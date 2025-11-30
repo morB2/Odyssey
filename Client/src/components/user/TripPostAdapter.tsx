@@ -66,6 +66,7 @@ export default function TripPostAdapter({ trip, setTrips, onDelete, onEdit }: Ad
     activities: trip.activities || [],
     images: trip.images || [],
     likes: trip.likes || 0,
+    views: trip.views || 0,
     isLiked: !!trip.isLiked,
     isSaved: !!trip.isSaved,
     optimizedRoute: trip.optimizedRoute,

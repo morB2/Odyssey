@@ -13,7 +13,7 @@ import TripPostActions from './TripPostActions';
 import TripPostContent from './TripPostContent';
 import TripCommentsSection from './TripCommentsSection';
 import TripDetailsDialog from './TripDetailsDialog';
-import { toggleLike, toggleSave, toggleFollow, addComment, addReaction, addReply } from '../../services/tripPost.service';
+import { toggleLike, toggleSave, toggleFollow, addComment, addReaction, addReply, incrementView } from '../../services/tripPost.service';
 import { useTripRealtime } from '../../hooks/useTripRealtime';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
@@ -47,6 +47,7 @@ export default function TripPost({ trip }: TripPostProps) {
     // --- Post State ---
     const [isLiked, setIsLiked] = useState(trip.isLiked);
     const [likesCount, setLikesCount] = useState(trip.likes);
+    const [viewsCount, setViewsCount] = useState(trip.views || 0);
     const [isSaved, setIsSaved] = useState(trip.isSaved);
     const [isFollowing, setIsFollowing] = useState(trip.user.isFollowing);
     const [showComments, setShowComments] = useState(false);
@@ -65,11 +66,12 @@ export default function TripPost({ trip }: TripPostProps) {
     useEffect(() => {
         setIsLiked(trip.isLiked);
         setLikesCount(trip.likes);
+        setViewsCount(trip.views || 0);
         setIsSaved(trip.isSaved);
         setIsFollowing(trip.user.isFollowing);
         setComments(trip.comments || []);
         setCommentReactions(initializeReactions(trip.comments || []));
-    }, [trip.isLiked, trip.likes, trip.isSaved, trip.user.isFollowing, trip.comments]);
+    }, [trip.isLiked, trip.likes, trip.views, trip.isSaved, trip.user.isFollowing, trip.comments]);
 
     useTripRealtime({
         tripId: trip._id,
@@ -85,6 +87,7 @@ export default function TripPost({ trip }: TripPostProps) {
                 )
             ),
         onLikeUpdate: (likes) => setLikesCount(likes),
+        onViewUpdate: (views) => setViewsCount(views),
     });
     // --- API Handlers ---
     const postLike = useCallback(async () => {
@@ -237,6 +240,9 @@ export default function TripPost({ trip }: TripPostProps) {
         }
         setDialogOpen(true);
         setDialogImageIndex(currentImageIndex); // Open dialog to the current image
+
+        // Increment view count
+        incrementView(trip._id).catch(err => console.error("Failed to increment view", err));
     };
 
     const handleCloseDialog = () => setDialogOpen(false);
@@ -284,6 +290,7 @@ export default function TripPost({ trip }: TripPostProps) {
                     likesCount={likesCount}
                     isSaved={isSaved}
                     commentsCount={comments.length}
+                    viewsCount={viewsCount}
                     onLike={postLike}
                     onSave={postSave}
                     showComments={showComments}

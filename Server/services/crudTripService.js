@@ -233,3 +233,20 @@ export async function postReplyForUser(tripId, commentId, userId, replyText) {
       : null,
   };
 }
+
+/**
+ * Increments the view count for a trip.
+ * @param {string} tripId - ID of the trip
+ * @returns {Promise<number>} - The new view count
+ */
+export async function incrementTripView(tripId) {
+  const updatedTrip = await Trip.findByIdAndUpdate(
+    tripId,
+    { $inc: { views: 1 } },
+    { new: true, select: "views" }
+  );
+
+  if (!updatedTrip) throw new Error("Trip not found.");
+
+  return updatedTrip.views;
+}
