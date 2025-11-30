@@ -9,6 +9,7 @@ import { updateTrip } from "../../services/profile.service";
 import { toast } from "react-toastify";
 
 import { CloudinaryUploadWidget } from "../common/CloudinaryUploadWidget";
+import { isVideo } from "../../utils/mediaUtils";
 
 interface EditTripModalProps {
   trip: Trip | null;
@@ -32,7 +33,7 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
   const [title, setTitle] = useState(trip?.title || "");
   const [description, setDescription] = useState(trip?.description || "");
   const [notes, setNotes] = useState(trip?.notes || "");
-  const [images, setImages] = useState<string[]>(trip?.images || []);
+  const [images, setImages] = useState<string[]>(trip?.images || []); // Keep for backward compatibility
   const [activities, setActivities] = useState<string[]>(trip?.activities || []);
   const [newActivity, setNewActivity] = useState("");
   const [visibility, setVisibility] = useState<"public" | "private">(trip?.visibility || "public");
@@ -119,7 +120,7 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
 
   const handleImageUpload = (url: string) => {
     if (images.length >= 3) {
-      alert("Maximum 3 images allowed");
+      alert("Maximum 3 media items allowed");
       return;
     }
     setImages((prev) => [...prev, url]);
@@ -173,24 +174,33 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
 
           <Divider sx={dividerStyle} />
 
-          {/* Images */}
+          {/* Media (Images & Videos) */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <Typography sx={{ fontSize: "0.875rem", fontWeight: 500, color: "#171717" }}>Images (max 3)</Typography>
-              {images.length < 3 && <CloudinaryUploadWidget onUpload={handleImageUpload} folder="odyssey/trips" buttonText="Upload" />}
+              <Typography sx={{ fontSize: "0.875rem", fontWeight: 500, color: "#171717" }}>Media (max 3)</Typography>
+              {images.length < 3 && <CloudinaryUploadWidget onUpload={handleImageUpload} folder="odyssey/trips" buttonText="Upload" allowVideos={true} />}
             </Box>
 
             {images.length === 0 ? (
               <Box sx={{ borderRadius: 2, border: "1px solid #e5e5e5", backgroundColor: "#fafafa", p: 4, textAlign: "center" }}>
-                <Typography sx={{ color: "#737373", fontSize: "0.875rem" }}>No images yet. Click "Upload" to add images.</Typography>
+                <Typography sx={{ color: "#737373", fontSize: "0.875rem" }}>No media yet. Click "Upload" to add images or videos.</Typography>
               </Box>
             ) : (
               <Box sx={{ display: "grid", gap: 1.5, gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" } }}>
-                {images.map((image, index) => (
+                {images.map((mediaUrl, index) => (
                   <Box key={index} sx={{ position: "relative", overflow: "hidden", borderRadius: 2, border: "1px solid #e5e5e5", "&:hover .overlay": { backgroundColor: "rgba(0, 0, 0, 0.4)" }, "&:hover .delete-btn": { opacity: 1 } }}>
-                    <Box component="img" src={image} alt={`Trip image ${index + 1}`} sx={{ aspectRatio: "16/9", width: "100%", objectFit: "cover" }} />
-                    <Box className="overlay" sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0, 0, 0, 0)", transition: "background-color 0.2s" }}>
-                      <IconButton className="delete-btn" onClick={() => handleRemoveImage(index)} sx={{ backgroundColor: "#ffffff", opacity: 0, transition: "opacity 0.2s", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", "&:hover": { backgroundColor: "#ffffff" } }}>
+                    {isVideo(mediaUrl) ? (
+                      <Box
+                        component="video"
+                        src={mediaUrl}
+                        controls
+                        sx={{ aspectRatio: "16/9", width: "100%", objectFit: "cover", backgroundColor: "#000" }}
+                      />
+                    ) : (
+                      <Box component="img" src={mediaUrl} alt={`Trip media ${index + 1}`} sx={{ aspectRatio: "16/9", width: "100%", objectFit: "cover" }} />
+                    )}
+                    <Box className="overlay" sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0, 0, 0, 0)", transition: "background-color 0.2s", pointerEvents: "none" }}>
+                      <IconButton className="delete-btn" onClick={() => handleRemoveImage(index)} sx={{ backgroundColor: "#ffffff", opacity: 0, transition: "opacity 0.2s", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", "&:hover": { backgroundColor: "#ffffff" }, pointerEvents: "auto" }}>
                         <Trash2 size={16} color="#dc2626" />
                       </IconButton>
                     </Box>

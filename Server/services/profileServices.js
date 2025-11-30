@@ -8,7 +8,7 @@ import redis from "../db/redisClient.js";
 import { clearUserFeedCache, clearUserProfileCache } from "../utils/cacheUtils.js";
 import path from "path";
 import fs from "fs";
-import { uploadToCloudinary } from "./cloudinaryHelper.js";
+import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinaryHelper.js";
 
 const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
 const uploadsDir = path.join(process.cwd(), "uploads");
@@ -368,19 +368,25 @@ export async function updateUserTrip(userId, tripId, authUser, updates, files) {
     payload.images = [...(payload.images || []), ...newUrls];
   }
 
-  // Remove local files that are no longer in images
+  // Remove files (local and Cloudinary) that are no longer in images
   const currentTrip = await Trip.findById(tripId).lean();
   if (!currentTrip) throw Object.assign(new Error("Trip not found"), { status: 404 });
 
   if (payload.images) {
     const missing = (currentTrip.images || []).filter(old => !payload.images.includes(old));
 
-    missing.forEach(img => {
-      if (img.includes("/uploads/")) {
+    // Delete removed media from both local storage and Cloudinary
+    for (const img of missing) {
+      // Delete from Cloudinary if it's a Cloudinary URL
+      if (img.includes("cloudinary.com")) {
+        await deleteFromCloudinary(img);
+      }
+      // Delete from local storage if it's a local file
+      else if (img.includes("/uploads/")) {
         const filename = img.split("/uploads/")[1];
         deleteLocalFileIfExists(path.join(uploadsDir, filename));
       }
-    });
+    }
   }
 
   const updated = await Trip.findOneAndUpdate(
@@ -400,9 +406,24 @@ export async function updateUserTrip(userId, tripId, authUser, updates, files) {
 // -----------------------------------------------------
 
 export async function deleteUserTrip(userId, tripId) {
+  // Get trip before deleting to access its images
+  const trip = await Trip.findById(tripId).lean();
+  if (!trip) throw Object.assign(new Error("Trip not found"), { status: 404 });
 
-  const deleted = await Trip.findOneAndDelete({ _id: tripId}).lean();
-  if (!deleted) throw Object.assign(new Error("Trip not found"), { status: 404 });
+  // Delete all media from Cloudinary
+  if (trip.images && trip.images.length > 0) {
+    for (const img of trip.images) {
+      if (img.includes("cloudinary.com")) {
+        await deleteFromCloudinary(img);
+      } else if (img.includes("/uploads/")) {
+        const filename = img.split("/uploads/")[1];
+        deleteLocalFileIfExists(path.join(uploadsDir, filename));
+      }
+    }
+  }
+
+  // Now delete the trip
+  const deleted = await Trip.findOneAndDelete({ _id: tripId }).lean();
 
   await clearUserFeedCache(userId);
   await clearUserProfileCache(userId);

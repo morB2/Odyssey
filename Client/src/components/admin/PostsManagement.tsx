@@ -136,6 +136,7 @@ export default function PostsManagement() {
 
     const handleViewPost = async (tripData: any) => {
         setIsLoadingTrip(true);
+        console.log("Viewing post:", tripData);
         try {
             const formattedTrip: Trip = {
                 _id: tripData._id,
@@ -156,7 +157,8 @@ export default function PostsManagement() {
                 isSaved: false,
                 currentUserId: user?._id || '',
                 duration: tripData.duration || '',
-                notes: tripData.notes || ''
+                notes: tripData.notes || '',
+                optimizedRoute: tripData.optimizedRoute || [],
             };
             setViewingTrip(formattedTrip);
         } catch (error) {
@@ -311,12 +313,11 @@ export default function PostsManagement() {
             <Dialog
                 open={!!viewingTrip || isLoadingTrip}
                 onClose={handleCloseDialog}
-                maxWidth="md"
-                fullWidth
                 PaperProps={{
                     sx: {
                         backgroundColor: '#f5f5f5',
-                        maxHeight: '90vh'
+                        maxHeight: '90vh',
+                        overflowY: 'auto'
                     }
                 }}
             >
@@ -325,7 +326,9 @@ export default function PostsManagement() {
                         <CircularProgress />
                     </Box>
                 ) : viewingTrip ? (
-                    <TripPost trip={viewingTrip} />
+                    <Box sx={{ maxHeight: '90vh', overflowY: 'auto' }}>
+                        <TripPost trip={viewingTrip} />
+                    </Box>
                 ) : null}
             </Dialog>
 
