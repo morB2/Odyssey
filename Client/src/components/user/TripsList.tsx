@@ -93,13 +93,13 @@ export function TripsList({ trips = [], activeTab, onTabChange, setTrips, onEdit
         </Box>
       ) : (
         <>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+          <Grid container spacing={3}>
             {trips.map((trip) => (
-              <Box key={trip.id} sx={{ flex: '1 0 20%', minWidth: 150 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={trip.id}>
                 <TripPostAdapter trip={trip} setTrips={setTrips} onEdit={() => onEdit(trip)} onDelete={() => onDelete(trip._id)} />
-              </Box>
+              </Grid>
             ))}
-          </Box>
+          </Grid>
 
           {/* Sentinel element for infinite scroll */}
           {hasMore && <div ref={sentinelRef} style={{ height: '20px', margin: '20px 0' }} />}

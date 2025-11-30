@@ -3,6 +3,7 @@ import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/material/styles';
+import { Box } from '@mui/material';
 import useDebounce from '../../hooks/useDebounce';
 import SearchResults from './SearchResults';
 import { searchAll, type SearchResults as SearchResultsType } from '../../services/searchApi';
@@ -54,6 +55,7 @@ const Search: React.FC<SearchProps> = ({
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const user = useUserStore((state) => state.user);
   const { t } = useTranslation();
+
   // Perform search when debounced term changes
   useEffect(() => {
     const performSearch = async () => {
@@ -114,7 +116,7 @@ const Search: React.FC<SearchProps> = ({
   };
 
   return (
-    <div ref={searchContainerRef} style={{ position: 'relative', width: 600 }}>
+    <Box ref={searchContainerRef} sx={{ position: 'relative', width: { xs: '200px', sm: 300, md: 600 }, maxWidth: '100%' }}>
       <OrangeTextField
         label={t('general.searchPlaceholder')}
         variant="outlined"
@@ -140,7 +142,7 @@ const Search: React.FC<SearchProps> = ({
           onClose={handleCloseResults}
         />
       )}
-    </div>
+    </Box>
   );
 };
 

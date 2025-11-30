@@ -138,18 +138,18 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, tripsCount =
 
   if (loading) {
     return (
-  <Card sx={{ mb: 4, borderRadius: 4, boxShadow: '0 6px 28px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-    <Box sx={{ px: 3, py: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Skeleton variant="circular" width={88} height={88} sx={{ border: '2px solid #f97316' }} />
-        <Box sx={{ flex: 1 }}>
-          <Skeleton width="55%" height={30} sx={{ mb: 1 }} />
-          <Skeleton width="35%" height={18} />
+      <Card sx={{ mb: 4, borderRadius: 4, boxShadow: '0 6px 28px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+        <Box sx={{ px: 3, py: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Skeleton variant="circular" width={88} height={88} sx={{ border: '2px solid #f97316' }} />
+            <Box sx={{ flex: 1 }}>
+              <Skeleton width="55%" height={30} sx={{ mb: 1 }} />
+              <Skeleton width="35%" height={18} />
+            </Box>
+          </Box>
         </Box>
-      </Box>
-    </Box>
-  </Card>
-);
+      </Card>
+    );
 
   }
 
@@ -172,7 +172,7 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, tripsCount =
             display: 'flex',
             flexDirection: { xs: 'column', md: 'row' },
             alignItems: { xs: 'center', md: 'flex-start' },
-            gap: 2,
+            gap: { xs: 2, md: 3 },
           }}
         >
           {/* Avatar */}

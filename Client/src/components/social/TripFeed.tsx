@@ -79,7 +79,7 @@ export function TripFeed() {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#bb986cff' }}>
       <Navbar />
-      <Container maxWidth="md" sx={{ py: 3 }}>
+      <Container maxWidth="md" sx={{ py: { xs: 2, md: 3 }, px: { xs: 2, md: 3 } }}>
         {/* If user is not logged in and hasn't opted to view as guest, show the welcome card */}
         {!user && !allowGuest && (
           <GuestWelcomeCard onViewAsGuest={() => setAllowGuest(true)} />

@@ -5,7 +5,10 @@ import { getIO } from "../config/socket.js";
 export async function fetchTrips(req, res) {
   try {
     const currentUserId = req.params.id || null;
-    const trips = await getFeedForUser(currentUserId);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+
+    const trips = await getFeedForUser(currentUserId, page, limit);
     res.status(200).json(trips);
   } catch (error) {
     console.error("Error fetching trips:", error);
