@@ -85,6 +85,7 @@ function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/401" element={<Page401 />} />
               <Route path="*" element={<Page404 />} />
+              <Route path="/admin/dashboard" element={<Dashboard />} />
             </Routes>
 
             {/* Modal routes (login popup) */}

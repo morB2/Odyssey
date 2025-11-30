@@ -1,26 +1,11 @@
 import api from "./httpService";
-import { useUserStore } from "../store/userStore";
 
 const BASE = "/profile";
 const FOLLOW_BASE = "/follow";
 
-const getAuthHeader = (token?: string) => {
-  const t = token ?? useUserStore.getState().token;
-  return t ? { Authorization: `Bearer ${t}` } : {};
-};
-
-const createHeaders = (token?: string, extra: Record<string, string> = {}) => {
-  return {
-    ...getAuthHeader(token),
-    ...extra,
-  };
-};
-
-export const getProfile = async (userId: string, token?: string) => {
+export const getProfile = async (userId: string) => {
   try {
-    const res = await api.get(`${BASE}/${userId}`, {
-      headers: createHeaders(token),
-    });
+    const res = await api.get(`${BASE}/${userId}`);
     return res.data;
   } catch (error) {
     console.error("getProfile error:", error);
@@ -28,10 +13,9 @@ export const getProfile = async (userId: string, token?: string) => {
   }
 };
 
-export const getTrips = async (userId: string, token?: string, page: number = 1, limit: number = 12) => {
+export const getTrips = async (userId: string, page: number = 1, limit: number = 12) => {
   try {
     const res = await api.get(`${BASE}/${userId}/trips`, {
-      headers: createHeaders(token),
       params: { page, limit },
     });
     return res.data;
@@ -42,7 +26,6 @@ export const getTrips = async (userId: string, token?: string, page: number = 1,
 };
 
 export const updateTrip = async (
-  userId: string,
   tripId: string,
   payload: any,
   token?: string
@@ -51,11 +34,12 @@ export const updateTrip = async (
     // If payload is FormData (files + fields), use fetch so browser sets multipart boundary
     if (payload instanceof FormData) {
       const fullUrl =
-        (api.defaults.baseURL || "") + `${BASE}/${userId}/trips/${tripId}`;
-      const headers = createHeaders(token) as Record<string, string>;
+        (api.defaults.baseURL || "") + `${BASE}/trips/${tripId}`;
       const res = await fetch(fullUrl, {
         method: "PUT",
-        headers,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: payload,
       });
       const json = await res.json();
@@ -64,9 +48,7 @@ export const updateTrip = async (
       return json;
     }
 
-    const res = await api.put(`${BASE}/${userId}/trips/${tripId}`, payload, {
-      headers: createHeaders(token),
-    });
+    const res = await api.put(`${BASE}/trips/${tripId}`, payload);
     return res.data;
   } catch (error) {
     console.error("updateTrip error:", error);
@@ -75,14 +57,10 @@ export const updateTrip = async (
 };
 
 export const deleteTrip = async (
-  userId: string,
   tripId: string,
-  token?: string
 ) => {
   try {
-    const res = await api.delete(`${BASE}/${userId}/trips/${tripId}`, {
-      headers: createHeaders(token),
-    });
+    const res = await api.delete(`${BASE}/trips/${tripId}`);
     return res.data;
   } catch (error) {
     console.error("deleteTrip error:", error);
@@ -91,12 +69,11 @@ export const deleteTrip = async (
 };
 
 export const uploadAvatar = async (
-  userId: string,
   file?: File,
   avatarUrl?: string,
   token?: string
 ) => {
-  const url = `${BASE}/${userId}/avatar`;
+  const url = `${BASE}/avatar`;
 
   // Upload a real file
   if (file) {
@@ -120,7 +97,10 @@ export const uploadAvatar = async (
       url,
       { avatarUrl: avatarUrl.trim() },
       {
-        headers: createHeaders(token, { "Content-Type": "application/json" }),
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       }
     );
     return res.data;
@@ -130,16 +110,13 @@ export const uploadAvatar = async (
 };
 
 export const changePassword = async (
-  userId: string,
   currentPassword: string | undefined,
   newPassword: string,
-  token?: string
 ) => {
   try {
     const res = await api.post(
-      `${BASE}/${userId}/changePassword`,
+      `${BASE}/changePassword`,
       { currentPassword, newPassword },
-      { headers: createHeaders(token) }
     );
     return res.data;
   } catch (error) {
@@ -168,10 +145,9 @@ export const getFollowing = async (userId: string) => {
   }
 };
 
-export const getLikedTrips = async (userId: string, token?: string, page: number = 1, limit: number = 12) => {
+export const getLikedTrips = async (userId: string, page: number = 1, limit: number = 12) => {
   try {
     const res = await api.get(`${BASE}/${userId}/liked-trips`, {
-      headers: createHeaders(token),
       params: { page, limit },
     });
     return res.data;
@@ -181,10 +157,9 @@ export const getLikedTrips = async (userId: string, token?: string, page: number
   }
 };
 
-export const getSavedTrips = async (userId: string, token?: string, page: number = 1, limit: number = 12) => {
+export const getSavedTrips = async (userId: string, page: number = 1, limit: number = 12) => {
   try {
     const res = await api.get(`${BASE}/${userId}/saved-trips`, {
-      headers: createHeaders(token),
       params: { page, limit },
     });
     return res.data;

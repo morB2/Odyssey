@@ -15,16 +15,8 @@ export default function UsersManagement() {
   const { t } = useTranslation();
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [newUser, setNewUser] = useState<User>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    role: "user",
-    status: true,
-    preferences: [],
-  });
+
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -42,17 +34,6 @@ export default function UsersManagement() {
       user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const handleAddUser = () => {
-    // const user: User = {
-    //   id: Date.now().toString(),
-    //   ...newUser,
-    //   joinDate: new Date().toISOString().split("T")[0],
-    // };
-    // setUsers([...users, user]);
-    // setNewUser({ name: "", email: "", role: "User", status: "Active" });
-    // setIsAddDialogOpen(false);
-  };
 
   const handleEditUser = async () => {
     if (editingUser) {

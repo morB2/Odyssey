@@ -1,8 +1,9 @@
 import { Box } from '@mui/material';
 import type { Dispatch, SetStateAction } from 'react';
+import { isVideo, getOptimizedFullSize } from '../../utils/mediaUtils';
 
 interface TripImageCarouselProps {
-    images: string[] | undefined;
+    images: string[] | undefined; // Keep for backward compatibility
     currentImageIndex: number;
     setCurrentImageIndex: Dispatch<SetStateAction<number>>;
     title: string;
@@ -13,9 +14,9 @@ export default function TripImageCarousel({ images, currentImageIndex, setCurren
 
     return (
         <Box position="relative" sx={{ bgcolor: 'grey.200' }}>
-            {/* Image List (scrollable) */}
+            {/* Media List (scrollable - images and videos) */}
             <Box sx={{ display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory' }}>
-                {images.map((image, index) => (
+                {images.map((mediaUrl, index) => (
                     <Box
                         key={index}
                         sx={{
@@ -24,16 +25,30 @@ export default function TripImageCarousel({ images, currentImageIndex, setCurren
                             scrollSnapAlign: 'start',
                         }}
                     >
-                        <img
-                            src={image}
-                            alt={`${title} - ${index + 1}`}
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                                display: 'block',
-                            }}
-                        />
+                        {isVideo(mediaUrl) ? (
+                            <video
+                                src={getOptimizedFullSize(mediaUrl, 1200)}
+                                controls
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    display: 'block',
+                                    backgroundColor: '#000',
+                                }}
+                            />
+                        ) : (
+                            <img
+                                src={getOptimizedFullSize(mediaUrl, 1200)}
+                                alt={`${title} - ${index + 1}`}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    display: 'block',
+                                }}
+                            />
+                        )}
                     </Box>
                 ))}
             </Box>
