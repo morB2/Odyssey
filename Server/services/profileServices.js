@@ -9,6 +9,7 @@ import { clearUserFeedCache, clearUserProfileCache } from "../utils/cacheUtils.j
 import path from "path";
 import fs from "fs";
 import { uploadToCloudinary } from "./cloudinaryHelper.js";
+import { fetchTrips, normalizeAvatarUrl } from "./tripFetcherService.js";
 
 const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
 const uploadsDir = path.join(process.cwd(), "uploads");
@@ -16,13 +17,6 @@ const uploadsDir = path.join(process.cwd(), "uploads");
 // -----------------------------------------------------
 // Helpers
 // -----------------------------------------------------
-function normalizeAvatarUrl(url) {
-  if (!url) return url;
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  if (url.startsWith("/")) return SERVER_URL + url;
-  return url;
-}
-
 async function safeJsonParse(value, fallback = []) {
   try {
     return typeof value === "string" ? JSON.parse(value) : value;
@@ -37,63 +31,6 @@ function deleteLocalFileIfExists(absolutePath) {
   } catch (err) {
     console.warn("File delete failed:", absolutePath, err);
   }
-}
-
-async function buildTripMetadata({ trips, ownerId }) {
-  const tripIds = trips.map(t => t._id);
-
-  const liked = ownerId
-    ? await Like.find({ user: ownerId, trip: { $in: tripIds } }).select("trip")
-    : [];
-  const likedSet = new Set(liked.map(l => String(l.trip)));
-
-  const saved = ownerId
-    ? await Save.find({ user: ownerId, trip: { $in: tripIds } }).select("trip")
-    : [];
-  const savedSet = new Set(saved.map(s => String(s.trip)));
-
-  const authorIds = [...new Set(trips.map(t => String(t.user?._id)))];
-  const follows = ownerId
-    ? await Follow.find({
-      follower: ownerId,
-      following: { $in: authorIds },
-    }).select("following")
-    : [];
-  const followSet = new Set(follows.map(f => String(f.following)));
-
-  return { likedSet, savedSet, followSet };
-}
-
-function mapTrip(trip, { likedSet, savedSet, followSet, ownerId }) {
-  return {
-    ...trip,
-    likes: trip.likes || 0,
-    isLiked: ownerId ? likedSet.has(String(trip._id)) : false,
-    isSaved: ownerId ? savedSet.has(String(trip._id)) : false,
-
-    user: {
-      ...trip.user,
-      avatar: normalizeAvatarUrl(trip.user?.avatar),
-      isFollowing: ownerId
-        ? followSet.has(String(trip.user?._id))
-        : false,
-    },
-
-    comments: (trip.comments || []).map(c => ({
-      ...c,
-      user: {
-        ...c.user,
-        avatar: normalizeAvatarUrl(c.user?.avatar),
-      },
-    })),
-  };
-}
-
-async function fetchAndFormatTrips({ trips, ownerId }) {
-  if (!trips.length) return [];
-
-  const meta = await buildTripMetadata({ trips, ownerId });
-  return trips.map(t => mapTrip(t, { ...meta, ownerId }));
 }
 
 // -----------------------------------------------------
@@ -125,52 +62,22 @@ export async function getProfile(userId) {
 export async function listUserTripsForViewer(ownerId, viewerId, page = 1, limit = 12) {
   if (!ownerId) throw new Error("ownerId required");
 
-  // Calculate skip for pagination
-  const skip = (page - 1) * limit;
-
-  // Don't cache paginated results - too many cache keys
+  // Only cache first page with default limit
   const cacheKey = page === 1 && limit === 12
     ? `profile:${ownerId}:trips:${viewerId || "none"}`
     : null;
 
-  if (cacheKey) {
-    const cached = await redis.get(cacheKey);
-    if (cached) return JSON.parse(cached);
-  }
-
-  // Get total count for pagination metadata
-  const total = await Trip.countDocuments({ user: ownerId });
-
-  const trips = await Trip.find({ user: ownerId })
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .populate({ path: "user", select: "_id firstName lastName avatar" })
-    .populate({ path: "comments.user", select: "_id firstName lastName avatar" })
-    .lean();
-
-  const result = await fetchAndFormatTrips({
-    trips,
-    ownerId: viewerId,
+  return fetchTrips({
+    filter: { user: ownerId },
+    viewerId,
+    page,
+    limit,
+    sort: { createdAt: -1 },
+    cacheKey,
+    cacheTTL: 60,
+    includeMetadata: true,
+    processComments: true,
   });
-
-  const response = {
-    trips: result,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
-      hasMore: skip + trips.length < total,
-    },
-  };
-
-  // Only cache first page with default limit
-  if (cacheKey) {
-    await redis.setEx(cacheKey, 60, JSON.stringify(response));
-  }
-
-  return response;
 }
 
 export async function listUserTrips(ownerId, viewerId, page, limit) {
@@ -184,19 +91,19 @@ export async function listUserTrips(ownerId, viewerId, page, limit) {
 export async function getUserTrip(userId, tripId, viewerId) {
   if (!userId || !tripId) throw new Error("Missing parameters");
 
-  const trip = await Trip.findOne({ _id: tripId, user: userId })
-    .populate({ path: "user", select: "_id firstName lastName avatar" })
-    .populate({ path: "comments.user", select: "_id firstName lastName avatar" })
-    .lean();
-
-  if (!trip) throw Object.assign(new Error("Trip not found"), { status: 404 });
-
-  const meta = await buildTripMetadata({ trips: [trip], ownerId: viewerId });
-
-  return mapTrip(trip, {
-    ...meta,
-    ownerId: viewerId,
+  const result = await fetchTrips({
+    filter: { _id: tripId, user: userId },
+    viewerId,
+    limit: 1,
+    includeMetadata: false,
+    processComments: true,
   });
+
+  if (!result || result.length === 0) {
+    throw Object.assign(new Error("Trip not found"), { status: 404 });
+  }
+
+  return result[0];
 }
 
 // -----------------------------------------------------
@@ -228,6 +135,7 @@ async function fetchProfileTripCollection({
   // Get total count
   const total = await model.countDocuments({ user: ownerId });
 
+  // Get the liked/saved items with populated trips
   const items = await model
     .find({ user: ownerId })
     .skip(skip)
@@ -237,19 +145,25 @@ async function fetchProfileTripCollection({
       populate: [
         { path: "user", select: "_id firstName lastName avatar" },
         { path: "comments.user", select: "_id firstName lastName avatar" },
+        { path: "comments.replies.user", select: "_id firstName lastName avatar" },
       ],
     })
     .lean();
 
   const trips = items.map(x => x.trip).filter(Boolean);
 
-  const result = await fetchAndFormatTrips({
-    trips,
-    ownerId: viewerId,
+  // Use unified fetcher to enrich trips (but skip the query part)
+  const tripIds = trips.map(t => t._id);
+  const enriched = await fetchTrips({
+    filter: { _id: { $in: tripIds } },
+    viewerId,
+    limit: trips.length,
+    includeMetadata: false,
+    processComments: true,
   });
 
   const response = {
-    trips: result,
+    trips: enriched,
     pagination: {
       page,
       limit,
