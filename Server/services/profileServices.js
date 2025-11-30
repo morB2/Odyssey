@@ -11,7 +11,7 @@ import fs from "fs";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinaryHelper.js";
 import { fetchTrips, normalizeAvatarUrl } from "./tripFetcherService.js";
 
-const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
+const SERVER_URL = process.env.SERVER_URL || "https://odyssey-server-g1xx.onrender.com";
 const uploadsDir = path.join(process.cwd(), "uploads");
 
 // -----------------------------------------------------

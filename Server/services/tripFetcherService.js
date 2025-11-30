@@ -5,7 +5,7 @@ import Follow from "../models/followModel.js";
 import User from "../models/userModel.js";
 import redis from "../db/redisClient.js";
 
-const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
+const SERVER_URL = process.env.SERVER_URL || "https://odyssey-server-g1xx.onrender.com";
 
 // -----------------------------------------------------
 // Helper Functions
