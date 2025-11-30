@@ -13,7 +13,7 @@ import TripPostActions from './TripPostActions';
 import TripPostContent from './TripPostContent';
 import TripCommentsSection from './TripCommentsSection';
 import TripDetailsDialog from './TripDetailsDialog';
-import { toggleLike, toggleSave, toggleFollow, addComment, addReaction, addReply } from '../../services/tripPost.service';
+import { toggleLike, toggleSave, toggleFollow, addComment, addReaction, addReply, incrementView } from '../../services/tripPost.service';
 import { useTripRealtime } from '../../hooks/useTripRealtime';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
@@ -47,6 +47,7 @@ export default function TripPost({ trip }: TripPostProps) {
     // --- Post State ---
     const [isLiked, setIsLiked] = useState(trip.isLiked);
     const [likesCount, setLikesCount] = useState(trip.likes);
+    const [viewsCount, setViewsCount] = useState(trip.views || 0);
     const [isSaved, setIsSaved] = useState(trip.isSaved);
     const [isFollowing, setIsFollowing] = useState(trip.user.isFollowing);
     const [showComments, setShowComments] = useState(false);
@@ -65,11 +66,12 @@ export default function TripPost({ trip }: TripPostProps) {
     useEffect(() => {
         setIsLiked(trip.isLiked);
         setLikesCount(trip.likes);
+        setViewsCount(trip.views || 0);
         setIsSaved(trip.isSaved);
         setIsFollowing(trip.user.isFollowing);
         setComments(trip.comments || []);
         setCommentReactions(initializeReactions(trip.comments || []));
-    }, [trip.isLiked, trip.likes, trip.isSaved, trip.user.isFollowing, trip.comments]);
+    }, [trip.isLiked, trip.likes, trip.views, trip.isSaved, trip.user.isFollowing, trip.comments]);
 
     useTripRealtime({
         tripId: trip._id,
@@ -85,6 +87,7 @@ export default function TripPost({ trip }: TripPostProps) {
                 )
             ),
         onLikeUpdate: (likes) => setLikesCount(likes),
+        onViewUpdate: (views) => setViewsCount(views),
     });
     // --- API Handlers ---
     const postLike = useCallback(async () => {
@@ -160,36 +163,6 @@ export default function TripPost({ trip }: TripPostProps) {
         }
     }, [isFollowing, trip.user._id, trip.currentUserId, trip.user.firstName, t]);
 
-    // const handleAddComment = useCallback(async (commentText: string) => {
-    //     if (!trip.currentUserId || trip.currentUserId.trim() === '') {
-    //         toast.info("Please log in to comment.");
-    //         return;
-    //     }
-
-    //     try {
-    //         const response = await addComment(trip._id, trip.currentUserId, commentText.trim());
-
-    //         // Create and apply optimistic comment
-    //         const newComment: Comment = {
-    //             id: response._id,
-    //             user: {
-    //                 name: response.user.firstName + " " + response.user.lastName,
-    //                 username: '@' + response.user.firstName + response.user.lastName,
-    //                 avatar: user?.avatar || '/default-avatar.png',
-    //             },
-    //             text: commentText.trim(),
-    //             timestamp: response.createdAt,
-    //             replies: []
-    //         };
-
-    //         setComments((prev) => [newComment, ...prev]);
-    //         toast.success("Comment added!");
-    //     } catch (error) {
-    //         console.error('Error adding comment:', error);
-    //         toast.error("Failed to add comment. Please try again.");
-    //         // In a real app, you might remove the optimistic comment on failure
-    //     }
-    // }, [trip._id, trip.currentUserId, user?.avatar]);
 
     const handleEmojiReaction = useCallback(async (commentId: string, emoji: string) => {
         if (!trip.currentUserId || trip.currentUserId.trim() === '') {
@@ -248,45 +221,7 @@ export default function TripPost({ trip }: TripPostProps) {
             console.error('Error adding reply:', error);
             toast.error(t('social.failedToReply'));
         }
-    }, [trip._id, trip.currentUserId, t]); // Also removed user?.avatar from dependencies
-    // const handleAddReply = useCallback(async (commentId: string, replyText: string) => {
-    //     if (!trip.currentUserId || trip.currentUserId.trim() === '') {
-    //         toast.info("Please log in to reply.");
-    //         return;
-    //     }
-
-    //     try {
-    //         const response = await addReply(trip._id, commentId, trip.currentUserId, replyText.trim());
-
-    //         // Optimistic update for reply
-    //         const newReply: Comment = {
-    //             id: response._id,
-    //             user: {
-    //                 name: response.user.firstName + " " + response.user.lastName,
-    //                 username: '@' + response.user.firstName + response.user.lastName,
-    //                 avatar: user?.avatar || '/default-avatar.png',
-    //             },
-    //             text: replyText.trim(),
-    //             timestamp: response.createdAt,
-    //         };
-
-    //         setComments((prev) =>
-    //             prev.map((comment) => {
-    //                 if (comment.id === commentId) {
-    //                     return {
-    //                         ...comment,
-    //                         replies: [...(comment.replies || []), newReply],
-    //                     };
-    //                 }
-    //                 return comment;
-    //             })
-    //         );
-    //         toast.success("Reply added!");
-    //     } catch (error) {
-    //         console.error('Error adding reply:', error);
-    //         toast.error("Failed to add reply.");
-    //     }
-    // }, [trip._id, trip.currentUserId, user?.avatar]);
+    }, [trip._id, trip.currentUserId, t]);
 
 
     // --- Dialog Handlers ---
@@ -305,6 +240,9 @@ export default function TripPost({ trip }: TripPostProps) {
         }
         setDialogOpen(true);
         setDialogImageIndex(currentImageIndex); // Open dialog to the current image
+
+        // Increment view count
+        incrementView(trip._id).catch(err => console.error("Failed to increment view", err));
     };
 
     const handleCloseDialog = () => setDialogOpen(false);
@@ -352,6 +290,7 @@ export default function TripPost({ trip }: TripPostProps) {
                     likesCount={likesCount}
                     isSaved={isSaved}
                     commentsCount={comments.length}
+                    viewsCount={viewsCount}
                     onLike={postLike}
                     onSave={postSave}
                     showComments={showComments}

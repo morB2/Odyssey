@@ -11,8 +11,9 @@ import {
     Chip,
 } from '@mui/material';
 import { Close, ChevronLeft, ChevronRight } from '@mui/icons-material';
-import {type Dispatch,type SetStateAction, useCallback } from 'react';
+import { type Dispatch, type SetStateAction, useCallback } from 'react';
 import { type Trip } from './types';
+import { isVideo } from '../../utils/mediaUtils';
 
 interface TripDetailsDialogProps {
     open: boolean;
@@ -53,23 +54,39 @@ export default function TripDetailsDialog({
             </DialogTitle>
             <DialogContent dividers>
                 <Grid container spacing={3}>
-                    {/* Left Side - Images */}
-                    <Grid size={{xs:12,md:6}} >
+                    {/* Left Side - Media (Images & Videos) */}
+                    <Grid size={{ xs: 12, md: 6 }} >
                         {trip.images && totalImages > 0 && (
                             <Box
                                 position="relative"
                                 sx={{ bgcolor: 'grey.200', borderRadius: 2, overflow: 'hidden' }}
                             >
-                                <img
-                                    src={trip.images[dialogImageIndex]}
-                                    alt={`${trip.location} - ${dialogImageIndex + 1}`}
-                                    style={{
-                                        width: '100%',
-                                        height: '400px',
-                                        objectFit: 'cover',
-                                        display: 'block',
-                                    }}
-                                />
+                                {isVideo(trip.images[dialogImageIndex]) ? (
+                                    <video
+                                        src={trip.images[dialogImageIndex]}
+                                        controls
+                                        style={{
+                                            width: '100%',
+                                            height: '400px',
+                                            objectFit: 'cover',
+                                            display: 'block',
+                                            backgroundColor: '#000',
+                                        }}
+                                        autoPlay
+                                        muted
+                                    />
+                                ) : (
+                                    <img
+                                        src={trip.images[dialogImageIndex]}
+                                        alt={`${trip.location} - ${dialogImageIndex + 1}`}
+                                        style={{
+                                            width: '100%',
+                                            height: '400px',
+                                            objectFit: 'cover',
+                                            display: 'block',
+                                        }}
+                                    />
+                                )}
 
                                 {totalImages > 1 && (
                                     <>
@@ -85,7 +102,7 @@ export default function TripDetailsDialog({
                                                 '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
                                             }}
                                         >
-                                            <ChevronLeft />
+                                            <ChevronRight />
                                         </IconButton>
                                         <IconButton
                                             onClick={nextDialogImage}
@@ -99,9 +116,9 @@ export default function TripDetailsDialog({
                                                 '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
                                             }}
                                         >
-                                            <ChevronRight />
+                                            <ChevronLeft />
                                         </IconButton>
-                                        {/* Image Dots */}
+                                        {/* Media Dots */}
                                         <Box
                                             position="absolute"
                                             bottom={12}
@@ -132,7 +149,7 @@ export default function TripDetailsDialog({
                     </Grid>
 
                     {/* Right Side - Trip Details */}
-                    <Grid  size={{xs:12,md:6}}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                         <Box>
                             <Typography variant="body1" paragraph>
                                 {trip.description}

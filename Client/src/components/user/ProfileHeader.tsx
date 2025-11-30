@@ -2,11 +2,9 @@ import { useState, useEffect } from "react";
 import type { UserProfile } from "./types";
 import { Button, Card, Avatar, Box, Typography, List, ListItem, ListItemAvatar, ListItemText, Link, Dialog, DialogTitle, DialogContent, Skeleton } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import { Edit, Users, UserPlus, MapPin } from "lucide-react";
+import { Edit, Users, UserPlus } from "lucide-react";
 import { getFollowers as svcGetFollowers, getFollowing as svcGetFollowing } from "../../services/profile.service";
-import { toast } from "react-toastify";
 import { useTranslation } from 'react-i18next';
-const BASE_URL = "http://localhost:3000";
 type SimpleFollow = {
   _id?: string;
   id?: string;
@@ -23,11 +21,10 @@ interface ProfileHeaderProps {
   user: UserProfile;
   isOwner?: boolean;
   onEditClick?: () => void;
-  tripsCount?: number;
   loading?: boolean;
 }
 
-export function ProfileHeader({ user, isOwner = false, onEditClick, tripsCount = 0, loading = false }: ProfileHeaderProps) {
+export function ProfileHeader({ user, isOwner = false, onEditClick, loading = false }: ProfileHeaderProps) {
   const [openDialog, setOpenDialog] = useState<"followers" | "following" | null>(null);
   const [followers, setFollowers] = useState<SimpleFollow[]>([]);
   const [following, setFollowing] = useState<SimpleFollow[]>([]);
@@ -85,14 +82,6 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, tripsCount =
     setOpenDialog(listType);
   };
 
-  const StatCard = ({ icon: Icon, label, value }: { icon: any; label: string; value: number }) => (
-    <Box sx={{ textAlign: 'center', p: 1.5, borderRadius: 2, background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(10px)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', transition: 'all 0.3s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' } }}>
-      <Icon size={20} style={{ color: '#f97316', marginBottom: 6 }} />
-      <Typography variant="h6" sx={{ fontWeight: 700, color: '#171717', mb: 0.5, fontSize: '1.25rem' }}>{value}</Typography>
-      <Typography variant="caption" sx={{ color: '#737373', textTransform: 'uppercase', fontSize: '0.65rem', fontWeight: 600 }}>{label}</Typography>
-    </Box>
-  );
-
   const renderDialog = (type: "followers" | "following") => {
     const list = type === "followers" ? followers : following;
     return (
@@ -138,18 +127,18 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, tripsCount =
 
   if (loading) {
     return (
-  <Card sx={{ mb: 4, borderRadius: 4, boxShadow: '0 6px 28px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-    <Box sx={{ px: 3, py: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Skeleton variant="circular" width={88} height={88} sx={{ border: '2px solid #f97316' }} />
-        <Box sx={{ flex: 1 }}>
-          <Skeleton width="55%" height={30} sx={{ mb: 1 }} />
-          <Skeleton width="35%" height={18} />
+      <Card sx={{ mb: 4, borderRadius: 4, boxShadow: '0 6px 28px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+        <Box sx={{ px: 3, py: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Skeleton variant="circular" width={88} height={88} sx={{ border: '2px solid #f97316' }} />
+            <Box sx={{ flex: 1 }}>
+              <Skeleton width="55%" height={30} sx={{ mb: 1 }} />
+              <Skeleton width="35%" height={18} />
+            </Box>
+          </Box>
         </Box>
-      </Box>
-    </Box>
-  </Card>
-);
+      </Card>
+    );
 
   }
 
@@ -172,7 +161,7 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, tripsCount =
             display: 'flex',
             flexDirection: { xs: 'column', md: 'row' },
             alignItems: { xs: 'center', md: 'flex-start' },
-            gap: 2,
+            gap: { xs: 2, md: 3 },
           }}
         >
           {/* Avatar */}

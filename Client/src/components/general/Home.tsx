@@ -104,8 +104,8 @@ export const Home: React.FC = () => {
         width: '100%',
         maxWidth: '100%',
         boxSizing: 'border-box',
-        py: 12,
-        px: { xs: 3, md: 6 },
+        py: { xs: 8, md: 12 },
+        px: { xs: 2, md: 6 },
         bgcolor: 'white'
       }}>
         <Container maxWidth="lg">

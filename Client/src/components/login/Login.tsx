@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import {Box,Button,TextField,Dialog,DialogContent,DialogTitle,Tabs,Tab,Typography,Divider,Link} from '@mui/material';
+import { Box, Button, TextField, Dialog, DialogContent, DialogTitle, Tabs, Tab, Typography, Divider, Link } from '@mui/material';
 import { loginUser, registerUser } from "../../services/login.service";
 import { useNavigate, useSearchParams, Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -50,6 +50,7 @@ export const Login = () => {
         firstName: response.user.firstName,
         googleId: response.user.googleId,
         avatar: response.user.avatar,
+        role: response.user.role,
       };
       useUserStore.getState().setUser(userInfo, response.token);
       setOpen(false);
@@ -83,6 +84,7 @@ export const Login = () => {
         firstName: response.user.firstName,
         googleId: response.user.googleId,
         avatar: response.user.avatar,
+        role: response.user.role,
       };
       useUserStore.getState().setUser(userInfo, response.token);
       setOpen(false);

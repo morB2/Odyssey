@@ -4,91 +4,24 @@ import Save from "../models/savesModel.js";
 import Follow from "../models/followModel.js";
 import User from "../models/userModel.js"; // Assuming User has name & avatar
 import { clearUserFeedCache } from "../utils/cacheUtils.js";
+import { fetchTrips } from "./tripFetcherService.js";
+
 /**
  * Get first 10 trips with user info, following, liked, and saved status
  * @param {String} currentUserId - the ID of the current logged-in user
  */
-
 export async function getTripsForUser(currentUserId) {
-  // 1. Get first 10 trips, including user info and populated comment users
-  const trips = await Trip.find({ visabilityStatus: "public" })
-    .sort({ createdAt: -1 })
-    .limit(10)
-    .populate({
-      path: "user",
-      select: "_id firstName lastName avatar",
-    })
-    .populate({
-      path: "comments.user", // 👈 populate comment users too
-      select: "_id firstName lastName avatar",
-    })
-    .populate({
-      path: "comments.replies.user", // 👈 populate reply users
-      select: "_id firstName lastName avatar",
-    })
-    .lean(); // convert to plain objects
-
-  // 2. Extract trip and user IDs
-  const tripIds = trips.map((t) => t._id);
-  const userIds = trips.map((t) => t.user._id);
-
-  // 3. Get likes and saves for current user
-  const likedTrips = await Like.find({
-    user: currentUserId,
-    trip: { $in: tripIds },
-  }).select("trip");
-
-  const savedTrips = await Save.find({
-    user: currentUserId,
-    trip: { $in: tripIds },
-  }).select("trip");
-
-  const likedTripIds = new Set(likedTrips.map((l) => l.trip.toString()));
-  const savedTripIds = new Set(savedTrips.map((s) => s.trip.toString()));
-
-  // 4. Get follow status for users
-  const follows = await Follow.find({
-    follower: currentUserId,
-    following: { $in: userIds },
-  }).select("following");
-
-  const followingUserIds = new Set(follows.map((f) => f.following.toString()));
-
-  // 5. Add flags + comments to trips with aggregated reactions
-  const tripsWithStatus = trips.map((trip) => {
-    // Process comments and aggregate reactions
-    const processedComments = (trip.comments || []).map((comment) => {
-      // Aggregate reactions by emoji
-      const reactionsByEmoji = {};
-      if (comment.reactions && comment.reactions.length > 0) {
-        comment.reactions.forEach((reaction) => {
-          if (!reactionsByEmoji[reaction.emoji]) {
-            reactionsByEmoji[reaction.emoji] = 0;
-          }
-          reactionsByEmoji[reaction.emoji]++;
-        });
-      }
-
-      return {
-        ...comment,
-        reactionsAggregated: reactionsByEmoji, // Add aggregated reactions
-        replies: comment.replies || [], // Preserve replies
-      };
-    });
-
-    return {
-      ...trip,
-      isLiked: likedTripIds.has(trip._id.toString()),
-      isSaved: savedTripIds.has(trip._id.toString()),
-      user: {
-        ...trip.user,
-        isFollowing: followingUserIds.has(trip.user._id.toString()),
-      },
-      comments: processedComments, // 👈 comments with aggregated reactions
-    };
+  const trips = await fetchTrips({
+    filter: { visabilityStatus: "public" },
+    viewerId: currentUserId,
+    limit: 10,
+    sort: { createdAt: -1 },
+    includeMetadata: false,
+    processComments: true,
   });
-  console.log(tripsWithStatus);
-  return tripsWithStatus;
+
+  console.log(trips);
+  return trips;
 }
 
 
@@ -232,4 +165,21 @@ export async function postReplyForUser(tripId, commentId, userId, replyText) {
       }
       : null,
   };
+}
+
+/**
+ * Increments the view count for a trip.
+ * @param {string} tripId - ID of the trip
+ * @returns {Promise<number>} - The new view count
+ */
+export async function incrementTripView(tripId) {
+  const updatedTrip = await Trip.findByIdAndUpdate(
+    tripId,
+    { $inc: { views: 1 } },
+    { new: true, select: "views" }
+  );
+
+  if (!updatedTrip) throw new Error("Trip not found.");
+
+  return updatedTrip.views;
 }

@@ -21,6 +21,7 @@ import HelpCenter from './components/general/HelpCenter';
 import Contact from './components/general/Contact';
 import Footer from './components/general/Footer';
 import { MainPage } from './components/tripPlan/MainPage';
+import { CreateTrip } from './components/tripPlan/CreateTrip';
 
 import { initializeSocket } from './services/socketService';
 import { useUserStore } from './store/userStore';
@@ -71,11 +72,13 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/chats" element={<AllChatsPage />} />
               <Route path="/createtrip" element={<MainPage />} />
+              <Route path="/create-trip-manual" element={<CreateTrip />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/profile/:userId" element={<Profile />} />
               <Route path="/feed" element={<TripFeed />} />
               <Route path="/forgotPassword" element={<ForgotPassword />} />
               <Route path="/resetPassword" element={<ResetPasswordPage />} />
+              <Route path="/login" element={<Login />} />
               <Route path="/admin" element={<Dashboard />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -83,8 +86,9 @@ function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/401" element={<Page401 />} />
               <Route path="*" element={<Page404 />} />
+              <Route path="/admin/dashboard" element={<Dashboard />} />
             </Routes>
-            
+
             {/* Modal routes (login popup) */}
             {state?.backgroundLocation && (
               <Routes>

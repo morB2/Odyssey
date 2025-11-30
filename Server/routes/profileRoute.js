@@ -41,7 +41,7 @@ const identifyOwnerViewer = (req, res, next) => {
 
 router.get("/:userId", controller.getProfile);
 
-router.post("/:userId/changePassword", authMiddleware, identifyOwnerViewer, controller.updatePassword);
+router.post("/changePassword", authMiddleware, controller.updatePassword);
 
 // Trips
 
@@ -50,14 +50,13 @@ router.get("/:userId/trips", authMiddleware, identifyOwnerViewer, controller.lis
 router.get("/:userId/trips/:tripId", controller.getUserTrip);
 
 router.put(
-  "/:userId/trips/:tripId",
+  "/trips/:tripId",
   authMiddleware,
-  identifyOwnerViewer,
   upload.array("images", 3),
   controller.updateUserTrip
 );
 
-router.delete("/:userId/trips/:tripId", authMiddleware, identifyOwnerViewer, controller.deleteUserTrip);
+router.delete("/trips/:tripId", authMiddleware, controller.deleteUserTrip);
 
 router.get("/:userId/liked-trips", authMiddleware, identifyOwnerViewer, controller.getProfileLikedTrips);
 
@@ -66,9 +65,8 @@ router.get("/:userId/saved-trips", authMiddleware, identifyOwnerViewer, controll
 // Avatar
 
 router.put(
-  "/:userId/avatar",
+  "/avatar",
   authMiddleware,
-  identifyOwnerViewer,
   upload.single("avatar"),
   controller.updateProfileAvatar
 );

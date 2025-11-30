@@ -9,7 +9,6 @@ import { ConfirmDialog } from "./ConfirmDialog";
 
 interface AdapterProps {
   trip: Trip;
-  setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
   onDelete: () => void;
   onEdit: () => void;
 }
@@ -41,7 +40,7 @@ function adaptComments(apiComments: any[]): Comment[] {
   });
 }
 
-export default function TripPostAdapter({ trip, setTrips, onDelete, onEdit }: AdapterProps) {
+export default function TripPostAdapter({ trip, onDelete, onEdit }: AdapterProps) {
   const storeUser = useUserStore((s) => s.user);
   const currentUserId = storeUser?._id || "";
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -66,6 +65,7 @@ export default function TripPostAdapter({ trip, setTrips, onDelete, onEdit }: Ad
     activities: trip.activities || [],
     images: trip.images || [],
     likes: trip.likes || 0,
+    views: trip.views || 0,
     isLiked: !!trip.isLiked,
     isSaved: !!trip.isSaved,
     optimizedRoute: trip.optimizedRoute,

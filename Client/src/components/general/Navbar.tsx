@@ -1,8 +1,26 @@
 import type { FC } from 'react';
-import  { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
-import { AppBar, Toolbar, Box, Button, Link, Typography } from '@mui/material';
-import { BookImage, Sparkles, MessageCircleMore } from 'lucide-react';
+import {
+  AppBar,
+  Toolbar,
+  Box,
+  Button,
+  Link,
+  Typography,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  useMediaQuery,
+  useTheme,
+  Divider,
+  Tooltip
+} from '@mui/material';
+
+import { BookImage, Sparkles, MessageCircleMore, Menu, X, User, LogIn, UserPlus, LayoutDashboard } from 'lucide-react';
 
 import { useUserStore } from '../../store/userStore';
 import ProfileMenu from '../user/ProfileMenu';
@@ -17,15 +35,15 @@ const Navbar: FC = () => {
   const { t } = useTranslation();
   const user = useUserStore((state) => state.user);
   const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   useEffect(() => {
     let mounted = true;
 
     const fetchUnread = async () => {
-      if (!user?._id) {
-        setUnreadCount(0);
-        return;
-      }
+      if (!user?._id) return setUnreadCount(0);
       try {
         const data = await chatService.getUnreadCount(user._id);
         const count = typeof data === 'number' ? data : data?.unread ?? 0;
@@ -36,11 +54,14 @@ const Navbar: FC = () => {
     };
 
     fetchUnread();
-
-    return () => {
-      mounted = false;
-    };
+    return () => (mounted = false);
   }, [user]);
+
+  const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
+  const handleMobileNavigate = (path: string) => {
+    navigate(path);
+    setMobileOpen(false);
+  };
 
   const navItemStyle = {
     display: 'flex',
@@ -48,170 +69,164 @@ const Navbar: FC = () => {
     alignItems: 'center',
     cursor: 'pointer',
     color: 'white',
-    transition: 'all 0.3s ease',
     padding: '8px 12px',
     borderRadius: '12px',
+    transition: 'all 0.3s ease',
     '&:hover': {
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
-      transform: 'translateY(-2px)',
-    },
+      transform: 'translateY(-2px)'
+    }
   };
+
+  const drawerContent = (
+    <Box sx={{ width: 250, height: '100%', bgcolor: '#1a1a1a', color: 'white', p: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <IconButton onClick={handleDrawerToggle} sx={{ color: 'white' }}>
+          <X />
+        </IconButton>
+      </Box>
+
+      <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <img src="/logo-white.png" alt="Odyssey Logo" style={{ height: 60 }} />
+      </Box>
+
+      <List>
+        {user ? (
+          <>
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => handleMobileNavigate('/feed')}>
+                <BookImage size={20} /><ListItemText sx={{ ml: 1 }} primary={t('feed')} />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => handleMobileNavigate('/createtrip')}>
+                <Sparkles size={20} /><ListItemText sx={{ ml: 1 }} primary={t('createTrip.create')} />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => handleMobileNavigate('/chats')}>
+                <MessageCircleMore size={20} />
+                <ListItemText sx={{ ml: 1 }} primary={t('messages')} />
+                {unreadCount > 0 && <Box sx={{ width: 8, height: 8, bgcolor: '#f97316', borderRadius: '50%', ml: 1 }} />}
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => handleMobileNavigate('/profile')}>
+                <User size={20} /><ListItemText sx={{ ml: 1 }} primary={t('profile.title')} />
+              </ListItemButton>
+            </ListItem>
+
+            {user?.role === 'admin' && (
+              <ListItem disablePadding>
+                <ListItemButton onClick={() => handleMobileNavigate('/admin/dashboard')}>
+                  <LayoutDashboard size={20} /><ListItemText sx={{ ml: 1 }} primary="Admin" />
+                </ListItemButton>
+              </ListItem>
+            )}
+          </>
+        ) : (
+          <>
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => handleMobileNavigate('/login?tab=login')}>
+                <LogIn size={20} /><ListItemText sx={{ ml: 1 }} primary={t('logIn')} />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => handleMobileNavigate('/login?tab=signup')}>
+                <UserPlus size={20} /><ListItemText sx={{ ml: 1 }} primary={t('signUp')} />
+              </ListItemButton>
+            </ListItem>
+          </>
+        )}
+      </List>
+
+      <Divider sx={{ my: 2, bgcolor: 'rgba(255,255,255,0.2)' }} />
+
+      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+        <LanguageSwitcher />
+      </Box>
+    </Box>
+  );
 
   return (
     <>
-      <AppBar
-        position="fixed"
-        elevation={0}
-        sx={{
-          background: 'linear-gradient(135deg, rgba(75, 27, 2, 0.95) 0%, rgba(174, 131, 66, 0.95) 100%)',
-          backdropFilter: 'blur(10px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.3)',
-        }}
-      >
+      <AppBar position="fixed" sx={{
+        background: 'linear-gradient(135deg, rgba(75,27,2,.95), rgba(174,131,66,.95))',
+        backdropFilter: 'blur(10px)',
+        boxShadow: '0 4px 30px rgba(0,0,0,0.3)'
+      }}>
         <Toolbar sx={{ px: { xs: 2, md: 6 }, py: 1.5, justifyContent: 'space-between' }}>
-          {/* Logo */}
-          <Link
-            component={RouterLink}
-            to="/"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              textDecoration: 'none',
-              cursor: 'pointer',
-              '&:hover': { opacity: 0.9 },
-              transition: 'opacity 0.2s',
-            }}
-          >
-            <Box
-              component="img"
-              src="/logo-white.png"
-              alt="Odyssey Logo"
-              sx={{ height: { xs: 80, md: 100 }, objectFit: 'contain' }}
-            />
+
+          <Link component={RouterLink} to="/" sx={{ display: 'flex', alignItems: 'center' }}>
+            <img src="/logo-white.png" style={{ height: 80 }} />
           </Link>
 
-          {/* Right side */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Search onSearch={(s) => console.log('Search term:', s)} />
+          {isMobile ? (
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Search onSearch={(s) => console.log('search:', s)} />
+              <IconButton onClick={handleDrawerToggle} color="inherit"><Menu /></IconButton>
+            </Box>
+          ) : (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Search onSearch={(s) => console.log('search:', s)} />
 
-            {user && (
-              <>
-                {/* Feed */}
-                <Box onClick={() => navigate('/feed')} sx={navItemStyle}>
-                  <BookImage size={24} />
-                  <Typography variant="caption" sx={{ mt: 0.5, fontSize: '0.75rem', fontWeight: 500 }}>
-                    {t('feed')}
-                  </Typography>
+              {user && (
+                <>
+                  <Box onClick={() => navigate('/feed')} sx={navItemStyle}><BookImage size={24} /><Typography variant="caption">Feed</Typography></Box>
+                  <Box onClick={() => navigate('/createtrip')} sx={navItemStyle}><Sparkles size={24} /><Typography variant="caption">{t('createTrip.create')}</Typography></Box>
+
+                  {/* Messages */}
+                  <Box onClick={() => navigate('/chats')} sx={{ ...navItemStyle, position: 'relative' }}>
+                    <MessageCircleMore size={24} />
+                    {unreadCount > 0 && (
+                      <Box sx={{
+                        position: 'absolute', top: 4, right: 8,
+                        background: 'linear-gradient(135deg,#f97316,#ea580c)',
+                        width: 20, height: 20, borderRadius: '50%',
+                        color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                        fontSize: '0.7rem', fontWeight: 'bold'
+                      }}>
+                        {unreadCount}
+                      </Box>
+                    )}
+                    <Typography variant="caption">{t('messages')}</Typography>
+                  </Box>
+                </>
+              )}
+
+              <LanguageSwitcher />
+
+              {user?.role === "admin" && (
+                <Tooltip title="Admin Dashboard" arrow>
+                  <Box onClick={() => navigate('/admin/dashboard')} sx={navItemStyle}>
+                    <LayoutDashboard size={22} />
+                    <Typography variant="caption">Admin</Typography>
+                  </Box>
+                </Tooltip>
+              )}
+
+              {user ? (
+                <ProfileMenu />
+              ) : (
+                <Box sx={{ display: 'flex', gap: 1.5 }}>
+                  <Button onClick={() => navigate('/login?tab=login')} sx={{ color: 'white' }}>{t('logIn')}</Button>
+                  <Button variant="contained" onClick={() => navigate('/login?tab=signup')}
+                    sx={{ background: 'linear-gradient(135deg,#f97316,#ea580c)' }}>
+                    {t('signUp')}
+                  </Button>
                 </Box>
-
-                {/* Create Trip */}
-                <Box onClick={() => navigate('/createtrip')} sx={navItemStyle}>
-                  <Sparkles size={24} />
-                  <Typography variant="caption" sx={{ mt: 0.5, fontSize: '0.75rem', fontWeight: 500 }}>
-                    {t('createTrip')}
-                  </Typography>
-                </Box>
-
-                {/* Messages */}
-                <Box onClick={() => navigate('/chats')} sx={{ ...navItemStyle, position: 'relative' }}>
-                  <MessageCircleMore size={24} />
-
-                  {/* Unread badge */}
-                  {unreadCount > 0 && (
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: 4,
-                        right: 8,
-                        background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
-                        color: 'white',
-                        borderRadius: '50%',
-                        width: 20,
-                        height: 20,
-                        fontSize: '0.7rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 'bold',
-                        boxShadow: '0 2px 8px rgba(249, 115, 22, 0.4)',
-                        border: '2px solid rgba(15, 23, 42, 0.95)',
-                      }}
-                    >
-                      {unreadCount}
-                    </Box>
-                  )}
-
-                  <Typography variant="caption" sx={{ mt: 0.5, fontSize: '0.75rem', fontWeight: 500 }}>
-                    {t('messages') ?? 'Messages'}
-                  </Typography>
-                </Box>
-              </>
-            )}
-
-            <LanguageSwitcher />
-
-            {/* Auth / Profile */}
-            {user ? (
-              <ProfileMenu />
-            ) : (
-              <Box sx={{ display: 'flex', gap: 1.5, minWidth: 'fit-content', flexShrink: 0 }}>
-                <Button
-                  variant="text"
-                  onClick={() =>
-                    navigate('/login?tab=login', {
-                      state: { backgroundLocation: location.pathname },
-                    })
-                  }
-                  sx={{
-                    color: 'white',
-                    minWidth: 'auto',
-                    px: 2.5,
-                    py: 1,
-                    borderRadius: '10px',
-                    fontWeight: 500,
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                      transform: 'translateY(-2px)',
-                    },
-                  }}
-                >
-                  {t('logIn')}
-                </Button>
-
-                <Button
-                  variant="contained"
-                  onClick={() =>
-                    navigate('/login?tab=signup', {
-                      state: { backgroundLocation: location.pathname },
-                    })
-                  }
-                  sx={{
-                    background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
-                    fontWeight: 600,
-                    minWidth: 'auto',
-                    px: 3,
-                    py: 1,
-                    borderRadius: '10px',
-                    boxShadow: '0 4px 15px rgba(249, 115, 22, 0.3)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
-                      boxShadow: '0 6px 20px rgba(249, 115, 22, 0.4)',
-                      transform: 'translateY(-2px)',
-                    },
-                  }}
-                >
-                  {t('signUp')}
-                </Button>
-              </Box>
-            )}
-          </Box>
+              )}
+            </Box>
+          )}
         </Toolbar>
       </AppBar>
-      {/* Spacer to prevent content from being hidden behind fixed navbar */}
-      <Toolbar sx={{ py: 1.5, height: { xs: 80, md: 100 } }} />
+
+      <Drawer anchor="right" open={mobileOpen} onClose={handleDrawerToggle}
+        sx={{ display: { xs: 'block', md: 'none' } }} >
+        {drawerContent}
+      </Drawer>
+
+      <Toolbar sx={{ height: { xs: 70, md: 95 } }} />
     </>
   );
 };

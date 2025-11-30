@@ -1,6 +1,6 @@
 import { CardActions, Box, IconButton, Typography } from '@mui/material';
 import type { Dispatch, SetStateAction } from 'react';
-import { Favorite, FavoriteBorder, ChatBubbleOutline, BookmarkBorder, Bookmark } from '@mui/icons-material';
+import { Favorite, FavoriteBorder, ChatBubbleOutline, BookmarkBorder, Bookmark, Visibility } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 
 interface TripPostActionsProps {
@@ -8,6 +8,7 @@ interface TripPostActionsProps {
     likesCount: number;
     isSaved: boolean;
     commentsCount: number;
+    viewsCount: number;
     showComments: boolean;
     onLike: () => void;
     onSave: () => void;
@@ -19,6 +20,7 @@ export default function TripPostActions({
     likesCount,
     isSaved,
     commentsCount,
+    viewsCount,
     showComments,
     onLike,
     onSave,
@@ -56,6 +58,14 @@ export default function TripPostActions({
                         <ChatBubbleOutline color={showComments ? 'primary' : undefined} />
                     </IconButton>
                     <Typography variant="body2">{commentsCount}</Typography>
+                </Box>
+
+                {/* Views Display */}
+                <Box display="flex" alignItems="center">
+                    <IconButton disabled>
+                        <Visibility />
+                    </IconButton>
+                    <Typography variant="body2">{viewsCount}</Typography>
                 </Box>
             </Box>
 

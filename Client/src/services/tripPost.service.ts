@@ -72,11 +72,23 @@ export const addReply = async (tripId: string, commentId: string, userId: string
     }
 };
 
+export const incrementView = async (tripId: string) => {
+    try {
+        const res = await api.post(`/trips/${tripId}/views`);
+        return res.data;
+    } catch (error) {
+        console.error("Error incrementing view:", error);
+        throw error;
+    }
+};
+
 export default {
     toggleLike,
     toggleSave,
     toggleFollow,
     addComment,
     addReaction,
-    addReply
+    addReply,
+    incrementView
 };
+
