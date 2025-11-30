@@ -78,6 +78,7 @@ function App() {
               <Route path="/feed" element={<TripFeed />} />
               <Route path="/forgotPassword" element={<ForgotPassword />} />
               <Route path="/resetPassword" element={<ResetPasswordPage />} />
+              <Route path="/login" element={<Login />} />
               <Route path="/admin" element={<Dashboard />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
