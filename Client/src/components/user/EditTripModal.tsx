@@ -10,6 +10,8 @@ import { toast } from "react-toastify";
 
 import { CloudinaryUploadWidget } from "../general/CloudinaryUploadWidget";
 import { isVideo } from "../../utils/mediaUtils";
+import { MediaFilterPresets } from "../general/MediaFilterPresets";
+import { MediaEditorModal } from "../general/MediaEditorModal";
 
 interface EditTripModalProps {
   trip: Trip | null;
@@ -39,6 +41,10 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
   const [visibility, setVisibility] = useState<"public" | "private">(trip?.visibility || "public");
   const [showVisibilityConfirm, setShowVisibilityConfirm] = useState(false);
   const [pendingVisibility, setPendingVisibility] = useState<"public" | "private">("public");
+
+  // Filter editor state
+  const [showFilterPresets, setShowFilterPresets] = useState<number | null>(null);
+  const [showAdvancedEditor, setShowAdvancedEditor] = useState<number | null>(null);
 
   useEffect(() => {
     if (!trip) {
@@ -127,17 +133,38 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
   };
 
   const handleRemoveImage = (index: number) => setImages((prev) => prev.filter((_, i) => i !== index));
+
+  const handleFilterApply = (index: number, filteredUrl: string) => {
+
+    setImages((prev) => {
+      const updated = prev.map((url, i) => (i === index ? filteredUrl : url));
+      return updated;
+    });
+    setShowFilterPresets(null);
+  };
+
+  const handleAdvancedEditSave = (index: number, editedUrl: string) => {
+    setImages((prev) => {
+      const updated = prev.map((url, i) => (i === index ? editedUrl : url));
+      return updated;
+    });
+    setShowAdvancedEditor(null);
+  };
+
   const handleAddActivity = () => {
     if (newActivity.trim() && !activities.includes(newActivity.trim())) {
       setActivities([...activities, newActivity.trim()]);
       setNewActivity("");
     }
   };
+
   const handleRemoveActivity = (activity: string) => setActivities(activities.filter((a) => a !== activity));
+
   const handleVisibilityChange = (newVisibility: "public" | "private") => {
     setPendingVisibility(newVisibility);
     setShowVisibilityConfirm(true);
   };
+
   const confirmVisibilityChange = () => {
     setVisibility(pendingVisibility);
     setShowVisibilityConfirm(false);
@@ -199,9 +226,47 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
                     ) : (
                       <Box component="img" src={mediaUrl} alt={`Trip media ${index + 1}`} sx={{ aspectRatio: "16/9", width: "100%", objectFit: "cover" }} />
                     )}
-                    <Box className="overlay" sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0, 0, 0, 0)", transition: "background-color 0.2s", pointerEvents: "none" }}>
-                      <IconButton className="delete-btn" onClick={() => handleRemoveImage(index)} sx={{ backgroundColor: "#ffffff", opacity: 0, transition: "opacity 0.2s", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", "&:hover": { backgroundColor: "#ffffff" }, pointerEvents: "auto" }}>
-                        <Trash2 size={16} color="#dc2626" />
+                    <Box className="overlay" sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5, backgroundColor: "rgba(0, 0, 0, 0)", transition: "background-color 0.2s", pointerEvents: "none" }}>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => setShowFilterPresets(index)}
+                        sx={{
+                          opacity: 0,
+                          transition: "opacity 0.2s",
+                          pointerEvents: "auto",
+                          backgroundColor: "#f97316",
+                          "&:hover": { backgroundColor: "#ea580c" },
+                          fontSize: "0.65rem",
+                          px: 1,
+                          py: 0.5,
+                          minWidth: "auto",
+                        }}
+                        className="delete-btn"
+                      >
+                        🎨 Filters
+                      </Button>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => setShowAdvancedEditor(index)}
+                        sx={{
+                          opacity: 0,
+                          transition: "opacity 0.2s",
+                          pointerEvents: "auto",
+                          backgroundColor: "#3b82f6",
+                          "&:hover": { backgroundColor: "#2563eb" },
+                          fontSize: "0.65rem",
+                          px: 1,
+                          py: 0.5,
+                          minWidth: "auto",
+                        }}
+                        className="delete-btn"
+                      >
+                        ✏️ Edit
+                      </Button>
+                      <IconButton className="delete-btn" onClick={() => handleRemoveImage(index)} sx={{ backgroundColor: "#ffffff", opacity: 0, transition: "opacity 0.2s", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", "&:hover": { backgroundColor: "#ffffff" }, pointerEvents: "auto", width: 32, height: 32 }}>
+                        <Trash2 size={14} color="#dc2626" />
                       </IconButton>
                     </Box>
                     <Box sx={{ position: "absolute", left: 8, top: 8, borderRadius: 1, backgroundColor: "rgba(0, 0, 0, 0.6)", backdropFilter: "blur(4px)", px: 1, py: 0.5, color: "#ffffff", fontSize: "0.75rem" }}>{index + 1}</Box>
@@ -264,6 +329,26 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
       </Modal>
 
       <ConfirmDialog isOpen={showVisibilityConfirm} onClose={() => setShowVisibilityConfirm(false)} onConfirm={confirmVisibilityChange} title="Change Visibility" message="Are you sure you want to change the trip's visibility?" />
+
+      {/* Filter Presets Modal */}
+      {showFilterPresets !== null && (
+        <Modal isOpen={true} onClose={() => setShowFilterPresets(null)} title="Quick Filters">
+          <MediaFilterPresets
+            mediaUrl={images[showFilterPresets]}
+            onFilterApply={(filteredUrl) => handleFilterApply(showFilterPresets, filteredUrl)}
+          />
+        </Modal>
+      )}
+
+      {/* Advanced Editor Modal */}
+      {showAdvancedEditor !== null && (
+        <MediaEditorModal
+          isOpen={true}
+          onClose={() => setShowAdvancedEditor(null)}
+          mediaUrl={images[showAdvancedEditor]}
+          onSave={(editedUrl) => handleAdvancedEditSave(showAdvancedEditor, editedUrl)}
+        />
+      )}
     </>
   );
 }
