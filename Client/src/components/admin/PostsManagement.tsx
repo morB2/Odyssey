@@ -154,6 +154,7 @@ export default function PostsManagement() {
                 images: tripData.images || [],
                 likes: tripData.likes?.length || 0,
                 comments: tripData.comments || [],
+                views: tripData.views || 0,
                 isLiked: false,
                 isSaved: false,
                 currentUserId: user?._id || '',
