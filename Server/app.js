@@ -27,7 +27,7 @@ routesInit(app);
 app.use(errorHandler);
 
 const server = http.createServer(app);
-app.get('/:path(*)', (req, res) => {
+app.get(/.*/, (req, res) => {
   res.sendFile(path.resolve('dist/index.html'));
 });
 // Initialize Socket.IO
