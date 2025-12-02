@@ -13,7 +13,7 @@ import PassportLoading from '../general/PassportLoading';
 
 function adaptComments(apiComments: any[]): Comment[] {
   return apiComments.map((c) => {
-    const date = new Date(c.createdAt);
+    const date = new Date(c.timestamp);
     const time = date.toLocaleString([], {
       year: "numeric",
       month: "short",
@@ -72,6 +72,7 @@ export function TripFeed() {
         // Based on service check, it returns array or { trips, pagination }
         // Assuming array for now based on previous code, but let's be safe
         const fetchedTrips = Array.isArray(data) ? data : data.trips || [];
+        console.log("RAW COMMENTS:", fetchedTrips.map((t: Trip) => t.comments));
 
         const tripsData: Trip[] = fetchedTrips.map((trip: any) => ({
           ...trip,
@@ -158,7 +159,7 @@ export function TripFeed() {
 
             {loadingMore && (
               <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-               <PassportLoading/>
+                <PassportLoading />
               </Box>
             )}
 

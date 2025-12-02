@@ -9,7 +9,6 @@ const client = createClient({
     }
 });
 
-client.on('error', err => console.log('Redis Client Error', err));
 
 // Connect automatically when importing
 await client.connect();

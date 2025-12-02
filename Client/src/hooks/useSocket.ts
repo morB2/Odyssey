@@ -29,12 +29,10 @@ export const useSocket = (token?: string): Socket | null => {
  * @param tripId - Trip ID to join
  */
 export const useTripRoom = (tripId: string | null) => {
-    console.log('using trip room')
     const socket = getSocket();
 
     useEffect(() => {
         if (!socket || !tripId) return;
-        console.log('emitied trip id')
         // Join the trip room
         socket.emit('joinTrip', tripId);
 

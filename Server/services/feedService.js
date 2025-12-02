@@ -11,8 +11,6 @@ export async function getFeedForUser(userId, page = 1, limit = 20) {
         ? `feed:${userId}:page:${page}:limit:${limit}`
         : `feed:public:page:${page}:limit:${limit}`;
 
-    console.log(`[Feed] Fetching feed for ${userId ? `user ${userId}` : 'public feed'}, page ${page}`);
-
     return fetchTrips({
         filter: { visabilityStatus: "public" },
         viewerId: userId,

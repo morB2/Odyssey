@@ -128,7 +128,6 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
         ),
       });
       const result = await response.json();
-      console.log('Trip save response:', result);
       if (result.success) {
         toast.success('Trip saved successfully!');
       } else {

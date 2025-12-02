@@ -1,7 +1,7 @@
-import { Box, Typography, Avatar, TextField, IconButton } from '@mui/material';
-import { Send } from '@mui/icons-material';
+import { Box, Typography, Avatar, TextField, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
+import { Send, Delete } from '@mui/icons-material';
 import { useState } from 'react';
-import { type Comment } from './types'; // Assuming 'types' is in the same directory
+import { type Comment } from './types';
 import { Link } from 'react-router-dom';
 
 const emojiOptions = ['👍', '❤️', '🤣', '😮', '🔥'];
@@ -11,19 +11,41 @@ interface CommentItemProps {
     reactions: Record<string, number> | undefined;
     onReact: (commentId: string, emoji: string) => void;
     onReply: (commentId: string, replyText: string) => Promise<void>;
+    onDelete: (commentId: string) => Promise<void>;
     userAvatar: string | undefined;
+    currentUserId: string | undefined;
+    postOwnerId: string;
 }
 
-const CommentItem = ({ comment, reactions, onReact, onReply, userAvatar }: CommentItemProps) => {
+const CommentItem = ({ comment, reactions, onReact, onReply, onDelete, userAvatar, currentUserId, postOwnerId }: CommentItemProps) => {
     const [hoveredCommentId, setHoveredCommentId] = useState<string | null>(null);
     const [isReplying, setIsReplying] = useState(false);
     const [replyText, setReplyText] = useState('');
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+    // Resolve comment author's id (backend may provide either `userId` or `user._id`)
+    const commentAuthorId = comment.userId ?? (comment.user as any)?._id ?? comment.user.username;
+    // Check if current user can delete this comment: either the comment author or the post owner
+    const canDelete = Boolean(currentUserId) && (commentAuthorId === currentUserId || postOwnerId === currentUserId);
 
     const handleReplySubmit = async () => {
         if (!replyText.trim()) return;
         await onReply(comment.id, replyText.trim());
         setReplyText('');
         setIsReplying(false);
+    };
+
+    const handleDeleteClick = () => {
+        setDeleteDialogOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        setDeleteDialogOpen(false);
+        await onDelete(comment.id);
+    };
+
+    const handleDeleteCancel = () => {
+        setDeleteDialogOpen(false);
     };
 
     return (
@@ -43,13 +65,28 @@ const CommentItem = ({ comment, reactions, onReact, onReply, userAvatar }: Comme
                 },
             }}
         >
-            {/* <Link to={`/profile/${comment.user.}`} style={{ textDecoration: "none" }}> */}
             <Avatar src={comment.user.avatar} sx={{ width: 30, height: 30, cursor: "pointer" }}>
                 {comment.user.name[0]}
             </Avatar>
-            {/* </Link> */}
             <Box sx={{ flex: 1, position: 'relative' }}>
-                <Typography variant="subtitle2"> {comment.user.name}</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Typography variant="subtitle2"> {comment.user.name}</Typography>
+                    {canDelete && hoveredCommentId === comment.id && (
+                        <IconButton
+                            size="small"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteClick();
+                            }}
+                            sx={{
+                                opacity: 0.7,
+                                '&:hover': { opacity: 1, color: 'error.main' }
+                            }}
+                        >
+                            <Delete fontSize="small" />
+                        </IconButton>
+                    )}
+                </Box>
                 <Typography variant="body2">{comment.text}</Typography>
                 <Typography variant="caption" color="text.secondary">
                     {comment.timestamp}
@@ -94,7 +131,7 @@ const CommentItem = ({ comment, reactions, onReact, onReply, userAvatar }: Comme
                     <Box
                         sx={{
                             position: 'absolute',
-                            bottom: -35, // Adjusted position to be slightly below the comment
+                            bottom: -35,
                             left: 0,
                             display: 'flex',
                             gap: 0.5,
@@ -185,6 +222,26 @@ const CommentItem = ({ comment, reactions, onReact, onReply, userAvatar }: Comme
                     </Box>
                 )}
             </Box>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog
+                open={deleteDialogOpen}
+                onClose={handleDeleteCancel}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <DialogTitle>Delete Comment</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Are you sure you want to delete this comment? This action cannot be undone.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleDeleteCancel}>Cancel</Button>
+                    <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+                        Delete
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
@@ -194,18 +251,24 @@ interface TripCommentsSectionProps {
     comments: Comment[];
     commentReactions: Record<string, Record<string, number>>;
     userAvatar: string | undefined;
+    currentUserId: string | undefined;
+    postOwnerId: string;
     onAddComment: (text: string) => Promise<void>;
     onReact: (commentId: string, emoji: string) => Promise<void>;
     onReply: (commentId: string, replyText: string) => Promise<void>;
+    onDeleteComment: (commentId: string) => Promise<void>;
 }
 
 export default function TripCommentsSection({
     comments,
     commentReactions,
     userAvatar,
+    currentUserId,
+    postOwnerId,
     onAddComment,
     onReact,
     onReply,
+    onDeleteComment,
 }: TripCommentsSectionProps) {
     const [commentText, setCommentText] = useState('');
 
@@ -235,7 +298,10 @@ export default function TripCommentsSection({
                             reactions={commentReactions[comment.id]}
                             onReact={onReact}
                             onReply={onReply}
+                            onDelete={onDeleteComment}
                             userAvatar={userAvatar}
+                            currentUserId={currentUserId}
+                            postOwnerId={postOwnerId}
                         />
                     ))
                 ) : (

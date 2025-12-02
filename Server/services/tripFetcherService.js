@@ -173,31 +173,61 @@ function enrichTrip(trip, metadata, viewerId, processComments = true) {
                 });
             }
 
-            // Normalize comment user avatar
+            // Normalize comment user (include name & username) and avatar
             const commentUser = comment.user
                 ? {
-                    ...comment.user,
+                    _id: comment.user._id?.toString(),
+                    firstName: comment.user.firstName,
+                    lastName: comment.user.lastName,
+                    name: `${(comment.user.firstName || '').trim()} ${(comment.user.lastName || '').trim()}`.trim(),
+                    username:
+                        (comment.user.firstName || '')
+                            .toString()
+                            .replace(/\s+/g, '')
+                            .toLowerCase() || comment.user._id?.toString(),
                     avatar: normalizeAvatarUrl(comment.user.avatar),
                 }
-                : comment.user;
+                : null;
 
-            // Process replies
-            const replies = (comment.replies || []).map((reply) => ({
-                ...reply,
-                user: reply.user
+            // Process and normalize replies
+            const replies = (comment.replies || []).map((reply) => {
+                const replyUser = reply.user
                     ? {
-                        ...reply.user,
+                        _id: reply.user._id?.toString(),
+                        firstName: reply.user.firstName,
+                        lastName: reply.user.lastName,
+                        name: `${(reply.user.firstName || '').trim()} ${(reply.user.lastName || '').trim()}`.trim(),
+                        username:
+                            (reply.user.firstName || '')
+                                .toString()
+                                .replace(/\s+/g, '')
+                                .toLowerCase() || reply.user._id?.toString(),
                         avatar: normalizeAvatarUrl(reply.user.avatar),
                     }
-                    : reply.user,
-            }));
+                    : null;
 
-            return {
-                ...comment,
+                return {
+                    id: reply._id?.toString(),
+                    text: reply.comment ?? reply.text ?? '',
+                    timestamp: reply.createdAt ?? reply.timestamp ?? null,
+                    userId: reply.user?._id?.toString(),
+                    user: replyUser,
+                };
+            });
+
+            // Normalize comment shape for client
+            const commentId = comment._id?.toString();
+            const normalizedComment = {
+                id: commentId,
+                text: comment.comment ?? comment.text ?? '',
+                timestamp: comment.createdAt ?? comment.timestamp ?? null,
+                userId: comment.user?._id?.toString(),
                 user: commentUser,
                 reactionsAggregated,
                 replies,
             };
+
+            return normalizedComment;
         });
     }
 
@@ -264,7 +294,6 @@ export async function fetchTrips({
     if (cacheKey) {
         const cached = await redis.get(cacheKey);
         if (cached) {
-            console.log(`[TripFetcher] Cache hit: ${cacheKey}`);
             return JSON.parse(cached);
         }
     }
@@ -384,7 +413,6 @@ export async function fetchTrips({
     // Cache result
     if (cacheKey) {
         await redis.setEx(cacheKey, cacheTTL, JSON.stringify(response));
-        console.log(`[TripFetcher] Cached: ${cacheKey}`);
     }
 
     return response;

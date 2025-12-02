@@ -82,6 +82,18 @@ export const incrementView = async (tripId: string) => {
     }
 };
 
+export const deleteComment = async (tripId: string, commentId: string, userId: string) => {
+    try {
+        const res = await api.delete(`/trips/${tripId}/comment/${commentId}`, {
+            data: { userId }
+        });
+        return res.data;
+    } catch (error) {
+        console.error("Error deleting comment:", error);
+        throw error;
+    }
+};
+
 export default {
     toggleLike,
     toggleSave,
@@ -89,6 +101,7 @@ export default {
     addComment,
     addReaction,
     addReply,
-    incrementView
+    incrementView,
+    deleteComment
 };
 

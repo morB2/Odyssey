@@ -44,7 +44,6 @@ function App() {
 
   useEffect(() => {
     if (token) {
-      console.log('🔌 Initializing Socket.IO connection...');
       initializeSocket(token);
     }
   }, [token]);

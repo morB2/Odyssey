@@ -137,7 +137,6 @@ export default function PostsManagement() {
 
     const handleViewPost = async (tripData: any) => {
         setIsLoadingTrip(true);
-        console.log("Viewing post:", tripData);
         try {
             const formattedTrip: Trip = {
                 _id: tripData._id,

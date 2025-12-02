@@ -1,4 +1,4 @@
-import { fetchTrips, postComment, addReaction, postReply, incrementView } from "../controller/tripController.js";
+import { fetchTrips, postComment, addReaction, postReply, incrementView, deleteComment } from "../controller/tripController.js";
 import express from "express";
 const router = express.Router();
 
@@ -9,5 +9,6 @@ router.post("/:tripId/comment", postComment);
 router.post("/:tripId/comment/:commentId/react", addReaction);
 router.post("/:tripId/comment/:commentId/reply", postReply);
 router.post("/:tripId/views", incrementView);
+router.delete("/:tripId/comment/:commentId", deleteComment);
 
 export default router;
