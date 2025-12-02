@@ -24,10 +24,13 @@ const CommentItem = ({ comment, reactions, onReact, onReply, onDelete, userAvata
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
     // Resolve comment author's id (backend may provide either `userId` or `user._id`)
-    const commentAuthorId = comment.userId ?? (comment.user as any)?._id ?? comment.user.username;
+    const commentAuthorId = comment.userId;
+    console.log(commentAuthorId);
+    
     // Check if current user can delete this comment: either the comment author or the post owner
     const canDelete = Boolean(currentUserId) && (commentAuthorId === currentUserId || postOwnerId === currentUserId);
-
+    console.log(canDelete);
+    
     const handleReplySubmit = async () => {
         if (!replyText.trim()) return;
         await onReply(comment.id, replyText.trim());

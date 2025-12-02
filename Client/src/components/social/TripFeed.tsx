@@ -28,7 +28,9 @@ function adaptComments(apiComments: any[]): Comment[] {
 
     return {
       id: c._id,
+      userId: c.userId,
       user: {
+        
         name: `${firstName} ${lastName}`,
         username: ` @${firstName.toLowerCase()}${lastName.toLowerCase()}`,
         avatar: c.user?.avatar || "/default-avatar.png",
@@ -67,13 +69,7 @@ export function TripFeed() {
         else setLoadingMore(true);
 
         const data = await fetchTrips(id || '', page, 5); // Limit 5 per page
-
-        // Handle response structure (array or object with pagination)
-        // Based on service check, it returns array or { trips, pagination }
-        // Assuming array for now based on previous code, but let's be safe
         const fetchedTrips = Array.isArray(data) ? data : data.trips || [];
-        console.log("RAW COMMENTS:", fetchedTrips.map((t: Trip) => t.comments));
-
         const tripsData: Trip[] = fetchedTrips.map((trip: any) => ({
           ...trip,
           comments: adaptComments(trip.comments || []),
