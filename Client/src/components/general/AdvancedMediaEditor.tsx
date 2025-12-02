@@ -469,3 +469,156 @@ export function AdvancedMediaEditor({ isOpen, onClose, mediaUrl, onSave }: Advan
         </Dialog>
     );
 }
+
+/**import { useEffect, useRef } from 'react';
+
+interface AdvancedMediaEditorProps {
+    isOpen: boolean;
+    onClose: () => void;
+    mediaUrl: string;
+    onSave: (editedUrl: string) => void;
+}
+
+declare global {
+    interface Window {
+        cloudinary: any;
+    }
+}
+
+export function AdvancedMediaEditor({ isOpen, onClose, mediaUrl, onSave }: AdvancedMediaEditorProps) {
+    const editorRef = useRef<any>(null);
+    const cloudName = import.meta.env.VITE_CLOUD_NAME;
+
+    // Extract public ID from Cloudinary URL
+    const getPublicIdFromUrl = (url: string): string => {
+        if (!url.includes('cloudinary.com')) return '';
+
+        try {
+            const parts = url.split('/upload/');
+            if (parts.length < 2) return '';
+
+            let afterUpload = parts[1];
+
+            // Remove transformations (everything before the first folder or version)
+            const segments = afterUpload.split('/');
+            let pathStart = 0;
+
+            // Skip transformation segments (they contain underscores and specific patterns)
+            for (let i = 0; i < segments.length; i++) {
+                // Check if this looks like a transformation (contains _ or starts with v followed by numbers)
+                if (segments[i].includes('_') || segments[i].match(/^v\d+$/)) {
+                    pathStart = i + 1;
+                } else {
+                    // This is the start of the actual path
+                    break;
+                }
+            }
+
+            // Get the path from the start point
+            const pathSegments = segments.slice(pathStart);
+            const fullPath = pathSegments.join('/');
+
+            // Remove file extension
+            const publicId = fullPath.replace(/\.[^.]+$/, '');
+
+            return publicId;
+        } catch (error) {
+            console.error('Error extracting public ID:', error);
+            return '';
+        }
+    };
+
+    const publicId = getPublicIdFromUrl(mediaUrl);
+
+    useEffect(() => {
+        if (!isOpen || !publicId) return;
+
+        const scriptId = 'cloudinary-media-editor-script';
+        const existingScript = document.getElementById(scriptId);
+
+        const initializeEditor = () => {
+            if (window.cloudinary && window.cloudinary.mediaEditor) {
+                // Initialize the editor
+                const editor = window.cloudinary.mediaEditor();
+
+                editor.update({
+                    cloudName: cloudName,
+                    publicIds: [publicId],
+                    image: {
+                        steps: ["resizeAndCrop", "imageOverlay", "textOverlays", "export"],
+                        transformation: [
+                            { effect: "background_removal" },
+                            { effect: "enhance" },
+                            { effect: "upscale" },
+                            { effect: "restore" },
+                            { effect: "art:aurora" },
+                            { effect: "art:audrey:70" },
+                            { effect: "sepia" },
+                            { effect: "grayscale" },
+                            { effect: "brightness:30" },
+                            { effect: "contrast:50" },
+                            { effect: "blur:10" },
+                            { effect: "sharpen:50" }
+                        ]
+                    },
+                    video: {
+                        steps: ["trim"],
+                        transformation: [
+                            { effect: "sepia" },
+                            { effect: "brightness:30" }
+                        ]
+                    },
+                    // Callback when user saves the edited image
+                    onSave: (data: any) => {
+                        if (data && data.assets && data.assets.length > 0) {
+                            const editedAsset = data.assets[0];
+                            const editedUrl = editedAsset.secure_url || editedAsset.url;
+
+                            if (editedUrl) {
+                                onSave(editedUrl);
+                                onClose();
+                            }
+                        }
+                    },
+
+                    // Callback when user closes the editor
+                    onClose: () => {
+                        onClose();
+                    }
+                });
+
+                // Show the editor
+                editor.show();
+                editorRef.current = editor;
+            }
+        };
+
+        if (!existingScript) {
+            // Load the script
+            const script = document.createElement('script');
+            script.id = scriptId;
+            script.src = 'https://media-editor.cloudinary.com/all.js';
+            script.async = true;
+            script.onload = initializeEditor;
+            document.body.appendChild(script);
+        } else {
+            // Script already loaded
+            if (window.cloudinary && window.cloudinary.mediaEditor) {
+                initializeEditor();
+            } else {
+                existingScript.addEventListener('load', initializeEditor);
+            }
+        }
+
+        // Cleanup
+        return () => {
+            if (editorRef.current && editorRef.current.hide) {
+                editorRef.current.hide();
+            }
+        };
+    }, [isOpen, publicId, cloudName, onSave, onClose]);
+
+    // This component doesn't render anything - the editor is a modal overlay
+    return null;
+}
+ */
