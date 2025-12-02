@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useTripRoom, useSocketEvent } from './useSocket';
 import { type Comment } from '../components/social/types';
 
@@ -9,6 +9,7 @@ interface UseTripRealtimeProps {
     onNewReply: (commentId: string, reply: Comment) => void;
     onLikeUpdate: (likes: number) => void;
     onViewUpdate?: (views: number) => void;
+    onCommentDeleted?: (commentId: string) => void;
 }
 
 /**
@@ -22,6 +23,7 @@ export const useTripRealtime = ({
     onNewReply,
     onLikeUpdate,
     onViewUpdate,
+    onCommentDeleted,
 }: UseTripRealtimeProps) => {
     // Join the trip room
     useTripRoom(tripId);
@@ -63,7 +65,6 @@ export const useTripRealtime = ({
                 text: data.reply.comment,
                 timestamp: data.reply.createdAt,
             };
-            console.log("new reply\n", newReply);
             onNewReply(data.commentId, newReply);
         }
     }, [tripId, onNewReply]));
@@ -81,4 +82,11 @@ export const useTripRealtime = ({
             onViewUpdate(data.views);
         }
     }, [tripId, onViewUpdate]));
+
+    // Handle comment deletion
+    useSocketEvent('commentDeleted', useCallback((data: any) => {
+        if (data.tripId === tripId && data.commentId && onCommentDeleted) {
+            onCommentDeleted(data.commentId);
+        }
+    }, [tripId, onCommentDeleted]));
 };

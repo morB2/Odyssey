@@ -1,6 +1,7 @@
 // types.ts (shared file)
 export interface Comment {
   id: string;
+  userId?: string;  // ID of the user who created the comment
   user: {
     name: string;
     username: string;

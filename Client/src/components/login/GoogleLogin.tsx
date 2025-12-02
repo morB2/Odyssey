@@ -21,9 +21,10 @@ export const GLogin: FC<GLoginProps> = ({ onSuccess }) => {
         firstName: response.user.firstName,
         googleId: decoded.sub || response.user.googleId,
         avatar: response.user.avatar,
+        role: response.user.role,
       };
-      useUserStore.getState().setUser(userInfo, response.token); 
-      if (onSuccess) onSuccess();  
+      useUserStore.getState().setUser(userInfo, response.token);
+      if (onSuccess) onSuccess();
     } catch (err) {
       console.error("Google login failed:", err);
     }
@@ -34,7 +35,6 @@ export const GLogin: FC<GLoginProps> = ({ onSuccess }) => {
     <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
       <GoogleLogin
         onSuccess={handleSuccess}
-        onError={() => console.log("Login Failed")}
       />
     </div>
 

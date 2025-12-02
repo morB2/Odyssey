@@ -1,11 +1,14 @@
-import { getTripsForUser, postCommentForUser, addReactionToComment, postReplyForUser, incrementTripView } from "../services/crudTripService.js";
+import { getTripsForUser, postCommentForUser, addReactionToComment, postReplyForUser, incrementTripView, deleteComment as deleteCommentService } from "../services/crudTripService.js";
 import { getFeedForUser } from "../services/feedService.js";
 import { getIO } from "../config/socket.js";
 
 export async function fetchTrips(req, res) {
   try {
     const currentUserId = req.params.id || null;
-    const trips = await getFeedForUser(currentUserId);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+
+    const trips = await getFeedForUser(currentUserId, page, limit);
     res.status(200).json(trips);
   } catch (error) {
     console.error("Error fetching trips:", error);
@@ -79,7 +82,6 @@ export async function postReply(req, res) {
 
 export async function incrementView(req, res) {
   try {
-    console.log("Increment view called");
     const { tripId } = req.params;
     const newViewCount = await incrementTripView(tripId);
 
@@ -94,6 +96,28 @@ export async function incrementView(req, res) {
   } catch (err) {
     console.error("Error incrementing view:", err);
     res.status(400).json({ error: err.message });
+  }
+}
+
+export async function deleteComment(req, res) {
+  try {
+    const { tripId, commentId } = req.params;
+    const { userId } = req.body;
+
+    const deletedComment = await deleteCommentService(tripId, commentId, userId);
+
+    // Emit real-time event to all users in the trip room
+    const io = getIO();
+    io.to(`trip:${tripId}`).emit('commentDeleted', {
+      tripId,
+      commentId,
+    });
+
+    res.status(200).json({ message: "Comment deleted successfully", comment: deletedComment });
+  } catch (err) {
+    console.error("Error deleting comment:", err);
+    const status = err.status || 400;
+    res.status(status).json({ error: err.message });
   }
 }
 

@@ -23,7 +23,6 @@ export const initializeSocket = (server) => {
         const token = socket.handshake.auth.token;
 
         if (!token) {
-            console.log('no token')
             // Allow connection without auth for now, but track as anonymous
             socket.userId = null;
             return next();
@@ -80,14 +79,11 @@ export const initializeSocket = (server) => {
         });
 
         socket.on('disconnect', () => {
-            console.log(`Socket disconnected: ${socket.id}`);
-
             // Log remaining connected users after disconnect
             setTimeout(() => logConnectedUsers(), 100); // Small delay to ensure disconnect is processed
         });
     });
 
-    console.log('✅ Socket.IO server initialized');
     return io;
 };
 
@@ -108,7 +104,6 @@ export const getIO = () => {
  */
 export const logConnectedUsers = () => {
     if (!io) {
-        console.log('❌ Socket.IO not initialized');
         return;
     }
 

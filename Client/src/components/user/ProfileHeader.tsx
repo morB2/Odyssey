@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import type { UserProfile } from "./types";
 import { Button, Card, Avatar, Box, Typography, List, ListItem, ListItemAvatar, ListItemText, Link, Dialog, DialogTitle, DialogContent, Skeleton } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import { Edit, Users, UserPlus } from "lucide-react";
+import { Edit, Users, UserPlus, MessageCircle } from "lucide-react";
 import { getFollowers as svcGetFollowers, getFollowing as svcGetFollowing } from "../../services/profile.service";
 import { useTranslation } from 'react-i18next';
+import { useChat } from "../../context/ChatContext";
 type SimpleFollow = {
   _id?: string;
   id?: string;
@@ -31,6 +32,7 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, loading = fa
   const [followersCount, setFollowersCount] = useState<number>(user.followersCount || 0);
   const [followingCount, setFollowingCount] = useState<number>(user.followingCount || 0);
   const { t } = useTranslation();
+  const { openChat } = useChat();
 
   useEffect(() => {
     setOpenDialog(null);
@@ -127,18 +129,18 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, loading = fa
 
   if (loading) {
     return (
-  <Card sx={{ mb: 4, borderRadius: 4, boxShadow: '0 6px 28px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-    <Box sx={{ px: 3, py: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Skeleton variant="circular" width={88} height={88} sx={{ border: '2px solid #f97316' }} />
-        <Box sx={{ flex: 1 }}>
-          <Skeleton width="55%" height={30} sx={{ mb: 1 }} />
-          <Skeleton width="35%" height={18} />
+      <Card sx={{ mb: 4, borderRadius: 4, boxShadow: '0 6px 28px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+        <Box sx={{ px: 3, py: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Skeleton variant="circular" width={88} height={88} sx={{ border: '2px solid #f97316' }} />
+            <Box sx={{ flex: 1 }}>
+              <Skeleton width="55%" height={30} sx={{ mb: 1 }} />
+              <Skeleton width="35%" height={18} />
+            </Box>
+          </Box>
         </Box>
-      </Box>
-    </Box>
-  </Card>
-);
+      </Card>
+    );
 
   }
 
@@ -161,7 +163,7 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, loading = fa
             display: 'flex',
             flexDirection: { xs: 'column', md: 'row' },
             alignItems: { xs: 'center', md: 'flex-start' },
-            gap: 2,
+            gap: { xs: 2, md: 3 },
           }}
         >
           {/* Avatar */}
@@ -211,6 +213,33 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, loading = fa
                   }}
                 >
                   <Edit size={18} />
+                </Button>
+              )}
+
+              {!isOwner && (
+                <Button
+                  onClick={() => openChat({
+                    _id: user.id || (user as any)._id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    avatar: user.avatar
+                  })}
+                  variant="outlined"
+                  size="small"
+                  startIcon={<MessageCircle size={18} />}
+                  sx={{
+                    borderColor: '#f97316',
+                    color: '#f97316',
+                    '&:hover': {
+                      borderColor: '#ea580c',
+                      background: 'rgba(249,115,22,0.05)',
+                    },
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    px: 2
+                  }}
+                >
+                  {t('social.chat')}
                 </Button>
               )}
             </Box>

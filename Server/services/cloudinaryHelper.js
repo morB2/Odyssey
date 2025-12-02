@@ -65,7 +65,6 @@ export const deleteFromCloudinary = async (urlOrPublicId) => {
             resource_type: resourceType,
         });
 
-        console.log(`Deleted from Cloudinary: ${publicId}`, result);
         return result;
     } catch (error) {
         console.error("Cloudinary deletion error:", error);

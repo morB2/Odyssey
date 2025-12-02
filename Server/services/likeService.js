@@ -45,16 +45,12 @@ export const unlikeTrip = async (userId, tripId) => {
 
 export const getLikedTripsByUser = async (userId) => {
   const cacheKey = `liked:${userId}`;
-  console.log(`[Liked] Checking cache for user ${userId}`);
 
   // Check Redis cache first
   const cached = await redis.get(cacheKey);
   if (cached) {
-    console.log(`[Liked] Cache hit! Returning cached liked trips for user ${userId}`);
     return JSON.parse(cached);
   }
-
-  console.log(`[Liked] Cache miss. Loading liked trips from DB for user ${userId}`);
 
   // Find all likes by the user and populate nested trip -> user and comments.user
   const likes = await Like.find({ user: userId })
@@ -105,7 +101,6 @@ export const getLikedTripsByUser = async (userId) => {
   }));
 
   // Cache result for 60 seconds
-  console.log(`[Liked] Caching liked trips for user ${userId} for 60 seconds`);
   await redis.setEx(cacheKey, 60, JSON.stringify(tripsWithStatus));
 
   return tripsWithStatus;

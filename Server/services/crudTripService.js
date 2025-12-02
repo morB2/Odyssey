@@ -4,91 +4,23 @@ import Save from "../models/savesModel.js";
 import Follow from "../models/followModel.js";
 import User from "../models/userModel.js"; // Assuming User has name & avatar
 import { clearUserFeedCache } from "../utils/cacheUtils.js";
+import { fetchTrips } from "./tripFetcherService.js";
+
 /**
  * Get first 10 trips with user info, following, liked, and saved status
  * @param {String} currentUserId - the ID of the current logged-in user
  */
-
 export async function getTripsForUser(currentUserId) {
-  // 1. Get first 10 trips, including user info and populated comment users
-  const trips = await Trip.find({ visabilityStatus: "public" })
-    .sort({ createdAt: -1 })
-    .limit(10)
-    .populate({
-      path: "user",
-      select: "_id firstName lastName avatar",
-    })
-    .populate({
-      path: "comments.user", // 👈 populate comment users too
-      select: "_id firstName lastName avatar",
-    })
-    .populate({
-      path: "comments.replies.user", // 👈 populate reply users
-      select: "_id firstName lastName avatar",
-    })
-    .lean(); // convert to plain objects
-
-  // 2. Extract trip and user IDs
-  const tripIds = trips.map((t) => t._id);
-  const userIds = trips.map((t) => t.user._id);
-
-  // 3. Get likes and saves for current user
-  const likedTrips = await Like.find({
-    user: currentUserId,
-    trip: { $in: tripIds },
-  }).select("trip");
-
-  const savedTrips = await Save.find({
-    user: currentUserId,
-    trip: { $in: tripIds },
-  }).select("trip");
-
-  const likedTripIds = new Set(likedTrips.map((l) => l.trip.toString()));
-  const savedTripIds = new Set(savedTrips.map((s) => s.trip.toString()));
-
-  // 4. Get follow status for users
-  const follows = await Follow.find({
-    follower: currentUserId,
-    following: { $in: userIds },
-  }).select("following");
-
-  const followingUserIds = new Set(follows.map((f) => f.following.toString()));
-
-  // 5. Add flags + comments to trips with aggregated reactions
-  const tripsWithStatus = trips.map((trip) => {
-    // Process comments and aggregate reactions
-    const processedComments = (trip.comments || []).map((comment) => {
-      // Aggregate reactions by emoji
-      const reactionsByEmoji = {};
-      if (comment.reactions && comment.reactions.length > 0) {
-        comment.reactions.forEach((reaction) => {
-          if (!reactionsByEmoji[reaction.emoji]) {
-            reactionsByEmoji[reaction.emoji] = 0;
-          }
-          reactionsByEmoji[reaction.emoji]++;
-        });
-      }
-
-      return {
-        ...comment,
-        reactionsAggregated: reactionsByEmoji, // Add aggregated reactions
-        replies: comment.replies || [], // Preserve replies
-      };
-    });
-
-    return {
-      ...trip,
-      isLiked: likedTripIds.has(trip._id.toString()),
-      isSaved: savedTripIds.has(trip._id.toString()),
-      user: {
-        ...trip.user,
-        isFollowing: followingUserIds.has(trip.user._id.toString()),
-      },
-      comments: processedComments, // 👈 comments with aggregated reactions
-    };
+  const trips = await fetchTrips({
+    filter: { visabilityStatus: "public" },
+    viewerId: currentUserId,
+    limit: 10,
+    sort: { createdAt: -1 },
+    includeMetadata: false,
+    processComments: true,
   });
-  console.log(tripsWithStatus);
-  return tripsWithStatus;
+
+  return trips;
 }
 
 
@@ -126,14 +58,21 @@ export async function postCommentForUser(tripId, userId, commentText) {
   const newComment = updatedTrip.comments[updatedTrip.comments.length - 1];
 
   return {
-    _id: newComment._id,
-    comment: newComment.comment,
-    createdAt: newComment.createdAt,
+    id: newComment._id?.toString(),
+    text: newComment.comment,
+    timestamp: newComment.createdAt,
+    userId: newComment.user?._id?.toString(),
     user: newComment.user
       ? {
-        _id: newComment.user._id,
+        _id: newComment.user._id?.toString(),
         firstName: newComment.user.firstName,
         lastName: newComment.user.lastName,
+        name: `${(newComment.user.firstName || '').trim()} ${(newComment.user.lastName || '').trim()}`.trim(),
+        username:
+          (newComment.user.firstName || '')
+            .toString()
+            .replace(/\s+/g, '')
+            .toLowerCase() || newComment.user._id?.toString(),
         avatar: newComment.user.avatar,
       }
       : null,
@@ -220,14 +159,21 @@ export async function postReplyForUser(tripId, commentId, userId, replyText) {
   const newReply = comment.replies[comment.replies.length - 1];
 
   return {
-    _id: newReply._id,
-    comment: newReply.comment,
-    createdAt: newReply.createdAt,
+    id: newReply._id?.toString(),
+    text: newReply.comment,
+    timestamp: newReply.createdAt,
+    userId: newReply.user?._id?.toString(),
     user: newReply.user
       ? {
-        _id: newReply.user._id,
+        _id: newReply.user._id?.toString(),
         firstName: newReply.user.firstName,
         lastName: newReply.user.lastName,
+        name: `${(newReply.user.firstName || '').trim()} ${(newReply.user.lastName || '').trim()}`.trim(),
+        username:
+          (newReply.user.firstName || '')
+            .toString()
+            .replace(/\s+/g, '')
+            .toLowerCase() || newReply.user._id?.toString(),
         avatar: newReply.user.avatar,
       }
       : null,
@@ -249,4 +195,77 @@ export async function incrementTripView(tripId) {
   if (!updatedTrip) throw new Error("Trip not found.");
 
   return updatedTrip.views;
+}
+
+/**
+ * Deletes a comment from a trip.
+ * Only the comment creator or the trip owner can delete the comment.
+ * @param {string} tripId - ID of the trip
+ * @param {string} commentId - ID of the comment to delete
+ * @param {string} userId - ID of the user attempting to delete
+ * @returns {Promise<Object>} - The deleted comment data
+ */
+export async function deleteComment(tripId, commentId, userId) {
+  // First, get the trip and the specific comment to check authorization
+  const trip = await Trip.findById(tripId)
+    .populate({
+      path: "user",
+      select: "_id"
+    })
+    .populate({
+      path: "comments.user",
+      select: "_id firstName lastName avatar"
+    })
+    .lean();
+
+  if (!trip) throw new Error("Trip not found.");
+
+  // Find the comment to delete
+  const comment = trip.comments.find(c => c._id.toString() === commentId);
+  if (!comment) throw new Error("Comment not found.");
+
+  // Check authorization: user must be either the comment creator OR the trip owner
+  const isCommentCreator = comment.user._id.toString() === userId;
+  const isTripOwner = trip.user._id.toString() === userId;
+
+  if (!isCommentCreator && !isTripOwner) {
+    throw Object.assign(new Error("Forbidden: You can only delete your own comments or comments on your own posts."), { status: 403 });
+  }
+
+  // Delete the comment using $pull
+  const updatedTrip = await Trip.findByIdAndUpdate(
+    tripId,
+    {
+      $pull: {
+        comments: { _id: commentId }
+      }
+    },
+    { new: true }
+  ).lean();
+
+  if (!updatedTrip) throw new Error("Failed to delete comment.");
+
+  // Clear cache
+  await clearUserFeedCache(userId);
+
+  return {
+    id: comment._id?.toString(),
+    text: comment.comment,
+    timestamp: comment.createdAt,
+    userId: comment.user?._id?.toString(),
+    user: comment.user
+      ? {
+        _id: comment.user._id?.toString(),
+        firstName: comment.user.firstName,
+        lastName: comment.user.lastName,
+        name: `${(comment.user.firstName || '').trim()} ${(comment.user.lastName || '').trim()}`.trim(),
+        username:
+          (comment.user.firstName || '')
+            .toString()
+            .replace(/\s+/g, '')
+            .toLowerCase() || comment.user._id?.toString(),
+        avatar: comment.user.avatar,
+      }
+      : null,
+  };
 }

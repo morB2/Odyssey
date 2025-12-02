@@ -6,7 +6,6 @@ const router = express.Router();
 router.post("/forgotPassword", async (req, res) => {
   try {
     const { email, lang } = req.body;
-      console.log("Forgot password for email:", email, "in language:", lang);
     if (!email) return res.status(400).json({ message: "Email is required" });
 
     const result = await forgotPassword(email, lang);

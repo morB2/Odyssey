@@ -3,17 +3,7 @@ import Trip from "../models/tripModel.js";
 import Like from "../models/likesModel.js";
 import Save from "../models/savesModel.js";
 import Follow from "../models/followModel.js";
-
-const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
-
-function normalizeAvatarUrl(avatar) {
-    if (!avatar) return avatar;
-    if (typeof avatar !== "string") return avatar;
-    if (avatar.startsWith("http://") || avatar.startsWith("https://"))
-        return avatar;
-    if (avatar.startsWith("/")) return `${SERVER_URL}${avatar}`;
-    return avatar;
-}
+import { fetchTrips, normalizeAvatarUrl } from "./tripFetcherService.js";
 
 /**
  * Search for users and trips based on a query string
@@ -43,7 +33,6 @@ export async function search(query, viewerId = null, userLimit = 5, tripLimit = 
         .limit(userLimit)
         .lean();
 
-    console.log('Found users:', users.length);
 
     // Normalize avatars
     users.forEach((user) => {
@@ -65,112 +54,25 @@ export async function search(query, viewerId = null, userLimit = 5, tripLimit = 
         });
     }
 
-    // Search trips by title, description, or activities
-    const trips = await Trip.find({
-        visabilityStatus: "public", // Only public trips
+    // Search trips using unified fetcher
+    const tripFilter = {
+        visabilityStatus: "public",
         $or: [
             { title: { $regex: searchPattern, $options: 'i' } },
             { description: { $regex: searchPattern, $options: 'i' } },
             { activities: { $regex: searchPattern, $options: 'i' } },
         ],
-    })
-        .sort({ createdAt: -1 })
-        .limit(tripLimit)
-        .populate({ path: "user", select: "_id firstName lastName avatar" })
-        .populate({
-            path: "comments.user",
-            select: "_id firstName lastName avatar",
-        })
-        .populate({
-            path: "comments.replies.user",
-            select: "_id firstName lastName avatar",
-        })
-        .lean();
+    };
 
-    console.log('Found trips:', trips.length);
-
-    // If viewerId is provided, add social flags (isLiked, isSaved, isFollowing)
-    if (viewerId && trips.length > 0) {
-        const tripIds = trips.map((t) => t._id);
-
-        // Get likes and saves for this viewer
-        const likes = await Like.find({
-            user: viewerId,
-            trip: { $in: tripIds },
-        }).select("trip");
-
-        const saves = await Save.find({
-            user: viewerId,
-            trip: { $in: tripIds },
-        }).select("trip");
-
-        const likedTripIds = new Set(likes.map((l) => String(l.trip)));
-        const savedTripIds = new Set(saves.map((s) => String(s.trip)));
-
-        // Get follows for trip owners
-        const ownerIds = trips.map((t) => t.user?._id).filter(Boolean);
-        const follows = await Follow.find({
-            follower: viewerId,
-            following: { $in: ownerIds },
-        }).select("following");
-
-        const followingUserIds = new Set(follows.map((f) => String(f.following)));
-
-        // Add flags to trips
-        trips.forEach((trip) => {
-            trip.isLiked = likedTripIds.has(String(trip._id));
-            trip.isSaved = savedTripIds.has(String(trip._id));
-            trip.likes = trip.likes || 0;
-
-            if (trip.user) {
-                trip.user.avatar = normalizeAvatarUrl(trip.user.avatar);
-                trip.user.isFollowing = followingUserIds.has(String(trip.user._id));
-            }
-
-            // Normalize comment avatars
-            if (Array.isArray(trip.comments)) {
-                trip.comments.forEach((comment) => {
-                    if (comment.user?.avatar) {
-                        comment.user.avatar = normalizeAvatarUrl(comment.user.avatar);
-                    }
-                    if (Array.isArray(comment.replies)) {
-                        comment.replies.forEach((reply) => {
-                            if (reply.user?.avatar) {
-                                reply.user.avatar = normalizeAvatarUrl(reply.user.avatar);
-                            }
-                        });
-                    }
-                });
-            }
-        });
-    } else {
-        // No viewer, just normalize avatars
-        trips.forEach((trip) => {
-            trip.isLiked = false;
-            trip.isSaved = false;
-            trip.likes = trip.likes || 0;
-
-            if (trip.user?.avatar) {
-                trip.user.avatar = normalizeAvatarUrl(trip.user.avatar);
-                trip.user.isFollowing = false;
-            }
-
-            if (Array.isArray(trip.comments)) {
-                trip.comments.forEach((comment) => {
-                    if (comment.user?.avatar) {
-                        comment.user.avatar = normalizeAvatarUrl(comment.user.avatar);
-                    }
-                    if (Array.isArray(comment.replies)) {
-                        comment.replies.forEach((reply) => {
-                            if (reply.user?.avatar) {
-                                reply.user.avatar = normalizeAvatarUrl(reply.user.avatar);
-                            }
-                        });
-                    }
-                });
-            }
-        });
-    }
+    const trips = await fetchTrips({
+        filter: tripFilter,
+        viewerId,
+        limit: tripLimit,
+        sort: { createdAt: -1 },
+        includeMetadata: false,
+        processComments: true,
+    });
 
     return { users, trips };
 }
+

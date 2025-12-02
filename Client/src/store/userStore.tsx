@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { UserRole } from '../models/user.model';
 
 interface UserMinimal {
   _id?: string;
   firstName?: string;
   googleId?: string;
   avatar?: string;
+  role?: UserRole;
 }
 
 interface UserStore {
