@@ -24,6 +24,7 @@ import { useUserStore } from '../../store/userStore';
 import { toast } from 'react-toastify';
 import { CloudinaryUploadWidget } from '../general/CloudinaryUploadWidget';
 import { useTranslation } from 'react-i18next';
+import Navbar from '../general/Navbar';
 
 interface RouteStop {
     name: string;
@@ -115,6 +116,7 @@ export const CreateTrip: React.FC = () => {
 
     return (
         <Container maxWidth="md" sx={{ py: 4 }}>
+            <Navbar />
             <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
                 <CardHeader
                     title={t("createTrip.title")}

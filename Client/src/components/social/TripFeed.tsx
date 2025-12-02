@@ -9,6 +9,7 @@ import { useUserStore } from '../../store/userStore';
 import { GuestWelcomeCard } from './GuestWelcomeCard';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
+import PassportLoading from '../general/PassportLoading';
 
 function adaptComments(apiComments: any[]): Comment[] {
   return apiComments.map((c) => {
@@ -157,13 +158,13 @@ export function TripFeed() {
 
             {loadingMore && (
               <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-                <TripFeedSkeleton />
+               <PassportLoading/>
               </Box>
             )}
 
             {!hasMore && trips.length > 0 && (
               <Box sx={{ textAlign: 'center', p: 2, color: 'white' }}>
-                {t('feed.noMoreTrips')}
+                {t('noMoreTrips')}
               </Box>
             )}
           </>

@@ -196,7 +196,7 @@ export default function PostsManagement() {
                     fullWidth
                     variant="outlined"
                     size="small"
-                    placeholder={t('PostsManagement.searchPlaceholder') || 'Search by title, author, or category...'}
+                    placeholder={t('PostsManagement.search_placeholder') || 'Search by title, author, or category...'}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     sx={{

@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Box, Button, TextField, Dialog, DialogContent, DialogTitle, Tabs, Tab, Typography, Divider, Link } from '@mui/material';
 import { loginUser, registerUser } from "../../services/login.service";
-import { useNavigate, useSearchParams, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useUserStore } from '../../store/userStore';
@@ -12,6 +12,7 @@ import type { User } from '../../models/user.model';
 export const Login = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [open, setOpen] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
@@ -30,6 +31,8 @@ export const Login = () => {
     birthday: ''
   });
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  const isModal = location.state?.backgroundLocation;
 
   useEffect(() => {
     const tabParam = searchParams.get("tab");
@@ -101,11 +104,12 @@ export const Login = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(to bottom right, #f9fafb, #f3f4f6)',
+        background: isModal ? 'transparent' : 'linear-gradient(to bottom right, #f9fafb, #f3f4f6)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        p: 2
+        p: 2,
+        pointerEvents: isModal ? 'none' : 'auto'
       }}
     >
       <Dialog

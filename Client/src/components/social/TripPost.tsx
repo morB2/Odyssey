@@ -61,6 +61,20 @@ export default function TripPost({ trip }: TripPostProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogImageIndex, setDialogImageIndex] = useState(0);
+    const [isHoveringCarousel, setIsHoveringCarousel] = useState(false);
+
+    // Auto-play carousel
+    useEffect(() => {
+        if (!trip.images || trip.images.length <= 1 || isHoveringCarousel) return;
+
+        const interval = setInterval(() => {
+            setCurrentImageIndex((prevIndex) =>
+                prevIndex === (trip.images?.length || 1) - 1 ? 0 : prevIndex + 1
+            );
+        }, 5000); // 5 seconds
+
+        return () => clearInterval(interval);
+    }, [trip.images, isHoveringCarousel]);
 
     // Update local state when trip prop changes
     useEffect(() => {
@@ -282,6 +296,8 @@ export default function TripPost({ trip }: TripPostProps) {
                     currentImageIndex={currentImageIndex}
                     setCurrentImageIndex={setCurrentImageIndex}
                     title={trip.title}
+                    onMouseEnter={() => setIsHoveringCarousel(true)}
+                    onMouseLeave={() => setIsHoveringCarousel(false)}
                 />
 
                 {/* Actions */}
