@@ -15,11 +15,22 @@ import {
 import { Close, RestartAlt } from '@mui/icons-material';
 import {
     applyImageEffects,
+    applyImageFilter,
     applyVideoTransformations,
     getOriginalCloudinaryUrl,
     isVideo,
 } from '../../utils/mediaUtils';
-import type { ImageEffects, VideoTransformations } from '../../utils/mediaUtils';
+import type { ImageEffects, VideoTransformations, ImageFilter } from '../../utils/mediaUtils';
+import {
+    Image as ImageIcon,
+    Film,
+    Contrast,
+    Palette,
+    Sparkles,
+    Droplets,
+    Droplet,
+    Brush
+} from "lucide-react";
 
 interface MediaEditorModalProps {
     isOpen: boolean;
@@ -80,6 +91,21 @@ export function MediaEditorModal({ isOpen, onClose, mediaUrl, onSave }: MediaEdi
     const debouncedVideoTransforms = useDebounce(videoTransforms, 300);
     const debouncedWatermarkText = useDebounce(watermarkText, 500);
 
+    // Quick filter presets with Lucide icons
+    const quickFilters: { name: ImageFilter; label: string; icon: any; effects: ImageEffects }[] = [
+        { name: 'none', label: 'Original', icon: ImageIcon, effects: { brightness: 0, contrast: 0, saturation: 0, hue: 0, blur: 0, sharpen: 0, pixelate: 0, vignette: 0, vibrance: 0 } },
+        { name: 'vintage', label: 'Vintage', icon: Film, effects: { brightness: 10, contrast: -10, saturation: -20, hue: 0, blur: 0, sharpen: 0, pixelate: 0, vignette: 20, vibrance: -10 } },
+        { name: 'bw', label: 'B&W', icon: Contrast, effects: { brightness: 0, contrast: 20, saturation: -100, hue: 0, blur: 0, sharpen: 0, pixelate: 0, vignette: 10, vibrance: 0 } },
+        { name: 'sepia', label: 'Sepia', icon: Palette, effects: { brightness: 10, contrast: 5, saturation: -30, hue: 20, blur: 0, sharpen: 0, pixelate: 0, vignette: 15, vibrance: 0 } },
+        { name: 'sharpen', label: 'Sharpen', icon: Sparkles, effects: { brightness: 0, contrast: 10, saturation: 0, hue: 0, blur: 0, sharpen: 50, pixelate: 0, vignette: 0, vibrance: 0 } },
+        { name: 'blur', label: 'Blur', icon: Droplets, effects: { brightness: 0, contrast: 0, saturation: 0, hue: 0, blur: 200, sharpen: 0, pixelate: 0, vignette: 0, vibrance: 0 } },
+        { name: 'vibrant', label: 'Vibrant', icon: Droplet, effects: { brightness: 0, contrast: 10, saturation: 20, hue: 0, blur: 0, sharpen: 0, pixelate: 0, vignette: 0, vibrance: 30 } },
+        { name: 'artistic', label: 'Artistic', icon: Brush, effects: { brightness: 5, contrast: 10, saturation: 15, hue: 20, blur: 30, sharpen: 20, pixelate: 0, vignette: 10, vibrance: 10 } }
+
+    ];
+
+    const [selectedFilter, setSelectedFilter] = useState<ImageFilter>('none');
+
     // Update preview when debounced effects change
     useEffect(() => {
         setIsLoading(true);
@@ -91,15 +117,19 @@ export function MediaEditorModal({ isOpen, onClose, mediaUrl, onSave }: MediaEdi
             });
             setPreviewUrl(transformed);
         } else {
-            const filtered = applyImageEffects(originalUrl, debouncedImageEffects);
-            setPreviewUrl(filtered);
+            // Only apply manual effects if no quick filter is active
+            if (selectedFilter === 'none') {
+                const filtered = applyImageEffects(originalUrl, debouncedImageEffects);
+                setPreviewUrl(filtered);
+            }
         }
 
         // Small delay to show loading state
         setTimeout(() => setIsLoading(false), 100);
-    }, [debouncedImageEffects, debouncedVideoTransforms, debouncedWatermarkText, originalUrl, isVideoMedia]);
+    }, [debouncedImageEffects, debouncedVideoTransforms, debouncedWatermarkText, originalUrl, isVideoMedia, selectedFilter]);
 
     const handleReset = () => {
+        setSelectedFilter('none');
         setImageEffects({
             brightness: 0,
             contrast: 0,
@@ -119,6 +149,7 @@ export function MediaEditorModal({ isOpen, onClose, mediaUrl, onSave }: MediaEdi
             watermark: undefined,
         });
         setWatermarkText('');
+        setPreviewUrl(originalUrl);
     };
 
     const handleSave = () => {
@@ -129,6 +160,17 @@ export function MediaEditorModal({ isOpen, onClose, mediaUrl, onSave }: MediaEdi
     const handleImageEffectChange = useCallback((key: keyof ImageEffects, value: number | boolean) => {
         setImageEffects((prev) => ({ ...prev, [key]: value }));
     }, []);
+
+    const applyQuickFilter = (filter: ImageFilter, effects: ImageEffects) => {
+        setSelectedFilter(filter);
+        if (filter === 'none') {
+            setPreviewUrl(originalUrl);
+        } else {
+            const filteredUrl = applyImageFilter(originalUrl, filter);
+            setPreviewUrl(filteredUrl);
+        }
+        setImageEffects(effects);
+    };
 
     return (
         <Dialog open={isOpen} onClose={onClose} maxWidth="lg" fullWidth>
@@ -150,53 +192,100 @@ export function MediaEditorModal({ isOpen, onClose, mediaUrl, onSave }: MediaEdi
 
             <DialogContent sx={{ p: 3 }}>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 400px' }, gap: 3 }}>
-                    {/* Left: Preview */}
-                    <Box
-                        sx={{
-                            width: '100%',
-                            aspectRatio: '16/9',
-                            backgroundColor: '#000',
-                            borderRadius: 2,
-                            overflow: 'hidden',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                            position: 'relative',
-                        }}
-                    >
-                        {isVideoMedia ? (
-                            <video
-                                key={previewUrl}
-                                src={previewUrl}
-                                controls
-                                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                            />
-                        ) : (
-                            <img
-                                key={previewUrl}
-                                src={previewUrl}
-                                alt="Preview"
-                                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                            />
-                        )}
-                        {isLoading && (
-                            <Box
-                                sx={{
-                                    position: 'absolute',
-                                    top: 8,
-                                    right: 8,
-                                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                                    borderRadius: '50%',
-                                    p: 1,
-                                }}
-                            >
-                                <CircularProgress size={20} sx={{ color: '#fff' }} />
+                    {/* Left Column: Preview + Quick Filters */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        {/* Preview */}
+                        <Box
+                            sx={{
+                                width: '100%',
+                                aspectRatio: '16/9',
+                                backgroundColor: '#000',
+                                borderRadius: 2,
+                                overflow: 'hidden',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                                position: 'relative',
+                            }}
+                        >
+                            {isVideoMedia ? (
+                                <video
+                                    key={previewUrl}
+                                    src={previewUrl}
+                                    controls
+                                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                />
+                            ) : (
+                                <img
+                                    key={previewUrl}
+                                    src={previewUrl}
+                                    alt="Preview"
+                                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                />
+                            )}
+                            {isLoading && (
+                                <Box
+                                    sx={{
+                                        position: 'absolute',
+                                        top: 8,
+                                        right: 8,
+                                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                                        borderRadius: '50%',
+                                        p: 1,
+                                    }}
+                                >
+                                    <CircularProgress size={20} sx={{ color: '#fff' }} />
+                                </Box>
+                            )}
+                        </Box>
+
+                        {/* Quick Filters - Below Image */}
+                        {!isVideoMedia && (
+                            <Box>
+                                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#171717', fontSize: '0.875rem' }}>
+                                    Quick Filters
+                                </Typography>
+                                <Box
+                                    sx={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(4, 1fr)',
+                                        gap: 0.75,
+                                    }}
+                                >
+                                    {quickFilters.map((preset) => {
+                                        const Icon = preset.icon;
+                                        return (
+                                            <Button
+                                                key={preset.name}
+                                                onClick={() => applyQuickFilter(preset.name, preset.effects)}
+                                                variant={selectedFilter === preset.name ? 'contained' : 'outlined'}
+                                                sx={{
+                                                    flexDirection: 'column',
+                                                    p: 0.75,
+                                                    minHeight: '50px',
+                                                    borderColor: selectedFilter === preset.name ? '#f97316' : '#d4d4d4',
+                                                    backgroundColor: selectedFilter === preset.name ? '#f97316' : 'transparent',
+                                                    color: selectedFilter === preset.name ? '#ffffff' : '#171717',
+                                                    '&:hover': {
+                                                        borderColor: '#f97316',
+                                                        backgroundColor: selectedFilter === preset.name ? '#ea580c' : '#fff7ed',
+                                                    },
+                                                }}
+                                            >
+                                                <Icon size={18} />
+                                                <Typography sx={{ fontSize: '0.65rem', textTransform: 'none', lineHeight: 1.2, mt: 0.3 }}>
+                                                    {preset.label}
+                                                </Typography>
+                                            </Button>
+                                        );
+                                    })}
+                                </Box>
                             </Box>
                         )}
                     </Box>
 
-                    {/* Right: Controls */}
+                    {/* Right Column: Advanced Controls */}
                     <Box
                         sx={{
                             display: 'flex',
@@ -224,7 +313,7 @@ export function MediaEditorModal({ isOpen, onClose, mediaUrl, onSave }: MediaEdi
                         {!isVideoMedia ? (
                             <>
                                 <Typography variant="subtitle2" fontWeight={600} color="#171717">
-                                    Basic Adjustments
+                                    Advanced Adjustments
                                 </Typography>
 
                                 <Box>
