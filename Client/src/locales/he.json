@@ -542,7 +542,10 @@
         "failedToReact": "לא הצלחנו להוסיף ריאקציה.",
         "followingUser": "בעקבות",
         "unfollowedUser": "הביטול מעקב בוצע",
-        "chat": "צ׳אט"
+        "chat": "צ׳אט",
+        "linkCopied": "הקישור הועתק ללוח.",
+        "copyLink": "העתק קישור",
+        "postNotFound": "הפוסט לא נמצא."
     },
     "UsersManagement": {
         "searchPlaceholder": "חיפוש לפי שם או אימייל...",

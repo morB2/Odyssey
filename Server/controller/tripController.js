@@ -1,4 +1,5 @@
-import { getTripsForUser, postCommentForUser, addReactionToComment, postReplyForUser, incrementTripView, deleteComment as deleteCommentService } from "../services/crudTripService.js";
+import { getTripsForUser, postCommentForUser, addReactionToComment, postReplyForUser, incrementTripView, deleteComment as deleteCommentService} from "../services/crudTripService.js";
+import {fetchTrips as fetchTripsService } from "../services/tripFetcherService.js";
 import { getFeedForUser } from "../services/feedService.js";
 import { getIO } from "../config/socket.js";
 
@@ -12,6 +13,30 @@ export async function fetchTrips(req, res) {
     res.status(200).json(trips);
   } catch (error) {
     console.error("Error fetching trips:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function getTripById(req, res) {
+  try {
+    const { id } = req.params;
+    const currentUserId = req.query.userId || null; // Optional: for isLiked/isSaved status
+
+    const trips = await fetchTripsService({
+      filter: { _id: id },
+      viewerId: currentUserId,
+      limit: 1,
+      includeMetadata: false,
+      processComments: true
+    });
+
+    if (!trips || trips.length === 0) {
+      return res.status(404).json({ message: "Trip not found" });
+    }
+
+    res.status(200).json(trips[0]);
+  } catch (error) {
+    console.error("Error fetching trip by ID:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 }

@@ -94,6 +94,18 @@ export const deleteComment = async (tripId: string, commentId: string, userId: s
     }
 };
 
+export const getTripById = async (tripId: string, userId?: string) => {
+    try {
+        const res = await api.get(`/trips/single/${tripId}`, {
+            params: { userId }
+        });
+        return res.data;
+    } catch (error) {
+        console.error("Error fetching trip:", error);
+        throw error;
+    }
+};
+
 export default {
     toggleLike,
     toggleSave,
@@ -102,6 +114,7 @@ export default {
     addReaction,
     addReply,
     incrementView,
-    deleteComment
+    deleteComment,
+    getTripById
 };
 

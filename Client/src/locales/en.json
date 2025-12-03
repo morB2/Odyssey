@@ -256,7 +256,10 @@
     "failedToReact": "Failed to add reaction.",
     "followingUser": "Following",
     "unfollowedUser": "Unfollowed",
-    "chat": "Chat"
+    "chat": "Chat",
+    "linkCopied": "Link copied to clipboard!",
+    "copyLink": "Copy Link",
+    "postNotFound": "Post not found."
   },
   "general": {
     "saving": "Saving...",

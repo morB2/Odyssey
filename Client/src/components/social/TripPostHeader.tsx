@@ -1,4 +1,5 @@
 import { Avatar, Button, CardContent, Box, Typography, IconButton, Menu, MenuItem } from '@mui/material';
+import { toast } from 'react-toastify';
 
 import { Link } from 'react-router-dom';
 import { MoreVert as MoreVertIcon } from '@mui/icons-material';
@@ -31,6 +32,15 @@ export default function TripPostHeader({ user, currentUserId, isFollowing, onFol
     const handleMenuClose = (event?: React.MouseEvent) => {
         event?.stopPropagation();
         setAnchorEl(null);
+    };
+
+    const handleCopyLink = (event: React.MouseEvent) => {
+        event.stopPropagation();
+        handleMenuClose();
+        const link = `${window.location.origin}/post/${tripId}`;
+        navigator.clipboard.writeText(link).then(() => {
+            toast.success(t('social.linkCopied'));
+        });
     };
 
     const handleReportClick = (event: React.MouseEvent) => {
@@ -96,6 +106,7 @@ export default function TripPostHeader({ user, currentUserId, isFollowing, onFol
                             <MenuItem onClick={handleChatClick}>{t('social.chat')}</MenuItem>
                         )}
                         <MenuItem onClick={handleReportClick}>{t('report.title')}</MenuItem>
+                        <MenuItem onClick={handleCopyLink}>{t('social.copyLink')}</MenuItem>
                     </Menu>
                 </Box>
             </Box>
