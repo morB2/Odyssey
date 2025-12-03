@@ -60,97 +60,73 @@ export function isImage(url: string): boolean {
  * @param options - Optimization options
  * @returns Optimized URL with transformations
  */
-export function optimizeCloudinaryUrl(
-    url: string,
-    options: {
-        quality?: 'auto' | 'auto:good' | 'auto:best' | 'auto:eco' | 'auto:low' | number;
-        width?: number;
-        height?: number;
-        crop?: 'fill' | 'fit' | 'scale' | 'crop' | 'thumb';
-        format?: 'auto' | 'webp' | 'avif' | 'jpg' | 'png';
-    } = {}
-): string {
-    // Return original URL if not a Cloudinary URL
-    if (!url || !url.includes('cloudinary.com')) {
-        return url;
-    }
+// export function optimizeCloudinaryUrl(
+//     url: string,
+//     options: {
+//         quality?: 'auto' | 'auto:good' | 'auto:best' | 'auto:eco' | 'auto:low' | number;
+//         width?: number;
+//         height?: number;
+//         crop?: 'fill' | 'fit' | 'scale' | 'crop' | 'thumb';
+//         format?: 'auto' | 'webp' | 'avif' | 'jpg' | 'png';
+//     } = {}
+// ): string {
+//     // Return original URL if not a Cloudinary URL
+//     if (!url || !url.includes('cloudinary.com')) {
+//         return url;
+//     }
 
-    // Default options
-    const {
-        quality = 'auto:good',
-        width,
-        height,
-        crop = 'fill',
-        format = 'auto',
-    } = options;
+//     // Default options
+//     const {
+//         quality = 'auto:good',
+//         width,
+//         height,
+//         crop = 'fill',
+//         format = 'auto',
+//     } = options;
 
-    // Build transformation string
-    const transformations: string[] = [];
+//     // Build transformation string
+//     const transformations: string[] = [];
 
-    if (quality) {
-        transformations.push(`q_${quality}`);
-    }
+//     if (quality) {
+//         transformations.push(`q_${quality}`);
+//     }
 
-    if (format) {
-        transformations.push(`f_${format}`);
-    }
+//     if (format) {
+//         transformations.push(`f_${format}`);
+//     }
 
-    if (width) {
-        transformations.push(`w_${width}`);
-    }
+//     if (width) {
+//         transformations.push(`w_${width}`);
+//     }
 
-    if (height) {
-        transformations.push(`h_${height}`);
-    }
+//     if (height) {
+//         transformations.push(`h_${height}`);
+//     }
 
-    if ((width || height) && crop) {
-        transformations.push(`c_${crop}`);
-    }
+//     if ((width || height) && crop) {
+//         transformations.push(`c_${crop}`);
+//     }
 
-    // Check if URL already has transformations
-    const uploadIndex = url.indexOf('/upload/');
-    if (uploadIndex === -1) {
-        return url; // Not a valid Cloudinary upload URL
-    }
+//     // Check if URL already has transformations
+//     const uploadIndex = url.indexOf('/upload/');
+//     if (uploadIndex === -1) {
+//         return url; // Not a valid Cloudinary upload URL
+//     }
 
-    // Insert transformations after /upload/
-    const transformationString = transformations.join(',');
-    const beforeUpload = url.substring(0, uploadIndex + 8); // includes '/upload/'
-    const afterUpload = url.substring(uploadIndex + 8);
+//     // Insert transformations after /upload/
+//     const transformationString = transformations.join(',');
+//     const beforeUpload = url.substring(0, uploadIndex + 8); // includes '/upload/'
+//     const afterUpload = url.substring(uploadIndex + 8);
 
-    // Check if there are already transformations
-    if (afterUpload.match(/^[a-z]_/)) {
-        // Already has transformations, add ours
-        return `${beforeUpload}${transformationString},${afterUpload}`;
-    } else {
-        // No transformations yet
-        return `${beforeUpload}${transformationString}/${afterUpload}`;
-    }
-}
-
-/**
- * Optimizes a Cloudinary URL for thumbnail display
- */
-export function getOptimizedThumbnail(url: string, size: number = 400): string {
-    return optimizeCloudinaryUrl(url, {
-        width: size,
-        height: size,
-        crop: 'fill',
-        quality: 'auto:good',
-        format: 'auto',
-    });
-}
-
-/**
- * Optimizes a Cloudinary URL for full-size display
- */
-export function getOptimizedFullSize(url: string, maxWidth: number = 1920): string {
-    return optimizeCloudinaryUrl(url, {
-        width: maxWidth,
-        quality: 'auto:good',
-        format: 'auto',
-    });
-}
+//     // Check if there are already transformations
+//     if (afterUpload.match(/^[a-z]_/)) {
+//         // Already has transformations, add ours
+//         return `${beforeUpload}${transformationString},${afterUpload}`;
+//     } else {
+//         // No transformations yet
+//         return `${beforeUpload}${transformationString}/${afterUpload}`;
+//     }
+// }
 
 // ============================================
 // FILTERS & EFFECTS

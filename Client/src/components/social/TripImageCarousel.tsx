@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import { type Dispatch, type SetStateAction, useEffect, useRef } from 'react';
-import { isVideo, getOptimizedFullSize } from '../../utils/mediaUtils';
+import { isVideo } from '../../utils/mediaUtils';
 
 interface TripImageCarouselProps {
     images: string[] | undefined; // Keep for backward compatibility
@@ -74,7 +74,7 @@ export default function TripImageCarousel({
                         {isVideo(mediaUrl) ? (
                             <video
                                 ref={(el) => { videoRefs.current[index] = el; }}
-                                src={getOptimizedFullSize(mediaUrl, 1200)}
+                                src={mediaUrl}
                                 controls
                                 style={{
                                     width: '100%',
@@ -86,7 +86,7 @@ export default function TripImageCarousel({
                             />
                         ) : (
                             <img
-                                src={getOptimizedFullSize(mediaUrl, 1200)}
+                                src={mediaUrl}
                                 alt={`${title} - ${index + 1}`}
                                 style={{
                                     width: '100%',
