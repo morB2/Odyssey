@@ -1,4 +1,5 @@
 import Save from "../models/savesModel.js";
+import User from "../models/userModel.js";
 import Trip from "../models/tripModel.js";
 import Follow from "../models/followModel.js";
 import { clearUserFeedCache, clearUserSavedCache } from "../utils/cacheUtils.js";
@@ -10,6 +11,17 @@ export const saveTrip = async (userId, tripId) => {
 
   const save = new Save({ user: userId, trip: tripId });
   await save.save();
+
+  const trip = await Trip.findById(tripId).select("activities");
+
+  if (trip?.activities?.length) {
+    await User.findByIdAndUpdate(userId, {
+      $addToSet: {
+        preferences: { $each: trip.activities },
+      },
+    });
+  }
+
   await clearUserFeedCache(userId);
   await clearUserSavedCache(userId);
   return save;
@@ -28,15 +40,15 @@ export const unSaveTrip = async (userId, tripId) => {
 
 export const getSavedTripsByUser = async (userId) => {
   const cacheKey = `saved:${userId}`;
- 
+
   // Check Redis cache first
   const cached = await redis.get(cacheKey);
   if (cached) {
-  
+
     return JSON.parse(cached);
   }
 
-  
+
 
   // return saved trips enriched similar to profile trips
   const saves = await Save.find({ user: userId })

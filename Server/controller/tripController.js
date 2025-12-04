@@ -108,7 +108,8 @@ export async function postReply(req, res) {
 export async function incrementView(req, res) {
   try {
     const { tripId } = req.params;
-    const newViewCount = await incrementTripView(tripId);
+    const { userId } = req.body;
+    const newViewCount = await incrementTripView(tripId,userId);
 
     // Emit real-time event to all users in the trip room
     const io = getIO();

@@ -1,5 +1,6 @@
 import Trip from "../models/tripModel.js";
 import Like from "../models/likesModel.js";
+import User from "../models/userModel.js";
 import Save from "../models/savesModel.js";
 import Follow from "../models/followModel.js";
 import { clearUserFeedCache, clearUserLikedCache } from "../utils/cacheUtils.js";
@@ -19,6 +20,16 @@ export const likeTrip = async (userId, tripId) => {
     { $inc: { likes: 1 } },
     { new: true }
   );
+
+  const tripPrefrences = await Trip.findById(tripId).select("activities");
+
+  if (tripPrefrences?.activities?.length) {
+    await User.findByIdAndUpdate(userId, {
+      $addToSet: {
+        preferences: { $each: tripPrefrences.activities },
+      },
+    });
+  }
   await clearUserFeedCache(userId);
   await clearUserLikedCache(userId);
   return trip.likes;
