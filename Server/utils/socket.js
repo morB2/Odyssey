@@ -1,6 +1,6 @@
 import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
-import { config } from './secret.js';
+import { config } from '../config/secret.js';
 
 let io;
 

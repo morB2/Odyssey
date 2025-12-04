@@ -12,7 +12,7 @@ import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinaryHelper.js"
 import { fetchTrips, normalizeAvatarUrl } from "./tripFetcherService.js";
 
 const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
-const uploadsDir = path.join(process.cwd(), "uploads");
+const uploadsDir = path.join(process.cwd(), "temp_uploads");
 
 // -----------------------------------------------------
 // Helpers
