@@ -54,13 +54,13 @@ const Search: React.FC<SearchProps> = ({
   const debouncedSearchTerm = useDebounce(instantSearchTerm, debounceDelay);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const user = useUserStore((state) => state.user);
-  const { isOpen, closeSearch, searchTerm } = useSearchStore();
+  const { searchTerm } = useSearchStore();
   const { t } = useTranslation();
- 
+
   useEffect(() => {
     setInstantSearchTerm(searchTerm);
-  },[searchTerm]);
-  
+  }, [searchTerm]);
+
   // Perform search when debounced term changes
   useEffect(() => {
     const performSearch = async () => {
