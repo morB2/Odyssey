@@ -38,7 +38,7 @@
 Create a `.env` file in `Server/` (don't commit it). Example variables used by the server (from `Server/config/secret.js`):
 
 ```
-FRONTEND_URL=http://localhost:5173
+FRONTEND_URL=https://odyssey-v1nq-git-main-mors-projects-49250beb.vercel.app
 DB_CONNECTION=mongodb+srv://<user>:<pass>@cluster0/yourdbname
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret

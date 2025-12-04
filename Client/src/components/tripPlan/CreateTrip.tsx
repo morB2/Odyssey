@@ -120,7 +120,7 @@ export const CreateTrip: React.FC = () => {
         setIsGenerating(true);
 
         try {
-            const res = await fetch("http://localhost:3000/createTrip/parse", {
+            const res = await fetch(" https://odyssey-dbdn.onrender.com/createTrip/parse", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ text: aiInput }),
@@ -147,7 +147,7 @@ export const CreateTrip: React.FC = () => {
 
             toast.success(t("createTrip.aiSuccess"));
             console.log(trip);
-            
+
         } catch (err) {
             toast.error(t("createTrip.errors.exception"));
         } finally {
@@ -169,7 +169,7 @@ export const CreateTrip: React.FC = () => {
                     <Divider />
 
                     <Typography variant="h6">
-                     {t("createTrip.aiImport")}
+                        {t("createTrip.aiImport")}
                     </Typography>
 
                     <TextField

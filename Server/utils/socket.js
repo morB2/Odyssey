@@ -12,7 +12,7 @@ let io;
 export const initializeSocket = (server) => {
     io = new Server(server, {
         cors: {
-            origin: process.env.CLIENT_URL || 'http://localhost:5173',
+            origin: process.env.CLIENT_URL || 'https://odyssey-v1nq-git-main-mors-projects-49250beb.vercel.app',
             methods: ['GET', 'POST'],
             credentials: true,
         },
