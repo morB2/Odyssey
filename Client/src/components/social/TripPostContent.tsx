@@ -36,7 +36,7 @@ export default function TripPostContent({ title, duration, description, activiti
                         clickable
                         color="primary"
                         variant="outlined"
-                        onClick={(e) =>{e.stopPropagation(), handleActivityClick(activity)}}
+                        onClick={(e) => { e.stopPropagation(), handleActivityClick(activity) }}
                     />
                 ))}
             </Box>
