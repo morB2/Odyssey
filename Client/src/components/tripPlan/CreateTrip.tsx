@@ -98,7 +98,7 @@ export const CreateTrip: React.FC = () => {
                 image: imageUrl,
             };
 
-            const res = await fetch("http://localhost:3000/createTrip/save", {
+            const res = await fetch("https://odyssey-server-g1xx.onrender.com/createTrip/save", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)

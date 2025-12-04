@@ -156,6 +156,7 @@ export default function PostsManagement() {
                 views: tripData.views || 0,
                 isLiked: false,
                 isSaved: false,
+                views: tripData.views || 0,
                 currentUserId: user?._id || '',
                 duration: tripData.duration || '',
                 notes: tripData.notes || '',
