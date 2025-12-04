@@ -52,7 +52,7 @@ export async function searchAll(query: string, userId?: string): Promise<SearchR
         const params: Record<string, string> = { q: query };
         if (userId) params.userId = userId;
 
-        const { data } = await api.get<SearchResponse>('/api/search', { params });
+        const { data } = await api.get<SearchResponse>('/search', { params });
 
         return data.results;
     } catch (error) {

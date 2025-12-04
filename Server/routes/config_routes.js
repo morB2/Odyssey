@@ -26,6 +26,6 @@ export function routesInit(app) {
   app.use('/users', users);
   app.use('/reports', reports);
   app.use('/chat', chat);
-  app.use('/api/search', search);
+  app.use('/search', search);
   app.use('/admin', admin);
 }

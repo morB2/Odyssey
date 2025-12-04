@@ -54,7 +54,7 @@ const StampIcon = ({ type }: { type: string }) => {
   }
 };
 
-export default  function PassportLoading() {
+export default function PassportLoading() {
   return (
     <Box
       display="flex"
@@ -66,129 +66,36 @@ export default  function PassportLoading() {
         {/* Passport */}
         <Box position="relative" width={128} height={80}>
           {/* Left Page */}
-          <motion.div
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: [0, 1, 1, 0] }}
-            transition={{
-              duration: 4,
-              times: [0, 0.15, 0.85, 1],
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: "50%",
-              border: "4px solid black",
-              borderRightWidth: "2px",
-              borderRadius: "4px 0 0 4px",
-              backgroundColor: "white",
-              transformOrigin: "right",
-            }}
+          <Box
+            position="absolute"
+            left={0}
+            top={0}
+            bottom={0}
+            width="50%"
+            border="4px solid black"
+            borderRight="2px solid black"
+            borderRadius="4px 0 0 4px"
+            bgcolor="white"
           >
             {/* Decorative lines */}
             <Box position="absolute" left={8} top={8} width={32} height={1} bgcolor="gray.300" />
             <Box position="absolute" left={8} top={16} width={24} height={1} bgcolor="gray.300" />
-          </motion.div>
+          </Box>
 
           {/* Right Page */}
-          <motion.div
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: [0, 1, 1, 0] }}
-            transition={{
-              duration: 4,
-              times: [0, 0.15, 0.85, 1],
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            style={{
-              position: "absolute",
-              right: 0,
-              top: 0,
-              bottom: 0,
-              width: "50%",
-              border: "4px solid black",
-              borderLeftWidth: "2px",
-              borderRadius: "0 4px 4px 0",
-              backgroundColor: "white",
-              transformOrigin: "left",
-              overflow: "hidden",
-            }}
+          <Box
+            position="absolute"
+            right={0}
+            top={0}
+            bottom={0}
+            width="50%"
+            border="4px solid black"
+            borderLeft="2px solid black"
+            borderRadius="0 4px 4px 0"
+            bgcolor="white"
+            overflow="hidden"
           >
-            {/* Stamps */}
-            {stamps.map((stamp, index) => (
-              <motion.div
-                key={stamp.id}
-                initial={{ scale: 0, rotate: 0, opacity: 0 }}
-                animate={{
-                  scale: [0, 0, 1.15, 1, 1, 0],
-                  rotate: [0, 0, stamp.rotation, stamp.rotation, stamp.rotation, 0],
-                  opacity: [0, 0, 1, 1, 1, 0],
-                }}
-                transition={{
-                  duration: 4,
-                  times: [0, 0.15 + index * 0.1, 0.15 + index * 0.1 + 0.1, 0.15 + index * 0.1 + 0.15, 0.75, 0.85],
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-                style={{
-                  position: "absolute",
-                  left: `${stamp.x}%`,
-                  top: `${stamp.y}%`,
-                  width: 20,
-                  height: 18,
-                }}
-              >
-                <Box
-                  position="relative"
-                  width="100%"
-                  height="100%"
-                  border="1px dashed black"
-                  borderRadius={1}
-                  bgcolor="white"
-                  p={0.25}
-                >
-                  {/* Icon */}
-                  <Box width={8} height={8} mx="auto">
-                    <StampIcon type={stamp.icon} />
-                  </Box>
-
-                  {/* Label */}
-                  <Typography
-                    fontSize={4}
-                    textAlign="center"
-                    mt={0.5}
-                    lineHeight={1}
-                  >
-                    {stamp.label}
-                  </Typography>
-
-                  {/* Orange postmark */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: [0, 0, 0.7, 0.7, 0.7, 0] }}
-                    transition={{
-                      duration: 4,
-                      times: [0, 0.15 + index * 0.1 + 0.05, 0.15 + index * 0.1 + 0.1, 0.75, 0.8, 0.85],
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                    style={{
-                      position: "absolute",
-                      top: -2,
-                      right: -2,
-                      width: 8,
-                      height: 8,
-                      borderRadius: "50%",
-                      border: "1px solid orange",
-                    }}
-                  />
-                </Box>
-              </motion.div>
-            ))}
-          </motion.div>
+          </Box>
         </Box>
       </Box>
     </Box>

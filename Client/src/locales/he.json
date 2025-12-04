@@ -286,7 +286,8 @@
         "sendMessage": "שלח הודעה",
         "yourMessage": "ההודעה שלך",
         "loading": "טוען...",
-        "error": "שגיאה"
+        "error": "שגיאה",
+        "generating": "מייצר..."
     },
     "PostsManagement": {
         "search_placeholder": "חפש פוסטים לפי כותרת, מחבר או קטגוריה...",
@@ -641,7 +642,10 @@
             "activity": "טעימות יין",
             "instruction": "קח קו מטרו 6...",
             "mapsUrl": "https://maps.google.com/..."
-        }
+        },
+        "aiImport": "הדבק את הטיול שלך ותן ל-AI לבנות אותו",
+        "aiPlaceholder": "הדבק כאן את הפוסט המלא על הטיול שלך...",
+        "generateFromText": "צור מטקסט"
     },
     "tripLanding": {
         "heroTitle": "התחל לתכנן את ההרפתקה הבאה שלך",
