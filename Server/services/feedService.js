@@ -19,6 +19,7 @@ export async function getFeedForUser(userId, page = 1, limit = 20) {
         enableScoring: true,      // Enable personalized scoring
         enableDiversity: true,
         softRepeat: true,   // Apply diversity filter
+        scoringWindow: 1000,      // Limit trips for scoring (scalability)
         cacheKey,
         cacheTTL: 60,
         includeMetadata: false,

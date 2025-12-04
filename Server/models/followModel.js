@@ -19,4 +19,7 @@ const followSchema = new mongoose.Schema(
 // Prevent duplicate follow pairs
 followSchema.index({ follower: 1, following: 1 }, { unique: true });
 
+// Index for fetching all users a person follows (used in feed scoring)
+followSchema.index({ follower: 1, createdAt: -1 });
+
 export default mongoose.model("Follow", followSchema);

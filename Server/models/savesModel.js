@@ -11,4 +11,7 @@ const SaveSchema = new mongoose.Schema(
 // Optional: ensure a user can save a trip only once
 SaveSchema.index({ user: 1, trip: 1 }, { unique: true });
 
+// Index for aggregating saves per trip (used in feed metadata)
+SaveSchema.index({ trip: 1, createdAt: -1 });
+
 export default mongoose.model("Save", SaveSchema);

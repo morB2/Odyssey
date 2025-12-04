@@ -265,6 +265,7 @@ function enrichTrip(trip, metadata, viewerId, processComments = true) {
  * @param {Object} options.sort - MongoDB sort object
  * @param {boolean} options.enableScoring - Enable personalized scoring
  * @param {boolean} options.enableDiversity - Apply diversity filter
+ * @param {number} options.scoringWindow - Max trips to fetch for scoring (default: 1000)
  * @param {boolean} options.populateUser - Populate user field
  * @param {boolean} options.populateComments - Populate comment users
  * @param {boolean} options.populateReplies - Populate reply users
@@ -285,6 +286,7 @@ export async function fetchTrips({
     softRepeat = false,
     enableScoring = false,
     enableDiversity = false,
+    scoringWindow = 1000, // Limit trips fetched for scoring to prevent memory issues
     populateUser = true,
     populateComments = true,
     populateReplies = true,
@@ -342,14 +344,15 @@ export async function fetchTrips({
     // ------------------------------------
     let seenSet = new Set();
 
-    if (viewerId && (excludeSeen||softRepeat)) {
+    if (viewerId && (excludeSeen || softRepeat)) {
         const seenTripIds = await redis.sMembers(`user:${viewerId}:seenTrips`);
         seenSet = new Set(seenTripIds);
     }
 
     if (enableScoring || enableDiversity) {
-        // Fetch all matching trips
-        trips = await query.lean();
+        // Fetch trips up to scoringWindow limit for performance
+        // This prevents loading thousands of trips into memory for scoring
+        trips = await query.limit(scoringWindow).lean();
         if (excludeSeen && viewerId && seenSet.size > 0) {
             trips = trips.filter(
                 (trip) => !seenSet.has(trip._id.toString())
@@ -387,7 +390,7 @@ export async function fetchTrips({
                 // ---------------------------------
                 // SOFT REPEAT PENALTY ✅
                 // ---------------------------------
-                console.log("Soft repeat flag:", softRepeat , seenSet, tripId);
+                console.log("Soft repeat flag:", softRepeat, seenSet, tripId);
                 if (softRepeat && seenSet.has(tripId)) {
                     console.log("Applying soft repeat penalty for trip:", tripId);
                     score *= 0.1;   // 90% visibility drop
