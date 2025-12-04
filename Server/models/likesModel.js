@@ -12,4 +12,7 @@ const LikeSchema = new mongoose.Schema(
 // Optional: ensure a user can like a trip only once
 LikeSchema.index({ user: 1, trip: 1 }, { unique: true });
 
+// Index for aggregating likes per trip (used in feed metadata)
+LikeSchema.index({ trip: 1, createdAt: -1 });
+
 export default mongoose.model("Like", LikeSchema);

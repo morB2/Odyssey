@@ -72,12 +72,38 @@ export const addReply = async (tripId: string, commentId: string, userId: string
     }
 };
 
-export const incrementView = async (tripId: string) => {
+export const incrementView = async (tripId: string, userId:string) => {
     try {
-        const res = await api.post(`/trips/${tripId}/views`);
+        const res = await api.post(`/trips/${tripId}/views`,{
+            userId
+        });
         return res.data;
     } catch (error) {
         console.error("Error incrementing view:", error);
+        throw error;
+    }
+};
+
+export const deleteComment = async (tripId: string, commentId: string, userId: string) => {
+    try {
+        const res = await api.delete(`/trips/${tripId}/comment/${commentId}`, {
+            data: { userId }
+        });
+        return res.data;
+    } catch (error) {
+        console.error("Error deleting comment:", error);
+        throw error;
+    }
+};
+
+export const getTripById = async (tripId: string, userId?: string) => {
+    try {
+        const res = await api.get(`/trips/single/${tripId}`, {
+            params: { userId }
+        });
+        return res.data;
+    } catch (error) {
+        console.error("Error fetching trip:", error);
         throw error;
     }
 };
@@ -89,6 +115,8 @@ export default {
     addComment,
     addReaction,
     addReply,
-    incrementView
+    incrementView,
+    deleteComment,
+    getTripById
 };
 

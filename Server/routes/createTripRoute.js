@@ -4,11 +4,12 @@ import {
   optimizeRoute,
   customizeTrip,
   saveUserTrip,
+  parseTripFromPost
 } from "../services/createTripServices.js";
 import {
   suggestionsRateLimiter,
   routeRateLimiter,
-  customizeRateLimiter,
+  customizeRateLimiter
 } from "../middleware/rateLimiter.js";
 
 const router = express.Router();
@@ -161,6 +162,27 @@ router.post("/save", async (req, res) => {
   } catch (err) {
     console.error("save trip error", err);
     return res.status(500).json({ success: false, error: String(err) });
+  }
+});
+
+router.post('/parse',async (req,res) => {
+  try {
+    const { text } = req.body;
+
+    if (!text || typeof text !== "string") {
+      return res.status(400).json({ success: false, error: "Text is required" });
+    }
+
+    const trip = await parseTripFromPost(text);
+
+    res.json({ success: true, trip });
+  } catch (err) {
+    console.error("AI Parse Error:", err);
+
+    res.status(500).json({
+      success: false,
+      type: err.type || "unknown",
+    });
   }
 });
 

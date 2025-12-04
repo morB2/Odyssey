@@ -21,7 +21,6 @@ export default function UsersManagement() {
   useEffect(() => {
     const fetchUsers = async () => {
       const allUers = await getAllUsers();
-      console.log("Fetched users:", allUers);
       setUsers(allUers);
     };
 

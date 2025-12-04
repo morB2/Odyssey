@@ -24,6 +24,7 @@ import { useUserStore } from '../../store/userStore';
 import { toast } from 'react-toastify';
 import { CloudinaryUploadWidget } from '../general/CloudinaryUploadWidget';
 import { useTranslation } from 'react-i18next';
+import Navbar from '../general/Navbar';
 
 interface RouteStop {
     name: string;
@@ -47,7 +48,8 @@ export const CreateTrip: React.FC = () => {
     const [imageUrl, setImageUrl] = useState('');
     const [visibility, setVisibility] = useState<'private' | 'public'>('private');
     const [isSubmitting, setIsSubmitting] = useState(false);
-
+    const [aiInput, setAiInput] = useState("");
+    const [isGenerating, setIsGenerating] = useState(false);
     const handleStopChange = (index: number, field: keyof RouteStop, value: string) => {
         const newStops = [...stops];
         newStops[index] = { ...newStops[index], [field]: value };
@@ -105,16 +107,58 @@ export const CreateTrip: React.FC = () => {
 
             if (result.success) {
                 toast.success(t("createTrip.success"));
-                navigate("/my-trips");
+                navigate("/profile");
             } else toast.error(t("createTrip.errors.fail"));
         } catch {
             toast.error(t("createTrip.errors.exception"));
         }
         setIsSubmitting(false);
     };
+    const handleGenerateFromAI = async () => {
+        if (!aiInput.trim()) return;
+
+        setIsGenerating(true);
+
+        try {
+            const res = await fetch(" https://odyssey-dbdn.onrender.com/createTrip/parse", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: aiInput }),
+            });
+
+            const data = await res.json();
+
+            if (!data.success) {
+                toast.error(t("createTrip.errors.aiFailed"));
+                return;
+            }
+
+            // ✅ AUTO-FILL FORM FROM AI
+            const trip = data.trip;
+
+            setTitle(trip.title || "");
+            setDescription(trip.description || "");
+            setMode(trip.mode || "driving");
+            setStops(trip.stops?.length ? trip.stops : [{ name: "", note: "", lat: 0, lon: 0 }]);
+            setActivities(trip.activities || []);
+            setInstructions(trip.instructions || []);
+            setGoogleMapsUrl(trip.googleMapsUrl || "");
+            setImageUrl(trip.image || "");
+
+            toast.success(t("createTrip.aiSuccess"));
+            console.log(trip);
+
+        } catch (err) {
+            toast.error(t("createTrip.errors.exception"));
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
 
     return (
         <Container maxWidth="md" sx={{ py: 4 }}>
+            <Navbar />
             <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
                 <CardHeader
                     title={t("createTrip.title")}
@@ -122,6 +166,31 @@ export const CreateTrip: React.FC = () => {
                 />
 
                 <CardContent sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                    <Divider />
+
+                    <Typography variant="h6">
+                        {t("createTrip.aiImport")}
+                    </Typography>
+
+                    <TextField
+                        fullWidth
+                        multiline
+                        rows={6}
+                        placeholder={t("createTrip.aiPlaceholder")}
+                        value={aiInput}
+                        onChange={(e) => setAiInput(e.target.value)}
+                    />
+
+                    <Button
+                        variant="contained"
+                        disabled={!aiInput || isGenerating}
+                        onClick={handleGenerateFromAI}
+                        sx={{ mt: 1 }}
+                    >
+                        {isGenerating ? t("general.generating") : t("createTrip.generateFromText")}
+                    </Button>
+
+                    <Divider />
 
                     {/* BASIC INFO */}
                     <Typography variant="h6"><ListIcon size={20} /> {t("createTrip.basic")}</Typography>
@@ -172,7 +241,7 @@ export const CreateTrip: React.FC = () => {
 
                     {/* IMAGE */}
                     <Typography variant="h6"><ImageIcon size={20} /> {t("createTrip.image")}</Typography>
-                    <CloudinaryUploadWidget onUpload={(url) => setImageUrl(url)} folder="odyssey/trips" buttonText={t("createTrip.uploadImage")} cropping={true} />
+                    <CloudinaryUploadWidget onUpload={(url) => setImageUrl(url)} folder="odyssey/trips" buttonText={t("createTrip.uploadImage")} allowVideos={true} />
 
                     <Divider />
 

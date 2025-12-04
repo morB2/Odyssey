@@ -58,7 +58,6 @@ export const ReportDialog = ({ open, onClose, tripId, userId }: ReportDialogProp
         setError(null);
 
         try {
-            console.log("submitting report", tripId, finalReason, userId);
             await submitReport(tripId, finalReason, userId);
             onClose();
             // Ideally show a success toast here, but for now just close

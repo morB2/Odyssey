@@ -11,15 +11,15 @@ export async function getFeedForUser(userId, page = 1, limit = 20) {
         ? `feed:${userId}:page:${page}:limit:${limit}`
         : `feed:public:page:${page}:limit:${limit}`;
 
-    console.log(`[Feed] Fetching feed for ${userId ? `user ${userId}` : 'public feed'}, page ${page}`);
-
     return fetchTrips({
         filter: { visabilityStatus: "public" },
         viewerId: userId,
         page,
         limit,
         enableScoring: true,      // Enable personalized scoring
-        enableDiversity: true,    // Apply diversity filter
+        enableDiversity: true,
+        softRepeat: true,   // Apply diversity filter
+        scoringWindow: 1000,      // Limit trips for scoring (scalability)
         cacheKey,
         cacheTTL: 60,
         includeMetadata: false,

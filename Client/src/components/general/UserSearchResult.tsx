@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Avatar, Typography, Paper } from '@mui/material';
-import type { SearchUser } from '../../services/searchApi';
+import type { SearchUser } from '../../services/search.service';
 
 interface UserSearchResultProps {
     user: SearchUser;

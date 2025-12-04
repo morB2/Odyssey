@@ -1,5 +1,5 @@
 import { Box, Typography, Chip } from '@mui/material';
-
+import { useSearchStore } from '../../store/searchStore';
 interface TripPostContentProps {
     title: string;
     duration: string;
@@ -8,6 +8,10 @@ interface TripPostContentProps {
 }
 
 export default function TripPostContent({ title, duration, description, activities }: TripPostContentProps) {
+    const {openSearch } = useSearchStore();
+    const handleActivityClick = (activity: string) => {
+        openSearch(activity)
+    };
     return (
         <>
             <Box mb={1.5}>
@@ -32,6 +36,7 @@ export default function TripPostContent({ title, duration, description, activiti
                         clickable
                         color="primary"
                         variant="outlined"
+                        onClick={(e) =>{e.stopPropagation(), handleActivityClick(activity)}}
                     />
                 ))}
             </Box>

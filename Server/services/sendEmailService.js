@@ -4,7 +4,6 @@ import crypto from "crypto";
 import { config } from "../config/secret.js";
 
 export const forgotPassword = async (email, lang) => {
-  console.log("Forgot password for email:", email, "in language:", lang);
   try {
     const user = await User.findOne({ email });
     if (!user) throw new Error(lang === "he" ? "משתמש לא נמצא" : "User not found");
@@ -21,19 +20,19 @@ export const forgotPassword = async (email, lang) => {
     // תוכן מייל דינמי לפי שפה
     const content = lang === "he"
       ? {
-          subject: "שחזור סיסמה",
-          title: "בקשת שחזור סיסמה",
-          message: `היי ${user.firstName}, התקבלה בקשה לשחזור סיסמה לחשבון שלך.`,
-          buttonText: "שינוי סיסמה",
-          footer: "הקישור תקף לשעה. אם לא ביקשת שחזור — ניתן להתעלם מההודעה."
-        }
+        subject: "שחזור סיסמה",
+        title: "בקשת שחזור סיסמה",
+        message: `היי ${user.firstName}, התקבלה בקשה לשחזור סיסמה לחשבון שלך.`,
+        buttonText: "שינוי סיסמה",
+        footer: "הקישור תקף לשעה. אם לא ביקשת שחזור — ניתן להתעלם מההודעה."
+      }
       : {
-          subject: "Password Reset Request",
-          title: "Password Reset Request",
-          message: `Hi ${user.firstName}, we received a request to reset your password.`,
-          buttonText: "Reset Password",
-          footer: "The link is valid for 1 hour. If you didn't request it, ignore this email."
-        };
+        subject: "Password Reset Request",
+        title: "Password Reset Request",
+        message: `Hi ${user.firstName}, we received a request to reset your password.`,
+        buttonText: "Reset Password",
+        footer: "The link is valid for 1 hour. If you didn't request it, ignore this email."
+      };
 
     await sendEmail({ ...content, to: user.email, buttonLink: resetLink });
 

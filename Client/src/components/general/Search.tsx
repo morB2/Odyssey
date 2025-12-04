@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, use } from 'react';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import SearchIcon from '@mui/icons-material/Search';
@@ -6,10 +6,10 @@ import { styled } from '@mui/material/styles';
 import { Box } from '@mui/material';
 import useDebounce from '../../hooks/useDebounce';
 import SearchResults from './SearchResults';
-import { searchAll, type SearchResults as SearchResultsType } from '../../services/searchApi';
+import { searchAll, type SearchResults as SearchResultsType } from '../../services/search.service';
 import { useUserStore } from '../../store/userStore';
 import { useTranslation } from 'react-i18next';
-
+import { useSearchStore } from '../../store/searchStore';
 const OrangeTextField = styled(TextField)({
   '& label': {
     color: 'white',
@@ -54,7 +54,12 @@ const Search: React.FC<SearchProps> = ({
   const debouncedSearchTerm = useDebounce(instantSearchTerm, debounceDelay);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const user = useUserStore((state) => state.user);
+  const { searchTerm } = useSearchStore();
   const { t } = useTranslation();
+
+  useEffect(() => {
+    setInstantSearchTerm(searchTerm);
+  }, [searchTerm]);
 
   // Perform search when debounced term changes
   useEffect(() => {

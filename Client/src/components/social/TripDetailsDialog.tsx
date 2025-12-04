@@ -102,7 +102,7 @@ export default function TripDetailsDialog({
                                                 '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
                                             }}
                                         >
-                                            <ChevronRight />
+                                            <ChevronLeft />
                                         </IconButton>
                                         <IconButton
                                             onClick={nextDialogImage}
@@ -116,7 +116,7 @@ export default function TripDetailsDialog({
                                                 '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
                                             }}
                                         >
-                                            <ChevronLeft />
+                                            <ChevronRight />
                                         </IconButton>
                                         {/* Media Dots */}
                                         <Box

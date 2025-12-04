@@ -35,7 +35,6 @@ export const GLogin: FC<GLoginProps> = ({ onSuccess }) => {
     <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
       <GoogleLogin
         onSuccess={handleSuccess}
-        onError={() => console.log("Login Failed")}
       />
     </div>
 

@@ -6,7 +6,7 @@ import { routesInit } from "./routes/config_routes.js";
 import "./db/mongoConect.js";
 import { config } from "./config/secret.js";
 import { errorHandler } from "./middleware/errorHandler.js";
-import { initializeSocket } from "./config/socket.js";
+import { initializeSocket } from "./utils/socket.js";
 import fs from "fs";
 import cloudinary from "./config/cloudinary.js";
 
@@ -16,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 // Ensure uploads directory exists and serve it statically
-const uploadsDir = path.join(process.cwd(), "uploads");
+const uploadsDir = path.join(process.cwd(), "temp_uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }

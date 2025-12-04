@@ -20,12 +20,12 @@ export function routesInit(app) {
   app.use('/trips', trip);
   app.use("/sendEmail", sendEmail);
 
-  app.use('/likes', like);
-  app.use('/saves', save);
+  app.use('/likes', autoM, like);
+  app.use('/saves', autoM, save);
   app.use('/follow', follow);
   app.use('/users', users);
   app.use('/reports', reports);
   app.use('/chat', chat);
-  app.use('/api/search', search);
+  app.use('/search', search);
   app.use('/admin', admin);
 }

@@ -71,4 +71,52 @@ function arrayLimit(val) {
   return val.length <= 3;
 }
 
+// -----------------------------------------------------
+// Indexes for Performance Optimization
+// -----------------------------------------------------
+
+// Compound index for feed queries (filter by visibility + sort by date)
+TripSchema.index({ visabilityStatus: 1, createdAt: -1 });
+
+// Index for views-based sorting and trending content
+TripSchema.index({ views: -1 });
+
+// Index for activity-based filtering and recommendations
+TripSchema.index({ activities: 1 });
+
+// -----------------------------------------------------
+// Middleware
+// -----------------------------------------------------
+
+// Middleware to delete related records when a Trip is deleted
+TripSchema.pre('findOneAndDelete', async function (next) {
+  try {
+    // Get the trip ID from the query
+    const tripId = this.getQuery()._id;
+
+    if (tripId) {
+      // Dynamically import the models to avoid circular dependencies
+      const { default: Like } = await import('./likesModel.js');
+      const { default: Save } = await import('./savesModel.js');
+      const { default: Report } = await import('./reportModel.js');
+
+      // Delete all likes for this trip
+      await Like.deleteMany({ trip: tripId });
+
+      // Delete all saves for this trip
+      await Save.deleteMany({ trip: tripId });
+
+      // Delete all reports for this trip
+      await Report.deleteMany({ trip: tripId });
+
+      console.log(`Cleaned up related records for trip ${tripId}`);
+    }
+
+    next();
+  } catch (error) {
+    console.error('Error in Trip pre-delete middleware:', error);
+    next(error);
+  }
+});
+
 export default mongoose.model("Trip", TripSchema);

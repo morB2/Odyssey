@@ -5,13 +5,10 @@ import * as chatService from '../services/chatService.js';
  */
 export const getConversation = async (req, res) => {
     try {
-        console.log('getConversation params:', req.params);
-        console.log('getConversation query:', req.query);
         const { userId } = req.params;
         const currentUserId = req.query.currentUserId || req.body.currentUserId;
 
         if (!currentUserId) {
-            console.log('Missing currentUserId');
             return res.status(400).json({ error: 'Current user ID is required' });
         }
 
@@ -69,11 +66,9 @@ export const handleRequest = async (req, res) => {
  */
 export const sendMessage = async (req, res) => {
     try {
-        console.log('sendMessage body:', req.body);
         const { senderId, receiverId, message } = req.body;
 
         if (!senderId || !receiverId || !message) {
-            console.log('Missing fields in sendMessage');
             return res.status(400).json({ error: 'Sender ID, receiver ID, and message are required' });
         }
 
