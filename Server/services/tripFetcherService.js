@@ -38,7 +38,8 @@ function calculatePersonalizedScore({
 
     // Recency bonus (max 40 points for new posts)
     score += Math.max(0, 40 - hoursOld);
-
+    //views bonus 
+    score += Math.log10((trip.views || 0) + 1) * 10;
     // Engagement metrics
     score += likeCount * 3 + commentCount * 5 + saveCount * 8;
 
@@ -173,31 +174,61 @@ function enrichTrip(trip, metadata, viewerId, processComments = true) {
                 });
             }
 
-            // Normalize comment user avatar
+            // Normalize comment user (include name & username) and avatar
             const commentUser = comment.user
                 ? {
-                    ...comment.user,
+                    _id: comment.user._id?.toString(),
+                    firstName: comment.user.firstName,
+                    lastName: comment.user.lastName,
+                    name: `${(comment.user.firstName || '').trim()} ${(comment.user.lastName || '').trim()}`.trim(),
+                    username:
+                        (comment.user.firstName || '')
+                            .toString()
+                            .replace(/\s+/g, '')
+                            .toLowerCase() || comment.user._id?.toString(),
                     avatar: normalizeAvatarUrl(comment.user.avatar),
                 }
-                : comment.user;
+                : null;
 
-            // Process replies
-            const replies = (comment.replies || []).map((reply) => ({
-                ...reply,
-                user: reply.user
+            // Process and normalize replies
+            const replies = (comment.replies || []).map((reply) => {
+                const replyUser = reply.user
                     ? {
-                        ...reply.user,
+                        _id: reply.user._id?.toString(),
+                        firstName: reply.user.firstName,
+                        lastName: reply.user.lastName,
+                        name: `${(reply.user.firstName || '').trim()} ${(reply.user.lastName || '').trim()}`.trim(),
+                        username:
+                            (reply.user.firstName || '')
+                                .toString()
+                                .replace(/\s+/g, '')
+                                .toLowerCase() || reply.user._id?.toString(),
                         avatar: normalizeAvatarUrl(reply.user.avatar),
                     }
-                    : reply.user,
-            }));
+                    : null;
 
-            return {
-                ...comment,
+                return {
+                    id: reply._id?.toString(),
+                    text: reply.comment ?? reply.text ?? '',
+                    timestamp: reply.createdAt ?? reply.timestamp ?? null,
+                    userId: reply.user?._id?.toString(),
+                    user: replyUser,
+                };
+            });
+
+            // Normalize comment shape for client
+            const commentId = comment._id?.toString();
+            const normalizedComment = {
+                id: commentId,
+                text: comment.comment ?? comment.text ?? '',
+                timestamp: comment.createdAt ?? comment.timestamp ?? null,
+                userId: comment.user?._id?.toString(),
                 user: commentUser,
                 reactionsAggregated,
                 replies,
             };
+
+            return normalizedComment;
         });
     }
 
@@ -234,6 +265,7 @@ function enrichTrip(trip, metadata, viewerId, processComments = true) {
  * @param {Object} options.sort - MongoDB sort object
  * @param {boolean} options.enableScoring - Enable personalized scoring
  * @param {boolean} options.enableDiversity - Apply diversity filter
+ * @param {number} options.scoringWindow - Max trips to fetch for scoring (default: 1000)
  * @param {boolean} options.populateUser - Populate user field
  * @param {boolean} options.populateComments - Populate comment users
  * @param {boolean} options.populateReplies - Populate reply users
@@ -250,8 +282,11 @@ export async function fetchTrips({
     limit = 20,
     skip = null,
     sort = { createdAt: -1 },
+    excludeSeen = false,//hard filter
+    softRepeat = false,
     enableScoring = false,
     enableDiversity = false,
+    scoringWindow = 1000, // Limit trips fetched for scoring to prevent memory issues
     populateUser = true,
     populateComments = true,
     populateReplies = true,
@@ -264,7 +299,6 @@ export async function fetchTrips({
     if (cacheKey) {
         const cached = await redis.get(cacheKey);
         if (cached) {
-            console.log(`[TripFetcher] Cache hit: ${cacheKey}`);
             return JSON.parse(cached);
         }
     }
@@ -305,9 +339,25 @@ export async function fetchTrips({
     let trips;
     let total = 0;
 
+    // ------------------------------------
+    // Load seen trips only if requested
+    // ------------------------------------
+    let seenSet = new Set();
+
+    if (viewerId && (excludeSeen || softRepeat)) {
+        const seenTripIds = await redis.sMembers(`user:${viewerId}:seenTrips`);
+        seenSet = new Set(seenTripIds);
+    }
+
     if (enableScoring || enableDiversity) {
-        // Fetch all matching trips
-        trips = await query.lean();
+        // Fetch trips up to scoringWindow limit for performance
+        // This prevents loading thousands of trips into memory for scoring
+        trips = await query.limit(scoringWindow).lean();
+        if (excludeSeen && viewerId && seenSet.size > 0) {
+            trips = trips.filter(
+                (trip) => !seenSet.has(trip._id.toString())
+            );
+        }
         total = trips.length;
 
         // Build metadata for scoring
@@ -325,18 +375,33 @@ export async function fetchTrips({
                 "following"
             );
             const followingIds = followingDocs.map((f) => f.following.toString());
-
-            enrichedTrips = enrichedTrips.map((trip) => ({
-                ...trip,
-                score: calculatePersonalizedScore({
+            enrichedTrips = enrichedTrips.map((trip) => {
+                let score = calculatePersonalizedScore({
                     trip,
                     user,
                     followingIds,
                     likeCount: metadata.likeMap[trip._id] || 0,
                     saveCount: metadata.saveMap[trip._id] || 0,
                     commentCount: trip.comments?.length || 0,
-                }),
-            }));
+                });
+
+                const tripId = trip._id.toString();
+
+                // ---------------------------------
+                // SOFT REPEAT PENALTY ✅
+                // ---------------------------------
+                console.log("Soft repeat flag:", softRepeat, seenSet, tripId);
+                if (softRepeat && seenSet.has(tripId)) {
+                    console.log("Applying soft repeat penalty for trip:", tripId);
+                    score *= 0.1;   // 90% visibility drop
+                }
+
+                return {
+                    ...trip,
+                    score,
+                    seenBefore: seenSet.has(tripId), // optional for frontend
+                };
+            });;
 
             // Sort by score
             enrichedTrips.sort((a, b) => b.score - a.score);
@@ -384,7 +449,6 @@ export async function fetchTrips({
     // Cache result
     if (cacheKey) {
         await redis.setEx(cacheKey, cacheTTL, JSON.stringify(response));
-        console.log(`[TripFetcher] Cached: ${cacheKey}`);
     }
 
     return response;

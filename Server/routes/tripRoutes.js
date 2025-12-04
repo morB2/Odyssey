@@ -1,13 +1,15 @@
-import { fetchTrips, postComment, addReaction, postReply, incrementView } from "../controller/tripController.js";
+import { fetchTrips, postComment, addReaction, postReply, incrementView, deleteComment, getTripById } from "../controller/tripController.js";
 import express from "express";
 const router = express.Router();
 
 // Route to fetch trips for the current user or public feed
 router.get("/", fetchTrips);
 router.get("/:id", fetchTrips);
+router.get("/single/:id", getTripById);
 router.post("/:tripId/comment", postComment);
 router.post("/:tripId/comment/:commentId/react", addReaction);
 router.post("/:tripId/comment/:commentId/reply", postReply);
 router.post("/:tripId/views", incrementView);
+router.delete("/:tripId/comment/:commentId", deleteComment);
 
 export default router;

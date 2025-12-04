@@ -1,21 +1,67 @@
 import { Box } from '@mui/material';
-import type { Dispatch, SetStateAction } from 'react';
-import { isVideo, getOptimizedFullSize } from '../../utils/mediaUtils';
+import { type Dispatch, type SetStateAction, useEffect, useRef } from 'react';
+import { isVideo } from '../../utils/mediaUtils';
 
 interface TripImageCarouselProps {
     images: string[] | undefined; // Keep for backward compatibility
     currentImageIndex: number;
     setCurrentImageIndex: Dispatch<SetStateAction<number>>;
     title: string;
+    onMouseEnter?: () => void;
+    onMouseLeave?: () => void;
 }
 
-export default function TripImageCarousel({ images, currentImageIndex, setCurrentImageIndex, title }: TripImageCarouselProps) {
+export default function TripImageCarousel({
+    images,
+    currentImageIndex,
+    setCurrentImageIndex,
+    title,
+    onMouseEnter,
+    onMouseLeave
+}: TripImageCarouselProps) {
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+
+    useEffect(() => {
+        if (scrollContainerRef.current) {
+            const container = scrollContainerRef.current;
+            const width = container.clientWidth;
+            container.scrollTo({
+                left: width * currentImageIndex,
+                behavior: 'smooth',
+            });
+        }
+
+        // Pause all videos except the current one
+        videoRefs.current.forEach((video, index) => {
+            if (video) {
+                if (index !== currentImageIndex) {
+                    video.pause();
+                }
+            }
+        });
+    }, [currentImageIndex]);
+
     if (!images || images.length === 0) return null;
 
     return (
-        <Box position="relative" sx={{ bgcolor: 'grey.200' }}>
+        <Box
+            position="relative"
+            sx={{ bgcolor: 'grey.200' }}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+        >
             {/* Media List (scrollable - images and videos) */}
-            <Box sx={{ display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory' }}>
+            <Box
+                ref={scrollContainerRef}
+                sx={{
+                    display: 'flex',
+                    overflowX: 'auto',
+                    scrollSnapType: 'x mandatory',
+                    scrollbarWidth: 'none', // Hide scrollbar for cleaner look
+                    '&::-webkit-scrollbar': { display: 'none' }, // Hide scrollbar for Chrome/Safari
+                }}
+            >
                 {images.map((mediaUrl, index) => (
                     <Box
                         key={index}
@@ -27,7 +73,8 @@ export default function TripImageCarousel({ images, currentImageIndex, setCurren
                     >
                         {isVideo(mediaUrl) ? (
                             <video
-                                src={getOptimizedFullSize(mediaUrl, 1200)}
+                                ref={(el) => { videoRefs.current[index] = el; }}
+                                src={mediaUrl}
                                 controls
                                 style={{
                                     width: '100%',
@@ -39,7 +86,7 @@ export default function TripImageCarousel({ images, currentImageIndex, setCurren
                             />
                         ) : (
                             <img
-                                src={getOptimizedFullSize(mediaUrl, 1200)}
+                                src={mediaUrl}
                                 alt={`${title} - ${index + 1}`}
                                 style={{
                                     width: '100%',

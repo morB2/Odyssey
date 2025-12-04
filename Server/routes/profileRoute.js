@@ -8,7 +8,7 @@ import * as controller from "../controller/profileController.js";
 const router = express.Router();
 
 // --- Multer setup ---
-const uploadsDir = path.join(process.cwd(), "uploads");
+const uploadsDir = path.join(process.cwd(), "temp_uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
 const storage = multer.diskStorage({

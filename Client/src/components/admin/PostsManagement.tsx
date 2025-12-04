@@ -137,7 +137,6 @@ export default function PostsManagement() {
 
     const handleViewPost = async (tripData: any) => {
         setIsLoadingTrip(true);
-        console.log("Viewing post:", tripData);
         try {
             const formattedTrip: Trip = {
                 _id: tripData._id,
@@ -154,6 +153,7 @@ export default function PostsManagement() {
                 images: tripData.images || [],
                 likes: tripData.likes?.length || 0,
                 comments: tripData.comments || [],
+                views: tripData.views || 0,
                 isLiked: false,
                 isSaved: false,
                 views: tripData.views || 0,
@@ -196,7 +196,7 @@ export default function PostsManagement() {
                     fullWidth
                     variant="outlined"
                     size="small"
-                    placeholder={t('PostsManagement.searchPlaceholder') || 'Search by title, author, or category...'}
+                    placeholder={t('PostsManagement.search_placeholder') || 'Search by title, author, or category...'}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     sx={{

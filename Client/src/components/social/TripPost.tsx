@@ -13,7 +13,7 @@ import TripPostActions from './TripPostActions';
 import TripPostContent from './TripPostContent';
 import TripCommentsSection from './TripCommentsSection';
 import TripDetailsDialog from './TripDetailsDialog';
-import { toggleLike, toggleSave, toggleFollow, addComment, addReaction, addReply, incrementView } from '../../services/tripPost.service';
+import { toggleLike, toggleSave, toggleFollow, addComment, addReaction, addReply, incrementView, deleteComment } from '../../services/tripPost.service';
 import { useTripRealtime } from '../../hooks/useTripRealtime';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
@@ -61,6 +61,20 @@ export default function TripPost({ trip }: TripPostProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogImageIndex, setDialogImageIndex] = useState(0);
+    const [isHoveringCarousel, setIsHoveringCarousel] = useState(false);
+
+    // Auto-play carousel
+    useEffect(() => {
+        if (!trip.images || trip.images.length <= 1 || isHoveringCarousel) return;
+
+        const interval = setInterval(() => {
+            setCurrentImageIndex((prevIndex) =>
+                prevIndex === (trip.images?.length || 1) - 1 ? 0 : prevIndex + 1
+            );
+        }, 5000); // 5 seconds
+
+        return () => clearInterval(interval);
+    }, [trip.images, isHoveringCarousel]);
 
     // Update local state when trip prop changes
     useEffect(() => {
@@ -88,6 +102,7 @@ export default function TripPost({ trip }: TripPostProps) {
             ),
         onLikeUpdate: (likes) => setLikesCount(likes),
         onViewUpdate: (views) => setViewsCount(views),
+        onCommentDeleted: (commentId) => setComments((prev) => prev.filter((c) => c.id !== commentId)),
     });
     // --- API Handlers ---
     const postLike = useCallback(async () => {
@@ -223,7 +238,23 @@ export default function TripPost({ trip }: TripPostProps) {
         }
     }, [trip._id, trip.currentUserId, t]);
 
-
+    const handleDeleteComment = useCallback(async (commentId: string) => {
+        if (!trip.currentUserId || trip.currentUserId.trim() === '') {
+            toast.info(t('social.pleaseLoginToDelete'));
+            return;
+        }
+        // Optimistic UI update
+        setComments((prev) => prev.filter((c) => c.id !== commentId));
+        try {
+            await deleteComment(trip._id, commentId, trip.currentUserId);
+            toast.success(t('social.commentDeleted'));
+        } catch (error) {
+            console.error('Error deleting comment:', error);
+            toast.error(t('social.failedToDeleteComment'));
+            // Rollback optimistic update - refetch comments or restore from backup
+            // For now, real-time will handle consistency
+        }
+    }, [trip._id, trip.currentUserId, t]);
     // --- Dialog Handlers ---
     const handleCardClick = (e: React.MouseEvent) => {
         // Prevent opening dialog when clicking on interactive elements
@@ -242,7 +273,7 @@ export default function TripPost({ trip }: TripPostProps) {
         setDialogImageIndex(currentImageIndex); // Open dialog to the current image
 
         // Increment view count
-        incrementView(trip._id).catch(err => console.error("Failed to increment view", err));
+        incrementView(trip._id,trip.currentUserId).catch(err => console.error("Failed to increment view", err));
     };
 
     const handleCloseDialog = () => setDialogOpen(false);
@@ -282,6 +313,8 @@ export default function TripPost({ trip }: TripPostProps) {
                     currentImageIndex={currentImageIndex}
                     setCurrentImageIndex={setCurrentImageIndex}
                     title={trip.title}
+                    onMouseEnter={() => setIsHoveringCarousel(true)}
+                    onMouseLeave={() => setIsHoveringCarousel(false)}
                 />
 
                 {/* Actions */}
@@ -313,9 +346,12 @@ export default function TripPost({ trip }: TripPostProps) {
                         comments={comments}
                         commentReactions={commentReactions}
                         userAvatar={user?.avatar}
+                        currentUserId={trip.currentUserId}
+                        postOwnerId={trip.user._id}
                         onAddComment={handleAddComment}
                         onReact={handleEmojiReaction}
                         onReply={handleAddReply}
+                        onDeleteComment={handleDeleteComment}
                     />
                 )}
             </Card>

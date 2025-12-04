@@ -33,7 +33,6 @@ export async function search(query, viewerId = null, userLimit = 5, tripLimit = 
         .limit(userLimit)
         .lean();
 
-    console.log('Found users:', users.length);
 
     // Normalize avatars
     users.forEach((user) => {
@@ -73,8 +72,6 @@ export async function search(query, viewerId = null, userLimit = 5, tripLimit = 
         includeMetadata: false,
         processComments: true,
     });
-
-    console.log('Found trips:', trips.length);
 
     return { users, trips };
 }

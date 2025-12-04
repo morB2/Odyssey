@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
+
 import {
   AppBar,
   Toolbar,
@@ -54,12 +55,12 @@ const Navbar: FC = () => {
     };
 
     fetchUnread();
-    return () => (mounted = false);
+    // return () => (mounted = false);
   }, [user]);
 
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
-  const handleMobileNavigate = (path: string) => {
-    navigate(path);
+  const handleMobileNavigate = (path: string, state?: any) => {
+    navigate(path, { state });
     setMobileOpen(false);
   };
 
@@ -127,12 +128,12 @@ const Navbar: FC = () => {
         ) : (
           <>
             <ListItem disablePadding>
-              <ListItemButton onClick={() => handleMobileNavigate('/login?tab=login')}>
+              <ListItemButton onClick={() => handleMobileNavigate('/login?tab=login', { backgroundLocation: location.pathname })}>
                 <LogIn size={20} /><ListItemText sx={{ ml: 1 }} primary={t('logIn')} />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton onClick={() => handleMobileNavigate('/login?tab=signup')}>
+              <ListItemButton onClick={() => handleMobileNavigate('/login?tab=signup', { backgroundLocation: location.pathname })}>
                 <UserPlus size={20} /><ListItemText sx={{ ml: 1 }} primary={t('signUp')} />
               </ListItemButton>
             </ListItem>
@@ -169,11 +170,10 @@ const Navbar: FC = () => {
           ) : (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Search onSearch={(s) => console.log('search:', s)} />
-
+              <Box onClick={() => navigate('/feed')} sx={navItemStyle}><BookImage size={24} /><Typography variant="caption">Feed</Typography></Box>
+              <Box onClick={() => navigate('/createtrip')} sx={navItemStyle}><Sparkles size={24} /><Typography variant="caption">{t('createTrip.create')}</Typography></Box>
               {user && (
                 <>
-                  <Box onClick={() => navigate('/feed')} sx={navItemStyle}><BookImage size={24} /><Typography variant="caption">Feed</Typography></Box>
-                  <Box onClick={() => navigate('/createtrip')} sx={navItemStyle}><Sparkles size={24} /><Typography variant="caption">{t('createTrip.create')}</Typography></Box>
 
                   {/* Messages */}
                   <Box onClick={() => navigate('/chats')} sx={{ ...navItemStyle, position: 'relative' }}>
@@ -194,7 +194,7 @@ const Navbar: FC = () => {
                 </>
               )}
 
-              <LanguageSwitcher />
+
 
               {user?.role === "admin" && (
                 <Tooltip title="Admin Dashboard" arrow>
@@ -204,13 +204,13 @@ const Navbar: FC = () => {
                   </Box>
                 </Tooltip>
               )}
-
+              <LanguageSwitcher />
               {user ? (
                 <ProfileMenu />
               ) : (
                 <Box sx={{ display: 'flex', gap: 1.5 }}>
-                  <Button onClick={() => navigate('/login?tab=login')} sx={{ color: 'white' }}>{t('logIn')}</Button>
-                  <Button variant="contained" onClick={() => navigate('/login?tab=signup')}
+                  <Button onClick={() => navigate('/login?tab=login', { state: { backgroundLocation: location.pathname } })} sx={{ color: 'white' }}>{t('logIn')}</Button>
+                  <Button variant="contained" onClick={() => navigate('/login?tab=signup', { state: { backgroundLocation: location.pathname } })}
                     sx={{ background: 'linear-gradient(135deg,#f97316,#ea580c)' }}>
                     {t('signUp')}
                   </Button>

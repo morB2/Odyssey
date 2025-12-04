@@ -4,7 +4,6 @@ import Trip from "../models/tripModel.js";
 export const createReport = async (req, res) => {
     try {
         const { tripId, reason, userId } = req.body;
-        console.log("user", req.user);
         const reporterId = userId;
 
         if (!tripId || !reason) {

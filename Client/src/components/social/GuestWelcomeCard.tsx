@@ -1,14 +1,15 @@
 import { Card, CardContent, Typography, Button, Stack, Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface GuestWelcomeCardProps {
     onViewAsGuest: () => void;
 }
 
 export const GuestWelcomeCard = ({ onViewAsGuest }: GuestWelcomeCardProps) => {
-    const {t } = useTranslation();
+    const { t } = useTranslation();
     const navigate = useNavigate();
+    const location = useLocation();
 
     return (
         <Card
@@ -40,7 +41,7 @@ export const GuestWelcomeCard = ({ onViewAsGuest }: GuestWelcomeCardProps) => {
                     <Button
                         variant="contained"
                         size="large"
-                        onClick={() => navigate('/login')}
+                        onClick={() => navigate('/login', { state: { backgroundLocation: location.pathname } })}
                         sx={{
                             px: 4,
                             borderRadius: '24px',
@@ -63,7 +64,7 @@ export const GuestWelcomeCard = ({ onViewAsGuest }: GuestWelcomeCardProps) => {
                             textTransform: 'none',
                             fontSize: '1rem',
                             fontWeight: 600,
-                            color:'#d97706',
+                            color: '#d97706',
                             borderColor: '#d97706',
                         }}
                     >

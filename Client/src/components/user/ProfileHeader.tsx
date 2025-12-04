@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import type { UserProfile } from "./types";
 import { Button, Card, Avatar, Box, Typography, List, ListItem, ListItemAvatar, ListItemText, Link, Dialog, DialogTitle, DialogContent, Skeleton } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import { Edit, Users, UserPlus } from "lucide-react";
+import { Edit, Users, UserPlus, MessageCircle } from "lucide-react";
 import { getFollowers as svcGetFollowers, getFollowing as svcGetFollowing } from "../../services/profile.service";
 import { useTranslation } from 'react-i18next';
+import { useChat } from "../../context/ChatContext";
 type SimpleFollow = {
   _id?: string;
   id?: string;
@@ -31,6 +32,7 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, loading = fa
   const [followersCount, setFollowersCount] = useState<number>(user.followersCount || 0);
   const [followingCount, setFollowingCount] = useState<number>(user.followingCount || 0);
   const { t } = useTranslation();
+  const { openChat } = useChat();
 
   useEffect(() => {
     setOpenDialog(null);
@@ -211,6 +213,33 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, loading = fa
                   }}
                 >
                   <Edit size={18} />
+                </Button>
+              )}
+
+              {!isOwner && (
+                <Button
+                  onClick={() => openChat({
+                    _id: user.id || (user as any)._id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    avatar: user.avatar
+                  })}
+                  variant="outlined"
+                  size="small"
+                  startIcon={<MessageCircle size={18} />}
+                  sx={{
+                    borderColor: '#f97316',
+                    color: '#f97316',
+                    '&:hover': {
+                      borderColor: '#ea580c',
+                      background: 'rgba(249,115,22,0.05)',
+                    },
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    px: 2
+                  }}
+                >
+                  {t('social.chat')}
                 </Button>
               )}
             </Box>

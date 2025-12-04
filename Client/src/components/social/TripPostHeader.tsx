@@ -1,4 +1,5 @@
-import { Avatar, Button, CardContent, Box, Typography, IconButton, Menu, MenuItem } from '@mui/material';
+import { Avatar, Button, CardContent, Box, Typography, IconButton, Menu, MenuItem, ListItemText, ListItemIcon } from '@mui/material';
+import { toast } from 'react-toastify';
 
 import { Link } from 'react-router-dom';
 import { MoreVert as MoreVertIcon } from '@mui/icons-material';
@@ -7,7 +8,7 @@ import { type Trip } from './types';
 import { ReportDialog } from './ReportDialog';
 import { useTranslation } from 'react-i18next';
 import { useChat } from '../../context/ChatContext';
-
+import { MessageCircleMore, Flag,Link2 } from 'lucide-react';
 interface TripPostHeaderProps {
     user: Trip['user'];
     currentUserId: string;
@@ -31,6 +32,15 @@ export default function TripPostHeader({ user, currentUserId, isFollowing, onFol
     const handleMenuClose = (event?: React.MouseEvent) => {
         event?.stopPropagation();
         setAnchorEl(null);
+    };
+
+    const handleCopyLink = (event: React.MouseEvent) => {
+        event.stopPropagation();
+        handleMenuClose();
+        const link = `${window.location.origin}/post/${tripId}`;
+        navigator.clipboard.writeText(link).then(() => {
+            toast.success(t('social.linkCopied'));
+        });
     };
 
     const handleReportClick = (event: React.MouseEvent) => {
@@ -93,9 +103,27 @@ export default function TripPostHeader({ user, currentUserId, isFollowing, onFol
                         onClick={(e) => e.stopPropagation()} // Stop clicks inside menu from bubbling
                     >
                         {user._id !== currentUserId && (
-                            <MenuItem onClick={handleChatClick}>{t('social.chat')}</MenuItem>
+
+                            <MenuItem onClick={handleChatClick}>
+                                <ListItemIcon>
+                                    <MessageCircleMore size={18} />
+                                </ListItemIcon>
+                                <ListItemText>{t("social.chat")}</ListItemText>
+                            </MenuItem>
                         )}
-                        <MenuItem onClick={handleReportClick}>{t('report.title')}</MenuItem>
+                        <MenuItem onClick={handleReportClick}>
+                            <ListItemIcon>
+                                <Flag size={18} />
+                            </ListItemIcon>
+                            <ListItemText>{t("report.title")}</ListItemText>
+                        </MenuItem>
+
+                        <MenuItem onClick={handleCopyLink}>
+                            <ListItemIcon>
+                                <Link2 size={18} />
+                            </ListItemIcon>
+                            <ListItemText>{t("social.copyLink")}</ListItemText>
+                        </MenuItem>
                     </Menu>
                 </Box>
             </Box>

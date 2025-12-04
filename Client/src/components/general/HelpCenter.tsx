@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 const HelpCenter: React.FC = () => {
     const { t } = useTranslation();
     const faqs = t('HelpCenter.faqs', { returnObjects: true }) as Array<{ question: string, answer: string }>;
-    console.log(faqs);
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#f9fafb' }}>
             <Navbar />

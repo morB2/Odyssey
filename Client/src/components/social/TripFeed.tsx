@@ -9,10 +9,11 @@ import { useUserStore } from '../../store/userStore';
 import { GuestWelcomeCard } from './GuestWelcomeCard';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
+import PassportLoading from '../general/PassportLoading';
 
 function adaptComments(apiComments: any[]): Comment[] {
   return apiComments.map((c) => {
-    const date = new Date(c.createdAt);
+    const date = new Date(c.timestamp);
     const time = date.toLocaleString([], {
       year: "numeric",
       month: "short",
@@ -26,13 +27,15 @@ function adaptComments(apiComments: any[]): Comment[] {
     const lastName = c.user?.lastName || "User";
 
     return {
-      id: c._id,
+      id: c.id || c._id,
+      userId: c.userId,
       user: {
         name: `${firstName} ${lastName}`,
-        username: ` @${firstName.toLowerCase()}${lastName.toLowerCase()}`,
+        username: `@${firstName.toLowerCase()}${lastName.toLowerCase()}`,
         avatar: c.user?.avatar || "/default-avatar.png",
       },
-      text: c.comment,
+      // Prefer normalized `text` from the API, fall back to legacy `comment` field
+      text: c.text,
       timestamp: time, // use formatted time instead of raw timestamp
       reactionsAggregated: c.reactionsAggregated || {}, // Include aggregated reactions
       replies: c.replies ? adaptComments(c.replies) : [], // Recursively adapt replies
@@ -66,12 +69,7 @@ export function TripFeed() {
         else setLoadingMore(true);
 
         const data = await fetchTrips(id || '', page, 5); // Limit 5 per page
-
-        // Handle response structure (array or object with pagination)
-        // Based on service check, it returns array or { trips, pagination }
-        // Assuming array for now based on previous code, but let's be safe
         const fetchedTrips = Array.isArray(data) ? data : data.trips || [];
-
         const tripsData: Trip[] = fetchedTrips.map((trip: any) => ({
           ...trip,
           comments: adaptComments(trip.comments || []),
@@ -113,7 +111,17 @@ export function TripFeed() {
   }, [loading, loadingMore, hasMore]);
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#bb986cff' }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        backgroundImage: "linear-gradient(rgba(255, 252, 252, 0.85), rgba(197, 197, 197, 0.9)), url('/feed_background.png')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
+        bgcolor: '#bb986cff',
+      }}
+    >
       <Navbar />
       <Container maxWidth="md" sx={{ py: { xs: 2, md: 3 }, px: { xs: 2, md: 3 } }}>
         {/* If user is not logged in and hasn't opted to view as guest, show the welcome card */}
@@ -157,13 +165,13 @@ export function TripFeed() {
 
             {loadingMore && (
               <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-                <TripFeedSkeleton />
+                <PassportLoading />
               </Box>
             )}
 
             {!hasMore && trips.length > 0 && (
               <Box sx={{ textAlign: 'center', p: 2, color: 'white' }}>
-                {t('feed.noMoreTrips')}
+                {t('noMoreTrips')}
               </Box>
             )}
           </>

@@ -29,10 +29,7 @@ export default function ForgotPassword() {
     if (!email) return;
 
     try {
-      console.log("i18n.language",i18n.language)
-      const result = await forgotPassword(email,i18n.language);
-      console.log("Server response:", result);
-
+      const result = await forgotPassword(email, i18n.language);
       setIsSubmitted(true);
 
       setTimeout(() => {

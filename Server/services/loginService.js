@@ -17,7 +17,6 @@ function generateToken(user) {
 
 export async function loginUserS(email, password) {
     const user = await usersModel.findOne({ email });
-    console.log("user", user)
     if (!user) {
         const error = new Error('User not found');
         error.status = 404;
@@ -34,7 +33,7 @@ export async function loginUserS(email, password) {
 
     const userToReturn = user.toObject();
     delete userToReturn.password;
-    console.log("userToReturn", userToReturn)
+   
     return { success: true, user: userToReturn, token };
 };
 
@@ -42,7 +41,6 @@ export async function registerUserS(firstName, lastName, email, password, birthd
     const existingUser = await usersModel.findOne({ email });
 
     if (existingUser) {
-        console.log("existingUser", existingUser)
         if (existingUser.googleId && !existingUser.password) {
             existingUser.password = await bcrypt.hash(password, SALT_ROUNDS);
             await existingUser.save();
@@ -112,27 +110,27 @@ export async function googleLoginS(ticket) {
 }
 
 export async function resetPasswordS(id, token, newPassword) {
-  const user = await usersModel.findOne({
-    _id: id,
-    resetToken: token,
-    resetTokenExpire: { $gt: Date.now() },
-  });
+    const user = await usersModel.findOne({
+        _id: id,
+        resetToken: token,
+        resetTokenExpire: { $gt: Date.now() },
+    });
 
-  if (!user) {
-    const error = new Error("Invalid or expired token");
-    error.status = 400;
-    throw error;
-  }
+    if (!user) {
+        const error = new Error("Invalid or expired token");
+        error.status = 400;
+        throw error;
+    }
 
-  // Hash the new password
-  const hashedPassword = await bcrypt.hash(newPassword, config.saltRounds);
-  user.password = hashedPassword;
-  user.resetToken = null;
-  user.resetTokenExpire = null;
-  await user.save();
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, config.saltRounds);
+    user.password = hashedPassword;
+    user.resetToken = null;
+    user.resetTokenExpire = null;
+    await user.save();
 
-  const userToReturn = user.toObject();
-  delete userToReturn.password;
+    const userToReturn = user.toObject();
+    delete userToReturn.password;
 
-  return { success: true, message: "Password updated successfully", user: userToReturn };
+    return { success: true, message: "Password updated successfully", user: userToReturn };
 }
