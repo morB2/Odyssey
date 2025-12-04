@@ -54,17 +54,29 @@ const Search: React.FC<SearchProps> = ({
   const debouncedSearchTerm = useDebounce(instantSearchTerm, debounceDelay);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const user = useUserStore((state) => state.user);
-  const { searchTerm } = useSearchStore();
+  const { searchTerm, shouldSearch, clearShouldSearch } = useSearchStore();
   const { t } = useTranslation();
+  const originRef = useRef<'store' | 'user' | 'none'>('none');
 
   useEffect(() => {
     setInstantSearchTerm(searchTerm);
+    originRef.current = 'store';
   }, [searchTerm]);
 
   // Perform search when debounced term changes
   useEffect(() => {
     const performSearch = async () => {
       if (debouncedSearchTerm.trim().length === 0) {
+        setSearchResults(null);
+        setShowResults(false);
+        return;
+      }
+
+      // If the current value originated from the store but wasn't marked
+      // as a user-initiated search, skip performing the search. This
+      // prevents automatic searches when navigating between pages where
+      // the store retains `searchTerm`.
+      if (originRef.current === 'store' && !shouldSearch) {
         setSearchResults(null);
         setShowResults(false);
         return;
@@ -86,11 +98,17 @@ const Search: React.FC<SearchProps> = ({
         setSearchResults({ users: [], trips: [] });
       } finally {
         setLoading(false);
+        // If this search was triggered by a store-originated action,
+        // clear the shouldSearch flag so subsequent mounts don't re-run it.
+        if (originRef.current === 'store') {
+          clearShouldSearch();
+        }
+        originRef.current = 'none';
       }
     };
 
     performSearch();
-  }, [debouncedSearchTerm, onSearch, user?._id]);
+  }, [debouncedSearchTerm, onSearch, user?._id, shouldSearch, clearShouldSearch]);
 
   // Handle click outside to close results
   useEffect(() => {
@@ -107,6 +125,7 @@ const Search: React.FC<SearchProps> = ({
   }, []);
 
   const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    originRef.current = 'user';
     setInstantSearchTerm(event.target.value);
   }, []);
 
