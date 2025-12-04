@@ -3,7 +3,7 @@ import { useUserStore } from '../store/userStore';
 import { toast } from 'react-toastify';
 
 const baseURL = import.meta.env.VITE_API_URL;
-const BASE_URL = baseURL ? `${baseURL}` : 'https://odyssey-server-g1xx.onrender.com';
+const BASE_URL = baseURL ? `${baseURL}` : 'https://odyssey-dbdn.onrender.com';
 
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,

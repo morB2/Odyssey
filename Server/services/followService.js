@@ -1,7 +1,8 @@
 import Follow from "../models/followModel.js";
 import User from "../models/userModel.js";
 import { clearUserFeedCache } from "../utils/cacheUtils.js";
-const SERVER_URL = process.env.SERVER_URL || "https://odyssey-server-g1xx.onrender.com";
+const SERVER_URL =
+  process.env.SERVER_URL || "https://odyssey-dbdn.onrender.com";
 function normalizeAvatar(avatar) {
   if (!avatar || typeof avatar !== "string") return avatar;
   if (avatar.startsWith("http://") || avatar.startsWith("https://"))
@@ -21,7 +22,7 @@ export const followUser = async (followerId, followingId) => {
 
   const follow = new Follow({ follower: followerId, following: followingId });
   await follow.save();
-    await clearUserFeedCache(followerId);
+  await clearUserFeedCache(followerId);
   return follow;
 };
 
@@ -34,7 +35,7 @@ export const unfollowUser = async (followerId, followingId) => {
 
   await Follow.deleteOne({ _id: existingFollow._id });
   await clearUserFeedCache(followerId);
-  
+
   return true;
 };
 
