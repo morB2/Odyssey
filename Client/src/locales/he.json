@@ -286,7 +286,8 @@
         "sendMessage": "שלח הודעה",
         "yourMessage": "ההודעה שלך",
         "loading": "טוען...",
-        "error": "שגיאה"
+        "error": "שגיאה",
+        "generating": "מייצר..."
     },
     "PostsManagement": {
         "search_placeholder": "חפש פוסטים לפי כותרת, מחבר או קטגוריה...",
@@ -542,7 +543,10 @@
         "failedToReact": "לא הצלחנו להוסיף ריאקציה.",
         "followingUser": "בעקבות",
         "unfollowedUser": "הביטול מעקב בוצע",
-        "chat": "צ׳אט"
+        "chat": "צ׳אט",
+        "linkCopied": "הקישור הועתק ללוח.",
+        "copyLink": "העתק קישור",
+        "postNotFound": "הפוסט לא נמצא."
     },
     "UsersManagement": {
         "searchPlaceholder": "חיפוש לפי שם או אימייל...",
@@ -638,7 +642,10 @@
             "activity": "טעימות יין",
             "instruction": "קח קו מטרו 6...",
             "mapsUrl": "https://maps.google.com/..."
-        }
+        },
+        "aiImport": "הדבק את הטיול שלך ותן ל-AI לבנות אותו",
+        "aiPlaceholder": "הדבק כאן את הפוסט המלא על הטיול שלך...",
+        "generateFromText": "צור מטקסט"
     },
     "tripLanding": {
         "heroTitle": "התחל לתכנן את ההרפתקה הבאה שלך",

@@ -273,7 +273,7 @@ export default function TripPost({ trip }: TripPostProps) {
         setDialogImageIndex(currentImageIndex); // Open dialog to the current image
 
         // Increment view count
-        incrementView(trip._id).catch(err => console.error("Failed to increment view", err));
+        incrementView(trip._id,trip.currentUserId).catch(err => console.error("Failed to increment view", err));
     };
 
     const handleCloseDialog = () => setDialogOpen(false);

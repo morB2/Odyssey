@@ -3,7 +3,7 @@ import { getIO } from "../config/socket.js";
 
 export const likeTripController = async (req, res, next) => {
   try {
-    const userId = req.body.userId; // ideally from auth middleware
+    const userId = req.user?._id || req.user?.id || req.body.userId; // from auth middleware
     const tripId = req.params.tripId;
 
     const likes = await likeService.likeTrip(userId, tripId);
@@ -24,7 +24,7 @@ export const likeTripController = async (req, res, next) => {
 
 export const unlikeTripController = async (req, res, next) => {
   try {
-    const userId = req.body.userId; // ideally from auth middleware
+    const userId = req.user?._id || req.user?.id || req.body.userId; // from auth middleware
     const tripId = req.params.tripId;
 
     const likes = await likeService.unlikeTrip(userId, tripId);

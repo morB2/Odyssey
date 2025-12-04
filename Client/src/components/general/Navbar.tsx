@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
+
 import {
   AppBar,
   Toolbar,

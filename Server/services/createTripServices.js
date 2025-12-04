@@ -5,6 +5,7 @@ import {
   oneDaySuggestInstruction,
   oneDayRouteInstruction,
   customizeInstruction,
+  parseTripFromPostInstruction
 } from "./prompts.js";
 import { validateAndDetectInjection } from "./promptInjectionDetector.js";
 import { clearUserFeedCache, clearUserProfileCache } from "../utils/cacheUtils.js";
@@ -212,4 +213,24 @@ async function saveTripToDB({
   }
 
   return doc;
+}
+
+export async function parseTripFromPost(userText) {
+  if (!userText || typeof userText !== "string") {
+    throw new Error("User post text is required");
+  }
+
+  const out = await askGemini(parseTripFromPostInstruction, userText);
+
+  const sanitized = sanitizeAIOutput(out);
+
+  try {
+    return JSON.parse(sanitized);
+  } catch (e) {
+    const err = new Error("AI returned invalid JSON for trip parsing");
+    err.type = "ai_non_json";
+    err.raw = out;
+    err.sanitized = sanitized;
+    throw err;
+  }
 }

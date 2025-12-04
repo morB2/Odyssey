@@ -17,7 +17,8 @@ export async function getFeedForUser(userId, page = 1, limit = 20) {
         page,
         limit,
         enableScoring: true,      // Enable personalized scoring
-        enableDiversity: true,    // Apply diversity filter
+        enableDiversity: true,
+        softRepeat: true,   // Apply diversity filter
         cacheKey,
         cacheTTL: 60,
         includeMetadata: false,

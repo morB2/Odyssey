@@ -38,7 +38,8 @@ function calculatePersonalizedScore({
 
     // Recency bonus (max 40 points for new posts)
     score += Math.max(0, 40 - hoursOld);
-
+    //views bonus 
+    score += Math.log10((trip.views || 0) + 1) * 10;
     // Engagement metrics
     score += likeCount * 3 + commentCount * 5 + saveCount * 8;
 
@@ -280,6 +281,8 @@ export async function fetchTrips({
     limit = 20,
     skip = null,
     sort = { createdAt: -1 },
+    excludeSeen = false,//hard filter
+    softRepeat = false,
     enableScoring = false,
     enableDiversity = false,
     populateUser = true,
@@ -334,9 +337,24 @@ export async function fetchTrips({
     let trips;
     let total = 0;
 
+    // ------------------------------------
+    // Load seen trips only if requested
+    // ------------------------------------
+    let seenSet = new Set();
+
+    if (viewerId && (excludeSeen||softRepeat)) {
+        const seenTripIds = await redis.sMembers(`user:${viewerId}:seenTrips`);
+        seenSet = new Set(seenTripIds);
+    }
+
     if (enableScoring || enableDiversity) {
         // Fetch all matching trips
         trips = await query.lean();
+        if (excludeSeen && viewerId && seenSet.size > 0) {
+            trips = trips.filter(
+                (trip) => !seenSet.has(trip._id.toString())
+            );
+        }
         total = trips.length;
 
         // Build metadata for scoring
@@ -354,18 +372,33 @@ export async function fetchTrips({
                 "following"
             );
             const followingIds = followingDocs.map((f) => f.following.toString());
-
-            enrichedTrips = enrichedTrips.map((trip) => ({
-                ...trip,
-                score: calculatePersonalizedScore({
+            enrichedTrips = enrichedTrips.map((trip) => {
+                let score = calculatePersonalizedScore({
                     trip,
                     user,
                     followingIds,
                     likeCount: metadata.likeMap[trip._id] || 0,
                     saveCount: metadata.saveMap[trip._id] || 0,
                     commentCount: trip.comments?.length || 0,
-                }),
-            }));
+                });
+
+                const tripId = trip._id.toString();
+
+                // ---------------------------------
+                // SOFT REPEAT PENALTY ✅
+                // ---------------------------------
+                console.log("Soft repeat flag:", softRepeat , seenSet, tripId);
+                if (softRepeat && seenSet.has(tripId)) {
+                    console.log("Applying soft repeat penalty for trip:", tripId);
+                    score *= 0.1;   // 90% visibility drop
+                }
+
+                return {
+                    ...trip,
+                    score,
+                    seenBefore: seenSet.has(tripId), // optional for frontend
+                };
+            });;
 
             // Sort by score
             enrichedTrips.sort((a, b) => b.score - a.score);

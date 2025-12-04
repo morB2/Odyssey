@@ -37,6 +37,7 @@ import { Box } from '@mui/material';
 import AllChatsPage from './components/chat/AllChatsPage';
 import { ResetPasswordPage } from './components/login/ResetPassword';
 import CreateTripLandingPage from './components/tripPlan/createTripLandingPage';
+import SinglePostPage from './components/social/SinglePostPage';
 
 function App() {
   const location = useLocation();
@@ -78,6 +79,7 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/profile/:userId" element={<Profile />} />
               <Route path="/feed" element={<TripFeed />} />
+              <Route path="/post/:postId" element={<SinglePostPage />} />
               <Route path="/forgotPassword" element={<ForgotPassword />} />
               <Route path="/resetPassword" element={<ResetPasswordPage />} />
               <Route path="/login" element={<Login />} />

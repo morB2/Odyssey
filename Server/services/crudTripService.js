@@ -5,6 +5,7 @@ import Follow from "../models/followModel.js";
 import User from "../models/userModel.js"; // Assuming User has name & avatar
 import { clearUserFeedCache } from "../utils/cacheUtils.js";
 import { fetchTrips } from "./tripFetcherService.js";
+import redis from "../db/redisClient.js";
 
 /**
  * Get first 10 trips with user info, following, liked, and saved status
@@ -185,7 +186,7 @@ export async function postReplyForUser(tripId, commentId, userId, replyText) {
  * @param {string} tripId - ID of the trip
  * @returns {Promise<number>} - The new view count
  */
-export async function incrementTripView(tripId) {
+export async function incrementTripView(tripId, userId = null) {
   const updatedTrip = await Trip.findByIdAndUpdate(
     tripId,
     { $inc: { views: 1 } },
@@ -193,7 +194,10 @@ export async function incrementTripView(tripId) {
   );
 
   if (!updatedTrip) throw new Error("Trip not found.");
-
+  if (userId) {
+    const added = await redis.sAdd(`user:${userId}:seenTrips`, tripId);
+    await redis.expire(`user:${userId}:seenTrips`, 60 * 60 * 24 * 7);
+  }
   return updatedTrip.views;
 }
 

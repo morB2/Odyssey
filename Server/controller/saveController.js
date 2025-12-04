@@ -3,7 +3,7 @@ import { getIO } from "../config/socket.js";
 
 export const saveTripController = async (req, res, next) => {
   try {
-    const userId = req.body.userId; // ideally from auth middleware
+    const userId = req.user?._id || req.user?.id || req.body.userId; // from auth middleware
     const tripId = req.params.tripId;
 
     await saveService.saveTrip(userId, tripId);
@@ -23,7 +23,7 @@ export const saveTripController = async (req, res, next) => {
 
 export const unSaveTripController = async (req, res, next) => {
   try {
-    const userId = req.body.userId; // ideally from auth middleware
+    const userId = req.user?._id || req.user?.id || req.body.userId; // from auth middleware
     const tripId = req.params.tripId;
 
     await saveService.unSaveTrip(userId, tripId);

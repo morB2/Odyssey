@@ -256,7 +256,10 @@
     "failedToReact": "Failed to add reaction.",
     "followingUser": "Following",
     "unfollowedUser": "Unfollowed",
-    "chat": "Chat"
+    "chat": "Chat",
+    "linkCopied": "Link copied to clipboard!",
+    "copyLink": "Copy Link",
+    "postNotFound": "Post not found."
   },
   "general": {
     "saving": "Saving...",
@@ -275,7 +278,8 @@
     "sendMessage": "Send Message",
     "yourMessage": "Your Message",
     "loading": "Loading...",
-    "error": "Error"
+    "error": "Error",
+    "generating": "Generating..."
   },
   "PostsManagement": {
     "search_placeholder": "Search posts by title, author or category...",
@@ -644,7 +648,10 @@
     "activity": "Wine Tasting",
     "instruction": "Take metro line 6...",
     "mapsUrl": "https://maps.google.com/..."
-  }
+  },
+   "aiImport": "Paste Your Trip & Let AI Build It",
+    "aiPlaceholder": "Paste your full travel post here...",
+    "generateFromText": "Generate from Text"
 },
 "tripLanding": {
   "heroTitle": "Start Planning Your Next Adventure",

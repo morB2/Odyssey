@@ -27,15 +27,15 @@ function adaptComments(apiComments: any[]): Comment[] {
     const lastName = c.user?.lastName || "User";
 
     return {
-      id: c._id,
+      id: c.id || c._id,
       userId: c.userId,
       user: {
-        
         name: `${firstName} ${lastName}`,
-        username: ` @${firstName.toLowerCase()}${lastName.toLowerCase()}`,
+        username: `@${firstName.toLowerCase()}${lastName.toLowerCase()}`,
         avatar: c.user?.avatar || "/default-avatar.png",
       },
-      text: c.comment,
+      // Prefer normalized `text` from the API, fall back to legacy `comment` field
+      text: c.text,
       timestamp: time, // use formatted time instead of raw timestamp
       reactionsAggregated: c.reactionsAggregated || {}, // Include aggregated reactions
       replies: c.replies ? adaptComments(c.replies) : [], // Recursively adapt replies

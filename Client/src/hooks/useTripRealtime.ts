@@ -31,15 +31,16 @@ export const useTripRealtime = ({
     // Handle new comments
     useSocketEvent('newComment', useCallback((data: any) => {
         if (data.tripId === tripId && data.comment) {
+            const c = data.comment;
             const newComment: Comment = {
-                id: data.comment._id,
+                id: c.id ?? c._id,
                 user: {
-                    name: `${data.comment.user.firstName} ${data.comment.user.lastName}`,
-                    username: `@${data.comment.user.firstName}${data.comment.user.lastName}`,
-                    avatar: data.comment.user.avatar || '/default-avatar.png',
+                    name: c.user?.name ?? `${c.user?.firstName || ''} ${c.user?.lastName || ''}`.trim(),
+                    username: c.user?.username ?? `@${(c.user?.firstName || '').toString().toLowerCase()}${(c.user?.lastName || '').toString().toLowerCase()}`,
+                    avatar: c.user?.avatar || '/default-avatar.png',
                 },
-                text: data.comment.comment,
-                timestamp: data.comment.createdAt,
+                text: c.text ?? c.comment ?? '',
+                timestamp: c.timestamp ?? c.createdAt,
             };
             onNewComment(newComment);
         }
@@ -55,15 +56,16 @@ export const useTripRealtime = ({
     // Handle new replies
     useSocketEvent('newReply', useCallback((data: any) => {
         if (data.tripId === tripId && data.reply) {
+            const r = data.reply;
             const newReply: Comment = {
-                id: data.reply._id,
+                id: r.id ?? r._id,
                 user: {
-                    name: `${data.reply.user.firstName} ${data.reply.user.lastName}`,
-                    username: `@${data.reply.user.firstName}${data.reply.user.lastName}`,
-                    avatar: data.reply.user.avatar || '/default-avatar.png',
+                    name: r.user?.name ?? `${r.user?.firstName || ''} ${r.user?.lastName || ''}`.trim(),
+                    username: r.user?.username ?? `@${(r.user?.firstName || '').toString().toLowerCase()}${(r.user?.lastName || '').toString().toLowerCase()}`,
+                    avatar: r.user?.avatar || '/default-avatar.png',
                 },
-                text: data.reply.comment,
-                timestamp: data.reply.createdAt,
+                text: r.text ?? r.comment ?? '',
+                timestamp: r.timestamp ?? r.createdAt,
             };
             onNewReply(data.commentId, newReply);
         }
