@@ -1,5 +1,4 @@
 import express from "express";
-import path from "path";
 import http from "http";
 import cors from "cors";
 import { routesInit } from "./routes/config_routes.js";
@@ -13,6 +12,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 const app = express();
 
+dotenv.config();
 const allowedOrigins = (process.env.FRONTEND_URL || '').split(',');
 
 const corsOptions = {
@@ -37,9 +37,6 @@ app.use(errorHandler);
 const server = http.createServer(app);
 // Initialize Socket.IO
 initializeSocket(server);
-
-dotenv.config();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.get(/.*/, (req, res) => {
