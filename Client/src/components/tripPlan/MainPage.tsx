@@ -1,12 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback, type FC } from 'react';
 import { Box, Card, CardContent, CardHeader, Typography, Stack } from '@mui/material';
 import { Sparkles, Calendar, MapPin } from 'lucide-react';
-// IMPORT NEW COMPONENTS
 import { ChatInput } from './ChatInput';
 import { FeatureCard } from './FeatureCard';
 import { type Message, type Itinerary } from './types';
 import { getSuggestions, customizeTrip, findOptimalRoute } from '../../services/createTrip.service';
-import Navbar from '../general/Navbar';
 import { useTranslation } from 'react-i18next';
 import { QuickActions } from './QuickActions';
 import { ChatWindow } from './ChatWindow';
@@ -141,7 +139,7 @@ export const MainPage: FC = () => {
     const handleSelectTravelMode = useCallback(async (mode: string) => {
         setTravelMode(mode);
 
-        const userMessage: Message = { id: messages.length + 1, text: t("main_page.user_selected_mode", { mode }), sender: 'user', timestamp: new Date() };
+        const userMessage: Message = { id: messages.length + 1, text: t("main_page.user_selected_mode", { mode: t(`travelModes.${mode}`) }), sender: 'user', timestamp: new Date() };
         setMessages((prev) => [...prev, userMessage]);
         setIsTyping(true);
 
@@ -199,7 +197,6 @@ export const MainPage: FC = () => {
 
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#fff', width: '100%', overflowX: 'hidden', margin: 'auto 0' }}>
-            <Navbar />
 
             {/* Hero Section */}
             <Box sx={{ position: 'relative', height: 500, overflow: 'hidden', mb: -25 }}>

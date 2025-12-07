@@ -685,6 +685,14 @@
   },
 
   "footer": "Ready to explore? Pick a planning method and begin your journey."
-}
+},
+ "saveWhenNotLoggedIn": {
+      "title": "Save Your Trip",
+    "description": "Log in to save this trip to your profile and access it anytime, or print it now to keep a copy.",
+    "login": "Log In / Sign Up",
+    "print": "Print Trip",
+     "or": "OR",
+    "maybeLater": "Maybe later"
+    }
 
 }

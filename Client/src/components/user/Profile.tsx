@@ -13,7 +13,6 @@ import { useTranslation } from 'react-i18next';
 // Navbar intentionally not rendered inside this view
 
 import api from "../../services/httpService";
-import Navbar from "../general/Navbar";
 
 // Shared styles
 const containerStyle = {
@@ -225,7 +224,6 @@ export default function Profile() {
 
   return (
     <>
-      <Navbar />
       <Box sx={containerStyle}>
         <Paper elevation={3} sx={paperStyle}>
           <ProfileHeader user={user || guestUser} isOwner={isOwner} onEditClick={() => isOwner && setIsEditModalOpen(true)} loading={loading} />

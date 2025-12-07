@@ -26,6 +26,7 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 import { initializeSocket } from './services/socketService';
 import { useUserStore } from './store/userStore';
+import { useSearchStore } from './store/searchStore';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -38,16 +39,23 @@ import AllChatsPage from './components/chat/AllChatsPage';
 import { ResetPasswordPage } from './components/login/ResetPassword';
 import CreateTripLandingPage from './components/tripPlan/createTripLandingPage';
 import SinglePostPage from './components/social/SinglePostPage';
+import Navbar from './components/general/Navbar';
 
 function App() {
   const location = useLocation();
   const { token } = useUserStore();
+  const { closeSearch } = useSearchStore();
 
   useEffect(() => {
     if (token) {
       initializeSocket(token);
     }
   }, [token]);
+
+  useEffect(() => {
+    // Close search whenever the route pathname changes
+    closeSearch();
+  }, [location.pathname, closeSearch]);
 
   const { i18n } = useTranslation();
   const theme = getTheme(i18n.language);
@@ -69,6 +77,7 @@ function App() {
           <ChatWidget />
 
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+            <Navbar />
             {/* Main Routes */}
             <Routes location={background}>
               <Route path="/" element={<Home />} />

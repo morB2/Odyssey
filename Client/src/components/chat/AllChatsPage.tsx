@@ -2,15 +2,13 @@ import React, { useState } from 'react';
 import { Container, Paper, Box } from '@mui/material';
 import ChatSidebar from './ChatSidebar';
 import ChatWindow from './ChatWindow';
-import Navbar from '../general/Navbar';
 
 const AllChatsPage: React.FC = () => {
     const [activeChatUser, setActiveChatUser] = useState<any>(null);
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh',marginTop: 10, overflow: 'hidden' }}>
-            <Navbar />
-            <Container maxWidth="xl" sx={{ mt: 10, mb: 2, flexGrow: 1, display: 'flex', overflow: 'hidden' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+            <Container maxWidth="xl" sx={{ mb: 2, flexGrow: 1, display: 'flex', overflow: 'hidden' }}>
                 <Paper
                     elevation={3}
                     sx={{

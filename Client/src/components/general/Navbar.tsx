@@ -29,6 +29,7 @@ import LanguageSwitcher from './LanguageSwitcher';
 import Search from './Search';
 import { useTranslation } from 'react-i18next';
 import chatService from '../../services/chat.service';
+import { useSocketEvent } from '../../hooks/useSocket';
 
 const Navbar: FC = () => {
   const navigate = useNavigate();
@@ -47,7 +48,8 @@ const Navbar: FC = () => {
       if (!user?._id) return setUnreadCount(0);
       try {
         const data = await chatService.getUnreadCount(user._id);
-        const count = typeof data === 'number' ? data : data?.unread ?? 0;
+        const count = typeof data === 'number' ? data : (data?.count ?? data?.unread ?? 0);
+        console.log('Fetched unread count:', count);
         if (mounted) setUnreadCount(count);
       } catch (err) {
         console.error('Failed to fetch unread count', err);
@@ -57,6 +59,26 @@ const Navbar: FC = () => {
     fetchUnread();
     // return () => (mounted = false);
   }, [user]);
+
+  // Listen for new messages to increment unread count
+  useSocketEvent('newMessage', (message: any) => {
+    // If message is for me and I'm not the sender
+    if (user && message.receiverId._id === user._id) {
+      setUnreadCount(prev => prev + 1);
+    }
+  });
+
+  // Listen for read receipts to update unread count
+  useSocketEvent('messagesRead', (data: any) => {
+    // If I read messages (on another device/tab or this one), refresh count
+    if (user && (data.byUserId === user._id)) {
+      // Re-fetch to be accurate
+      chatService.getUnreadCount(user._id||"").then(data => {
+        const count = typeof data === 'number' ? data : (data?.count ?? data?.unread ?? 0);
+        setUnreadCount(count);
+      });
+    }
+  });
 
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
   const handleMobileNavigate = (path: string, state?: any) => {
@@ -108,7 +130,7 @@ const Navbar: FC = () => {
               <ListItemButton onClick={() => handleMobileNavigate('/chats')}>
                 <MessageCircleMore size={20} />
                 <ListItemText sx={{ ml: 1 }} primary={t('messages')} />
-                {unreadCount > 0 && <Box sx={{ width: 8, height: 8, bgcolor: '#f97316', borderRadius: '50%', ml: 1 }} />}
+                {unreadCount > 0 && <Box sx={{ width: 8, height: 8, bgcolor: '#f97316', borderRadius: '50%', ml: 1}} />}
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
@@ -170,7 +192,7 @@ const Navbar: FC = () => {
           ) : (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Search onSearch={(s) => console.log('search:', s)} />
-              <Box onClick={() => navigate('/feed')} sx={navItemStyle}><BookImage size={24} /><Typography variant="caption">Feed</Typography></Box>
+              <Box onClick={() => navigate('/feed')} sx={navItemStyle}><BookImage size={24} /><Typography variant="caption">{t('feed')}</Typography></Box>
               <Box onClick={() => navigate('/createtrip')} sx={navItemStyle}><Sparkles size={24} /><Typography variant="caption">{t('createTrip.create')}</Typography></Box>
               {user && (
                 <>
@@ -184,7 +206,7 @@ const Navbar: FC = () => {
                         background: 'linear-gradient(135deg,#f97316,#ea580c)',
                         width: 20, height: 20, borderRadius: '50%',
                         color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center',
-                        fontSize: '0.7rem', fontWeight: 'bold'
+                        fontSize: '0.7rem', fontWeight: 'bold', fontFamily:'Arial'
                       }}>
                         {unreadCount}
                       </Box>

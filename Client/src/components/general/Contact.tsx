@@ -1,14 +1,12 @@
 import React from 'react';
 import { Box, Container, Typography, Paper, Grid, TextField, Button } from '@mui/material';
 import { Mail, MapPin, Phone, Send } from 'lucide-react';
-import Navbar from './Navbar';
 import { useTranslation } from 'react-i18next';
 
 const Contact: React.FC = () => {
     const { t } = useTranslation();
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#f9fafb' }}>
-            <Navbar />
             <Container maxWidth="lg" sx={{ py: 8 }}>
                 <Box sx={{ textAlign: 'center', mb: 8 }}>
                     <Typography variant="h3" component="h1" sx={{ mb: 2, fontWeight: 800, color: '#1f2937' }}>
