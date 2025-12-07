@@ -120,7 +120,7 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
   const handleSaveOption = async (type: "private" | "public") => {
     setOpenDialog(false);
     try {
-      const response = await fetch('https://odyssey-server-g1xx.onrender.com/createTrip/save', {
+      const response = await fetch('https://odyssey-dbdn.onrender.com/createTrip/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(
