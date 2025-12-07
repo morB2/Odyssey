@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 
 const baseURL = import.meta.env.VITE_API_URL;
 const BASE_URL = baseURL ? `${baseURL}` : 'https://odyssey-dbdn.onrender.com';
-
+console.log("BASE_URL", BASE_URL);
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   headers: {
