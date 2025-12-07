@@ -94,3 +94,16 @@ export type ServerTrip = {
   activities?: string[];
   notes?: string;
 };
+
+export interface Collection {
+  _id: string;
+  user: UserProfile | string;
+  name: string;
+  description?: string;
+  trips: Trip[];
+  coverImage?: string;
+  isPrivate: boolean;
+  tripCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}

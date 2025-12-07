@@ -11,6 +11,7 @@ import reports from './reportRoutes.js';
 import chat from './chatRoutes.js';
 import search from './searchRoutes.js';
 import admin from './adminRoutes.js';
+import collections from './collectionRoutes.js';
 import { authMiddleware as autoM } from '../middleware/authMiddleware.js';
 
 export function routesInit(app) {
@@ -28,4 +29,5 @@ export function routesInit(app) {
   app.use('/chat', chat);
   app.use('/search', search);
   app.use('/admin', admin);
+  app.use('/collections', collections);
 }

@@ -46,7 +46,7 @@ function adaptComments(apiComments: any[]): Comment[] {
       replies: c.replies ? adaptComments(c.replies) : [], // Recursively adapt replies
     };
   });
-} 
+}
 export default function TripPostAdapter({ trip, onDelete, onEdit }: AdapterProps) {
   const storeUser = useUserStore((s) => s.user);
   const currentUserId = storeUser?._id || "";

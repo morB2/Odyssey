@@ -199,12 +199,14 @@
         "editProfile": "עריכת פרופיל",
         "myTrips": "הטיולים שלי",
         "likedTrips": "אהבתי",
+        "collections": "אוספים",
         "savedTrips": "שמורים",
         "noTripsYet": "אין עדיין טיולים",
         "changeProfilePicture": "שינוי תמונת פרופיל",
         "uploadNewAvatar": "העלה תמונה חדשה",
         "cancel": "ביטול",
-        "save": "שמירה"
+        "save": "שמירה",
+        "trips": "טיולים"
     },
     "chat": {
         "typeMessage": "הקלד הודעה...",

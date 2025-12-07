@@ -1,14 +1,18 @@
 import type { Trip } from "./types";
+import type { Collection } from "./types";
 import TripPostAdapter from "./TripPostAdapter";
 import { Box, Tabs, Tab, Typography, Grid, Skeleton, Card, CircularProgress } from "@mui/material";
-import { User, Heart, Bookmark } from "lucide-react";
+import { User, Heart, Bookmark, Layers } from "lucide-react";
+import { CollectionsList } from "../collections/CollectionsList";
 import { useEffect, useRef } from "react";
 import { useTranslation } from 'react-i18next';
 
 interface TripsListProps {
   trips: Trip[];
-  activeTab: "my-trips" | "liked" | "saved";
-  onTabChange: (tab: "my-trips" | "liked" | "saved") => void;
+  collections?: Collection[];
+  collectionsLoading?: boolean;
+  activeTab: "my-trips" | "liked" | "saved" | "collections";
+  onTabChange: (tab: "my-trips" | "liked" | "saved" | "collections") => void;
   onTripClick: (trip: Trip) => void;
   setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
   onEdit: (trip: Trip) => void;
@@ -18,29 +22,37 @@ interface TripsListProps {
   loadingMore?: boolean;
   onLoadMore?: () => void;
   hasMore?: boolean;
+  onCollectionCreate?: () => void;
+  onCollectionEdit?: (collection: Collection) => void;
+  onCollectionDelete?: (collectionId: string) => void;
 }
 
 export function TripsList({
   trips = [],
+  collections = [],
+  collectionsLoading = false,
   activeTab,
   onTabChange,
-  setTrips,
   onEdit,
   onDelete,
   isOwner,
   loading = false,
   loadingMore = false,
   onLoadMore,
-  hasMore = true
+  hasMore = true,
+  onCollectionCreate,
+  onCollectionEdit,
+  onCollectionDelete
 }: TripsListProps) {
-  
+
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
 
-  /** Tabs only show saved if this is the user's own profile */
+  /** Tabs: include collections tab for all profiles; saved only for owner */
   const availableTabs = [
     { key: "my-trips", label: t('profile.myTrips'), icon: <User size={20} /> },
     { key: "liked", label: t('profile.likedTrips'), icon: <Heart size={20} /> },
+    { key: "collections", label: t('profile.collections') || 'Collections', icon: <Layers size={20} /> },
     ...(isOwner ? [{ key: "saved", label: t('profile.savedTrips'), icon: <Bookmark size={20} /> }] : []),
   ] as const;
 
@@ -58,9 +70,9 @@ export function TripsList({
   };
 
   const handleTabChange = (_: any, index: number) =>
-    onTabChange(availableTabs[index].key as "my-trips" | "liked" | "saved");
+    onTabChange(availableTabs[index].key as "my-trips" | "liked" | "saved" | "collections");
 
-  
+
   /** Skeleton Loading Card */
   const SkeletonCard = () => (
     <Card sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
@@ -98,7 +110,7 @@ export function TripsList({
 
   return (
     <Box>
-      
+
       {/* Tabs */}
       <Box sx={{ mb: 5, borderBottom: "1px solid #e5e5e5" }}>
         <Tabs
@@ -124,8 +136,18 @@ export function TripsList({
           ))}
         </Grid>
 
+      ) : activeTab === 'collections' ? (
+        <CollectionsList
+          collections={collections || []}
+          onCreate={onCollectionCreate || (() => { })}
+          onEdit={onCollectionEdit || (() => { })}
+          onDelete={onCollectionDelete || (() => { })}
+          isOwner={isOwner}
+          loading={collectionsLoading}
+        />
+
       ) : trips.length === 0 ? (
-        
+
         <Box sx={{ border: "1px solid #e5e5e5", backgroundColor: "#fff", p: 6, textAlign: "center", borderRadius: 3 }}>
           <Typography sx={{ color: "#737373", fontSize: "1rem" }}>{t('profile.noTripsYet')}</Typography>
         </Box>
@@ -138,7 +160,6 @@ export function TripsList({
               <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={trip._id ?? trip.id}>
                 <TripPostAdapter
                   trip={trip}
-                  setTrips={setTrips}
                   onEdit={() => onEdit(trip)}
                   onDelete={() => onDelete(trip._id)}
                 />
