@@ -12,8 +12,10 @@ import cloudinary from "./config/cloudinary.js";
 
 const app = express();
 
+const allowedOrigins = (process.env.FRONTEND_URL || '').split(',');
+
 const corsOptions = {
-    origin: config.frontendUrl, 
+    origin: allowedOrigins,
     credentials: true,
     optionsSuccessStatus: 200 
 };

@@ -10,9 +10,11 @@ let io;
  * @returns {Server} Socket.IO server instance
  */
 export const initializeSocket = (server) => {
+    const allowedOrigins = (process.env.FRONTEND_URL || '').split(',');
+
     io = new Server(server, {
         cors: {
-            origin: process.env.FRONTEND_URL || '*',
+            origin: allowedOrigins || '*',
             methods: ['GET', 'POST'],
             credentials: true,
         },
