@@ -138,7 +138,6 @@ export function TripsList({
               <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={trip._id ?? trip.id}>
                 <TripPostAdapter
                   trip={trip}
-                  setTrips={setTrips}
                   onEdit={() => onEdit(trip)}
                   onDelete={() => onDelete(trip._id)}
                 />
