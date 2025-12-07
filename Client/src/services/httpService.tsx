@@ -3,8 +3,11 @@ import { useUserStore } from '../store/userStore';
 import { toast } from 'react-toastify';
 
 const baseURL = import.meta.env.VITE_API_URL;
+console.log("import.meta.env.VITE_API_URL:", import.meta.env.VITE_API_URL);
+console.log("typeof VITE_API_URL:", typeof import.meta.env.VITE_API_URL);
+console.log("All env vars:", import.meta.env);
 const BASE_URL = baseURL ? `${baseURL}` : 'https://odyssey-dbdn.onrender.com';
-console.log("BASE_URL", BASE_URL);
+console.log("Final BASE_URL:", BASE_URL);
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   headers: {
