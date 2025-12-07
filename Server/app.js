@@ -12,7 +12,12 @@ import cloudinary from "./config/cloudinary.js";
 
 const app = express();
 
-app.use(cors());
+const corsOptions = {
+    origin: config.frontendUrl, 
+    credentials: true,
+    optionsSuccessStatus: 200 
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Ensure uploads directory exists and serve it statically
