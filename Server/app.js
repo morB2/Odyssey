@@ -1,6 +1,7 @@
 import express from "express";
 import http from "http";
 import cors from "cors";
+import dotenv from "dotenv";
 import { routesInit } from "./routes/config_routes.js";
 import "./db/mongoConect.js";
 import { config } from "./config/secret.js";
