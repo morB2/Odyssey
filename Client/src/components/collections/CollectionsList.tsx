@@ -1,9 +1,10 @@
 import { Box, Typography, Grid, Button, CircularProgress } from "@mui/material";
-
+import { RoutePreview } from "./RoutePreview";
 import { Plus } from "lucide-react";
 import type { Collection } from "../user/types";
 import { CollectionCard } from "./CollectionCard";
 import { useTranslation } from 'react-i18next';
+import RouteViewer from "./RouteViewer";
 interface CollectionsListProps {
     collections: Collection[];
     onCreate: () => void;
@@ -75,19 +76,14 @@ export function CollectionsList({
                 </Box>
             )}
 
-            <Grid container spacing={3}>
+            <Grid container spacing={3}  sx={{width: "100%", px: 3, justifyContent: "space-between", // ✅ spreads evenly
+  }}>
                 {collections.map(collection => (
                     <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={collection._id}>
-                        <CollectionCard
-                            collection={collection}
-                            onEdit={() => onEdit(collection)}
-                            onDelete={() => onDelete(collection._id)}
-                            isOwner={isOwner}
-                        />
+                        <RouteViewer collection={collection}/>
                     </Grid>
                 ))}
             </Grid>
-
         </Box>
     );
 }

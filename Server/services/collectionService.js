@@ -32,11 +32,20 @@ export const getCollectionsByUserService = async (userId, viewerId, options = {}
     // For each collection, fetch trips using your unified fetchTrips
     const result = [];
     for (const c of collections) {
-        const trips = await fetchTrips({
+        const fetchedTrips = await fetchTrips({
             filter: { _id: { $in: c.trips } },
             viewerId,
             ...options
         });
+
+        // Re-order trips to match the order in c.trips
+        // Create a map for quick lookup
+        const tripMap = new Map(fetchedTrips.map(t => [t._id.toString(), t]));
+
+        // Map c.trips to the fetched trip objects, filtering out any that might have been deleted/not found
+        const trips = c.trips
+            .map(id => tripMap.get(id.toString()))
+            .filter(Boolean);
 
         result.push({
             ...c,
