@@ -1,7 +1,7 @@
 import express from "express";
-import path from "path";
 import http from "http";
 import cors from "cors";
+import dotenv from "dotenv";
 import { routesInit } from "./routes/config_routes.js";
 import "./db/mongoConect.js";
 import { config } from "./config/secret.js";
@@ -9,10 +9,19 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import { initializeSocket } from "./utils/socket.js";
 import fs from "fs";
 import cloudinary from "./config/cloudinary.js";
-
+import path from "path";
+import { fileURLToPath } from "url";
 const app = express();
 
-app.use(cors());
+dotenv.config();
+const allowedOrigins = (process.env.FRONTEND_URL || '').split(',');
+
+const corsOptions = {
+    origin: allowedOrigins,
+    credentials: true,
+    optionsSuccessStatus: 200 
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Ensure uploads directory exists and serve it statically
@@ -27,10 +36,13 @@ routesInit(app);
 app.use(errorHandler);
 
 const server = http.createServer(app);
-
 // Initialize Socket.IO
 initializeSocket(server);
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(__dirname, "client", "build", "index.html"));
+});
 const port = config.port || 3000;
 server.listen(port, () => {
   console.log(`Server running at http://localhost:${port}/`);

@@ -65,6 +65,8 @@ function App() {
     document.body.dir = i18n.language === 'he' ? 'rtl' : 'ltr';
   }, [i18n.language]);
 
+
+
   const state = location.state as { backgroundLocation?: string };
   const background = state?.backgroundLocation
     ? { pathname: state.backgroundLocation }

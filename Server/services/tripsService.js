@@ -6,7 +6,7 @@
 // import User from "../models/userModel.js";
 // import redis from '../db/redisClient.js';
 
-// const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
+// const SERVER_URL = process.env.SERVER_URL || " https://odyssey-dbdn.onrender.com";
 // function normalizeAvatarUrl(avatar) {
 //   if (!avatar) return avatar;
 //   if (typeof avatar !== "string") return avatar;
@@ -56,13 +56,13 @@
 // // ---------------------------
 // // Core function: fetch trips
 // // ---------------------------
-// export async function fetchTrips({ 
-//   filter = {}, 
-//   viewerId, 
-//   page, 
-//   limit, 
-//   forFeed = false, 
-//   cacheKey = null 
+// export async function fetchTrips({
+//   filter = {},
+//   viewerId,
+//   page,
+//   limit,
+//   forFeed = false,
+//   cacheKey = null
 // }) {
 //   if (forFeed && cacheKey) {
 //     const cached = await redis.get(cacheKey);
@@ -178,7 +178,7 @@
 // // Wrappers
 // export async function getFeedForUser(userId, page = 1, limit = 20) {
 //   const cacheKey = `feed:${userId}:page:${page}:limit:${limit}`;
-//   return fetchTrips({ 
+//   return fetchTrips({
 //     filter: { visabilityStatus: "public" },
 //     viewerId: userId,
 //     page,

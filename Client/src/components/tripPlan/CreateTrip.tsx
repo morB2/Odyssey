@@ -25,6 +25,7 @@ import { toast } from 'react-toastify';
 import { CloudinaryUploadWidget } from '../general/CloudinaryUploadWidget';
 import { useTranslation } from 'react-i18next';
 
+
 interface RouteStop {
     name: string;
     note: string;
@@ -36,7 +37,7 @@ export const CreateTrip: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useUserStore();
     const { t } = useTranslation();
-
+    const BASE_URL = import.meta.env.VITE_API_URL;
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [mode, setMode] = useState('driving');
@@ -97,7 +98,7 @@ export const CreateTrip: React.FC = () => {
                 image: imageUrl,
             };
 
-            const res = await fetch("http://localhost:3000/createTrip/save", {
+            const res = await fetch(`${BASE_URL}/createTrip/save`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
@@ -119,7 +120,7 @@ export const CreateTrip: React.FC = () => {
         setIsGenerating(true);
 
         try {
-            const res = await fetch("http://localhost:3000/createTrip/parse", {
+            const res = await fetch(`${BASE_URL}/createTrip/parse`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ text: aiInput }),
