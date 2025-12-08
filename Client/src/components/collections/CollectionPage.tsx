@@ -3,9 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Container, Box, CircularProgress, IconButton } from "@mui/material";
 import { ArrowLeft } from "lucide-react";
 import { getCollectionById } from "../../services/collection.service";
-import { CollectionDetails } from "./CollectionDetails";
 import type { Collection } from "../user/types";
 import { toast } from "react-toastify";
+import RouteViewer from "./RouteViewer";
 
 export default function CollectionPage() {
     const { id } = useParams();
@@ -50,7 +50,7 @@ export default function CollectionPage() {
                     </IconButton>
                 </Box>
 
-                <CollectionDetails collection={collection} />
+                <RouteViewer collection={collection} />
             </Container>
         </Box>
     );

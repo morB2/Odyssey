@@ -2,14 +2,15 @@ import { Box, Typography, Grid, Button, CircularProgress } from "@mui/material";
 import { RoutePreview } from "./RoutePreview";
 import { Plus } from "lucide-react";
 import type { Collection } from "../user/types";
-import { CollectionCard } from "./CollectionCard";
-import { useTranslation } from 'react-i18next';
 import RouteViewer from "./RouteViewer";
 interface CollectionsListProps {
     collections: Collection[];
     onCreate: () => void;
     onEdit: (collection: Collection) => void;
     onDelete: (collectionId: string) => void;
+    // Optional trip-level handlers forwarded to RouteViewer -> TripPostAdapter
+    onTripEdit?: (trip: any) => void;
+    onTripDelete?: (tripId: string) => void;
     isOwner: boolean;
     loading?: boolean;
 }
@@ -19,10 +20,11 @@ export function CollectionsList({
     onCreate,
     onEdit,
     onDelete,
+    onTripEdit,
+    onTripDelete,
     isOwner,
     loading = false
 }: CollectionsListProps) {
-    const { t } = useTranslation(); // Assuming translation keys exist or falling back
 
 
     if (loading) {
@@ -76,11 +78,16 @@ export function CollectionsList({
                 </Box>
             )}
 
-            <Grid container spacing={3}  sx={{width: "100%", px: 3, justifyContent: "space-between", // ✅ spreads evenly
-  }}>
+            <Grid container spacing={3} sx={{
+                width: "100%", px: 3, justifyContent: "space-between", // ✅ spreads evenly
+            }}>
                 {collections.map(collection => (
                     <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={collection._id}>
-                        <RouteViewer collection={collection}/>
+                        <RouteViewer
+                            collection={collection}
+                            onEdit={(col) => onEdit(col)}
+                            onDelete={(id) => onDelete(id)}
+                        />
                     </Grid>
                 ))}
             </Grid>

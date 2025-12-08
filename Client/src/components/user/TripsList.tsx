@@ -142,6 +142,9 @@ export function TripsList({
           onCreate={onCollectionCreate || (() => { })}
           onEdit={onCollectionEdit || (() => { })}
           onDelete={onCollectionDelete || (() => { })}
+          // Forward trip handlers so RouteViewer/TripPostAdapter can use them
+          onTripEdit={onEdit}
+          onTripDelete={onDelete}
           isOwner={isOwner}
           loading={collectionsLoading}
         />

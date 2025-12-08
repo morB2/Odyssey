@@ -5,10 +5,12 @@ interface TripPostContentProps {
     duration: string;
     description: string;
     activities: string[];
+    maxLines?: number;
+    showDescription?: boolean;
 }
 
-export default function TripPostContent({ title, duration, description, activities }: TripPostContentProps) {
-    const {openSearch } = useSearchStore();
+export default function TripPostContent({ title, duration, description, activities, maxLines = 3, showDescription = true }: TripPostContentProps) {
+    const { openSearch } = useSearchStore();
     const handleActivityClick = (activity: string) => {
         openSearch(activity)
     };
@@ -22,9 +24,21 @@ export default function TripPostContent({ title, duration, description, activiti
                     {duration}
                 </Typography>
             </Box>
-            <Typography variant="body1" paragraph>
-                {description}
-            </Typography>
+            {showDescription && (
+                <Typography
+                    variant="body1"
+                    paragraph
+                    sx={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: maxLines,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                    }}
+                >
+                    {description}
+                </Typography>
+            )}
 
             {/* Hashtags from activities */}
             <Box display="flex" flexWrap="wrap" gap={1}>
@@ -36,7 +50,7 @@ export default function TripPostContent({ title, duration, description, activiti
                         clickable
                         color="primary"
                         variant="outlined"
-                        onClick={(e) =>{e.stopPropagation(), handleActivityClick(activity)}}
+                        onClick={(e) => { e.stopPropagation(), handleActivityClick(activity) }}
                     />
                 ))}
             </Box>

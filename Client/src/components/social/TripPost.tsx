@@ -28,6 +28,8 @@ const theme = createTheme({
 
 interface TripPostProps {
     trip: Trip;
+    maxLines?: number;
+    showDescription?: boolean;
 }
 
 // Helper to initialize comment reactions
@@ -42,7 +44,7 @@ const initializeReactions = (comments: Comment[]): Record<string, Record<string,
 };
 
 
-export default function TripPost({ trip }: TripPostProps) {
+export default function TripPost({ trip, maxLines, showDescription }: TripPostProps) {
     const { t } = useTranslation();
     // --- Post State ---
     const [isLiked, setIsLiked] = useState(trip.isLiked);
@@ -273,7 +275,7 @@ export default function TripPost({ trip }: TripPostProps) {
         setDialogImageIndex(currentImageIndex); // Open dialog to the current image
 
         // Increment view count
-        incrementView(trip._id,trip.currentUserId).catch(err => console.error("Failed to increment view", err));
+        incrementView(trip._id, trip.currentUserId).catch(err => console.error("Failed to increment view", err));
     };
 
     const handleCloseDialog = () => setDialogOpen(false);
@@ -337,6 +339,8 @@ export default function TripPost({ trip }: TripPostProps) {
                         duration={trip.duration || ''}
                         description={trip.description}
                         activities={trip.activities}
+                        maxLines={maxLines}
+                        showDescription={showDescription}
                     />
                 </CardContent>
 

@@ -11,6 +11,8 @@ interface AdapterProps {
   trip: Trip;
   onDelete: () => void;
   onEdit: () => void;
+  maxLines?: number;
+  showDescription?: boolean;
 }
 
 // Shared styles
@@ -47,7 +49,7 @@ function adaptComments(apiComments: any[]): Comment[] {
     };
   });
 }
-export default function TripPostAdapter({ trip, onDelete, onEdit }: AdapterProps) {
+export default function TripPostAdapter({ trip, onDelete, onEdit, maxLines, showDescription }: AdapterProps) {
   const storeUser = useUserStore((s) => s.user);
   const currentUserId = storeUser?._id || "";
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -94,7 +96,7 @@ export default function TripPostAdapter({ trip, onDelete, onEdit }: AdapterProps
   return (
     <>
       <Box sx={{ position: "relative" }}>
-        <TripPost trip={mapped} />
+        <TripPost trip={mapped} maxLines={maxLines} showDescription={showDescription} />
         {storeUser?._id === trip.user?._id && (
           <Box sx={actionsContainerStyle}>
             <ActionButton onClick={onEdit} Icon={Edit} hoverColor="#374151" />
