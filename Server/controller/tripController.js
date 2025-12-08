@@ -1,7 +1,7 @@
-import { getTripsForUser, postCommentForUser, addReactionToComment, postReplyForUser, incrementTripView, deleteComment as deleteCommentService} from "../services/crudTripService.js";
-import {fetchTrips as fetchTripsService } from "../services/tripFetcherService.js";
+import { getTripsForUser, postCommentForUser, addReactionToComment, postReplyForUser, incrementTripView, deleteComment as deleteCommentService } from "../services/crudTripService.js";
+import { fetchTrips as fetchTripsService } from "../services/tripFetcherService.js";
 import { getFeedForUser } from "../services/feedService.js";
-import { getIO } from "../config/socket.js";
+import { getIO } from "../utils/socket.js";
 
 export async function fetchTrips(req, res) {
   try {
@@ -109,7 +109,7 @@ export async function incrementView(req, res) {
   try {
     const { tripId } = req.params;
     const { userId } = req.body;
-    const newViewCount = await incrementTripView(tripId,userId);
+    const newViewCount = await incrementTripView(tripId, userId);
 
     // Emit real-time event to all users in the trip room
     const io = getIO();

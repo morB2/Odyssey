@@ -7,6 +7,7 @@ export const config = {
   googleClientId: process.env.GOOGLE_CLIENT_ID,
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
   jwtSecret: process.env.JWT_SECRET,
+  port: process.env.PORT,
   saltRounds: Number(process.env.SALT_ROUNDS) || 12,
   gmailAppPass: process.env.GMAIL_APP_PASS,
   gmailUser: process.env.GMAIL_USER,

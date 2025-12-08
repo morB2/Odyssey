@@ -1,5 +1,5 @@
 import * as likeService from "../services/likeService.js";
-import { getIO } from "../config/socket.js";
+import { getIO } from "../utils/socket.js";
 
 export const likeTripController = async (req, res, next) => {
   try {

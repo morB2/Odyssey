@@ -1,5 +1,5 @@
 import * as saveService from "../services/saveService.js";
-import { getIO } from "../config/socket.js";
+import { getIO } from "../utils/socket.js";
 
 export const saveTripController = async (req, res, next) => {
   try {

@@ -111,7 +111,17 @@ export function TripFeed() {
   }, [loading, loadingMore, hasMore]);
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#bb986cff' }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        backgroundImage: "linear-gradient(rgba(255, 252, 252, 0.85), rgba(197, 197, 197, 0.9)), url('/feed_background.png')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
+        bgcolor: '#bb986cff',
+      }}
+    >
       <Navbar />
       <Container maxWidth="md" sx={{ py: { xs: 2, md: 3 }, px: { xs: 2, md: 3 } }}>
         {/* If user is not logged in and hasn't opted to view as guest, show the welcome card */}

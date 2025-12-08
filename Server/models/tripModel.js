@@ -71,6 +71,23 @@ function arrayLimit(val) {
   return val.length <= 3;
 }
 
+// -----------------------------------------------------
+// Indexes for Performance Optimization
+// -----------------------------------------------------
+
+// Compound index for feed queries (filter by visibility + sort by date)
+TripSchema.index({ visabilityStatus: 1, createdAt: -1 });
+
+// Index for views-based sorting and trending content
+TripSchema.index({ views: -1 });
+
+// Index for activity-based filtering and recommendations
+TripSchema.index({ activities: 1 });
+
+// -----------------------------------------------------
+// Middleware
+// -----------------------------------------------------
+
 // Middleware to delete related records when a Trip is deleted
 TripSchema.pre('findOneAndDelete', async function (next) {
   try {

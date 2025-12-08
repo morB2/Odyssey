@@ -2,9 +2,7 @@ import axios, { type AxiosInstance } from 'axios';
 import { useUserStore } from '../store/userStore';
 import { toast } from 'react-toastify';
 
-const baseURL = import.meta.env.VITE_API_URL;
-const BASE_URL = baseURL ? `${baseURL}` : 'http://localhost:3000';
-
+const BASE_URL = import.meta.env.VITE_API_URL;
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   headers: {

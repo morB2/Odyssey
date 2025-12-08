@@ -1,6 +1,6 @@
 import Message from '../models/messageModel.js';
 import Conversation from '../models/conversationModel.js';
-import { getIO } from '../config/socket.js';
+import { getIO } from '../utils/socket.js';
 
 /**
  * Get conversation between two users

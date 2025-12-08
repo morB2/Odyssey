@@ -38,7 +38,6 @@ import AllChatsPage from './components/chat/AllChatsPage';
 import { ResetPasswordPage } from './components/login/ResetPassword';
 import CreateTripLandingPage from './components/tripPlan/createTripLandingPage';
 import SinglePostPage from './components/social/SinglePostPage';
-
 function App() {
   const location = useLocation();
   const { token } = useUserStore();
@@ -55,6 +54,8 @@ function App() {
   useEffect(() => {
     document.body.dir = i18n.language === 'he' ? 'rtl' : 'ltr';
   }, [i18n.language]);
+
+
 
   const state = location.state as { backgroundLocation?: string };
   const background = state?.backgroundLocation

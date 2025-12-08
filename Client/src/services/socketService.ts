@@ -1,6 +1,7 @@
-import { io, Socket } from 'socket.io-client';
+import { io, Socket } from "socket.io-client";
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const SOCKET_URL =
+  import.meta.env.VITE_API_URL;
 
 let socket: Socket | null = null;
 
@@ -10,32 +11,28 @@ let socket: Socket | null = null;
  * @returns Socket instance
  */
 export const initializeSocket = (token?: string): Socket => {
-    if (socket && socket.connected) {
-        return socket;
-    }
-
-    socket = io(SOCKET_URL, {
-        auth: {
-            token: token || '',
-        },
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionAttempts: 5,
-    });
-
-    socket.on('connect', () => {
-        
-    });
-
-    socket.on('disconnect', (reason) => {
-        
-    });
-
-    socket.on('connect_error', (error) => {
-        console.error('Socket connection error:', error);
-    });
-
+  if (socket && socket.connected) {
     return socket;
+  }
+
+  socket = io(SOCKET_URL, {
+    auth: {
+      token: token || "",
+    },
+    reconnection: true,
+    reconnectionDelay: 1000,
+    reconnectionAttempts: 5,
+  });
+
+  socket.on("connect", () => {});
+
+  socket.on("disconnect", (reason) => {});
+
+  socket.on("connect_error", (error) => {
+    console.error("Socket connection error:", error);
+  });
+
+  return socket;
 };
 
 /**
@@ -43,17 +40,17 @@ export const initializeSocket = (token?: string): Socket => {
  * @returns Socket instance or null if not initialized
  */
 export const getSocket = (): Socket | null => {
-    return socket;
+  return socket;
 };
 
 /**
  * Disconnect the Socket.IO connection
  */
 export const disconnectSocket = (): void => {
-    if (socket) {
-        socket.disconnect();
-        socket = null;
-    }
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+  }
 };
 
 /**
@@ -61,9 +58,9 @@ export const disconnectSocket = (): void => {
  * @param tripId - Trip ID to join
  */
 export const joinTripRoom = (tripId: string): void => {
-    if (socket && socket.connected) {
-        socket.emit('joinTrip', tripId);
-    }
+  if (socket && socket.connected) {
+    socket.emit("joinTrip", tripId);
+  }
 };
 
 /**
@@ -71,9 +68,9 @@ export const joinTripRoom = (tripId: string): void => {
  * @param tripId - Trip ID to leave
  */
 export const leaveTripRoom = (tripId: string): void => {
-    if (socket && socket.connected) {
-        socket.emit('leaveTrip', tripId);
-    }
+  if (socket && socket.connected) {
+    socket.emit("leaveTrip", tripId);
+  }
 };
 
 /**
@@ -82,9 +79,9 @@ export const leaveTripRoom = (tripId: string): void => {
  * @param userName - User's name
  */
 export const emitTyping = (tripId: string, userName: string): void => {
-    if (socket && socket.connected) {
-        socket.emit('typing', { tripId, userName });
-    }
+  if (socket && socket.connected) {
+    socket.emit("typing", { tripId, userName });
+  }
 };
 
 /**
@@ -92,9 +89,9 @@ export const emitTyping = (tripId: string, userName: string): void => {
  * @param tripId - Trip ID
  */
 export const emitStopTyping = (tripId: string): void => {
-    if (socket && socket.connected) {
-        socket.emit('stopTyping', { tripId });
-    }
+  if (socket && socket.connected) {
+    socket.emit("stopTyping", { tripId });
+  }
 };
 
 /**
@@ -102,9 +99,9 @@ export const emitStopTyping = (tripId: string): void => {
  * @param callback - Callback function to handle new comments
  */
 export const onNewComment = (callback: (data: any) => void): void => {
-    if (socket) {
-        socket.on('newComment', callback);
-    }
+  if (socket) {
+    socket.on("newComment", callback);
+  }
 };
 
 /**
@@ -112,9 +109,9 @@ export const onNewComment = (callback: (data: any) => void): void => {
  * @param callback - Callback function to handle new reactions
  */
 export const onNewReaction = (callback: (data: any) => void): void => {
-    if (socket) {
-        socket.on('newReaction', callback);
-    }
+  if (socket) {
+    socket.on("newReaction", callback);
+  }
 };
 
 /**
@@ -122,9 +119,9 @@ export const onNewReaction = (callback: (data: any) => void): void => {
  * @param callback - Callback function to handle new replies
  */
 export const onNewReply = (callback: (data: any) => void): void => {
-    if (socket) {
-        socket.on('newReply', callback);
-    }
+  if (socket) {
+    socket.on("newReply", callback);
+  }
 };
 
 /**
@@ -132,9 +129,9 @@ export const onNewReply = (callback: (data: any) => void): void => {
  * @param callback - Callback function to handle like updates
  */
 export const onLikeUpdate = (callback: (data: any) => void): void => {
-    if (socket) {
-        socket.on('likeUpdate', callback);
-    }
+  if (socket) {
+    socket.on("likeUpdate", callback);
+  }
 };
 
 /**
@@ -142,9 +139,9 @@ export const onLikeUpdate = (callback: (data: any) => void): void => {
  * @param callback - Callback function to handle save updates
  */
 export const onSaveUpdate = (callback: (data: any) => void): void => {
-    if (socket) {
-        socket.on('saveUpdate', callback);
-    }
+  if (socket) {
+    socket.on("saveUpdate", callback);
+  }
 };
 
 /**
@@ -152,9 +149,9 @@ export const onSaveUpdate = (callback: (data: any) => void): void => {
  * @param callback - Callback function to handle typing indicators
  */
 export const onUserTyping = (callback: (data: any) => void): void => {
-    if (socket) {
-        socket.on('userTyping', callback);
-    }
+  if (socket) {
+    socket.on("userTyping", callback);
+  }
 };
 
 /**
@@ -162,9 +159,9 @@ export const onUserTyping = (callback: (data: any) => void): void => {
  * @param callback - Callback function to handle stop typing indicators
  */
 export const onUserStoppedTyping = (callback: (data: any) => void): void => {
-    if (socket) {
-        socket.on('userStoppedTyping', callback);
-    }
+  if (socket) {
+    socket.on("userStoppedTyping", callback);
+  }
 };
 
 /**
@@ -172,12 +169,15 @@ export const onUserStoppedTyping = (callback: (data: any) => void): void => {
  * @param eventName - Name of the event to unsubscribe from
  * @param callback - Optional specific callback to remove
  */
-export const offEvent = (eventName: string, callback?: (data: any) => void): void => {
-    if (socket) {
-        if (callback) {
-            socket.off(eventName, callback);
-        } else {
-            socket.off(eventName);
-        }
+export const offEvent = (
+  eventName: string,
+  callback?: (data: any) => void
+): void => {
+  if (socket) {
+    if (callback) {
+      socket.off(eventName, callback);
+    } else {
+      socket.off(eventName);
     }
+  }
 };
