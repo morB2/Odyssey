@@ -99,9 +99,9 @@ export default function RouteViewer({ collection, onEdit, onDelete }: AppProps) 
   // Constants for desktop layout calculation
   // NOTE: Assuming TripPost's main image/carousel section is 200px tall
   const CARD_IMAGE_HEIGHT = 200;
-  const CONNECTOR_WIDTH = 150;
+  const CONNECTOR_WIDTH = 250;
   const TIMELINE_HEIGHT = 800;
-  const MIDLINE_Y = TIMELINE_HEIGHT / 2;
+  const MIDLINE_Y = (TIMELINE_HEIGHT) / 10;
   const MARKER_SIZE = 32;
 
   useEffect(() => {
@@ -116,8 +116,7 @@ export default function RouteViewer({ collection, onEdit, onDelete }: AppProps) 
     <ModalOverlay
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }
-      }
+      exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
       onClick={() => setIsExpanded(false)}
     >
@@ -144,6 +143,7 @@ export default function RouteViewer({ collection, onEdit, onDelete }: AppProps) 
                   trip={trip as any}
                   onDelete={() => { }}
                   onEdit={() => { }}
+                  showDescription={false}
                 />
               </motion.div>
             ))}
@@ -155,7 +155,7 @@ export default function RouteViewer({ collection, onEdit, onDelete }: AppProps) 
 
         {/* Desktop: Horizontal Scroll (Timeline) */}
         <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-          <Box sx={{ position: 'relative', overflowX: 'auto', pb: 4, scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
+          <Box sx={{ position: 'relative', overflowX: 'auto', overflowY: 'hidden', pb: 4, scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
             <Box
               sx={{
                 display: 'flex',
@@ -184,7 +184,7 @@ export default function RouteViewer({ collection, onEdit, onDelete }: AppProps) 
 
                     {/* START MARKER */}
                     {index === 0 && (
-                      <Box sx={{ mr: 2, mt: `${alignmentPointY - MARKER_SIZE / 2} px` }}>
+                      <Box sx={{ mr: 2, mt: `${alignmentPointY - MARKER_SIZE / 2}px` }}>
                         <Marker />
                       </Box>
                     )}
@@ -194,7 +194,7 @@ export default function RouteViewer({ collection, onEdit, onDelete }: AppProps) 
                       sx={{
                         flexShrink: 0,
                         // Position using the now-present trip.offsetY
-                        mt: `${MIDLINE_Y + offsetY} px`,
+                        mt: `${MIDLINE_Y + offsetY}px`,
                         width: 300, // Fixed width,
                         height: 500
                       }}
@@ -203,6 +203,7 @@ export default function RouteViewer({ collection, onEdit, onDelete }: AppProps) 
                         trip={trip as any}
                         onDelete={() => { }}
                         onEdit={() => { }}
+                        showDescription={false}
                       />
                     </Box>
 
@@ -220,7 +221,7 @@ export default function RouteViewer({ collection, onEdit, onDelete }: AppProps) 
 
                     {/* END MARKER */}
                     {index === trips.length - 1 && (
-                      <Box sx={{ ml: 2, mt: `${alignmentPointY - MARKER_SIZE / 2} px` }}>
+                      <Box sx={{ ml: 2, mt: `${alignmentPointY - MARKER_SIZE / 2}px` }}>
                         <Marker />
                       </Box>
                     )}
