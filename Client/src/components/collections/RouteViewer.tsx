@@ -195,7 +195,7 @@ export default function RouteViewer({ collection, onEdit, onDelete }: AppProps) 
                         flexShrink: 0,
                         // Position using the now-present trip.offsetY
                         mt: `${MIDLINE_Y + offsetY}px`,
-                        width: 300, // Fixed width,
+                        width: 350, // Fixed width,
                         height: 500
                       }}
                     >

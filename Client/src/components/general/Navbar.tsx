@@ -73,7 +73,7 @@ const Navbar: FC = () => {
     // If I read messages (on another device/tab or this one), refresh count
     if (user && (data.byUserId === user._id)) {
       // Re-fetch to be accurate
-      chatService.getUnreadCount(user._id||"").then(data => {
+      chatService.getUnreadCount(user._id || "").then(data => {
         const count = typeof data === 'number' ? data : (data?.count ?? data?.unread ?? 0);
         setUnreadCount(count);
       });
@@ -130,12 +130,12 @@ const Navbar: FC = () => {
               <ListItemButton onClick={() => handleMobileNavigate('/chats')}>
                 <MessageCircleMore size={20} />
                 <ListItemText sx={{ ml: 1 }} primary={t('messages')} />
-                {unreadCount > 0 && <Box sx={{ width: 8, height: 8, bgcolor: '#f97316', borderRadius: '50%', ml: 1}} />}
+                {unreadCount > 0 && <Box sx={{ width: 8, height: 8, bgcolor: '#f97316', borderRadius: '50%', ml: 1 }} />}
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton onClick={() => handleMobileNavigate('/profile')}>
-                <User size={20} /><ListItemText sx={{ ml: 1 }} primary={t('profile.title')} />
+                <User size={20} /><ListItemText sx={{ ml: 1 }} primary={t('profile.profile')} />
               </ListItemButton>
             </ListItem>
 
@@ -206,7 +206,7 @@ const Navbar: FC = () => {
                         background: 'linear-gradient(135deg,#f97316,#ea580c)',
                         width: 20, height: 20, borderRadius: '50%',
                         color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center',
-                        fontSize: '0.7rem', fontWeight: 'bold', fontFamily:'Arial'
+                        fontSize: '0.7rem', fontWeight: 'bold', fontFamily: 'Arial'
                       }}>
                         {unreadCount}
                       </Box>

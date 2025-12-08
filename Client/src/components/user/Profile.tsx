@@ -22,7 +22,7 @@ const containerStyle = {
   minHeight: "100vh",
   display: "flex",
   flexDirection: "column",
-  background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fcd34d 100%)',
+  background: 'white',
   position: 'relative',
   '&::before': {
     content: '""',

@@ -109,7 +109,7 @@ export function TripsList({
 
 
   return (
-    <Box>
+    <Box sx={{backgroundColor:'white'}}>
 
       {/* Tabs */}
       <Box sx={{ mb: 5, borderBottom: "1px solid #e5e5e5" }}>
