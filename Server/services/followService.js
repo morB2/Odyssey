@@ -2,7 +2,7 @@ import Follow from "../models/followModel.js";
 import User from "../models/userModel.js";
 import { clearUserFeedCache } from "../utils/cacheUtils.js";
 const SERVER_URL =
-  process.env.SERVER_URL || "https://odyssey-dbdn.onrender.com";
+  process.env.VITE_API_URL;
 function normalizeAvatar(avatar) {
   if (!avatar || typeof avatar !== "string") return avatar;
   if (avatar.startsWith("http://") || avatar.startsWith("https://"))

@@ -17,7 +17,7 @@ dotenv.config();
 const allowedOrigins = (process.env.FRONTEND_URL || '').split(',');
 
 const corsOptions = {
-    origin: '*',
+    origin: allowedOrigins,
     credentials: true,
     optionsSuccessStatus: 200 
 };

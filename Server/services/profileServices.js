@@ -11,7 +11,7 @@ import fs from "fs";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinaryHelper.js";
 import { fetchTrips, normalizeAvatarUrl } from "./tripFetcherService.js";
 
-const SERVER_URL = process.env.SERVER_URL || " https://odyssey-dbdn.onrender.com";
+const SERVER_URL = process.env.VITE_API_URL;
 const uploadsDir = path.join(process.cwd(), "temp_uploads");
 
 // -----------------------------------------------------

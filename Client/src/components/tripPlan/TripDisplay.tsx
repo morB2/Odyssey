@@ -61,6 +61,7 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
   const { user } = useUserStore();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const BASE_URL = import.meta.env.VITE_API_URL;
   if (!data?.route) return <Typography>{t('tripDisplay.noRouteData')}</Typography>;
   const [imageUrl, setImageUrl] = useState<string>("");
   const { title, description, ordered_route, mode, instructions = [], google_maps_url, activities = [] } = data.route;
@@ -120,7 +121,7 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
   const handleSaveOption = async (type: "private" | "public") => {
     setOpenDialog(false);
     try {
-      const response = await fetch('https://odyssey-dbdn.onrender.com/createTrip/save', {
+      const response = await fetch(`${BASE_URL}/createTrip/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(
