@@ -14,7 +14,16 @@ export const createCollectionService = async (userId, data) => {
         isPrivate: !!isPrivate,
     });
 
-    return await newCollection.save();
+    const savedCollection = await newCollection.save();
+
+    // Populate trips and user before returning
+    return await Collection.findById(savedCollection._id)
+        .populate({
+            path: "trips",
+            populate: { path: "user", select: "firstName lastName avatar" }
+        })
+        .populate("user", "firstName lastName avatar")
+        .lean();
 };
 
 export const getCollectionsByUserService = async (userId, viewerId, options = {}) => {
@@ -77,7 +86,16 @@ export const updateCollectionService = async (id, userId, updates) => {
         collection[key] = updates[key];
     });
 
-    return await collection.save();
+    await collection.save();
+
+    // Populate trips and user before returning, just like getCollectionByIdService
+    return await Collection.findById(id)
+        .populate({
+            path: "trips",
+            populate: { path: "user", select: "firstName lastName avatar" }
+        })
+        .populate("user", "firstName lastName avatar")
+        .lean();
 };
 
 export const deleteCollectionService = async (id, userId) => {
