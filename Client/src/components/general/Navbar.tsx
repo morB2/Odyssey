@@ -39,7 +39,7 @@ const Navbar: FC = () => {
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
 
   useEffect(() => {
     let mounted = true;
@@ -180,17 +180,17 @@ const Navbar: FC = () => {
       }}>
         <Toolbar sx={{ px: { xs: 2, md: 6 }, py: 1.5, justifyContent: 'space-between' }}>
 
-          <Link component={RouterLink} to="/" sx={{ display: 'flex', alignItems: 'center' }}>
-            <img src="/logo-white.png" style={{ height: 80 }} />
+          <Link component={RouterLink} to="/" sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+            <img src="/logo-white.png" alt="Odyssey" style={{ height: 80 }} />
           </Link>
 
           {isMobile ? (
-            <Box sx={{ display: 'flex', gap: 2 }}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               <Search onSearch={(s) => console.log('search:', s)} />
-              <IconButton onClick={handleDrawerToggle} color="inherit"><Menu /></IconButton>
+              <IconButton onClick={handleDrawerToggle} color="inherit" aria-label="menu"><Menu /></IconButton>
             </Box>
           ) : (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, overflow: 'visible', flexShrink: 1, minWidth: 0 }}>
               <Search onSearch={(s) => console.log('search:', s)} />
               <Box onClick={() => navigate('/feed')} sx={navItemStyle}><BookImage size={24} /><Typography variant="caption">{t('feed')}</Typography></Box>
               <Box onClick={() => navigate('/createtrip')} sx={navItemStyle}><Sparkles size={24} /><Typography variant="caption">{t('createTrip.create')}</Typography></Box>
@@ -244,7 +244,7 @@ const Navbar: FC = () => {
       </AppBar>
 
       <Drawer anchor="right" open={mobileOpen} onClose={handleDrawerToggle}
-        sx={{ display: { xs: 'block', md: 'none' } }} >
+        sx={{ display: { xs: 'block', lg: 'none' } }} >
         {drawerContent}
       </Drawer>
 

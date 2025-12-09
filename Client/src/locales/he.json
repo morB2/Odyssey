@@ -274,6 +274,7 @@
     },
     "general": {
         "saving": "שומר...",
+        "save": "שמור",
         "cancel": "ביטול",
         "search": "חיפוש",
         "searchPlaceholder": "חפש...",
@@ -686,5 +687,39 @@
         "print": "הדפס טיול",
         "or": "או",
         "maybeLater": "אולי מאוחר יותר"
+    },
+     "collection": {
+    "back": "חזרה",
+    "new": "אוסף חדש",
+    "edit": "עריכת אוסף",
+    "name": "שם",
+    "description": "תיאור",
+    "private": "פרטי",
+    "selectedTrips": "טיולים שנבחרו (ניתן לגרירה)",
+    "availableTrips": "טיולים זמינים",
+    "emptySelected": "בחרי טיולים מהרשימה כדי להוסיף כאן.",
+    "add": "הוסף",
+    "untitledTrip": "טיול ללא שם",
+    "allSelected": "כל הטיולים נבחרו",
+    "noTrips": "לא נמצאו טיולים",
+    "emptyCollection":"אין באוסף זה טיולים כרגע",
+    "success": {
+      "created": "האוסף נוצר בהצלחה!",
+      "updated": "האוסף עודכן בהצלחה!"
+    },
+    "errors": {
+      "notFound": "האוסף לא נמצא או שאין לך הרשאה לצפות בו",
+       "nameRequired": "חובה להזין שם",
+      "saveFailed": "שמירת האוסף נכשלה",
+      "loadTrips": "לא ניתן לטעון את הטיולים"
     }
+  },
+   "collections": {
+    "empty": "עדיין אין אוספים",
+    "create": "צור אוסף"
+  },
+  "route": {
+    "tripsCount": "{{count}} טיולים במסלול",
+    "clickToView": "לחץ לצפייה במסלול המלא"
+  }
 }
