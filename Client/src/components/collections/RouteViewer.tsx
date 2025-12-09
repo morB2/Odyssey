@@ -3,9 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Box, Typography, styled } from '@mui/material';
 import { createPortal } from 'react-dom';
-// 1. Import the original types
 import type { Collection, Trip } from '../user/types';
-
+import {useTranslation} from "react-i18next";
 // 2. DEFINE THE EXTENDED TYPE
 // This interface adds the timeline-specific 'offsetY' property to the shared Trip type.
 interface TimelineTrip extends Trip {
@@ -70,7 +69,7 @@ interface AppProps {
 export default function RouteViewer({ collection, onEdit, onDelete }: AppProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [mounted, setMounted] = useState(false);
-
+const {t} = useTranslation();
   // Define the offsets used for the visual layout
   // You would typically calculate this dynamically based on screen size or card content height
   const hardcodedOffsets = [0, -60, 80, -40, 20, -70, 50];
@@ -90,8 +89,7 @@ export default function RouteViewer({ collection, onEdit, onDelete }: AppProps) 
     return (
       <RootContainer>
         <Typography variant="h5" color="textSecondary" sx={{ textAlign: 'center', pt: 4 }}>
-          This collection has no trips yet.
-        </Typography>
+{t("collection.emptyCollection")}</Typography>
       </RootContainer>
     );
   }

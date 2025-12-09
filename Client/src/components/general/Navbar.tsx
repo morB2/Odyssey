@@ -39,7 +39,7 @@ const Navbar: FC = () => {
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
 
   useEffect(() => {
     let mounted = true;
@@ -189,8 +189,8 @@ const Navbar: FC = () => {
       }}>
         <Toolbar sx={{ px: { xs: 2, md: 6 }, py: 1.5, justifyContent: 'space-between' }}>
 
-          <Link component={RouterLink} to="/" sx={{ display: 'flex', alignItems: 'center' }}>
-            <img src="/logo-white.png" style={{ height: 80 }} />
+          <Link component={RouterLink} to="/" sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+            <img src="/logo-white.png" alt="Odyssey" style={{ height: 80 }} />
           </Link>
 
           {isMobile ? (
@@ -253,7 +253,7 @@ const Navbar: FC = () => {
       </AppBar>
 
       <Drawer anchor="right" open={mobileOpen} onClose={handleDrawerToggle}
-        sx={{ display: { xs: 'block', md: 'none' } }} >
+        sx={{ display: { xs: 'block', lg: 'none' } }} >
         {drawerContent}
       </Drawer>
 

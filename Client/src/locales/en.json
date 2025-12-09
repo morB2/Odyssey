@@ -265,6 +265,7 @@
   },
   "general": {
     "saving": "Saving...",
+    "save": "Save",
     "cancel": "Cancel",
     "search": "Search",
     "searchPlaceholder": "Search...",
@@ -691,5 +692,39 @@
     "print": "Print Trip",
     "or": "OR",
     "maybeLater": "Maybe later"
+  },
+  "collection": {
+    "back": "Back",
+     "new": "New Collection",
+    "edit": "Edit Collection",
+    "name": "Name",
+    "description": "Description",
+    "private": "Private",
+    "selectedTrips": "Selected Trips (Drag to Order)",
+    "availableTrips": "Available Trips",
+    "emptySelected": "Select trips from the list to add them here.",
+    "add": "Add",
+    "untitledTrip": "Untitled Trip",
+    "allSelected": "All trips selected",
+    "noTrips": "No trips found",
+    "emptyCollection":"This collection has no trips yet.",
+    "success": {
+      "created": "Collection created!",
+      "updated": "Collection updated!"
+    },
+    "errors": {
+      "notFound": "Collection not found or access denied",
+       "nameRequired": "Name is required",
+      "saveFailed": "Failed to save collection",
+      "loadTrips": "Could not load your trips"
+    }
+  },
+  "collections": {
+    "empty": "No collections yet",
+    "create": "Create Collection"
+  },
+  "route": {
+    "tripsCount": "{{count}} trips in route",
+    "clickToView": "Click to view full route"
   }
 }

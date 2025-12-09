@@ -1,8 +1,8 @@
 import { Box, Typography, Grid, Button, CircularProgress } from "@mui/material";
-import { RoutePreview } from "./RoutePreview";
 import { Plus } from "lucide-react";
 import type { Collection } from "../user/types";
 import RouteViewer from "./RouteViewer";
+import { useTranslation } from "react-i18next";
 interface CollectionsListProps {
     collections: Collection[];
     onCreate: () => void;
@@ -26,7 +26,7 @@ export function CollectionsList({
     loading = false
 }: CollectionsListProps) {
 
-
+const { t } = useTranslation();
     if (loading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -45,7 +45,7 @@ export function CollectionsList({
                 border: '1px solid #e5e5e5'
             }}>
                 <Typography variant="h6" color="text.secondary" gutterBottom>
-                    No collections yet
+                    {t("collections.empty")}
                 </Typography>
                 {isOwner && (
                     <Button
@@ -55,7 +55,7 @@ export function CollectionsList({
 
                         sx={{ mt: 2, bgcolor: '#f97316', '&:hover': { bgcolor: '#ea580c' } }}
                     >
-                        Create Collection
+                        {t("collections.create")}
                     </Button>
                 )}
             </Box>
@@ -73,7 +73,7 @@ export function CollectionsList({
 
                         sx={{ bgcolor: '#f97316', '&:hover': { bgcolor: '#ea580c' } }}
                     >
-                        Create Collection
+                        {t("collections.create")}
                     </Button>
                 </Box>
             )}
