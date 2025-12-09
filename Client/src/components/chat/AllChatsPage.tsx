@@ -7,7 +7,7 @@ const AllChatsPage: React.FC = () => {
     const [activeChatUser, setActiveChatUser] = useState<any>(null);
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '90vh',paddingTop:"20px", overflow: 'hidden' }}>
             <Container maxWidth="xl" sx={{ mb: 2, flexGrow: 1, display: 'flex', overflow: 'hidden' }}>
                 <Paper
                     elevation={3}
