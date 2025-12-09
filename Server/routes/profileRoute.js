@@ -7,7 +7,7 @@ import * as controller from "../controller/profileController.js";
 
 const router = express.Router();
 
-// --- Multer setup ---
+// --- Multer setup with security validation ---
 const uploadsDir = path.join(process.cwd(), "temp_uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
@@ -18,7 +18,29 @@ const storage = multer.diskStorage({
     cb(null, name);
   },
 });
-const upload = multer({ storage });
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+    files: 3
+  },
+  fileFilter: (req, file, cb) => {
+    // Whitelist allowed MIME types
+    const allowedMimes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp'
+    ];
+
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.'));
+    }
+  }
+});
 
 // --- Middleware to identify owner/viewer (runs AFTER authMiddleware) ---
 const identifyOwnerViewer = (req, res, next) => {

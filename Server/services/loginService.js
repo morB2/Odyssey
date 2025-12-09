@@ -6,6 +6,38 @@ import bcrypt from 'bcrypt';
 const SECRET_KEY = config.jwtSecret;
 const SALT_ROUNDS = config.saltRounds;
 
+/**
+ * Validate password complexity
+ * Requires at least 8 characters and 3 of the following:
+ * - Uppercase letters
+ * - Lowercase letters  
+ * - Numbers
+ * - Special characters
+ */
+function validatePassword(password) {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (password.length < minLength) {
+        const error = new Error('Password must be at least 8 characters long');
+        error.status = 400;
+        throw error;
+    }
+
+    const complexityCount = [hasUpperCase, hasLowerCase, hasNumbers, hasSpecialChar]
+        .filter(Boolean).length;
+
+    if (complexityCount < 3) {
+        const error = new Error('Password must contain at least 3 of: uppercase letters, lowercase letters, numbers, special characters');
+        error.status = 400;
+        throw error;
+    }
+
+    return true;
+}
 
 function generateToken(user) {
     return jwt.sign(
@@ -17,14 +49,13 @@ function generateToken(user) {
 
 export async function loginUserS(email, password) {
     const user = await usersModel.findOne({ email });
-    if (!user) {
-        const error = new Error('User not found');
-        error.status = 404;
-        throw error;
-    }
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-        const error = new Error('Invalid password');
+
+    // Use same error message for both cases to prevent email enumeration
+    if (!user || !(await bcrypt.compare(password, user.password || ''))) {
+        // Add small artificial delay to prevent timing attacks
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        const error = new Error('Invalid email or password');
         error.status = 401;
         throw error;
     }
@@ -33,7 +64,7 @@ export async function loginUserS(email, password) {
 
     const userToReturn = user.toObject();
     delete userToReturn.password;
-   
+
     return { success: true, user: userToReturn, token };
 };
 
@@ -42,6 +73,9 @@ export async function registerUserS(firstName, lastName, email, password, birthd
 
     if (existingUser) {
         if (existingUser.googleId && !existingUser.password) {
+            // Validate password complexity before hashing
+            validatePassword(password);
+
             existingUser.password = await bcrypt.hash(password, SALT_ROUNDS);
             await existingUser.save();
             return { success: true, user: existingUser, token: generateToken(existingUser) };
@@ -51,6 +85,9 @@ export async function registerUserS(firstName, lastName, email, password, birthd
             throw error;
         }
     }
+
+    // ✅ Validate password complexity before hashing
+    validatePassword(password);
 
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
@@ -121,6 +158,9 @@ export async function resetPasswordS(id, token, newPassword) {
         error.status = 400;
         throw error;
     }
+
+    // ✅ Validate new password complexity
+    validatePassword(newPassword);
 
     // Hash the new password
     const hashedPassword = await bcrypt.hash(newPassword, config.saltRounds);

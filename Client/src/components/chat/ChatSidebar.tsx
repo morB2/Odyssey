@@ -56,7 +56,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectChat, activeChatUser 
     const fetchConversations = async () => {
         if (!user) return;
         try {
-            const data = await chatService.getConversations(user._id || '');
+            const data = await chatService.getConversations(); // ✅ Removed userId
             setConversations(data);
         } catch (error) {
             console.error('Error fetching conversations:', error);

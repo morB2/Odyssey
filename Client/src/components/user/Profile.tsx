@@ -75,6 +75,10 @@ export default function Profile() {
   useEffect(() => {
     let mounted = true;
     async function loadData() {
+      if (!profileId) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
         const [userRes, tripsRes] = await Promise.all([
@@ -114,6 +118,10 @@ export default function Profile() {
   useEffect(() => {
     let mounted = true;
     async function fetchForTab() {
+      if (!profileId) {
+        setTripsLoading(false);
+        return;
+      }
       setTripsLoading(true);
       setPage(1);
       try {

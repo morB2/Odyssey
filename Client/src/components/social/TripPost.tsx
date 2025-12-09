@@ -124,7 +124,7 @@ export default function TripPost({ trip, maxLines, showDescription }: TripPostPr
         setLikesCount(newLikesCount);
 
         try {
-            await toggleLike(trip._id, trip.currentUserId, originalIsLiked);
+            await toggleLike(trip._id, originalIsLiked); // ✅ Removed userId
         } catch (error) {
             console.error('Error toggling like, rolling back:', error);
             toast.error(t('social.failedToLike'));
@@ -144,7 +144,7 @@ export default function TripPost({ trip, maxLines, showDescription }: TripPostPr
         setIsSaved(newIsSaved); // Optimistic UI update
 
         try {
-            await toggleSave(trip._id, trip.currentUserId, isSaved);
+            await toggleSave(trip._id, isSaved); // ✅ Removed userId
             if (newIsSaved) {
                 toast.success(t('social.tripSaved'));
             } else {
@@ -167,7 +167,7 @@ export default function TripPost({ trip, maxLines, showDescription }: TripPostPr
         setIsFollowing(newIsFollowing); // Optimistic UI update
 
         try {
-            await toggleFollow(trip.user._id, trip.currentUserId, isFollowing);
+            await toggleFollow(trip.user._id, isFollowing); // ✅ Removed currentUserId
             if (newIsFollowing) {
                 toast.success(`${t('social.followingUser')} ${trip.user.firstName}`);
             } else {
@@ -201,7 +201,7 @@ export default function TripPost({ trip, maxLines, showDescription }: TripPostPr
         });
 
         try {
-            await addReaction(trip._id, commentId, trip.currentUserId, emoji);
+            await addReaction(trip._id, commentId, emoji); // ✅ Removed userId
         } catch (error) {
             console.error('Error adding reaction:', error);
             toast.error(t('social.failedToReact'));
@@ -215,7 +215,7 @@ export default function TripPost({ trip, maxLines, showDescription }: TripPostPr
         }
 
         try {
-            await addComment(trip._id, trip.currentUserId, commentText.trim());
+            await addComment(trip._id, commentText.trim()); // ✅ Removed userId
             // Removed the optimistic update - useTripRealtime will handle it
             toast.success(t('social.commentAdded'));
         } catch (error) {
@@ -231,7 +231,7 @@ export default function TripPost({ trip, maxLines, showDescription }: TripPostPr
         }
 
         try {
-            await addReply(trip._id, commentId, trip.currentUserId, replyText.trim());
+            await addReply(trip._id, commentId, replyText.trim()); // ✅ Removed userId
             // Removed the optimistic update - useTripRealtime will handle it
             toast.success(t('social.replyAdded'));
         } catch (error) {
@@ -248,7 +248,7 @@ export default function TripPost({ trip, maxLines, showDescription }: TripPostPr
         // Optimistic UI update
         setComments((prev) => prev.filter((c) => c.id !== commentId));
         try {
-            await deleteComment(trip._id, commentId, trip.currentUserId);
+            await deleteComment(trip._id, commentId); // ✅ Removed userId
             toast.success(t('social.commentDeleted'));
         } catch (error) {
             console.error('Error deleting comment:', error);

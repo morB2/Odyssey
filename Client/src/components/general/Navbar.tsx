@@ -21,7 +21,7 @@ import {
   Tooltip
 } from '@mui/material';
 
-import { BookImage, Sparkles, MessageCircleMore, Menu, X, User, LogIn, UserPlus, LayoutDashboard } from 'lucide-react';
+import { BookImage, Sparkles, MessageCircleMore, Menu, X, User, LogIn, UserPlus, LayoutDashboard, LogOut } from 'lucide-react';
 
 import { useUserStore } from '../../store/userStore';
 import ProfileMenu from '../user/ProfileMenu';
@@ -47,7 +47,7 @@ const Navbar: FC = () => {
     const fetchUnread = async () => {
       if (!user?._id) return setUnreadCount(0);
       try {
-        const data = await chatService.getUnreadCount(user._id);
+        const data = await chatService.getUnreadCount();
         const count = typeof data === 'number' ? data : (data?.count ?? data?.unread ?? 0);
         console.log('Fetched unread count:', count);
         if (mounted) setUnreadCount(count);
@@ -73,7 +73,7 @@ const Navbar: FC = () => {
     // If I read messages (on another device/tab or this one), refresh count
     if (user && (data.byUserId === user._id)) {
       // Re-fetch to be accurate
-      chatService.getUnreadCount(user._id || "").then(data => {
+      chatService.getUnreadCount().then(data => {
         const count = typeof data === 'number' ? data : (data?.count ?? data?.unread ?? 0);
         setUnreadCount(count);
       });
@@ -146,6 +146,15 @@ const Navbar: FC = () => {
                 </ListItemButton>
               </ListItem>
             )}
+
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => {
+                const clearUser = useUserStore.getState().clearUser;
+                clearUser(); handleMobileNavigate('/')
+              }}>
+                <LogOut size={20} /><ListItemText sx={{ ml: 1 }} primary={t('profileMenu.logout')} />
+              </ListItemButton>
+            </ListItem>
           </>
         ) : (
           <>
