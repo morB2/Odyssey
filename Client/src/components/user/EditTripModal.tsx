@@ -67,7 +67,6 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
       if (!trip) return;
       try {
         const storeUser = useUserStore.getState().user;
-        const storeToken = useUserStore.getState().token;
         const userId = storeUser?._id;
         if (!userId) throw new Error("Not authenticated");
 
@@ -84,7 +83,7 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
           return;
         }
 
-        const res = await updateTrip(String(trip._id || trip.id), payload, storeToken || undefined);
+        const res = await updateTrip(String(trip._id || trip.id), payload);
         const serverTrip: ServerTrip = (res && (res.trip || res)) as ServerTrip;
 
         const ordered = serverTrip.optimizedRoute?.ordered_route || [];

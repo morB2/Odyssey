@@ -104,7 +104,7 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
         return;
       }
 
-      const result = await uploadAvatar(undefined, avatarUrl || undefined, storeToken);
+      const result = await uploadAvatar(undefined, avatarUrl || undefined);
       const payload = result?.data ?? result;
       if (payload && payload.success && payload.user) {
         if (typeof onAvatarSaved === "function") {
@@ -143,7 +143,7 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
         return;
       }
 
-      const result = await uploadAvatar(undefined, editedUrl || undefined, storeToken);
+      const result = await uploadAvatar(undefined, editedUrl || undefined);
       const payload = result?.data ?? result;
       if (payload && payload.success && payload.user) {
         if (typeof onAvatarSaved === "function") {

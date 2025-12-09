@@ -25,6 +25,8 @@ import { AuthSaveDialog } from "./AuthSaveDialog";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import { useUserStore } from "../../store/userStore";
+import { searchTravelImage } from "../../services/image.service";
+import { saveTrip } from "../../services/createTrip.service";
 
 interface Location {
   name: string;
@@ -61,29 +63,15 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
   const { user } = useUserStore();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const BASE_URL = import.meta.env.VITE_API_URL;
   if (!data?.route) return <Typography>{t('tripDisplay.noRouteData')}</Typography>;
   const [imageUrl, setImageUrl] = useState<string>("");
   const { title, description, ordered_route, mode, instructions = [], google_maps_url, activities = [] } = data.route;
   useEffect(() => {
     const fetchImage = async () => {
       const query = title ? title : t('tripDisplay.defaultTravel');
-      try {
-        const response = await fetch(
-          `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)} travel landscape&orientation=landscape&per_page=1`,
-          {
-            headers: {
-              Authorization: import.meta.env.VITE_PEXELS_KEY
-            }
-          }
-        );
-        const data = await response.json();
-        if (data.photos && data.photos.length > 0) {
-          setImageUrl(data.photos[0].src.large);
-        }
-      } catch (error) {
-        console.error("Failed to fetch image:", error);
-        // Optional: toast.error("Failed to load trip image"); - might be too noisy for a background image
+      const url = await searchTravelImage(query);
+      if (url) {
+        setImageUrl(url);
       }
     };
 
@@ -121,14 +109,16 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
   const handleSaveOption = async (type: "private" | "public") => {
     setOpenDialog(false);
     try {
-      const response = await fetch(`${BASE_URL}/createTrip/save`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(
-          { userId: user?._id, title, description, optimizedRoute: { ordered_route, mode, instructions, google_maps_url }, activities, visabilityStatus: type, image: imageUrl }
-        ),
+      const result = await saveTrip({
+        userId: user?._id || "",
+        title: title || "",
+        description,
+        optimizedRoute: { ordered_route, mode, instructions, google_maps_url },
+        activities,
+        visabilityStatus: type,
+        image: imageUrl,
       });
-      const result = await response.json();
+
       if (result.success) {
         toast.success('Trip saved successfully!');
       } else {
