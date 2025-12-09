@@ -27,6 +27,7 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { initializeSocket } from './services/socketService';
 import { useUserStore } from './store/userStore';
 import { useSearchStore } from './store/searchStore';
+import { useSettings } from './context/SettingsContext';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -59,7 +60,8 @@ function App() {
   }, [location.pathname, closeSearch]);
 
   const { i18n } = useTranslation();
-  const theme = getTheme(i18n.language);
+  const { mode } = useSettings();
+  const theme = getTheme(i18n.language, mode);
 
   useEffect(() => {
     document.body.dir = i18n.language === 'he' ? 'rtl' : 'ltr';

@@ -7,7 +7,7 @@ import redis from '../db/redisClient.js';
 
 export const saveTrip = async (userId, tripId) => {
   const existingSave = await Save.findOne({ user: userId, trip: tripId });
-  if (existingSave) throw new Error("You have already saved this trip.");
+  if (existingSave) return existingSave;
 
   const save = new Save({ user: userId, trip: tripId });
   await save.save();
@@ -29,7 +29,7 @@ export const saveTrip = async (userId, tripId) => {
 
 export const unSaveTrip = async (userId, tripId) => {
   const existingSave = await Save.findOne({ user: userId, trip: tripId });
-  if (!existingSave) throw new Error("You have not saved this trip yet.");
+  if (!existingSave) return true;
 
   await Save.deleteOne({ _id: existingSave._id });
   await clearUserFeedCache(userId);

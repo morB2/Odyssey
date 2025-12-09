@@ -195,12 +195,12 @@ const Navbar: FC = () => {
 
           {isMobile ? (
             <Box sx={{ display: 'flex', gap: 2 }}>
-              <Search onSearch={(s) => console.log('search:', s)} />
+              <Search />
               <IconButton onClick={handleDrawerToggle} color="inherit"><Menu /></IconButton>
             </Box>
           ) : (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Search onSearch={(s) => console.log('search:', s)} />
+              <Search />
               <Box onClick={() => navigate('/feed')} sx={navItemStyle}><BookImage size={24} /><Typography variant="caption">{t('feed')}</Typography></Box>
               <Box onClick={() => navigate('/createtrip')} sx={navItemStyle}><Sparkles size={24} /><Typography variant="caption">{t('createTrip.create')}</Typography></Box>
               {user && (
