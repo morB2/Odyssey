@@ -15,7 +15,9 @@ import {
     Pagination,
     Stack,
     Dialog,
-    CircularProgress
+    CircularProgress,
+    Tabs,
+    Tab
 } from "@mui/material";
 import { Search, Trash2, Eye } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -26,6 +28,7 @@ import type { Trip } from "../social/types";
 import { useUserStore } from "../../store/userStore";
 import { ConfirmDialog } from "../user/ConfirmDialog";
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import PostsAnalytics from "./PostsAnalytics";
 
 type Post = {
     id: string;
@@ -44,11 +47,11 @@ export default function PostsManagement() {
     const { t } = useTranslation();
     const { user } = useUserStore();
 
+    const [activeTab, setActiveTab] = useState(0); // 0 = Posts, 1 = Analytics
     const [posts, setPosts] = useState<Post[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [page, setPage] = useState(1);
-    const [totalCount, setTotalCount] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
     const [viewingTrip, setViewingTrip] = useState<Trip | null>(null);
     const [isLoadingTrip, setIsLoadingTrip] = useState(false);
@@ -79,13 +82,12 @@ export default function PostsManagement() {
                 status: trip.visabilityStatus === "public" ? "Published" : "Draft",
                 category: trip.activities?.[0] || t("PostsManagement.general") || "General",
                 date: new Date(trip.createdAt).toISOString().split("T")[0],
-                views: 0,
+                views: trip.views || 0,
                 _fullData: trip
             }));
 
             setPosts(mappedPosts);
             setTotalPages(data.pages);
-            setTotalCount(data.total || 0);
         } catch (error) {
             console.error("Failed to load posts", error);
             toast.error(t("PostsManagement.loadError") || "Failed to load posts");
@@ -178,175 +180,216 @@ export default function PostsManagement() {
         setPage(value);
     };
 
+    const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+        setActiveTab(newValue);
+    };
+
     return (
         <Box sx={{ p: 3, backgroundColor: "black", minHeight: "100vh" }}>
-            {/* Search Bar */}
-            <Box sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                bgcolor: "#18181B",
-                p: 1.5,
-                borderRadius: 1,
-                mb: 3
-            }}>
-                <Search size={20} color="gray" />
-                <TextField
-                    fullWidth
-                    variant="outlined"
-                    size="small"
-                    placeholder={t('PostsManagement.search_placeholder') || 'Search by title, author, or category...'}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+            {/* Tabs */}
+            <Box sx={{ borderBottom: 1, borderColor: '#27272A', mb: 3 }}>
+                <Tabs
+                    value={activeTab}
+                    onChange={handleTabChange}                    
                     sx={{
-                        '& .MuiInputBase-input': { color: 'white' },
-                        '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                        '& .MuiTab-root': {
+                            color: '#71717A',
+                            fontSize: '16px',
+                            fontWeight: 500,
+                            textTransform: 'none',
+                            minWidth: 120,
+                        },
+                        '& .Mui-selected': {
+                            color: '#ea580c',
+                        },
+                        '& .MuiTabs-indicator': {
+                            backgroundColor: '#ea580c',
+                            height: 3,
+                        },
                     }}
-                />
-                {isLoadingPosts && searchQuery && (
-                    <CircularProgress size={20} sx={{ color: 'gray' }} />
-                )}
+                >
+                    <Tab label="Posts" />
+                    <Tab label="Analytics" />
+                </Tabs>
             </Box>
 
+            {/* Posts Tab Content */}
+            {activeTab === 0 && (
+                <>
+                    {/* Search Bar */}
+                    <Box sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        bgcolor: "#18181B",
+                        p: 1.5,
+                        borderRadius: 1,
+                        mb: 3
+                    }}>
+                        <Search size={20} color="gray" />
+                        <TextField
+                            fullWidth
+                            variant="outlined"
+                            size="small"
+                            placeholder={t('PostsManagement.search_placeholder') || 'Search by title, author, or category...'}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            sx={{
+                                '& .MuiInputBase-input': { color: 'white' },
+                                '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                            }}
+                        />
+                        {isLoadingPosts && searchQuery && (
+                            <CircularProgress size={20} sx={{ color: 'gray' }} />
+                        )}
+                    </Box>
 
 
-            {/* Table */}
-            {isLoadingPosts ? (
-                <CircularProgress size={30} />
-            ) : posts.length === 0 ? (
-                <Typography sx={{ color: "white" }}>
-                    {debouncedSearch
-                        ? t("PostsManagement.noResults") || "No results found"
-                        : t("PostsManagement.noPosts") || "No posts available"
-                    }
-                </Typography>
-            ) : (<TableContainer component={Paper} sx={{ bgcolor: "#18181B", color: "white" }}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell sx={{ color: "white", fontWeight: 600 }}>
-                                {t("PostsManagement.title") || "Title"}
-                            </TableCell>
-                            <TableCell sx={{ color: "white", fontWeight: 600 }}>
-                                {t("PostsManagement.author") || "Author"}
-                            </TableCell>
-                            <TableCell sx={{ color: "white", fontWeight: 600 }}>
-                                {t("PostsManagement.category") || "Category"}
-                            </TableCell>
-                            <TableCell sx={{ color: "white", fontWeight: 600 }}>
-                                {t("PostsManagement.status") || "Status"}
-                            </TableCell>
-                            <TableCell sx={{ color: "white", fontWeight: 600 }}>
-                                {t("PostsManagement.date") || "Date"}
-                            </TableCell>
-                            <TableCell align="right" sx={{ color: "white", fontWeight: 600 }}>
-                                {t("PostsManagement.actions") || "Actions"}
-                            </TableCell>
-                        </TableRow>
-                    </TableHead>
 
-                    <TableBody>
-                        {
-                            posts.map((post) => (
-                                <TableRow
-                                    key={post.id}
-                                    sx={{
-                                        '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)' },
-                                        transition: 'background-color 0.2s'
-                                    }}
-                                >
-                                    <TableCell sx={{ color: "white" }}>{post.title}</TableCell>
-                                    <TableCell sx={{ color: "white" }}>{post.author}</TableCell>
-                                    <TableCell sx={{ color: "white" }}>{post.category}</TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            label={t(`PostsManagement.${post.status.toLowerCase()}`) || post.status}
-                                            color={getStatusChipColor(post.status)}
-                                            size="small"
-                                        />
+                    {/* Table */}
+                    {isLoadingPosts ? (
+                        <CircularProgress size={30} />
+                    ) : posts.length === 0 ? (
+                        <Typography sx={{ color: "white" }}>
+                            {debouncedSearch
+                                ? t("PostsManagement.noResults") || "No results found"
+                                : t("PostsManagement.noPosts") || "No posts available"
+                            }
+                        </Typography>
+                    ) : (<TableContainer component={Paper} sx={{ bgcolor: "#18181B", color: "white" }}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell sx={{ color: "white", fontWeight: 600 }}>
+                                        {t("PostsManagement.title") || "Title"}
                                     </TableCell>
-                                    <TableCell sx={{ color: "white" }}>{post.date}</TableCell>
-                                    <TableCell>
-                                        <Box display="flex" alignItems="center" gap={1}>
-                                            <VisibilityOutlinedIcon />
-                                            {post.views.toLocaleString()}
-                                        </Box>
+                                    <TableCell sx={{ color: "white", fontWeight: 600 }}>
+                                        {t("PostsManagement.author") || "Author"}
                                     </TableCell>
-                                    <TableCell align="right">
-                                        <IconButton
-                                            color="primary"
-                                            onClick={() => handleViewPost(post._fullData)}
-                                            size="small"
-                                            sx={{ mr: 1 }}
-                                        >
-                                            <Eye size={18} />
-                                        </IconButton>
-                                        <IconButton
-                                            color="error"
-                                            onClick={() => handleDeleteClick(post.id)}
-                                            size="small"
-                                        >
-                                            <Trash2 size={18} />
-                                        </IconButton>
+                                    <TableCell sx={{ color: "white", fontWeight: 600 }}>
+                                        {t("PostsManagement.category") || "Category"}
+                                    </TableCell>
+                                    <TableCell sx={{ color: "white", fontWeight: 600 }}>
+                                        {t("PostsManagement.status") || "Status"}
+                                    </TableCell>
+                                    <TableCell sx={{ color: "white", fontWeight: 600 }}>
+                                        {t("PostsManagement.date") || "Date"}
+                                    </TableCell>
+                                    <TableCell align="right" sx={{ color: "white", fontWeight: 600 }}>
+                                        {t("PostsManagement.actions") || "Actions"}
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        }
-                    </TableBody>
-                </Table>
-            </TableContainer>)}
+                            </TableHead>
+
+                            <TableBody>
+                                {
+                                    posts.map((post) => (
+                                        <TableRow
+                                            key={post.id}
+                                            sx={{
+                                                '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)' },
+                                                transition: 'background-color 0.2s'
+                                            }}
+                                        >
+                                            <TableCell sx={{ color: "white" }}>{post.title}</TableCell>
+                                            <TableCell sx={{ color: "white" }}>{post.author}</TableCell>
+                                            <TableCell sx={{ color: "white" }}>{post.category}</TableCell>
+                                            <TableCell>
+                                                <Chip
+                                                    label={t(`PostsManagement.${post.status.toLowerCase()}`) || post.status}
+                                                    color={getStatusChipColor(post.status)}
+                                                    size="small"
+                                                />
+                                            </TableCell>
+                                            <TableCell sx={{ color: "white" }}>{post.date}</TableCell>
+                                            <TableCell>
+                                                <Box display="flex" alignItems="center" gap={1}>
+                                                    <VisibilityOutlinedIcon style={{ color: "white" }} />
+                                                    <Typography sx={{ color: "white" }}>{post.views.toLocaleString()}</Typography>
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                <IconButton
+                                                    color="primary"
+                                                    onClick={() => handleViewPost(post._fullData)}
+                                                    size="small"
+                                                    sx={{ mr: 1 }}
+                                                >
+                                                    <Eye size={18} />
+                                                </IconButton>
+                                                <IconButton
+                                                    color="error"
+                                                    onClick={() => handleDeleteClick(post.id)}
+                                                    size="small"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </IconButton>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                }
+                            </TableBody>
+                        </Table>
+                    </TableContainer>)}
 
 
-            {/* Pagination */}
-            {!isLoadingPosts && posts.length > 0 && (
-                <Stack spacing={2} sx={{ mt: 3, alignItems: "center" }}>
-                    <Pagination
-                        count={totalPages}
-                        page={page}
-                        onChange={handlePageChange}
-                        color="primary"
-                        sx={{
-                            "& .MuiPaginationItem-root": { color: "white" },
-                            "& .Mui-selected": {
-                                backgroundColor: "primary.main",
-                                color: "white"
+                    {/* Pagination */}
+                    {!isLoadingPosts && posts.length > 0 && (
+                        <Stack spacing={2} sx={{ mt: 3, alignItems: "center" }}>
+                            <Pagination
+                                count={totalPages}
+                                page={page}
+                                onChange={handlePageChange}
+                                color="primary"
+                                sx={{
+                                    "& .MuiPaginationItem-root": { color: "white" },
+                                    "& .Mui-selected": {
+                                        backgroundColor: "primary.main",
+                                        color: "white"
+                                    }
+                                }}
+                            />
+                        </Stack>
+                    )}
+
+                    {/* View Trip Dialog */}
+                    <Dialog
+                        open={!!viewingTrip || isLoadingTrip}
+                        onClose={handleCloseDialog}
+                        PaperProps={{
+                            sx: {
+                                backgroundColor: '#f5f5f5',
+                                maxHeight: '90vh',
+                                overflowY: 'auto'
                             }
                         }}
+                    >
+                        {isLoadingTrip ? (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                                <CircularProgress />
+                            </Box>
+                        ) : viewingTrip ? (
+                            <Box sx={{ maxHeight: '90vh', overflowY: 'auto' }}>
+                                <TripPost trip={viewingTrip} />
+                            </Box>
+                        ) : null}
+                    </Dialog>
+
+                    {/* Delete Confirmation Dialog */}
+                    <ConfirmDialog
+                        isOpen={showDeleteConfirm}
+                        onClose={() => setShowDeleteConfirm(false)}
+                        onConfirm={handleDeleteConfirm}
+                        title={t("PostsManagement.deleteTitle") || "Delete Trip"}
+                        message={t("PostsManagement.deleteMessage") || "Are you sure you want to delete this trip? This action cannot be undone."}
                     />
-                </Stack>
+                </>
             )}
 
-            {/* View Trip Dialog */}
-            <Dialog
-                open={!!viewingTrip || isLoadingTrip}
-                onClose={handleCloseDialog}
-                PaperProps={{
-                    sx: {
-                        backgroundColor: '#f5f5f5',
-                        maxHeight: '90vh',
-                        overflowY: 'auto'
-                    }
-                }}
-            >
-                {isLoadingTrip ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                        <CircularProgress />
-                    </Box>
-                ) : viewingTrip ? (
-                    <Box sx={{ maxHeight: '90vh', overflowY: 'auto' }}>
-                        <TripPost trip={viewingTrip} />
-                    </Box>
-                ) : null}
-            </Dialog>
-
-            {/* Delete Confirmation Dialog */}
-            <ConfirmDialog
-                isOpen={showDeleteConfirm}
-                onClose={() => setShowDeleteConfirm(false)}
-                onConfirm={handleDeleteConfirm}
-                title={t("PostsManagement.deleteTitle") || "Delete Trip"}
-                message={t("PostsManagement.deleteMessage") || "Are you sure you want to delete this trip? This action cannot be undone."}
-            />
+            {/* Analytics Tab Content */}
+            {activeTab === 1 && (
+                <PostsAnalytics />
+            )}
         </Box>
     );
 }
