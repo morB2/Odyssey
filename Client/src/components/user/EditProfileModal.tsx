@@ -5,9 +5,9 @@ import { Edit } from "@mui/icons-material";
 import { useUserStore } from "../../store/userStore";
 import { changePassword, uploadAvatar } from "../../services/profile.service";
 import { CloudinaryUploadWidget } from "../general/CloudinaryUploadWidget";
-import { MediaEditorModal } from "../general/MediaEditorModal";
 import type { UserProfile } from "./types";
 import { useTranslation } from "react-i18next";
+import { AdvancedMediaEditor } from "../general/AdvancedMediaEditor";
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -104,7 +104,7 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
         return;
       }
 
-      const result = await uploadAvatar(undefined, avatarUrl || undefined, storeToken);
+      const result = await uploadAvatar(undefined, avatarUrl || undefined);
       const payload = result?.data ?? result;
       if (payload && payload.success && payload.user) {
         if (typeof onAvatarSaved === "function") {
@@ -143,7 +143,7 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
         return;
       }
 
-      const result = await uploadAvatar(undefined, editedUrl || undefined, storeToken);
+      const result = await uploadAvatar(undefined, editedUrl || undefined);
       const payload = result?.data ?? result;
       if (payload && payload.success && payload.user) {
         if (typeof onAvatarSaved === "function") {
@@ -255,10 +255,9 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
         </Box>
       </Modal>
 
-      {/* Media Editor Modal */}
-      {currentAvatarUrl && (
-        <MediaEditorModal
-          isOpen={isEditorOpen}
+      {isEditorOpen && (
+        <AdvancedMediaEditor
+          isOpen={true}
           onClose={() => setIsEditorOpen(false)}
           mediaUrl={currentAvatarUrl}
           onSave={handleSaveEditedAvatar}

@@ -28,26 +28,10 @@ export const getTrips = async (userId: string, page: number = 1, limit: number =
 export const updateTrip = async (
   tripId: string,
   payload: any,
-  token?: string
 ) => {
   try {
-    // If payload is FormData (files + fields), use fetch so browser sets multipart boundary
-    if (payload instanceof FormData) {
-      const fullUrl =
-        (api.defaults.baseURL || "") + `${BASE}/trips/${tripId}`;
-      const res = await fetch(fullUrl, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: payload,
-      });
-      const json = await res.json();
-      if (!res.ok)
-        throw new Error(json?.error || json?.message || "Update failed");
-      return json;
-    }
-
+    // Axios handles both JSON and FormData automatically
+    // For FormData, axios sets the correct multipart/form-data boundary
     const res = await api.put(`${BASE}/trips/${tripId}`, payload);
     return res.data;
   } catch (error) {
@@ -71,7 +55,6 @@ export const deleteTrip = async (
 export const uploadAvatar = async (
   file?: File,
   avatarUrl?: string,
-  token?: string
 ) => {
   const url = `${BASE}/avatar`;
 
@@ -80,29 +63,14 @@ export const uploadAvatar = async (
     const fd = new FormData();
     fd.append("avatar", file);
 
-    const res = await fetch(`${api.defaults.baseURL}${url}`, {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${token}` },
-      body: fd,
-    });
-
-    const json = await res.json();
-    if (!res.ok) throw new Error(json.error || "Upload failed");
-    return json;
+    // Axios handles FormData and sets correct Content-Type automatically
+    const res = await api.put(url, fd);
+    return res.data;
   }
 
   // Upload cloudinary URL
   if (avatarUrl?.trim()) {
-    const res = await api.put(
-      url,
-      { avatarUrl: avatarUrl.trim() },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const res = await api.put(url, { avatarUrl: avatarUrl.trim() });
     return res.data;
   }
 

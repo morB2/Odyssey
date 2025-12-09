@@ -21,7 +21,7 @@ import {
   Tooltip
 } from '@mui/material';
 
-import { BookImage, Sparkles, MessageCircleMore, Menu, X, User, LogIn, UserPlus, LayoutDashboard } from 'lucide-react';
+import { BookImage, Sparkles, MessageCircleMore, Menu, X, User, LogIn, UserPlus, LayoutDashboard, LogOut } from 'lucide-react';
 
 import { useUserStore } from '../../store/userStore';
 import ProfileMenu from '../user/ProfileMenu';
@@ -29,6 +29,7 @@ import LanguageSwitcher from './LanguageSwitcher';
 import Search from './Search';
 import { useTranslation } from 'react-i18next';
 import chatService from '../../services/chat.service';
+import { useSocketEvent } from '../../hooks/useSocket';
 
 const Navbar: FC = () => {
   const navigate = useNavigate();
@@ -38,7 +39,7 @@ const Navbar: FC = () => {
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
 
   useEffect(() => {
     let mounted = true;
@@ -46,8 +47,9 @@ const Navbar: FC = () => {
     const fetchUnread = async () => {
       if (!user?._id) return setUnreadCount(0);
       try {
-        const data = await chatService.getUnreadCount(user._id);
-        const count = typeof data === 'number' ? data : data?.unread ?? 0;
+        const data = await chatService.getUnreadCount();
+        const count = typeof data === 'number' ? data : (data?.count ?? data?.unread ?? 0);
+        console.log('Fetched unread count:', count);
         if (mounted) setUnreadCount(count);
       } catch (err) {
         console.error('Failed to fetch unread count', err);
@@ -57,6 +59,26 @@ const Navbar: FC = () => {
     fetchUnread();
     // return () => (mounted = false);
   }, [user]);
+
+  // Listen for new messages to increment unread count
+  useSocketEvent('newMessage', (message: any) => {
+    // If message is for me and I'm not the sender
+    if (user && message.receiverId._id === user._id) {
+      setUnreadCount(prev => prev + 1);
+    }
+  });
+
+  // Listen for read receipts to update unread count
+  useSocketEvent('messagesRead', (data: any) => {
+    // If I read messages (on another device/tab or this one), refresh count
+    if (user && (data.byUserId === user._id)) {
+      // Re-fetch to be accurate
+      chatService.getUnreadCount().then(data => {
+        const count = typeof data === 'number' ? data : (data?.count ?? data?.unread ?? 0);
+        setUnreadCount(count);
+      });
+    }
+  });
 
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
   const handleMobileNavigate = (path: string, state?: any) => {
@@ -113,7 +135,7 @@ const Navbar: FC = () => {
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton onClick={() => handleMobileNavigate('/profile')}>
-                <User size={20} /><ListItemText sx={{ ml: 1 }} primary={t('profile.title')} />
+                <User size={20} /><ListItemText sx={{ ml: 1 }} primary={t('profile.profile')} />
               </ListItemButton>
             </ListItem>
 
@@ -124,6 +146,15 @@ const Navbar: FC = () => {
                 </ListItemButton>
               </ListItem>
             )}
+
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => {
+                const clearUser = useUserStore.getState().clearUser;
+                clearUser(); handleMobileNavigate('/')
+              }}>
+                <LogOut size={20} /><ListItemText sx={{ ml: 1 }} primary={t('profileMenu.logout')} />
+              </ListItemButton>
+            </ListItem>
           </>
         ) : (
           <>
@@ -158,19 +189,19 @@ const Navbar: FC = () => {
       }}>
         <Toolbar sx={{ px: { xs: 2, md: 6 }, py: 1.5, justifyContent: 'space-between' }}>
 
-          <Link component={RouterLink} to="/" sx={{ display: 'flex', alignItems: 'center' }}>
-            <img src="/logo-white.png" style={{ height: 80 }} />
+          <Link component={RouterLink} to="/" sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+            <img src="/logo-white.png" alt="Odyssey" style={{ height: 80 }} />
           </Link>
 
           {isMobile ? (
             <Box sx={{ display: 'flex', gap: 2 }}>
-              <Search onSearch={(s) => console.log('search:', s)} />
+              <Search />
               <IconButton onClick={handleDrawerToggle} color="inherit"><Menu /></IconButton>
             </Box>
           ) : (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Search onSearch={(s) => console.log('search:', s)} />
-              <Box onClick={() => navigate('/feed')} sx={navItemStyle}><BookImage size={24} /><Typography variant="caption">Feed</Typography></Box>
+              <Search />
+              <Box onClick={() => navigate('/feed')} sx={navItemStyle}><BookImage size={24} /><Typography variant="caption">{t('feed')}</Typography></Box>
               <Box onClick={() => navigate('/createtrip')} sx={navItemStyle}><Sparkles size={24} /><Typography variant="caption">{t('createTrip.create')}</Typography></Box>
               {user && (
                 <>
@@ -184,7 +215,7 @@ const Navbar: FC = () => {
                         background: 'linear-gradient(135deg,#f97316,#ea580c)',
                         width: 20, height: 20, borderRadius: '50%',
                         color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center',
-                        fontSize: '0.7rem', fontWeight: 'bold'
+                        fontSize: '0.7rem', fontWeight: 'bold', fontFamily: 'Arial'
                       }}>
                         {unreadCount}
                       </Box>
@@ -222,7 +253,7 @@ const Navbar: FC = () => {
       </AppBar>
 
       <Drawer anchor="right" open={mobileOpen} onClose={handleDrawerToggle}
-        sx={{ display: { xs: 'block', md: 'none' } }} >
+        sx={{ display: { xs: 'block', lg: 'none' } }} >
         {drawerContent}
       </Drawer>
 

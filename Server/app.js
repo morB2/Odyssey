@@ -1,6 +1,7 @@
 import express from "express";
 import http from "http";
 import cors from "cors";
+import helmet from "helmet"; // ✅ Security headers and CSP
 import dotenv from "dotenv";
 import { routesInit } from "./routes/config_routes.js";
 import "./db/mongoConect.js";
@@ -17,12 +18,34 @@ dotenv.config();
 const allowedOrigins = (process.env.FRONTEND_URL || '').split(',');
 
 const corsOptions = {
-    origin: allowedOrigins,
-    credentials: true,
-    optionsSuccessStatus: 200 
+  origin: allowedOrigins,
+  credentials: true,
+  optionsSuccessStatus: 200
 };
+
 app.use(cors(corsOptions));
-app.use(express.json());
+
+// ✅ Security headers and Content Security Policy
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"], // Note: Remove unsafe-inline in production when possible
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:", "https://res.cloudinary.com"], // Allow Cloudinary
+      connectSrc: ["'self'", ...allowedOrigins.filter(o => o)],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'", "https://res.cloudinary.com"],
+      frameSrc: ["'none'"],
+      upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null
+    }
+  },
+  crossOriginEmbedderPolicy: false // Allow embedding from Cloudinary
+}));
+
+app.use(express.json({ limit: '10mb' })); // ✅ Prevent large payload DoS
+app.use(express.urlencoded({ extended: true, limit: '10mb' })); // ✅ Prevent large payload DoS
 
 // Ensure uploads directory exists and serve it statically
 const uploadsDir = path.join(process.cwd(), "temp_uploads");

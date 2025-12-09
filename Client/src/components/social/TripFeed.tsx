@@ -3,7 +3,6 @@ import TripPost from './TripPost';
 import { Container, Box } from '@mui/material';
 import { fetchTrips } from '../../services/tripFeed.service';
 import { type Comment, type Trip } from './types';
-import Navbar from '../general/Navbar';
 import TripFeedSkeleton from './TripFeedSkeleton';
 import { useUserStore } from '../../store/userStore';
 import { GuestWelcomeCard } from './GuestWelcomeCard';
@@ -114,7 +113,7 @@ export function TripFeed() {
     <Box
       sx={{
         minHeight: '100vh',
-        backgroundImage: "linear-gradient(rgba(255, 252, 252, 0.85), rgba(197, 197, 197, 0.9)), url('/feed_background.png')",
+        backgroundImage: "linear-gradient(rgba(255, 252, 252, 0.92), rgba(197, 197, 197, 0.9)), url('/feed_background.png')",
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -122,7 +121,6 @@ export function TripFeed() {
         bgcolor: '#bb986cff',
       }}
     >
-      <Navbar />
       <Container maxWidth="md" sx={{ py: { xs: 2, md: 3 }, px: { xs: 2, md: 3 } }}>
         {/* If user is not logged in and hasn't opted to view as guest, show the welcome card */}
         {!user && !allowGuest && (

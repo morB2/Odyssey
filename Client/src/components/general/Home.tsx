@@ -19,12 +19,8 @@ import {
   Users,
   Globe,
 } from 'lucide-react';
-import Navbar from './Navbar';
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
-
-
-
 interface Feature {
   icon: React.ReactNode;
   title: string;
@@ -54,7 +50,6 @@ export const Home: React.FC = () => {
       margin: 0,
       padding: 0,
     }}>
-      <Navbar />
 
       {/* Hero Section */}
       <Box sx={{

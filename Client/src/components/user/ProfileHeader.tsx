@@ -1,29 +1,15 @@
 import { useState, useEffect } from "react";
 import type { UserProfile } from "./types";
-import { Button, Card, Avatar, Box, Typography, List, ListItem, ListItemAvatar, ListItemText, Link, Dialog, DialogTitle, DialogContent, Skeleton } from "@mui/material";
-import { Link as RouterLink } from "react-router-dom";
+import { Button, Card, Avatar, Box, Typography, Skeleton } from "@mui/material";
 import { Edit, Users, UserPlus, MessageCircle } from "lucide-react";
 import { getFollowers as svcGetFollowers, getFollowing as svcGetFollowing } from "../../services/profile.service";
 import { useTranslation } from 'react-i18next';
 import { useChat } from "../../context/ChatContext";
-type SimpleFollow = {
-  _id?: string;
-  id?: string;
-  firstName?: string;
-  lastName?: string;
-  avatar?: string;
-  email?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  [k: string]: unknown;
-};
+import { FollowListDialog } from "./FollowListDialog";
 
-interface ProfileHeaderProps {
-  user: UserProfile;
-  isOwner?: boolean;
-  onEditClick?: () => void;
-  loading?: boolean;
-}
+type SimpleFollow = { _id?: string; id?: string; firstName?: string; lastName?: string; avatar?: string; email?: string; username?: string;[k: string]: unknown };
+
+interface ProfileHeaderProps { user: UserProfile; isOwner?: boolean; onEditClick?: () => void; loading?: boolean; }
 
 export function ProfileHeader({ user, isOwner = false, onEditClick, loading = false }: ProfileHeaderProps) {
   const [openDialog, setOpenDialog] = useState<"followers" | "following" | null>(null);
@@ -42,22 +28,15 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, loading = fa
     setFollowersCount(fCount || 0);
     setFollowingCount(foCount || 0);
 
-    if (Array.isArray(u.followers)) {
-      const arr = u.followers as unknown[];
-      const hasObjects = arr.length > 0 && typeof arr[0] === "object";
-      if (hasObjects) setFollowers(arr as SimpleFollow[]);
-      else setFollowers([]);
-    } else {
-      setFollowers([]);
-    }
-    if (Array.isArray(u.following)) {
-      const arr = u.following as unknown[];
-      const hasObjects = arr.length > 0 && typeof arr[0] === "object";
-      if (hasObjects) setFollowing(arr as SimpleFollow[]);
-      else setFollowing([]);
-    } else {
-      setFollowing([]);
-    }
+    // Helper function to process follow lists
+    const processList = (list: unknown[] | undefined) => {
+      if (!Array.isArray(list)) return [];
+      const hasObjects = list.length > 0 && typeof list[0] === "object";
+      return hasObjects ? (list as SimpleFollow[]) : [];
+    };
+
+    setFollowers(processList(u.followers));
+    setFollowing(processList(u.following));
   }, [user]);
 
   const loadList = async (listType: "followers" | "following") => {
@@ -84,48 +63,7 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, loading = fa
     setOpenDialog(listType);
   };
 
-  const renderDialog = (type: "followers" | "following") => {
-    const list = type === "followers" ? followers : following;
-    return (
-      <Dialog open={openDialog === type} onClose={() => setOpenDialog(null)} fullWidth maxWidth="xs"
-        PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 4px 24px rgba(0,0,0,0.15)' } }}>
 
-        <DialogTitle sx={{ textAlign: 'center', fontWeight: 700, fontSize: '1.1rem', color: '#111', py: 2 }}>
-          {type === "followers" ? t('profile.followers') : t('profile.following')}
-        </DialogTitle>
-
-        <DialogContent sx={{ pt: 0 }}>
-          <List sx={{ py: 0 }}>
-            {list.map((f) => (
-              <ListItem key={f._id || f.id}
-                sx={{ display: 'flex', alignItems: 'center', py: 1, borderRadius: 2, mb: 0.5, '&:hover': { bgcolor: '#fafafa' } }}>
-
-                <ListItemAvatar>
-                  <Avatar src={f.avatar || undefined} alt=""
-                    sx={{ width: 42, height: 42, fontSize: '0.9rem', border: '1px solid #f97316' }}>
-                    {(f.firstName || f.lastName || "")[0]?.toUpperCase()}
-                  </Avatar>
-                </ListItemAvatar>
-
-                <ListItemText
-                  primary={
-                    <Link component={RouterLink} to={`/profile/${f._id || f.id}`} underline="none"
-                      onClick={() => setOpenDialog(null)}
-                      sx={{ fontWeight: 600, color: '#222', fontSize: '0.95rem', '&:hover': { color: '#f97316' } }}>
-                      {String(`${f.firstName || ""} ${f.lastName || ""}`.trim() ||
-                        f.email || f.username || f._id || "")}
-                    </Link>
-                  }
-                  sx={{ m: 0 }}
-                />
-
-              </ListItem>
-            ))}
-          </List>
-        </DialogContent>
-      </Dialog>
-    );
-  };
 
   if (loading) {
     return (
@@ -141,7 +79,6 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, loading = fa
         </Box>
       </Card>
     );
-
   }
 
   return (
@@ -167,81 +104,16 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, loading = fa
           }}
         >
           {/* Avatar */}
-          <Avatar
-            src={user.avatar || undefined}
-            alt={user.firstName + ' ' + user.lastName}
-            sx={{
-              width: 80,
-              height: 80,
-              fontSize: '2rem',
-              bgcolor: '#f97316',
-              color: '#fff',
-              border: '2px solid #fff',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
-            }}
-          />
+          <Avatar src={user.avatar || undefined} alt={user.firstName + ' ' + user.lastName} sx={{ width: 80, height: 80, fontSize: '2rem', bgcolor: '#f97316', color: '#fff', border: '2px solid #fff', boxShadow: '0 2px 6px rgba(0,0,0,0.12)' }} />
 
           {/* User Info */}
           <Box sx={{ flex: 1, textAlign: { xs: 'center', md: 'left' } }}>
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: { xs: 'column', md: 'row' },
-                alignItems: 'center',
-                gap: 1,
-              }}
-            >
-              <Typography
-                sx={{
-                  fontSize: '1.5rem',
-                  fontWeight: 700,
-                  color: '#111',
-                }}
-              >
-                {user.firstName + ' ' + user.lastName}
-              </Typography>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'center', gap: 1 }}>
+              <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#111' }}>{user.firstName + ' ' + user.lastName}</Typography>
 
-              {isOwner && (
-                <Button
-                  onClick={onEditClick}
-                  variant="text"
-                  sx={{
-                    minWidth: 0,
-                    p: 0.5,
-                    color: '#f97316',
-                    '&:hover': { background: 'rgba(249,115,22,0.1)' },
-                  }}
-                >
-                  <Edit size={18} />
-                </Button>
-              )}
+              {isOwner && (<Button onClick={onEditClick} variant="text" sx={{ minWidth: 0, p: 0.5, color: '#f97316', '&:hover': { background: 'rgba(249,115,22,0.1)' } }}><Edit size={18} /></Button>)}
 
-              {!isOwner && (
-                <Button
-                  onClick={() => openChat({
-                    _id: user.id || (user as any)._id,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    avatar: user.avatar
-                  })}
-                  variant="outlined"
-                  size="small"
-                  startIcon={<MessageCircle size={18} />}
-                  sx={{
-                    borderColor: '#f97316',
-                    color: '#f97316',
-                    '&:hover': {
-                      borderColor: '#ea580c',
-                      background: 'rgba(249,115,22,0.05)',
-                    },
-                    textTransform: 'none',
-                    borderRadius: 2,
-                    px: 2
-                  }}
-                >
-                  {t('social.chat')}
-                </Button>
-              )}
+              {!isOwner && (<Button onClick={() => openChat({ _id: user.id || (user as any)._id, firstName: user.firstName, lastName: user.lastName, avatar: user.avatar })} variant="outlined" size="small" startIcon={<MessageCircle size={18} />} sx={{ borderColor: '#f97316', color: '#f97316', '&:hover': { borderColor: '#ea580c', background: 'rgba(249,115,22,0.05)' }, textTransform: 'none', borderRadius: 2, px: 2 }}>{t('social.chat')}</Button>)}
             </Box>
 
             {/* Stats */}
@@ -253,33 +125,13 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, loading = fa
                 justifyContent: { xs: 'center', md: 'flex-start' },
               }}
             >
-              <Box
-                onClick={() => loadList('followers')}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  cursor: 'pointer',
-                  color: '#555',
-                  '&:hover': { color: '#f97316' },
-                }}
-              >
+              <Box onClick={() => loadList('followers')} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer', color: '#555', '&:hover': { color: '#f97316' } }}>
                 <Users size={16} />
                 <Typography sx={{ fontWeight: 600 }}>{followersCount}</Typography>
                 <Typography sx={{ fontSize: '0.8rem' }}>{t('profile.followers')}</Typography>
               </Box>
 
-              <Box
-                onClick={() => loadList('following')}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  cursor: 'pointer',
-                  color: '#555',
-                  '&:hover': { color: '#f97316' },
-                }}
-              >
+              <Box onClick={() => loadList('following')} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer', color: '#555', '&:hover': { color: '#f97316' } }}>
                 <UserPlus size={16} />
                 <Typography sx={{ fontWeight: 600 }}>{followingCount}</Typography>
                 <Typography sx={{ fontSize: '0.8rem' }}> {t('profile.following')}</Typography>
@@ -290,8 +142,8 @@ export function ProfileHeader({ user, isOwner = false, onEditClick, loading = fa
         </Box>
       </Card>
 
-      {renderDialog('followers')}
-      {renderDialog('following')}
+      <FollowListDialog open={openDialog === "followers"} onClose={() => setOpenDialog(null)} type="followers" list={followers} />
+      <FollowListDialog open={openDialog === "following"} onClose={() => setOpenDialog(null)} type="following" list={following} />
     </>
   );
 

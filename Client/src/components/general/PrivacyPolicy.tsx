@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Container, Typography, Paper, Divider } from '@mui/material';
-import Navbar from './Navbar';
 import { useTranslation } from 'react-i18next';
 
 const PrivacyPolicy: React.FC = () => {
@@ -9,7 +8,6 @@ const PrivacyPolicy: React.FC = () => {
 
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#f9fafb' }}>
-            <Navbar />
             <Container maxWidth="md" sx={{ py: 8 }}>
                 <Paper elevation={0} sx={{ p: { xs: 3, md: 6 }, borderRadius: 4 }}>
                     <Typography variant="h3" component="h1" sx={{ mb: 4, fontWeight: 800, color: '#1f2937' }}>

@@ -59,7 +59,7 @@ export default function ChatWidget() {
             const fetchMessages = async () => {
                 setLoading(true);
                 try {
-                    const data = await chatService.getConversation(activeChatUser._id, currentUser._id!);
+                    const data = await chatService.getConversation(activeChatUser._id); // ✅ Removed currentUserId
                     setMessages(data.messages || data); // Handle both array and object response
                     if (data.conversation) {
                         setConversationStatus(data.conversation);
@@ -68,7 +68,7 @@ export default function ChatWidget() {
                     }
 
                     // Mark as read
-                    await chatService.markAsRead(activeChatUser._id, currentUser._id!);
+                    await chatService.markAsRead(activeChatUser._id); // ✅ Removed currentUserId
                 } catch (error) {
                     console.error('Error fetching messages:', error);
                     toast.error(t('chat.failedToLoadChat'));
@@ -94,7 +94,7 @@ export default function ChatWidget() {
 
             // If chat is open, mark as read immediately
             if (isChatOpen && !isMinimized) {
-                chatService.markAsRead(activeChatUser._id, currentUser._id!).catch(console.error);
+                chatService.markAsRead(activeChatUser._id).catch(console.error); // ✅ Removed currentUserId
             }
         }
     });
@@ -136,13 +136,13 @@ export default function ChatWidget() {
         setNewMessage('');
 
         try {
-            const sentMessage = await chatService.sendMessage(currentUser._id, activeChatUser._id, tempMessage.message);
+            const sentMessage = await chatService.sendMessage(activeChatUser._id, tempMessage.message); // ✅ Removed senderId
             // Replace temp message with real one
             setMessages((prev) => prev.map(m => m._id === tempMessage._id ? sentMessage : m));
 
             // Update conversation status if it was pending/null
             if (!conversationStatus) {
-                const data = await chatService.getConversation(activeChatUser._id, currentUser._id!);
+                const data = await chatService.getConversation(activeChatUser._id); // ✅ Removed currentUserId
                 if (data.conversation) setConversationStatus(data.conversation);
             }
         } catch (error: any) {
@@ -156,7 +156,7 @@ export default function ChatWidget() {
     const handleRequestAction = async (action: 'accept' | 'block') => {
         if (!conversationStatus?._id || !currentUser?._id) return;
         try {
-            const updatedConv = await chatService.handleRequest(conversationStatus._id, action, currentUser._id);
+            const updatedConv = await chatService.handleRequest(conversationStatus._id, action); // ✅ Removed currentUserId
             setConversationStatus(updatedConv);
             toast.success(action === 'accept' ? t('chat.chatRequestAccepted') : t('chat.userBlocked'));
         } catch (error) {

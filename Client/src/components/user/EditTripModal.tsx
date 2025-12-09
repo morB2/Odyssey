@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import type { Trip, ServerTrip } from "./types";
 import { Modal } from "./Modal";
 import { Box, Button, TextField, Typography, Divider, Chip, IconButton } from "@mui/material";
-import { Save, X, Trash2, Lock, Globe, Plus, Pencil, Sparkles } from "lucide-react";
+import { Save, X, Trash2, Lock, Globe, Plus, Pencil } from "lucide-react";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { useUserStore } from "../../store/userStore";
 import { updateTrip } from "../../services/profile.service";
@@ -10,7 +10,6 @@ import { toast } from "react-toastify";
 
 import { CloudinaryUploadWidget } from "../general/CloudinaryUploadWidget";
 import { isVideo } from "../../utils/mediaUtils";
-import { MediaEditorModal } from "../general/MediaEditorModal";
 import { AdvancedMediaEditor } from "../general/AdvancedMediaEditor";
 
 interface EditTripModalProps {
@@ -43,7 +42,6 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
   const [pendingVisibility, setPendingVisibility] = useState<"public" | "private">("public");
 
   // Editor state
-  const [showQuickEditor, setShowQuickEditor] = useState<number | null>(null);
   const [showAdvancedEditor, setShowAdvancedEditor] = useState<number | null>(null);
 
   useEffect(() => {
@@ -69,7 +67,6 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
       if (!trip) return;
       try {
         const storeUser = useUserStore.getState().user;
-        const storeToken = useUserStore.getState().token;
         const userId = storeUser?._id;
         if (!userId) throw new Error("Not authenticated");
 
@@ -86,7 +83,7 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
           return;
         }
 
-        const res = await updateTrip(String(trip._id || trip.id), payload, storeToken || undefined);
+        const res = await updateTrip(String(trip._id || trip.id), payload);
         const serverTrip: ServerTrip = (res && (res.trip || res)) as ServerTrip;
 
         const ordered = serverTrip.optimizedRoute?.ordered_route || [];
@@ -133,14 +130,6 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
   };
 
   const handleRemoveImage = (index: number) => setImages((prev) => prev.filter((_, i) => i !== index));
-
-  const handleQuickEditSave = (index: number, editedUrl: string) => {
-    setImages((prev) => {
-      const updated = prev.map((url, i) => (i === index ? editedUrl : url));
-      return updated;
-    });
-    setShowQuickEditor(null);
-  };
 
   const handleAdvancedEditSave = (index: number, editedUrl: string) => {
     setImages((prev) => {
@@ -226,11 +215,8 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
                       <Box component="img" src={mediaUrl} alt={`Trip media ${index + 1}`} sx={{ aspectRatio: "16/9", width: "100%", objectFit: "cover" }} />
                     )}
                     <Box className="overlay" sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5, backgroundColor: "rgba(0, 0, 0, 0)", transition: "background-color 0.2s", pointerEvents: "none" }}>
-                      <IconButton className="delete-btn" onClick={() => setShowQuickEditor(index)} sx={{ backgroundColor: "#3b82f6", opacity: 0, transition: "opacity 0.2s", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", "&:hover": { backgroundColor: "#2563eb" }, pointerEvents: "auto", width: 32, height: 32 }} title="Quick Edit">
+                      <IconButton className="delete-btn" onClick={() => setShowAdvancedEditor(index)} sx={{ backgroundColor: "#f8893aff", opacity: 0, transition: "opacity 0.2s", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", "&:hover": { backgroundColor: "#d8885dff" }, pointerEvents: "auto", width: 32, height: 32 }} title="Advanced Edit">
                         <Pencil size={14} color="#ffffff" />
-                      </IconButton>
-                      <IconButton className="delete-btn" onClick={() => setShowAdvancedEditor(index)} sx={{ backgroundColor: "#f97316", opacity: 0, transition: "opacity 0.2s", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", "&:hover": { backgroundColor: "#ea580c" }, pointerEvents: "auto", width: 32, height: 32 }} title="Advanced Edit">
-                        <Sparkles size={14} color="#ffffff" />
                       </IconButton>
                       <IconButton className="delete-btn" onClick={() => handleRemoveImage(index)} sx={{ backgroundColor: "#ffffff", opacity: 0, transition: "opacity 0.2s", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", "&:hover": { backgroundColor: "#ffffff" }, pointerEvents: "auto", width: 32, height: 32 }} title="Delete">
                         <Trash2 size={14} color="#dc2626" />
@@ -296,16 +282,6 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
       </Modal>
 
       <ConfirmDialog isOpen={showVisibilityConfirm} onClose={() => setShowVisibilityConfirm(false)} onConfirm={confirmVisibilityChange} title="Change Visibility" message="Are you sure you want to change the trip's visibility?" />
-
-      {/* Quick Editor Modal */}
-      {showQuickEditor !== null && (
-        <MediaEditorModal
-          isOpen={true}
-          onClose={() => setShowQuickEditor(null)}
-          mediaUrl={images[showQuickEditor]}
-          onSave={(editedUrl) => handleQuickEditSave(showQuickEditor, editedUrl)}
-        />
-      )}
 
       {/* Advanced Editor Modal */}
       {showAdvancedEditor !== null && (

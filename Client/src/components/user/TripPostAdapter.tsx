@@ -11,36 +11,45 @@ interface AdapterProps {
   trip: Trip;
   onDelete: () => void;
   onEdit: () => void;
+  maxLines?: number;
+  showDescription?: boolean;
 }
 
 // Shared styles
 const actionsContainerStyle = { position: "absolute", top: 16, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 1, zIndex: 10 };
 const iconButtonStyle = { color: "#6b7280", backgroundColor: "rgba(255, 255, 255, 0.9)", "&:hover": { backgroundColor: "rgba(255, 255, 255, 1)" } };
-
 function adaptComments(apiComments: any[]): Comment[] {
   return apiComments.map((c) => {
-    const date = new Date(c.createdAt);
-    const time = date.toLocaleString([], { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    const date = new Date(c.timestamp);
+    const time = date.toLocaleString([], {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
     // Safety checks for user data
     const firstName = c.user?.firstName || "Unknown";
     const lastName = c.user?.lastName || "User";
+
     return {
-      id: c._id,
+      id: c.id || c._id,
+      userId: c.userId,
       user: {
         name: `${firstName} ${lastName}`,
-        username: ` @${firstName.toLowerCase()}${lastName.toLowerCase()}`,
+        username: `@${firstName.toLowerCase()}${lastName.toLowerCase()}`,
         avatar: c.user?.avatar || "/default-avatar.png",
       },
-      text: c.comment,
-      timestamp: time,
-      reactionsAggregated: c.reactionsAggregated || {},
+      // Prefer normalized `text` from the API, fall back to legacy `comment` field
+      text: c.text,
+      timestamp: time, // use formatted time instead of raw timestamp
+      reactionsAggregated: c.reactionsAggregated || {}, // Include aggregated reactions
       replies: c.replies ? adaptComments(c.replies) : [], // Recursively adapt replies
-
     };
   });
 }
-
-export default function TripPostAdapter({ trip, onDelete, onEdit }: AdapterProps) {
+export default function TripPostAdapter({ trip, onDelete, onEdit, maxLines, showDescription }: AdapterProps) {
   const storeUser = useUserStore((s) => s.user);
   const currentUserId = storeUser?._id || "";
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -87,7 +96,7 @@ export default function TripPostAdapter({ trip, onDelete, onEdit }: AdapterProps
   return (
     <>
       <Box sx={{ position: "relative" }}>
-        <TripPost trip={mapped} />
+        <TripPost trip={mapped} maxLines={maxLines} showDescription={showDescription} />
         {storeUser?._id === trip.user?._id && (
           <Box sx={actionsContainerStyle}>
             <ActionButton onClick={onEdit} Icon={Edit} hoverColor="#374151" />

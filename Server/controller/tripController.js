@@ -44,7 +44,8 @@ export async function getTripById(req, res) {
 export async function postComment(req, res) {
   try {
     const { tripId } = req.params;
-    const { comment, userId } = req.body;
+    const { comment } = req.body;
+    const userId = req.user.userId; // ✅ Use authenticated user from JWT
     const newComment = await postCommentForUser(tripId, userId, comment);
 
     // Emit real-time event to all users in the trip room
@@ -64,7 +65,8 @@ export async function postComment(req, res) {
 export async function addReaction(req, res) {
   try {
     const { tripId, commentId } = req.params;
-    const { userId, emoji } = req.body;
+    const { emoji } = req.body;
+    const userId = req.user.userId; // ✅ Use authenticated user from JWT
     // This logic assumes you have a function addReactionToComment in your service layer
     const updatedReaction = await addReactionToComment(tripId, commentId, userId, emoji);
 
@@ -87,7 +89,8 @@ export async function addReaction(req, res) {
 export async function postReply(req, res) {
   try {
     const { tripId, commentId } = req.params;
-    const { userId, reply } = req.body;
+    const { reply } = req.body;
+    const userId = req.user.userId; // ✅ Use authenticated user from JWT
     const newReply = await postReplyForUser(tripId, commentId, userId, reply);
 
     // Emit real-time event to all users in the trip room
@@ -128,7 +131,7 @@ export async function incrementView(req, res) {
 export async function deleteComment(req, res) {
   try {
     const { tripId, commentId } = req.params;
-    const { userId } = req.body;
+    const userId = req.user.userId; // ✅ Use authenticated user from JWT
 
     const deletedComment = await deleteCommentService(tripId, commentId, userId);
 
