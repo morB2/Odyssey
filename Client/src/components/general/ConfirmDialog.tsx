@@ -54,8 +54,8 @@ export const ConfirmDialog: FC<ConfirmDialogProps> = ({ isOpen, onClose, onConfi
         </Box>
       </DialogContent>
       <DialogActions sx={{ p: 0, gap: 1.5 }}>
-        <Button onClick={onClose} variant="outlined" sx={cancelButtonStyle}>{t('Cancel')}</Button>
-        <Button onClick={handleConfirm} variant="contained" sx={confirmButtonStyle}>{t('Confirm')}</Button>
+        <Button type="button" onClick={onClose} variant="outlined" sx={cancelButtonStyle}>{t('Cancel')}</Button>
+        <Button type="button" onClick={handleConfirm} variant="contained" sx={confirmButtonStyle}>{t('Confirm')}</Button>
       </DialogActions>
     </Dialog>
   );

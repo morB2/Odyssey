@@ -54,7 +54,17 @@ export const getTheme = (language: string, mode: 'light' | 'dark' = 'light') =>
                         backgroundImage: 'none', // Remove default gradient in dark mode
                     }
                 }
-            }
+            },
+            MuiDialog: {
+                defaultProps: {
+                    disableScrollLock: true, // applies to all dialogs
+                },
+            },
+            MuiDrawer: {
+                defaultProps: {
+                    disableScrollLock: true, // applies to all drawers
+                },
+            },
         },
         typography: {
             //כאן בוחרים פונטים שונים עבור עברית ואנגלית

@@ -24,7 +24,7 @@ export const createUser = async (userData: any) => {
 
 export const updateUser = async (id: any, updateData: any) => {
   try {
-    const res = await api.put(`${BASE_URL}/${id}`, updateData);
+    const res = await api.patch(`${BASE_URL}/${id}`, updateData);
     return res.data;
   } catch (error) {
     console.error("Failed to update user", error);

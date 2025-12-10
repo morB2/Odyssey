@@ -34,7 +34,7 @@ router.get('/', async (req, res, next) => {
 //     }
 // });
 
-router.put('/:id', async (req, res, next) => {
+router.patch('/:id', async (req, res, next) => {
     try {
         // Verify user is updating their own account or is admin
         if (req.params.id !== req.user.userId && req.user.role !== 'admin') {

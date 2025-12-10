@@ -28,15 +28,19 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 403) {
-      const clearUser = useUserStore.getState().clearUser;
-      clearUser();
+    if (error.response) {
+      if (error.response.status === 403) {
+        const clearUser = useUserStore.getState().clearUser;
+        clearUser();
 
-      // Show notification to user
-      toast.error('Your session has expired. Please log in again.');
+        // Show notification to user
+        toast.error('Your session has expired. Please log in again.');
 
-      // Redirect to home page
-      window.location.href = '/';
+        // Redirect to home page
+        window.location.href = '/';
+      } else if (error.response.status === 429) {
+        toast.error('Too many requests. Please try again later.');
+      }
     }
     return Promise.reject(error);
   }

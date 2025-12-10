@@ -7,6 +7,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useUserStore } from '../../store/userStore';
 import { GLogin } from './GoogleLogin';
 import type { User } from '../../models/user.model';
+import { toast } from 'react-toastify';
 
 
 export const Login = () => {
@@ -17,8 +18,6 @@ export const Login = () => {
   const [open, setOpen] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [loginData, setLoginData] = useState<Pick<User, 'email' | 'password'>>({
     email: '',
     password: ''
@@ -43,11 +42,9 @@ export const Login = () => {
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
-    setSuccess(null);
     try {
       const response = await loginUser(loginData);
-      setSuccess('Login successful!');
+      toast.success('Login successful!');
       const userInfo = {
         _id: response.user._id,
         firstName: response.user.firstName,
@@ -59,7 +56,8 @@ export const Login = () => {
       setOpen(false);
       setTimeout(() => navigate(-1), 200);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      const errorMessage = err.response?.data?.message || 'Login failed. Please try again.';
+      toast.error(errorMessage);
       console.error('Login error:', err);
     } finally {
       setLoading(false);
@@ -69,11 +67,8 @@ export const Login = () => {
   const handleSignup = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
-    setSuccess(null);
-
     if (signupData.password !== confirmPassword) {
-      setError('Passwords do not match');
+      toast.error(t('passwordsDoNotMatch') || 'Passwords do not match');
       setLoading(false);
       return;
     }
@@ -81,7 +76,7 @@ export const Login = () => {
       const response = await registerUser({
         ...signupData
       });
-      setSuccess('Account created successfully!');
+      toast.success('Account created successfully!');
       const userInfo = {
         _id: response.user._id,
         firstName: response.user.firstName,
@@ -93,7 +88,8 @@ export const Login = () => {
       setOpen(false);
       setTimeout(() => navigate(-1), 200);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      const errorMessage = err.response?.data?.message || 'Registration failed. Please try again.';
+      toast.error(errorMessage);
       console.error('Signup error:', err);
     } finally {
       setLoading(false);

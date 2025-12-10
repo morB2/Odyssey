@@ -128,7 +128,7 @@ export default function ProfileMenu({ size = 50 }: ProfileMenuProps) {
                 </MenuItem>
                 <MenuItem onClick={handleSettings}>
                     <Settings fontSize="small" />
-                    <Typography variant="body2">Settings</Typography>
+                    <Typography variant="body2">{t('settings.title')}</Typography>
                 </MenuItem>
                 <MenuItem onClick={handleLogout}>
                     <Logout fontSize="small" />
