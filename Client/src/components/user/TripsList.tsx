@@ -116,9 +116,9 @@ export function TripsList({
 
       {/* Loading State */}
       {loading ? (
-        <Grid container spacing={2}>
+        <Grid container spacing={3}>
           {[1, 2, 3, 4].map(i => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={i}>
+            <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={i}>
               <SkeletonCard />
             </Grid>
           ))}

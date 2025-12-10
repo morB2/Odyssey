@@ -19,6 +19,6 @@ router.get("/stats/top-viewed-posts", authMiddleware, getTopViewedPostsControlle
 router.get("/stats/top-liked-posts", authMiddleware, getTopLikedPostsController);
 // router.get("/stats/views-trend", authMiddleware, getViewsTrendController);
 router.get("/stats/category-distribution", authMiddleware, getCategoryDistributionController);
-router.get("/state/top-active-users", authMiddleware, getTopActiveUsersController);
+router.get("/stats/top-active-users", authMiddleware, getTopActiveUsersController);
 
 export default router;

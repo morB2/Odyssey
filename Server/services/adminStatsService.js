@@ -270,50 +270,133 @@ export async function getCategoryDistribution() {
  *******************************/
 
 /**
- * Get top active users (with caching)
+ * Get top active users for a given month (default: last month)
+ * Score = posts + views + likes + comments + replies
  */
-export async function getTopActiveUsers() {
-    const cacheKey = 'analytics:top-active-users';
+export async function getTopActiveUsers(year, month) {
+    // -----------------------------
+    // Default → current month
+    // -----------------------------
+    const today = new Date();
 
-    try {
-        const cached = await redis.get(cacheKey);
-        if (cached) {
-            return JSON.parse(cached);
-        }
-    } catch (error) {
-        console.error('[Cache] Error reading top active users cache:', error);
+    if (!year || !month) {
+        // Get current year and month
+        year = today.getFullYear();
+        month = today.getMonth() + 1; // getMonth() returns 0-11, so add 1
     }
 
-    const users = await User.aggregate([
+    // Create start and end dates for the specified month
+    const start = new Date(year, month - 2, 1); // First day of month
+    const end = new Date(year, month, 1); // First day of next month
+
+    const cacheKey = `analytics:top-active-users:${year}-${month}`;
+
+    // -----------------------------
+    // Cache read
+    // -----------------------------
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) return JSON.parse(cached);
+    } catch (err) {
+        console.error("[Cache] Error reading:", err);
+    }
+
+    // -----------------------------
+    // Aggregation
+    // -----------------------------
+    const results = await Trip.aggregate([
         {
             $match: {
-                role: "user"
+                createdAt: { $gte: start, $lt: end },
+                visabilityStatus: "public"
             }
         },
+
+        // Count comments AND replies for each trip
         {
-            $sort: { totalTrips: -1 }
+            $addFields: {
+                commentsCount: { $size: { $ifNull: ["$comments", []] } },
+                
+                repliesCount: {
+                    $sum: {
+                        $map: {
+                            input: { $ifNull: ["$comments", []] }, 
+                            as: "c",
+                            in: { 
+                                $size: { $ifNull: ["$$c.replies", []] } 
+                            }
+                        }
+                    }
+                }
+            }
         },
+
         {
-            $limit: 5
+            $group: {
+                _id: "$user",
+                postsCount: { $sum: 1 },
+                totalViews: { $sum: "$views" },
+                totalLikes: { $sum: "$likes" },
+                totalComments: { $sum: "$commentsCount" },
+                totalReplies: { $sum: "$repliesCount" }
+            }
         },
+
+        {
+            $addFields: {
+                activityScore: {
+                    $add: [
+                        { $multiply: ["$postsCount", 3] },
+                        { $multiply: ["$totalViews", 0.1] },
+                        { $multiply: ["$totalLikes", 1] },
+                        { $multiply: ["$totalComments", 2] },
+                        { $multiply: ["$totalReplies", 1] }
+                    ]
+                }
+            }
+        },
+
+        { $sort: { activityScore: -1 } },
+        { $limit: 3 },
+
+        {
+            $lookup: {
+                from: "users",
+                localField: "_id",
+                foreignField: "_id",
+                as: "user"
+            }
+        },
+
+        { $unwind: "$user" },
+
         {
             $project: {
-                _id: 1,
-                firstName: 1,
-                lastName: 1,
-                totalTrips: 1
+                _id: "$user._id",
+                firstName: "$user.firstName",
+                lastName: "$user.lastName",
+                postsCount: 1,
+                totalViews: 1,
+                totalLikes: 1,
+                totalComments: 1,
+                totalReplies: 1,
+                activityScore: 1
             }
         }
     ]);
 
+    // -----------------------------
+    // Cache write
+    // -----------------------------
     try {
-        await redis.setEx(cacheKey, ANALYTICS_CACHE_TTL, JSON.stringify(users));
-    } catch (error) {
-        console.error('[Cache] Error saving top active users cache:', error);
+        // await redis.setEx(cacheKey, ANALYTICS_CACHE_TTL, JSON.stringify(results));
+    } catch (err) {
+        console.error("[Cache] Error saving:", err);
     }
 
-    return users;
+    return results;
 }
+
 
 /*******************************
  *        Cache                *

@@ -19,6 +19,18 @@ export interface CategoryData {
     count: number;
 }
 
+export interface TopActiveUser {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    postsCount: number;
+    totalViews: number;
+    totalLikes: number;
+    totalComments: number;
+    totalReplies: number;
+    activityScore: number;
+}
+
 /**
  * Get top 5 most viewed posts
  */
@@ -67,6 +79,19 @@ export const getCategoryDistribution = async (): Promise<CategoryData[]> => {
         return response.data;
     } catch (error) {
         console.error("Error fetching category distribution:", error);
+        throw error;
+    }
+};
+
+/**
+ * Get top 3 active users from last month
+ */
+export const getTopActiveUsers = async (): Promise<TopActiveUser[]> => {
+    try {
+        const response = await api.get("/admin/stats/top-active-users");
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching top active users:", error);
         throw error;
     }
 };
