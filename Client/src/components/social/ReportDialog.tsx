@@ -62,7 +62,6 @@ export const ReportDialog = ({ open, onClose, tripId, userId }: ReportDialogProp
             onClose();
             // Ideally show a success toast here, but for now just close
             toast.success("Report submitted successfully. Thank you.");
-            alert(t('report.success'));
         } catch (err) {
             console.error("Failed to submit report:", err);
             setError(t('report.fail'));

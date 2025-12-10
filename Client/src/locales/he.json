@@ -721,5 +721,17 @@
   "route": {
     "tripsCount": "{{count}} טיולים במסלול",
     "clickToView": "לחץ לצפייה במסלול המלא"
+  },
+  "settings": {
+    "title": "הגדרות",
+    "display": "תצוגה",
+    "darkMode": "מצב כהה",
+    "on": "פעיל",
+    "off": "כבוי",
+    "dangerZone": "אזור מסוכן",
+    "deactivateAccount": "השבתת החשבון",
+    "confirmTitle": "להשבית את החשבון?",
+    "confirmMessage": "פעולה זו אינה ניתנת לביטול. החשבון יושבת לצמיתות."
   }
+
 }

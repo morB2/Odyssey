@@ -384,4 +384,3 @@ export async function updateProfileAvatar(userId, authUser, file, avatarUrl) {
     .select("-password -__v")
     .lean();
 }
-

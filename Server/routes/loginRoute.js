@@ -7,7 +7,7 @@ const router = express.Router();
 // Rate limiter for authentication endpoints - 5 attempts per 15 minutes
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // 5 attempts
+    max: 15, // 5 attempts// for now changed to 15 just for dev!
     message: {
         success: false,
         error: 'Too many authentication attempts, please try again in 15 minutes'

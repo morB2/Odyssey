@@ -5,7 +5,7 @@ import type { Trip } from "./types";
 import { Box, IconButton } from "@mui/material";
 import type { Comment } from "../social/types";
 import { Trash2, Edit } from "lucide-react";
-import { ConfirmDialog } from "./ConfirmDialog";
+import { ConfirmDialog } from "../general/ConfirmDialog";
 
 interface AdapterProps {
   trip: Trip;
