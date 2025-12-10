@@ -31,6 +31,46 @@ export interface TopActiveUser {
     activityScore: number;
 }
 
+/*******************************
+ *     Report Interfaces       *
+ *******************************/
+
+export interface TopReportedUser {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    reportCount: number;
+}
+
+export interface TopReporter {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    reportCount: number;
+}
+
+export interface ReportReasonData {
+    reason: string;
+    count: number;
+}
+
+export interface ReportsTrendData {
+    date: string;
+    count: number;
+}
+
+export interface TopReportedPost {
+    _id: string;
+    title: string;
+    author: string;
+    views: number;
+    likes: number;
+    reportCount: number;
+    createdAt: string;
+}
+
 /**
  * Get top 5 most viewed posts
  */
@@ -92,6 +132,75 @@ export const getTopActiveUsers = async (): Promise<TopActiveUser[]> => {
         return response.data;
     } catch (error) {
         console.error("Error fetching top active users:", error);
+        throw error;
+    }
+};
+
+/*******************************
+ *     Report Services         *
+ *******************************/
+
+/**
+ * Get top 5 posts with the most reports
+ */
+export const getTopReportedPosts = async (): Promise<TopReportedPost[]> => {
+    try {
+        const response = await api.get("/admin/stats/top-reported-posts");
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching top reported posts:", error);
+        throw error;
+    }
+};
+
+/**
+ * Get top 5 users who were reported the most
+ */
+export const getTopReportedUsers = async (): Promise<TopReportedUser[]> => {
+    try {
+        const response = await api.get("/admin/stats/top-reported-users");
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching top reported users:", error);
+        throw error;
+    }
+};
+
+/**
+ * Get top 5 users who report the most
+ */
+export const getTopReporters = async (): Promise<TopReporter[]> => {
+    try {
+        const response = await api.get("/admin/stats/top-reporters");
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching top reporters:", error);
+        throw error;
+    }
+};
+
+/**
+ * Get report reason distribution
+ */
+export const getReportReasonDistribution = async (): Promise<ReportReasonData[]> => {
+    try {
+        const response = await api.get("/admin/stats/report-reason-distribution");
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching report reason distribution:", error);
+        throw error;
+    }
+};
+
+/**
+ * Get reports trend for the last N days
+ */
+export const getReportsTrend = async (days: number = 30): Promise<ReportsTrendData[]> => {
+    try {
+        const response = await api.get(`/admin/stats/reports-trend?days=${days}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching reports trend:", error);
         throw error;
     }
 };

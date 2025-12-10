@@ -4,7 +4,12 @@ import {
     getTopLikedPosts,
     // getViewsTrend,
     getCategoryDistribution,
-    getTopActiveUsers
+    getTopActiveUsers,
+    getTopReportedPosts,
+    getTopReportedUsers,
+    getTopReporters,
+    getReportReasonDistribution,
+    getReportsTrend
 } from "../services/adminStatsService.js";
 
 export async function getAdminTrips(req, res) {
@@ -95,6 +100,78 @@ export async function getTopActiveUsersController(req, res) {
         res.status(200).json(users);
     } catch (error) {
         console.error("Error fetching top active users:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+// Report statistics endpoints
+export async function getTopReportedPostsController(req, res) {
+    try {
+        if (req.user.role !== "admin") {
+            return res.status(403).json({ message: "Access denied. Admin only." });
+        }
+
+        const posts = await getTopReportedPosts();
+        res.status(200).json(posts);
+    } catch (error) {
+        console.error("Error fetching top reported posts:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export async function getTopReportedUsersController(req, res) {
+    try {
+        if (req.user.role !== "admin") {
+            return res.status(403).json({ message: "Access denied. Admin only." });
+        }
+
+        const users = await getTopReportedUsers();
+        res.status(200).json(users);
+    } catch (error) {
+        console.error("Error fetching top reported users:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export async function getTopReportersController(req, res) {
+    try {
+        if (req.user.role !== "admin") {
+            return res.status(403).json({ message: "Access denied. Admin only." });
+        }
+
+        const users = await getTopReporters();
+        res.status(200).json(users);
+    } catch (error) {
+        console.error("Error fetching top reporters:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export async function getReportReasonDistributionController(req, res) {
+    try {
+        if (req.user.role !== "admin") {
+            return res.status(403).json({ message: "Access denied. Admin only." });
+        }
+
+        const distribution = await getReportReasonDistribution();
+        res.status(200).json(distribution);
+    } catch (error) {
+        console.error("Error fetching report reason distribution:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export async function getReportsTrendController(req, res) {
+    try {
+        if (req.user.role !== "admin") {
+            return res.status(403).json({ message: "Access denied. Admin only." });
+        }
+
+        const days = parseInt(req.query.days) || 30;
+        const trend = await getReportsTrend(days);
+        res.status(200).json(trend);
+    } catch (error) {
+        console.error("Error fetching reports trend:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 }

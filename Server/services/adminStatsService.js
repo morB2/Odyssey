@@ -1,6 +1,7 @@
 import redis from "../db/redisClient.js";
 import Trip from "../models/tripModel.js";
 import User from "../models/userModel.js";
+import Report from "../models/reportModel.js";
 
 const ANALYTICS_CACHE_TTL = 300; // 5 minutes in seconds
 
@@ -316,14 +317,14 @@ export async function getTopActiveUsers(year, month) {
         {
             $addFields: {
                 commentsCount: { $size: { $ifNull: ["$comments", []] } },
-                
+
                 repliesCount: {
                     $sum: {
                         $map: {
-                            input: { $ifNull: ["$comments", []] }, 
+                            input: { $ifNull: ["$comments", []] },
                             as: "c",
-                            in: { 
-                                $size: { $ifNull: ["$$c.replies", []] } 
+                            in: {
+                                $size: { $ifNull: ["$$c.replies", []] }
                             }
                         }
                     }
@@ -395,6 +396,342 @@ export async function getTopActiveUsers(year, month) {
     }
 
     return results;
+}
+
+
+/*******************************
+ *        Report Stats         *
+ *******************************/
+
+/**
+ * Get top 5 posts with the most reports
+ */
+export async function getTopReportedPosts() {
+    const cacheKey = 'analytics:top-reported-posts';
+
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+            return JSON.parse(cached);
+        }
+    } catch (error) {
+        console.error('[Cache] Error reading top reported posts cache:', error);
+    }
+
+    // Aggregate reports by the reported trip
+    const results = await Report.aggregate([
+        {
+            $group: {
+                _id: "$reportedTrip",
+                reportCount: { $sum: 1 }
+            }
+        },
+        {
+            $sort: { reportCount: -1 }
+        },
+        {
+            $limit: 5
+        },
+        {
+            $lookup: {
+                from: "trips",
+                localField: "_id",
+                foreignField: "_id",
+                as: "tripInfo"
+            }
+        },
+        {
+            $unwind: {
+                path: "$tripInfo",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "tripInfo.user",
+                foreignField: "_id",
+                as: "userInfo"
+            }
+        },
+        {
+            $unwind: {
+                path: "$userInfo",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $project: {
+                _id: "$tripInfo._id",
+                title: "$tripInfo.title",
+                author: {
+                    $concat: ["$userInfo.firstName", " ", "$userInfo.lastName"]
+                },
+                views: "$tripInfo.views",
+                likes: "$tripInfo.likes",
+                reportCount: 1,
+                createdAt: "$tripInfo.createdAt"
+            }
+        }
+    ]);
+
+    try {
+        await redis.setEx(cacheKey, ANALYTICS_CACHE_TTL, JSON.stringify(results));
+    } catch (error) {
+        console.error('[Cache] Error saving top reported posts cache:', error);
+    }
+
+    return results;
+}
+
+/**
+ * Get top 5 users who were reported the most
+ */
+export async function getTopReportedUsers() {
+    const cacheKey = 'analytics:top-reported-users';
+
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+            return JSON.parse(cached);
+        }
+    } catch (error) {
+        console.error('[Cache] Error reading top reported users cache:', error);
+    }
+
+    // Aggregate reports by the user who owns the reported trip
+    const results = await Report.aggregate([
+        {
+            $lookup: {
+                from: "trips",
+                localField: "reportedTrip",
+                foreignField: "_id",
+                as: "tripInfo"
+            }
+        },
+        {
+            $unwind: "$tripInfo"
+        },
+        {
+            $group: {
+                _id: "$tripInfo.user",
+                reportCount: { $sum: 1 }
+            }
+        },
+        {
+            $sort: { reportCount: -1 }
+        },
+        {
+            $limit: 5
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "_id",
+                foreignField: "_id",
+                as: "userInfo"
+            }
+        },
+        {
+            $unwind: "$userInfo"
+        },
+        {
+            $project: {
+                _id: "$userInfo._id",
+                firstName: "$userInfo.firstName",
+                lastName: "$userInfo.lastName",
+                email: "$userInfo.email",
+                reportCount: 1
+            }
+        }
+    ]);
+
+    try {
+        await redis.setEx(cacheKey, ANALYTICS_CACHE_TTL, JSON.stringify(results));
+    } catch (error) {
+        console.error('[Cache] Error saving top reported users cache:', error);
+    }
+
+    return results;
+}
+
+/**
+ * Get top 5 users who report the most
+ */
+export async function getTopReporters() {
+    const cacheKey = 'analytics:top-reporters';
+
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+            return JSON.parse(cached);
+        }
+    } catch (error) {
+        console.error('[Cache] Error reading top reporters cache:', error);
+    }
+
+    const results = await Report.aggregate([
+        {
+            $group: {
+                _id: "$reporter",
+                reportCount: { $sum: 1 }
+            }
+        },
+        {
+            $sort: { reportCount: -1 }
+        },
+        {
+            $limit: 5
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "_id",
+                foreignField: "_id",
+                as: "userInfo"
+            }
+        },
+        {
+            $unwind: "$userInfo"
+        },
+        {
+            $project: {
+                _id: "$userInfo._id",
+                firstName: "$userInfo.firstName",
+                lastName: "$userInfo.lastName",
+                email: "$userInfo.email",
+                reportCount: 1
+            }
+        }
+    ]);
+
+    try {
+        await redis.setEx(cacheKey, ANALYTICS_CACHE_TTL, JSON.stringify(results));
+    } catch (error) {
+        console.error('[Cache] Error saving top reporters cache:', error);
+    }
+
+    return results;
+}
+
+/**
+ * Get report reason distribution
+ */
+export async function getReportReasonDistribution() {
+    const cacheKey = 'analytics:report-reason-distribution';
+
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+            return JSON.parse(cached);
+        }
+    } catch (error) {
+        console.error('[Cache] Error reading report reason distribution cache:', error);
+    }
+
+    const distribution = await Report.aggregate([
+        {
+            $group: {
+                _id: "$reason",
+                count: { $sum: 1 }
+            }
+        },
+        {
+            $sort: { count: -1 }
+        },
+        {
+            $project: {
+                _id: 0,
+                reason: "$_id",
+                count: 1
+            }
+        }
+    ]);
+
+    try {
+        await redis.setEx(cacheKey, ANALYTICS_CACHE_TTL, JSON.stringify(distribution));
+    } catch (error) {
+        console.error('[Cache] Error saving report reason distribution cache:', error);
+    }
+
+    return distribution;
+}
+
+/**
+ * Get reports trend for the last N days (with caching)
+ */
+export async function getReportsTrend(days = 30) {
+    const cacheKey = `analytics:reports-trend:${days}`;
+
+    try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+            return JSON.parse(cached);
+        }
+    } catch (error) {
+        console.error('[Cache] Error reading reports trend cache:', error);
+    }
+
+    // Calculate date range - include today
+    const endDate = new Date();
+    endDate.setHours(23, 59, 59, 999); // End of today
+
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - (days - 1)); // Go back days-1 to include today
+    startDate.setHours(0, 0, 0, 0); // Start of the first day
+
+    // Get aggregated data for reports created in the date range
+    const aggregatedData = await Report.aggregate([
+        {
+            $match: {
+                createdAt: { $gte: startDate, $lte: endDate }
+            }
+        },
+        {
+            $group: {
+                _id: {
+                    $dateToString: {
+                        format: "%Y-%m-%d",
+                        date: "$createdAt"
+                    }
+                },
+                count: { $sum: 1 }
+            }
+        },
+        {
+            $sort: { _id: 1 }
+        }
+    ]);
+
+    // Create a map of the aggregated data
+    const dataMap = new Map();
+    aggregatedData.forEach(item => {
+        dataMap.set(item._id, item.count);
+    });
+
+    // Generate data for ALL days in the range (fill missing days with zeros)
+    const trend = [];
+    const currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        const count = dataMap.get(dateStr) || 0;
+
+        trend.push({
+            date: dateStr,
+            count: count
+        });
+
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    try {
+        await redis.setEx(cacheKey, ANALYTICS_CACHE_TTL, JSON.stringify(trend));
+    } catch (error) {
+        console.error('[Cache] Error saving reports trend cache:', error);
+    }
+
+    return trend;
 }
 
 
