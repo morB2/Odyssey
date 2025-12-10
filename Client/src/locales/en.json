@@ -737,5 +737,8 @@
     "deactivateAccount": "Deactivate Account",
     "confirmTitle": "Deactivate account?",
     "confirmMessage": "This action is irreversible. Your account will be permanently deactivated."
+  },
+  "feedErrors":{
+    "failedToLoadTrips":"Failed to load trips"
   }
 }

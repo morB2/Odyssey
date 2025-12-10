@@ -732,6 +732,9 @@
     "deactivateAccount": "השבתת החשבון",
     "confirmTitle": "להשבית את החשבון?",
     "confirmMessage": "פעולה זו אינה ניתנת לביטול. החשבון יושבת לצמיתות."
+  },
+  "feedErrors":{
+    "failedToLoadTrips":"שגיאה בטעינת טיולים"
   }
 
 }

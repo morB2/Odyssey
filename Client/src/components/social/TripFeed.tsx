@@ -81,7 +81,7 @@ export function TripFeed() {
         setTrips(prev => page === 1 ? tripsData : [...prev, ...tripsData]);
       } catch (err) {
         console.error('Failed to fetch trips:', err);
-        toast.error(t('feed.failedToLoadTrips'));
+        toast.error(t('feedErrors.failedToLoadTrips'));
       } finally {
         setLoading(false);
         setLoadingMore(false);
