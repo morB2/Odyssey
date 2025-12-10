@@ -309,7 +309,7 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
       </CardActions>
 
       {/* Save Dialog */}
-      <Dialog open={openDialog} onClose={handleCloseDialog}>
+      <Dialog open={openDialog} onClose={handleCloseDialog} disableScrollLock={true}>
         <DialogTitle sx={{ color: orange, fontWeight: "bold" }}>{t('tripDisplay.saveTrip.title')}</DialogTitle>
         <DialogContent>
           <Typography>{t('tripDisplay.saveTrip.prompt')}</Typography>
