@@ -26,7 +26,7 @@ import { toast } from "react-toastify";
 import TripPost from "../social/TripPost";
 import type { Trip } from "../social/types";
 import { useUserStore } from "../../store/userStore";
-import { ConfirmDialog } from "../user/ConfirmDialog";
+import { ConfirmDialog } from "../general/ConfirmDialog";
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import PostsAnalytics from "./PostsAnalytics";
 

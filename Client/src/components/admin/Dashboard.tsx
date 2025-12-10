@@ -5,14 +5,13 @@ import UsersManagement from './UsersManagement';
 import PostsManagement from './PostsManagement';
 import ReportsManagement from './ReportsManagement';
 import { useTranslation } from 'react-i18next';
-import Navbar from '../general/Navbar';
 
 export default function Dashboard() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <><Navbar />
+    <>
       <Box sx={{ minHeight: '100vh', bgcolor: '#000' }}>
         {/* Header */}
         <Box sx={{ borderBottom: '1px solid #27272a', bgcolor: '#000' }}>

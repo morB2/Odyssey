@@ -28,6 +28,8 @@ const theme = createTheme({
 
 interface TripPostProps {
     trip: Trip;
+    maxLines?: number;
+    showDescription?: boolean;
 }
 
 // Helper to initialize comment reactions
@@ -42,7 +44,7 @@ const initializeReactions = (comments: Comment[]): Record<string, Record<string,
 };
 
 
-export default function TripPost({ trip }: TripPostProps) {
+export default function TripPost({ trip, maxLines, showDescription }: TripPostProps) {
     const { t } = useTranslation();
     // --- Post State ---
     const [isLiked, setIsLiked] = useState(trip.isLiked);
@@ -122,7 +124,7 @@ export default function TripPost({ trip }: TripPostProps) {
         setLikesCount(newLikesCount);
 
         try {
-            await toggleLike(trip._id, trip.currentUserId, originalIsLiked);
+            await toggleLike(trip._id, originalIsLiked); // ✅ Removed userId
         } catch (error) {
             console.error('Error toggling like, rolling back:', error);
             toast.error(t('social.failedToLike'));
@@ -142,7 +144,7 @@ export default function TripPost({ trip }: TripPostProps) {
         setIsSaved(newIsSaved); // Optimistic UI update
 
         try {
-            await toggleSave(trip._id, trip.currentUserId, isSaved);
+            await toggleSave(trip._id, isSaved); // ✅ Removed userId
             if (newIsSaved) {
                 toast.success(t('social.tripSaved'));
             } else {
@@ -165,7 +167,7 @@ export default function TripPost({ trip }: TripPostProps) {
         setIsFollowing(newIsFollowing); // Optimistic UI update
 
         try {
-            await toggleFollow(trip.user._id, trip.currentUserId, isFollowing);
+            await toggleFollow(trip.user._id, isFollowing); // ✅ Removed currentUserId
             if (newIsFollowing) {
                 toast.success(`${t('social.followingUser')} ${trip.user.firstName}`);
             } else {
@@ -199,7 +201,7 @@ export default function TripPost({ trip }: TripPostProps) {
         });
 
         try {
-            await addReaction(trip._id, commentId, trip.currentUserId, emoji);
+            await addReaction(trip._id, commentId, emoji); // ✅ Removed userId
         } catch (error) {
             console.error('Error adding reaction:', error);
             toast.error(t('social.failedToReact'));
@@ -213,7 +215,7 @@ export default function TripPost({ trip }: TripPostProps) {
         }
 
         try {
-            await addComment(trip._id, trip.currentUserId, commentText.trim());
+            await addComment(trip._id, commentText.trim()); // ✅ Removed userId
             // Removed the optimistic update - useTripRealtime will handle it
             toast.success(t('social.commentAdded'));
         } catch (error) {
@@ -229,7 +231,7 @@ export default function TripPost({ trip }: TripPostProps) {
         }
 
         try {
-            await addReply(trip._id, commentId, trip.currentUserId, replyText.trim());
+            await addReply(trip._id, commentId, replyText.trim()); // ✅ Removed userId
             // Removed the optimistic update - useTripRealtime will handle it
             toast.success(t('social.replyAdded'));
         } catch (error) {
@@ -246,7 +248,7 @@ export default function TripPost({ trip }: TripPostProps) {
         // Optimistic UI update
         setComments((prev) => prev.filter((c) => c.id !== commentId));
         try {
-            await deleteComment(trip._id, commentId, trip.currentUserId);
+            await deleteComment(trip._id, commentId); // ✅ Removed userId
             toast.success(t('social.commentDeleted'));
         } catch (error) {
             console.error('Error deleting comment:', error);
@@ -273,7 +275,7 @@ export default function TripPost({ trip }: TripPostProps) {
         setDialogImageIndex(currentImageIndex); // Open dialog to the current image
 
         // Increment view count
-        incrementView(trip._id,trip.currentUserId).catch(err => console.error("Failed to increment view", err));
+        incrementView(trip._id, trip.currentUserId).catch(err => console.error("Failed to increment view", err));
     };
 
     const handleCloseDialog = () => setDialogOpen(false);
@@ -337,6 +339,8 @@ export default function TripPost({ trip }: TripPostProps) {
                         duration={trip.duration || ''}
                         description={trip.description}
                         activities={trip.activities}
+                        maxLines={maxLines}
+                        showDescription={showDescription}
                     />
                 </CardContent>
 

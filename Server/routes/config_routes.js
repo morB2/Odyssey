@@ -11,6 +11,7 @@ import reports from './reportRoutes.js';
 import chat from './chatRoutes.js';
 import search from './searchRoutes.js';
 import admin from './adminRoutes.js';
+import collections from './collectionRoutes.js';
 import { authMiddleware as autoM } from '../middleware/authMiddleware.js';
 
 export function routesInit(app) {
@@ -22,10 +23,11 @@ export function routesInit(app) {
 
   app.use('/likes', autoM, like);
   app.use('/saves', autoM, save);
-  app.use('/follow', follow);
-  app.use('/users', users);
-  app.use('/reports', reports);
-  app.use('/chat', chat);
-  app.use('/search', search);
-  app.use('/admin', admin);
+  app.use('/follow', autoM, follow); // ✅ Protected: user actions require auth
+  app.use('/users', autoM, users);   // ✅ Protected: user data modification requires auth
+  app.use('/reports', autoM, reports); // ✅ Protected: reporting requires auth
+  app.use('/chat', autoM, chat);     // ✅ Protected: chat requires auth
+  app.use('/search', search);        // Public: search stays accessible
+  app.use('/admin', admin);          // Already has auth check in controller
+  app.use('/collections', autoM, collections); // ✅ Protected: collections require auth
 }

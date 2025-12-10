@@ -8,6 +8,7 @@ import { CloudinaryUploadWidget } from "../general/CloudinaryUploadWidget";
 import type { UserProfile } from "./types";
 import { useTranslation } from "react-i18next";
 import { AdvancedMediaEditor } from "../general/AdvancedMediaEditor";
+import { toast } from 'react-toastify';
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -99,12 +100,12 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
     setSavingAvatar(true);
     try {
       if (!storeToken) {
-        alert("You must be signed in to change your avatar.");
+        toast.error("You must be signed in to change your avatar.");
         setSavingAvatar(false);
         return;
       }
 
-      const result = await uploadAvatar(undefined, avatarUrl || undefined, storeToken);
+      const result = await uploadAvatar(undefined, avatarUrl || undefined);
       const payload = result?.data ?? result;
       if (payload && payload.success && payload.user) {
         if (typeof onAvatarSaved === "function") {
@@ -138,12 +139,12 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
     setSavingAvatar(true);
     try {
       if (!storeToken) {
-        alert("You must be signed in to change your avatar.");
+        toast.error("You must be signed in to change your avatar.");
         setSavingAvatar(false);
         return;
       }
 
-      const result = await uploadAvatar(undefined, editedUrl || undefined, storeToken);
+      const result = await uploadAvatar(undefined, editedUrl || undefined);
       const payload = result?.data ?? result;
       if (payload && payload.success && payload.user) {
         if (typeof onAvatarSaved === "function") {

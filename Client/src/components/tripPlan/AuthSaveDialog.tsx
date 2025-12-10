@@ -10,7 +10,7 @@ import {
     Stack
 } from '@mui/material';
 import { Printer, LogIn } from 'lucide-react';
-
+import { useTranslation } from 'react-i18next';
 interface AuthSaveDialogProps {
     open: boolean;
     onClose: () => void;
@@ -19,6 +19,7 @@ interface AuthSaveDialogProps {
 }
 
 export function AuthSaveDialog({ open, onClose, onLogin, onPrint }: AuthSaveDialogProps) {
+    const { t } = useTranslation();
     return (
         <Dialog
             open={open}
@@ -33,14 +34,14 @@ export function AuthSaveDialog({ open, onClose, onLogin, onPrint }: AuthSaveDial
         >
             <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
                 <Typography variant="h5" fontWeight="bold" color="#ff6b35">
-                    Save Your Trip
+                    {t('saveWhenNotLoggedIn.title')}
                 </Typography>
             </DialogTitle>
 
             <DialogContent>
                 <Box sx={{ textAlign: 'center', py: 2 }}>
                     <Typography color="text.secondary" sx={{ mb: 3 }}>
-                        Log in to save this trip to your profile and access it anytime, or print it now to keep a copy.
+                        {t('saveWhenNotLoggedIn.description')}
                     </Typography>
 
                     <Stack spacing={2}>
@@ -59,12 +60,12 @@ export function AuthSaveDialog({ open, onClose, onLogin, onPrint }: AuthSaveDial
                                 fontSize: '1rem'
                             }}
                         >
-                            Log In / Sign Up
+                           {t('saveWhenNotLoggedIn.login')}
                         </Button>
 
                         <Box sx={{ position: 'relative', my: 2 }}>
                             <Typography variant="caption" sx={{ bgcolor: 'white', px: 1, color: 'text.secondary', position: 'relative', zIndex: 1 }}>
-                                OR
+                                {t('saveWhenNotLoggedIn.or')}
                             </Typography>
                             <Box sx={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '1px', bgcolor: '#eee' }} />
                         </Box>
@@ -84,7 +85,7 @@ export function AuthSaveDialog({ open, onClose, onLogin, onPrint }: AuthSaveDial
                                 fontWeight: 600
                             }}
                         >
-                            Print Trip
+                           {t('saveWhenNotLoggedIn.print')}
                         </Button>
                     </Stack>
                 </Box>
@@ -99,7 +100,7 @@ export function AuthSaveDialog({ open, onClose, onLogin, onPrint }: AuthSaveDial
                         '&:hover': { bgcolor: 'transparent', color: 'text.primary' }
                     }}
                 >
-                    Maybe later
+                    {t('saveWhenNotLoggedIn.maybeLater')}
                 </Button>
             </DialogActions>
         </Dialog>

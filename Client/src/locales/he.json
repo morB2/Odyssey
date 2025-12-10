@@ -199,12 +199,14 @@
         "editProfile": "עריכת פרופיל",
         "myTrips": "הטיולים שלי",
         "likedTrips": "אהבתי",
+        "collections": "אוספים",
         "savedTrips": "שמורים",
         "noTripsYet": "אין עדיין טיולים",
         "changeProfilePicture": "שינוי תמונת פרופיל",
         "uploadNewAvatar": "העלה תמונה חדשה",
         "cancel": "ביטול",
-        "save": "שמירה"
+        "save": "שמירה",
+        "trips": "טיולים"
     },
     "chat": {
         "typeMessage": "הקלד הודעה...",
@@ -267,10 +269,12 @@
         "failedToReact": "נכשל בהוספת התגובה.",
         "followingUser": "עוקב אחרי",
         "unfollowedUser": "הפסקת לעקוב אחרי",
-        "chat": "צ'אט"
+        "chat": "צ'אט",
+        "selectChat": "בחר צ'אט כדי להתחיל לשלוח הודעות"
     },
     "general": {
         "saving": "שומר...",
+        "save": "שמור",
         "cancel": "ביטול",
         "search": "חיפוש",
         "searchPlaceholder": "חפש...",
@@ -664,5 +668,62 @@
             "button": "תכנון ידני"
         },
         "footer": "מוכן לצאת להרפתקה? בחר שיטה והתחל לתכנן."
+    },
+    "saveWhenNotLoggedIn": {
+        "title": "שמור את הטיול שלך",
+        "description": "התחבר כדי לשמור את הטיול בפרופיל שלך ולגשת אליו בכל זמן, או להדפיס אותו עכשיו לשמירת עותק.",
+        "login": "התחברות / הרשמה",
+        "print": "הדפס טיול",
+        "or": "או",
+        "maybeLater": "אולי מאוחר יותר"
+    },
+     "collection": {
+    "back": "חזרה",
+    "new": "אוסף חדש",
+    "edit": "עריכת אוסף",
+    "name": "שם",
+    "description": "תיאור",
+    "private": "פרטי",
+    "selectedTrips": "טיולים שנבחרו (ניתן לגרירה)",
+    "availableTrips": "טיולים זמינים",
+    "emptySelected": "בחרי טיולים מהרשימה כדי להוסיף כאן.",
+    "add": "הוסף",
+    "untitledTrip": "טיול ללא שם",
+    "allSelected": "כל הטיולים נבחרו",
+    "noTrips": "לא נמצאו טיולים",
+    "emptyCollection":"אין באוסף זה טיולים כרגע",
+    "success": {
+      "created": "האוסף נוצר בהצלחה!",
+      "updated": "האוסף עודכן בהצלחה!"
+    },
+    "errors": {
+      "notFound": "האוסף לא נמצא או שאין לך הרשאה לצפות בו",
+       "nameRequired": "חובה להזין שם",
+      "saveFailed": "שמירת האוסף נכשלה",
+      "loadTrips": "לא ניתן לטעון את הטיולים"
     }
+  },
+   "collections": {
+    "empty": "עדיין אין אוספים",
+    "create": "צור אוסף"
+  },
+  "route": {
+    "tripsCount": "{{count}} טיולים במסלול",
+    "clickToView": "לחץ לצפייה במסלול המלא"
+  },
+  "settings": {
+    "title": "הגדרות",
+    "display": "תצוגה",
+    "darkMode": "מצב כהה",
+    "on": "פעיל",
+    "off": "כבוי",
+    "dangerZone": "אזור מסוכן",
+    "deactivateAccount": "השבתת החשבון",
+    "confirmTitle": "להשבית את החשבון?",
+    "confirmMessage": "פעולה זו אינה ניתנת לביטול. החשבון יושבת לצמיתות."
+  },
+  "feedErrors":{
+    "failedToLoadTrips":"שגיאה בטעינת טיולים"
+  }
+
 }

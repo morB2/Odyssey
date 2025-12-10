@@ -3,24 +3,26 @@ import { useParams } from "react-router-dom";
 import { Box, Paper } from "@mui/material";
 import { ProfileHeader } from "./ProfileHeader";
 import { TripsList } from "./TripsList";
+import { CollectionsList } from "../collections/CollectionsList";
 import { ChangePasswordModal } from "./EditProfileModal";
 import { EditTripModal } from "./EditTripModal";
 import type { Trip, UserProfile } from "./types";
 import { getProfile, getTrips, getLikedTrips, getSavedTrips, deleteTrip as svcDeleteTrip } from "../../services/profile.service.tsx";
+import { getCollectionsByUser, deleteCollection } from "../../services/collection.service.tsx";
+import { CreateCollectionModal } from "../collections/CreateCollectionModal";
 import { useUserStore } from "../../store/userStore";
 import { toast } from "react-toastify";
 import { useTranslation } from 'react-i18next';
 // Navbar intentionally not rendered inside this view
 
 import api from "../../services/httpService";
-import Navbar from "../general/Navbar";
 
 // Shared styles
 const containerStyle = {
   minHeight: "100vh",
   display: "flex",
   flexDirection: "column",
-  background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fcd34d 100%)',
+  background: 'white',
   position: 'relative',
   '&::before': {
     content: '""',
@@ -52,6 +54,8 @@ export default function Profile() {
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [trips, setTrips] = useState<Trip[]>([]);
+  const [collections, setCollections] = useState<any[]>([]);
+  const [collectionsLoading, setCollectionsLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [totalTrips, setTotalTrips] = useState(0);
@@ -60,7 +64,10 @@ export default function Profile() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
-  const [activeTab, setActiveTab] = useState<"my-trips" | "liked" | "saved">("my-trips");
+  // Collection modal state
+  const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
+  const [editingCollection, setEditingCollection] = useState<any | null>(null);
+  const [activeTab, setActiveTab] = useState<"my-trips" | "liked" | "saved" | "collections">("my-trips");
 
   const TRIPS_PER_PAGE = 12;
 
@@ -68,6 +75,10 @@ export default function Profile() {
   useEffect(() => {
     let mounted = true;
     async function loadData() {
+      if (!profileId) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
         const [userRes, tripsRes] = await Promise.all([
@@ -107,27 +118,47 @@ export default function Profile() {
   useEffect(() => {
     let mounted = true;
     async function fetchForTab() {
+      if (!profileId) {
+        setTripsLoading(false);
+        return;
+      }
       setTripsLoading(true);
       setPage(1);
       try {
         if (activeTab === "saved" && !isOwner) return;
 
-        let data: unknown = null;
-        if (activeTab === "my-trips") {
-          data = await getTrips(profileId as string, 1, TRIPS_PER_PAGE);
-        } else if (activeTab === "liked") {
-          data = await getLikedTrips(profileId as string, 1, TRIPS_PER_PAGE);
+        if (activeTab === "collections") {
+          // load collections
+          setCollectionsLoading(true);
+          try {
+            const res = await getCollectionsByUser(profileId as string);
+            if (!mounted) return;
+            const cols = res.collections || res;
+            setCollections(cols || []);
+          } catch (e) {
+            console.error("failed to load collections", e);
+            toast.error("Failed to load collections");
+          } finally {
+            if (mounted) setCollectionsLoading(false);
+          }
         } else {
-          data = await getSavedTrips(profileId as string, 1, TRIPS_PER_PAGE);
-        }
+          let data: unknown = null;
+          if (activeTab === "my-trips") {
+            data = await getTrips(profileId as string, 1, TRIPS_PER_PAGE);
+          } else if (activeTab === "liked") {
+            data = await getLikedTrips(profileId as string, 1, TRIPS_PER_PAGE);
+          } else {
+            data = await getSavedTrips(profileId as string, 1, TRIPS_PER_PAGE);
+          }
 
-        if (mounted) {
-          const response = data as any;
-          const tripsData = normalizeTrips(response.trips || response);
-          setTrips(tripsData);
-          setPage(1);
-          setHasMore(response.pagination?.hasMore ?? true);
-          setTotalTrips(response.pagination?.total ?? tripsData.length);
+          if (mounted) {
+            const response = data as any;
+            const tripsData = normalizeTrips(response.trips || response);
+            setTrips(tripsData);
+            setPage(1);
+            setHasMore(response.pagination?.hasMore ?? true);
+            setTotalTrips(response.pagination?.total ?? tripsData.length);
+          }
         }
       } catch (e) {
         console.error("failed to load trips", e);
@@ -223,9 +254,42 @@ export default function Profile() {
     toast.success("Profile updated successfully!");
   };
 
+  // Collection Handlers
+  const handleCreateCollectionClick = () => {
+    setEditingCollection(null);
+    setIsCollectionModalOpen(true);
+  };
+
+  const handleEditCollectionClick = (collection: any) => {
+    setEditingCollection(collection);
+    setIsCollectionModalOpen(true);
+  };
+
+  const handleCollectionSaveSuccess = (savedCollection: any) => {
+    setCollections((prev) => {
+      const exists = prev.find(c => c._id === savedCollection._id);
+      if (exists) {
+        return prev.map(c => c._id === savedCollection._id ? savedCollection : c);
+      }
+      return [savedCollection, ...prev];
+    });
+    setIsCollectionModalOpen(false);
+  };
+
+  const handleDeleteCollection = async (collectionId: string) => {
+    if (!window.confirm("Are you sure you want to delete this collection?")) return;
+    try {
+      await deleteCollection(collectionId);
+      setCollections((prev) => prev.filter((c) => c._id !== collectionId));
+      toast.success("Collection deleted");
+    } catch (e) {
+      console.error("Failed to delete collection", e);
+      toast.error("Failed to delete collection");
+    }
+  };
+
   return (
     <>
-      <Navbar />
       <Box sx={containerStyle}>
         <Paper elevation={3} sx={paperStyle}>
           <ProfileHeader user={user || guestUser} isOwner={isOwner} onEditClick={() => isOwner && setIsEditModalOpen(true)} loading={loading} />
@@ -233,12 +297,17 @@ export default function Profile() {
           <Box sx={{ mt: 4 }}>
             <TripsList
               trips={trips}
-              activeTab={activeTab}
+              collections={collections}
+              collectionsLoading={collectionsLoading}
+              activeTab={activeTab as any}
               onTabChange={setActiveTab}
               onTripClick={() => { }}
               setTrips={setTrips}
               onEdit={(trip) => setEditingTrip(trip)}
               onDelete={(tripId) => handleDeleteTrip(tripId)}
+              onCollectionCreate={handleCreateCollectionClick}
+              onCollectionEdit={handleEditCollectionClick}
+              onCollectionDelete={handleDeleteCollection}
               isOwner={isOwner}
               loading={tripsLoading}
               loadingMore={loadingMore}
@@ -247,10 +316,16 @@ export default function Profile() {
             />
           </Box>
         </Paper>
-
         <ChangePasswordModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} user={user || guestUser} onAvatarSaved={handleAvatarSaved} />
         <EditTripModal trip={editingTrip} isOpen={!!editingTrip} onClose={() => setEditingTrip(null)} onSave={handleSaveTrip} setTrips={setTrips} />
-      </Box>
+
+        <CreateCollectionModal
+          isOpen={isCollectionModalOpen}
+          onClose={() => setIsCollectionModalOpen(false)}
+          onSuccess={handleCollectionSaveSuccess}
+          existingCollection={editingCollection}
+        />
+      </Box >
     </>
   );
 }

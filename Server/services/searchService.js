@@ -22,6 +22,7 @@ export async function search(query, viewerId = null, userLimit = 5, tripLimit = 
 
     // Search users by firstName, lastName, or email
     const users = await User.find({
+        status: { $ne: false },
         $or: [
             { firstName: { $regex: searchPattern, $options: 'i' } },
             { lastName: { $regex: searchPattern, $options: 'i' } },

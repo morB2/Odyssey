@@ -14,8 +14,8 @@ import {
 
 export async function getAdminTrips(req, res) {
     try {
-        // Check if user is admin
-        if (req.user.role != "admin") {
+        // Check if user is admin - use strict inequality and null check
+        if (!req.user || req.user.role !== "admin") {
             return res.status(403).json({ message: "Access denied. Admin only." });
         }
 

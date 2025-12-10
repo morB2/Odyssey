@@ -6,11 +6,7 @@ import * as chatService from '../services/chatService.js';
 export const getConversation = async (req, res) => {
     try {
         const { userId } = req.params;
-        const currentUserId = req.query.currentUserId || req.body.currentUserId;
-
-        if (!currentUserId) {
-            return res.status(400).json({ error: 'Current user ID is required' });
-        }
+        const currentUserId = req.user.userId; // ✅ Use authenticated user from JWT
 
         const messages = await chatService.getConversation(currentUserId, userId);
         const conversation = await chatService.getConversationStatus(currentUserId, userId);
@@ -27,11 +23,7 @@ export const getConversation = async (req, res) => {
  */
 export const getConversations = async (req, res) => {
     try {
-        const { currentUserId } = req.query;
-
-        if (!currentUserId) {
-            return res.status(400).json({ error: 'Current user ID is required' });
-        }
+        const currentUserId = req.user.userId; // ✅ Use authenticated user from JWT
 
         const conversations = await chatService.getConversations(currentUserId);
         res.status(200).json(conversations);
@@ -47,9 +39,10 @@ export const getConversations = async (req, res) => {
 export const handleRequest = async (req, res) => {
     try {
         const { conversationId } = req.params;
-        const { action, currentUserId } = req.body;
+        const { action } = req.body;
+        const currentUserId = req.user.userId; // ✅ Use authenticated user from JWT
 
-        if (!conversationId || !action || !currentUserId) {
+        if (!conversationId || !action) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
@@ -66,10 +59,11 @@ export const handleRequest = async (req, res) => {
  */
 export const sendMessage = async (req, res) => {
     try {
-        const { senderId, receiverId, message } = req.body;
+        const senderId = req.user.userId; // ✅ Use authenticated user from JWT
+        const { receiverId, message } = req.body;
 
-        if (!senderId || !receiverId || !message) {
-            return res.status(400).json({ error: 'Sender ID, receiver ID, and message are required' });
+        if (!receiverId || !message) {
+            return res.status(400).json({ error: 'Receiver ID and message are required' });
         }
 
         const newMessage = await chatService.sendMessage(senderId, receiverId, message);
@@ -86,11 +80,7 @@ export const sendMessage = async (req, res) => {
 export const markAsRead = async (req, res) => {
     try {
         const { userId } = req.params;
-        const { currentUserId } = req.body;
-
-        if (!currentUserId) {
-            return res.status(400).json({ error: 'Current user ID is required' });
-        }
+        const currentUserId = req.user.userId; // ✅ Use authenticated user from JWT
 
         await chatService.markMessagesAsRead(currentUserId, userId);
         res.status(200).json({ message: 'Messages marked as read' });
@@ -105,11 +95,7 @@ export const markAsRead = async (req, res) => {
  */
 export const getUnreadCount = async (req, res) => {
     try {
-        const { userId } = req.body;
-
-        if (!userId) {
-            return res.status(400).json({ error: 'User ID is required' });
-        }
+        const userId = req.user.userId; // ✅ Use authenticated user from JWT
 
         const count = await chatService.getUnreadCount(userId);
         res.status(200).json({ count });

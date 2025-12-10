@@ -51,7 +51,7 @@ export const updateUserTrip = (req, res) =>
     const user = req.user;
 
     // Get trip to verify ownership
-    const tripUser = await services.getTripById(tripId);    
+    const tripUser = await services.getTripById(tripId);
     if (!tripUser) {
       throw Object.assign(new Error("Trip not found"), { status: 404 });
     }
@@ -123,7 +123,7 @@ export const getProfileLikedTrips = (req, res) =>
 export const getProfileSavedTrips = (req, res) =>
   handle(res, async () => {
     // Saved trips are private - only the owner can view them
-    if (String(req.ownerId) != String(req.viewerId)) {
+    if (String(req.ownerId) !== String(req.viewerId)) { // ✅ Use strict inequality
       throw Object.assign(
         new Error("You can only view your own saved trips"),
         { status: 403 }

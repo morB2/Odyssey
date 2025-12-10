@@ -46,12 +46,16 @@ export const initializeSocket = (server) => {
         // Log all connected users whenever someone connects
         logConnectedUsers();
 
-        // Join user-specific room for direct messaging
-        if (socket.userId) {
-            socket.join(`user:${socket.userId}`);
-        }
+        // ✅ Join user-specific room ONLY if authenticated
+        socket.on('joinUserRoom', (userId) => {
+            // Only authenticated users can join user-specific rooms (chat, notifications)
+            if (!socket.userId || socket.userId !== userId) {
+                return socket.emit('error', { message: 'Authentication required for user rooms' });
+            }
+            socket.join(`user:${userId}`);
+        });
 
-        // Join a trip-specific room
+        // ✅ Public trip rooms - anyone can join to see real-time updates
         socket.on('joinTrip', (tripId) => {
             socket.join(`trip:${tripId}`);
             logConnectedUsers();

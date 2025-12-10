@@ -3,7 +3,7 @@ import type { Trip, ServerTrip } from "./types";
 import { Modal } from "./Modal";
 import { Box, Button, TextField, Typography, Divider, Chip, IconButton } from "@mui/material";
 import { Save, X, Trash2, Lock, Globe, Plus, Pencil } from "lucide-react";
-import { ConfirmDialog } from "./ConfirmDialog";
+import { ConfirmDialog } from "../general/ConfirmDialog";
 import { useUserStore } from "../../store/userStore";
 import { updateTrip } from "../../services/profile.service";
 import { toast } from "react-toastify";
@@ -67,7 +67,6 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
       if (!trip) return;
       try {
         const storeUser = useUserStore.getState().user;
-        const storeToken = useUserStore.getState().token;
         const userId = storeUser?._id;
         if (!userId) throw new Error("Not authenticated");
 
@@ -84,7 +83,7 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
           return;
         }
 
-        const res = await updateTrip(String(trip._id || trip.id), payload, storeToken || undefined);
+        const res = await updateTrip(String(trip._id || trip.id), payload);
         const serverTrip: ServerTrip = (res && (res.trip || res)) as ServerTrip;
 
         const ordered = serverTrip.optimizedRoute?.ordered_route || [];
@@ -124,7 +123,7 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
 
   const handleImageUpload = (url: string) => {
     if (images.length >= 3) {
-      alert("Maximum 3 media items allowed");
+      toast.error("Maximum 3 media items allowed");
       return;
     }
     setImages((prev) => [...prev, url]);

@@ -170,6 +170,21 @@ export const markMessagesAsRead = async (userId, otherUserId) => {
             }
         );
 
+        // Emit event to the user whose messages were read (sender of the messages)
+        // This lets them know their messages were read
+        const io = getIO();
+        io.to(`user:${otherUserId}`).emit('messagesRead', {
+            byUserId: userId,
+            read: true
+        });
+
+        // Also emit to the user who read the messages (current user)
+        // This is important for updating their own unread count/badge across multiple devices/tabs
+        io.to(`user:${userId}`).emit('messagesRead', {
+            byUserId: userId, // Reading their own received messages
+            read: true
+        });
+
         return result;
     } catch (error) {
         console.error('Error marking messages as read:', error);

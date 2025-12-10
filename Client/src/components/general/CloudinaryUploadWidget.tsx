@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Button } from "@mui/material";
 import { Upload } from "lucide-react";
 import { useUserStore } from "../../store/userStore";
+import { toast } from 'react-toastify';
 
 interface CloudinaryUploadWidgetProps {
     onUpload: (url: string, publicId: string) => void;
@@ -57,7 +58,7 @@ export function CloudinaryUploadWidget({
                             onUpload(result.info.secure_url, result.info.public_id);
                         } else if (error) {
                             console.error("Upload error:", error);
-                            alert("Upload failed: " + error.message);
+                            toast.error("Upload failed: " + error.message);
                         }
                     }
                 );
