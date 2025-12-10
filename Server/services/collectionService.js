@@ -47,11 +47,12 @@ export const getCollectionsByUserService = async (userId, viewerId, options = {}
             ...options
         });
 
-        // Re-order trips to match the order in c.trips
-        // Create a map for quick lookup
-        const tripMap = new Map(fetchedTrips.map(t => [t._id.toString(), t]));
+        const visibleTrips = viewerId === userId
+            ? fetchedTrips
+            : fetchedTrips.filter(trip => trip.visibilityStatus === 'public');
 
-        // Map c.trips to the fetched trip objects, filtering out any that might have been deleted/not found
+        // Map trips to the original order in c.trips
+        const tripMap = new Map(visibleTrips.map(t => [t._id.toString(), t]));
         const trips = c.trips
             .map(id => tripMap.get(id.toString()))
             .filter(Boolean);
@@ -66,7 +67,7 @@ export const getCollectionsByUserService = async (userId, viewerId, options = {}
 
     return result;
 };
-
+//need to change this too....
 export const getCollectionByIdService = async (id) => {
     return await Collection.findById(id)
         .populate({

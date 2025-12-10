@@ -695,7 +695,7 @@
   },
   "collection": {
     "back": "Back",
-     "new": "New Collection",
+    "new": "New Collection",
     "edit": "Edit Collection",
     "name": "Name",
     "description": "Description",
@@ -707,14 +707,15 @@
     "untitledTrip": "Untitled Trip",
     "allSelected": "All trips selected",
     "noTrips": "No trips found",
-    "emptyCollection":"This collection has no trips yet.",
+    "emptyCollection": "This collection has no trips yet.",
+    "privateTripsVisible": "Some of the selected trips are private and won't be visible to other users.",
     "success": {
       "created": "Collection created!",
       "updated": "Collection updated!"
     },
     "errors": {
       "notFound": "Collection not found or access denied",
-       "nameRequired": "Name is required",
+      "nameRequired": "Name is required",
       "saveFailed": "Failed to save collection",
       "loadTrips": "Could not load your trips"
     }
