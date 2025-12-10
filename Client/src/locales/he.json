@@ -293,18 +293,6 @@
         "error": "שגיאה",
         "generating": "מייצר..."
     },
-    "PostsManagement": {
-        "search_placeholder": "חפש פוסטים לפי כותרת, מחבר או קטגוריה...",
-        "add_post": "הוסף פוסט",
-        "no_results": "לא נמצאו פוסטים התואמים את החיפוש שלך.",
-        "add_new_post": "הוסף פוסט חדש",
-        "cancel": "ביטול",
-        "save_changes": "שמור שינויים",
-        "edit_post": "ערוך פוסט",
-        "status": "סטטוס",
-        "joinDate": "תאריך הצטרפות",
-        "actions": "פעולות"
-    },
     "UsersManagement": {
         "noUsersFound": "לא נמצאו משתמשים התואמים לחיפוש שלך.",
         "editUser": "ערוך משתמש",
@@ -585,7 +573,7 @@
         }
     },
     "PostsManagement": {
-        "search_placeholder": "חפש פוסטים...",
+        "search_placeholder": "חפש פוסטים לפי כותרת, מחבר או קטגוריה...",
         "add_post": "הוסף פוסט",
         "title": "כותרת",
         "author": "מחבר",
@@ -597,11 +585,12 @@
         "draft": "טיוטה",
         "published": "פורסם",
         "archived": "בארכיון",
-        "no_results": "לא נמצאו פוסטים.",
         "add_new_post": "הוסף פוסט חדש",
         "edit_post": "ערוך פוסט",
         "cancel": "ביטול",
-        "save_changes": "שמור שינויים"
+        "save_changes": "שמור שינויים",
+        "no_results": "לא נמצאו פוסטים התואמים את החיפוש שלך.",
+        "joinDate": "תאריך הצטרפות"
     },
     "createTrip": {
         "title": "יצירת טיול חדש",
@@ -722,5 +711,20 @@
   "route": {
     "tripsCount": "{{count}} טיולים במסלול",
     "clickToView": "לחץ לצפייה במסלול המלא"
+  },
+  "settings": {
+    "title": "הגדרות",
+    "display": "תצוגה",
+    "darkMode": "מצב כהה",
+    "on": "פעיל",
+    "off": "כבוי",
+    "dangerZone": "אזור מסוכן",
+    "deactivateAccount": "השבתת החשבון",
+    "confirmTitle": "להשבית את החשבון?",
+    "confirmMessage": "פעולה זו אינה ניתנת לביטול. החשבון יושבת לצמיתות."
+  },
+  "feedErrors":{
+    "failedToLoadTrips":"שגיאה בטעינת טיולים"
   }
+
 }

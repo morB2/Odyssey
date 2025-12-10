@@ -3,7 +3,7 @@ import type { Trip, ServerTrip } from "./types";
 import { Modal } from "./Modal";
 import { Box, Button, TextField, Typography, Divider, Chip, IconButton } from "@mui/material";
 import { Save, X, Trash2, Lock, Globe, Plus, Pencil } from "lucide-react";
-import { ConfirmDialog } from "./ConfirmDialog";
+import { ConfirmDialog } from "../general/ConfirmDialog";
 import { useUserStore } from "../../store/userStore";
 import { updateTrip } from "../../services/profile.service";
 import { toast } from "react-toastify";
@@ -123,7 +123,7 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
 
   const handleImageUpload = (url: string) => {
     if (images.length >= 3) {
-      alert("Maximum 3 media items allowed");
+      toast.error("Maximum 3 media items allowed");
       return;
     }
     setImages((prev) => [...prev, url]);

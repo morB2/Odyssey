@@ -11,6 +11,7 @@ export async function getAllTripsForAdmin(page = 1, limit = 10, search = "") {
     const skip = (page - 1) * limit;
 
     let filter = {};
+    let textSearchScore = {};
 
     if (search && search.trim()) {
         const searchTerm = search.trim();
@@ -26,18 +27,22 @@ export async function getAllTripsForAdmin(page = 1, limit = 10, search = "") {
 
         const userIds = matchingUsers.map(user => user._id);
 
-        // Build filter to search in title, activities, OR matching user IDs
+        // Use text search for title (faster with text index)
+        // and regex for activities, plus user ID matching
         filter.$or = [
-            { title: searchRegex },
+            { $text: { $search: searchTerm } }, // Uses text index on title
             { activities: { $in: [searchRegex] } },
             { user: { $in: userIds } }
         ];
+
+        // Add text score for better sorting when using text search
+        textSearchScore = { score: { $meta: "textScore" } };
     }
 
     // Execute queries in parallel
     const [trips, total] = await Promise.all([
-        Trip.find(filter)
-            .sort({ createdAt: -1 })
+        Trip.find(filter, textSearchScore)
+            .sort(search && search.trim() ? { score: { $meta: "textScore" }, createdAt: -1 } : { createdAt: -1 })
             .skip(skip)
             .limit(limit)
             .populate({

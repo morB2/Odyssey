@@ -727,5 +727,19 @@
   "route": {
     "tripsCount": "{{count}} trips in route",
     "clickToView": "Click to view full route"
+  },
+  "settings": {
+    "title": "Settings",
+    "display": "Display",
+    "darkMode": "Dark Mode",
+    "on": "On",
+    "off": "Off",
+    "dangerZone": "Danger Zone",
+    "deactivateAccount": "Deactivate Account",
+    "confirmTitle": "Deactivate account?",
+    "confirmMessage": "This action is irreversible. Your account will be permanently deactivated."
+  },
+  "feedErrors":{
+    "failedToLoadTrips":"Failed to load trips"
   }
 }

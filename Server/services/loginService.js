@@ -60,6 +60,12 @@ export async function loginUserS(email, password) {
         throw error;
     }
 
+    if (user.status === false) {
+        const error = new Error('Account deactivated. Please contact support.');
+        error.status = 403;
+        throw error;
+    }
+
     const token = generateToken(user);
 
     const userToReturn = user.toObject();
@@ -115,6 +121,12 @@ export async function googleLoginS(ticket) {
     let user = await usersModel.findOne({ email });
 
     if (user) {
+        if (user.status === false) {
+            const error = new Error('Account deactivated. Please contact support.');
+            error.status = 403;
+            throw error;
+        }
+
         if (!user.googleId) {
             user.googleId = googleId;
             user.avatar = picture;

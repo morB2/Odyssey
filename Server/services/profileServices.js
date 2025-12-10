@@ -44,11 +44,12 @@ export async function getProfile(userId) {
   if (!user) throw Object.assign(new Error("User not found"), { status: 404 });
 
   if (user.avatar) user.avatar = normalizeAvatarUrl(user.avatar);
-
+  if (user.status === false) {
+    throw Object.assign(new Error("This account has been deactivated"), { status: 404 });
+  }
   try {
     const followersCount = await Follow.countDocuments({ following: user._id });
     const followingCount = await Follow.countDocuments({ follower: user._id });
-
     return { ...user, followersCount, followingCount };
   } catch {
     return user;
@@ -384,4 +385,3 @@ export async function updateProfileAvatar(userId, authUser, file, avatarUrl) {
     .select("-password -__v")
     .lean();
 }
-
