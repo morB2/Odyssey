@@ -142,7 +142,7 @@ const Navbar: FC = () => {
             {user?.role === 'admin' && (
               <ListItem disablePadding>
                 <ListItemButton onClick={() => handleMobileNavigate('/admin/dashboard')}>
-                  <LayoutDashboard size={20} /><ListItemText sx={{ ml: 1 }} primary="Admin" />
+                  <LayoutDashboard size={20} /><ListItemText sx={{ ml: 1 }} primary={t('admin.admin')} />
                 </ListItemButton>
               </ListItem>
             )}
@@ -228,10 +228,10 @@ const Navbar: FC = () => {
 
 
               {user?.role === "admin" && (
-                <Tooltip title="Admin Dashboard" arrow>
+                <Tooltip arrow>
                   <Box onClick={() => navigate('/admin/dashboard')} sx={navItemStyle}>
                     <LayoutDashboard size={22} />
-                    <Typography variant="caption">Admin</Typography>
+                    <Typography variant="caption">{t('admin.admin')}</Typography>
                   </Box>
                 </Tooltip>
               )}

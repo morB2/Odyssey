@@ -7,7 +7,7 @@ import { ConfirmDialog } from "../general/ConfirmDialog";
 import { useUserStore } from "../../store/userStore";
 import { updateTrip } from "../../services/profile.service";
 import { toast } from "react-toastify";
-
+import { useTranslation } from 'react-i18next';
 import { CloudinaryUploadWidget } from "../general/CloudinaryUploadWidget";
 import { isVideo } from "../../utils/mediaUtils";
 import { AdvancedMediaEditor } from "../general/AdvancedMediaEditor";
@@ -31,6 +31,7 @@ const textFieldStyle = {
 const dividerStyle = { backgroundColor: "#e5e5e5" };
 
 export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditTripModalProps) {
+  const { t } = useTranslation();
   const [title, setTitle] = useState(trip?.title || "");
   const [description, setDescription] = useState(trip?.description || "");
   const [notes, setNotes] = useState(trip?.notes || "");
@@ -123,7 +124,7 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
 
   const handleImageUpload = (url: string) => {
     if (images.length >= 3) {
-      toast.error("Maximum 3 media items allowed");
+      toast.error(t('editTrip.maxMediaError'));
       return;
     }
     setImages((prev) => [...prev, url]);
@@ -164,7 +165,7 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
     return (
       <Box component="button" onClick={() => handleVisibilityChange(type)} sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 1, borderRadius: 2, border: isActive ? "1px solid #f97316" : "1px solid #e5e5e5", backgroundColor: isActive ? "#ffedd5" : "#ffffff", color: isActive ? "#ea580c" : "#525252", p: 2, cursor: "pointer", transition: "all 0.2s", "&:hover": { borderColor: isActive ? "#f97316" : "#d4d4d4" } }}>
         <Icon size={20} />
-        <Typography sx={{ fontSize: "1rem" }}>{type === "public" ? "Public" : "Private"}</Typography>
+        <Typography sx={{ fontSize: "1rem" }}>{type === "public" ? t('editTrip.public') : t('editTrip.private')}</Typography>
       </Box>
     );
   };
@@ -173,18 +174,18 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} title="Edit Trip" maxWidth="2xl">
+      <Modal isOpen={isOpen} onClose={onClose} title={t('editTrip.title')} maxWidth="2xl">
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {/* Title */}
           <Box>
-            <Typography component="label" htmlFor="title" sx={labelStyle}>Title</Typography>
-            <TextField id="title" fullWidth value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Enter trip title" sx={textFieldStyle} />
+            <Typography component="label" htmlFor="title" sx={labelStyle}>{t('editTrip.tripTitle')}</Typography>
+            <TextField id="title" fullWidth value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('editTrip.enterTripTitle')} sx={textFieldStyle} />
           </Box>
 
           {/* Description */}
           <Box>
-            <Typography component="label" htmlFor="description" sx={labelStyle}>Description</Typography>
-            <TextField id="description" fullWidth multiline rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe your trip" sx={textFieldStyle} />
+            <Typography component="label" htmlFor="description" sx={labelStyle}>{t('editTrip.description')}</Typography>
+            <TextField id="description" fullWidth multiline rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('editTrip.describeYourTrip')} sx={textFieldStyle} />
           </Box>
 
           <Divider sx={dividerStyle} />
@@ -192,13 +193,13 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
           {/* Media (Images & Videos) */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <Typography sx={{ fontSize: "0.875rem", fontWeight: 500, color: "#171717" }}>Media (max 3)</Typography>
-              {images.length < 3 && <CloudinaryUploadWidget onUpload={handleImageUpload} folder="odyssey/trips" buttonText="Upload" allowVideos={true} />}
+              <Typography sx={{ fontSize: "0.875rem", fontWeight: 500, color: "#171717" }}>{t('editTrip.mediaMax3')}</Typography>
+              {images.length < 3 && <CloudinaryUploadWidget onUpload={handleImageUpload} folder="odyssey/trips" buttonText={t('editTrip.upload')} allowVideos={true} />}
             </Box>
 
             {images.length === 0 ? (
               <Box sx={{ borderRadius: 2, border: "1px solid #e5e5e5", backgroundColor: "#fafafa", p: 4, textAlign: "center" }}>
-                <Typography sx={{ color: "#737373", fontSize: "0.875rem" }}>No media yet. Click "Upload" to add images or videos.</Typography>
+                <Typography sx={{ color: "#737373", fontSize: "0.875rem" }}>{t('editTrip.noMediaYet')}</Typography>
               </Box>
             ) : (
               <Box sx={{ display: "grid", gap: 1.5, gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" } }}>
@@ -233,9 +234,9 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
 
           {/* Activities */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-            <Typography sx={{ fontSize: "0.875rem", fontWeight: 500, color: "#171717" }}>Activities</Typography>
+            <Typography sx={{ fontSize: "0.875rem", fontWeight: 500, color: "#171717" }}>{t('editTrip.activities')}</Typography>
             <Box sx={{ display: "flex", gap: 1 }}>
-              <TextField fullWidth value={newActivity} onChange={(e) => setNewActivity(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddActivity(); } }} placeholder="Add an activity" sx={textFieldStyle} />
+              <TextField fullWidth value={newActivity} onChange={(e) => setNewActivity(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddActivity(); } }} placeholder={t('editTrip.addActivity')} sx={textFieldStyle} />
               <Button variant="outlined" onClick={handleAddActivity} sx={{ borderColor: "#d4d4d4", color: "#171717", minWidth: "auto", px: 2, "&:hover": { borderColor: "#a3a3a3", backgroundColor: "#fafafa" } }}>
                 <Plus size={16} />
               </Button>
@@ -253,15 +254,15 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
 
           {/* Notes */}
           <Box>
-            <Typography component="label" htmlFor="notes" sx={labelStyle}>Notes</Typography>
-            <TextField id="notes" fullWidth multiline rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Add any notes or tips for this trip" sx={textFieldStyle} />
+            <Typography component="label" htmlFor="notes" sx={labelStyle}>{t('editTrip.notes')}</Typography>
+            <TextField id="notes" fullWidth multiline rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t('editTrip.addNotes')} sx={textFieldStyle} />
           </Box>
 
           <Divider sx={dividerStyle} />
 
           {/* Visibility */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-            <Typography sx={{ fontSize: "0.875rem", fontWeight: 500, color: "#171717" }}>Visibility</Typography>
+            <Typography sx={{ fontSize: "0.875rem", fontWeight: 500, color: "#171717" }}>{t('editTrip.visibility')}</Typography>
             <Box sx={{ display: "flex", gap: 1.5 }}>
               <VisibilityButton type="public" />
               <VisibilityButton type="private" />
@@ -272,16 +273,16 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
 
           {/* Action Buttons */}
           <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
-            <Button variant="outlined" onClick={onClose} sx={{ borderColor: "#d4d4d4", color: "#171717", textTransform: "none", "&:hover": { borderColor: "#a3a3a3", backgroundColor: "#fafafa" } }}>Cancel</Button>
+            <Button variant="outlined" onClick={onClose} sx={{ borderColor: "#d4d4d4", color: "#171717", textTransform: "none", "&:hover": { borderColor: "#a3a3a3", backgroundColor: "#fafafa" } }}>{t('editTrip.cancel')}</Button>
             <Button onClick={handleSave} variant="contained" sx={{ backgroundColor: "#f97316", textTransform: "none", "&:hover": { backgroundColor: "#ea580c" } }}>
               <Save size={16} style={{ marginRight: "8px" }} />
-              Save Changes
+              {t('editTrip.saveChanges')}
             </Button>
           </Box>
         </Box>
       </Modal>
 
-      <ConfirmDialog isOpen={showVisibilityConfirm} onClose={() => setShowVisibilityConfirm(false)} onConfirm={confirmVisibilityChange} title="Change Visibility" message="Are you sure you want to change the trip's visibility?" />
+      <ConfirmDialog isOpen={showVisibilityConfirm} onClose={() => setShowVisibilityConfirm(false)} onConfirm={confirmVisibilityChange} title={t('editTrip.changeVisibility')} message={t('editTrip.changeVisibilityMessage')} />
 
       {/* Advanced Editor Modal */}
       {showAdvancedEditor !== null && (

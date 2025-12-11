@@ -137,7 +137,7 @@ export default function Profile() {
             setCollections(cols || []);
           } catch (e) {
             console.error("failed to load collections", e);
-            toast.error("Failed to load collections");
+            toast.error(t('profilePage.failedToLoadCollections'));
           } finally {
             if (mounted) setCollectionsLoading(false);
           }
@@ -162,7 +162,7 @@ export default function Profile() {
         }
       } catch (e) {
         console.error("failed to load trips", e);
-        toast.error("Failed to load trips");
+        toast.error(t('profilePage.failedToLoadTrips'));
       } finally {
         if (mounted) setTripsLoading(false);
       }
@@ -196,7 +196,7 @@ export default function Profile() {
       setHasMore(response.pagination?.hasMore ?? false);
     } catch (e) {
       console.error("Failed to load more trips", e);
-      toast.error("Failed to load more trips");
+      toast.error(t('profilePage.failedToLoadMoreTrips'));
     } finally {
       setLoadingMore(false);
     }
@@ -205,7 +205,7 @@ export default function Profile() {
   const handleSaveTrip = (updatedTrip: Trip) => {
     setTrips((prev) => prev.map((t) => t.id === updatedTrip.id || t._id === updatedTrip._id ? { ...t, ...updatedTrip } : t));
     setEditingTrip(null);
-    toast.success("Trip updated successfully!");
+    toast.success(t('profilePage.tripUpdatedSuccessfully'));
   };
 
   const handleDeleteTrip = async (tripId: string) => {
@@ -218,7 +218,7 @@ export default function Profile() {
       if (!body || (body.success === false && body["error"])) throw new Error((body["error"] as string) || (body["message"] as string) || "Failed to delete trip");
 
       setTrips((prev) => prev.filter((t) => t.id !== tripId && t._id !== tripId));
-      toast.success("Trip deleted successfully!");
+      toast.success(t('profilePage.tripDeletedSuccessfully'));
     } catch (e) {
       console.error("Failed to delete trip", e);
       const errorMsg = String(e instanceof Error ? e.message : e);
@@ -251,7 +251,7 @@ export default function Profile() {
       return t;
     }));
 
-    toast.success("Profile updated successfully!");
+    toast.success(t('profilePage.profileUpdatedSuccessfully'));
   };
 
   // Collection Handlers
@@ -277,14 +277,14 @@ export default function Profile() {
   };
 
   const handleDeleteCollection = async (collectionId: string) => {
-    if (!window.confirm("Are you sure you want to delete this collection?")) return;
+    if (!window.confirm(t('profilePage.confirmDeleteCollection'))) return;
     try {
       await deleteCollection(collectionId);
       setCollections((prev) => prev.filter((c) => c._id !== collectionId));
-      toast.success("Collection deleted");
+      toast.success(t('profilePage.collectionDeleted'));
     } catch (e) {
       console.error("Failed to delete collection", e);
-      toast.error("Failed to delete collection");
+      toast.error(t('profilePage.failedToDeleteCollection'));
     }
   };
 
