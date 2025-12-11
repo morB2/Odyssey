@@ -66,6 +66,7 @@ export interface Trip {
   title?: string;
   notes?: string;
   visibility?: "public" | "private";
+  visabilityStatus?: "public" | "private";
   route?: string[];
   routeInstructions?: RouteInstruction[];
   mode?: "car" | "walk" | "transit";

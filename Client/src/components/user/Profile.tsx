@@ -13,11 +13,9 @@ import { CreateCollectionModal } from "../collections/CreateCollectionModal";
 import { useUserStore } from "../../store/userStore";
 import { toast } from "react-toastify";
 import { useTranslation } from 'react-i18next';
-// Navbar intentionally not rendered inside this view
-
 import api from "../../services/httpService";
+import { ConfirmDialog } from "../general/ConfirmDialog";
 
-// Shared styles
 const containerStyle = {
   minHeight: "100vh",
   display: "flex",
@@ -32,10 +30,25 @@ const containerStyle = {
     opacity: 0.5
   }
 };
-const paperStyle = { p: { xs: 2, md: 4 }, borderRadius: 4, bgcolor: "rgba(255, 255, 255, 0.95)", backdropFilter: 'blur(10px)', boxShadow: '0 8px 32px rgba(0,0,0,0.1)', position: 'relative', zIndex: 1 };
-const guestUser = { id: "", firstName: "Guest", lastName: "guest", email: "", avatar: "" };
 
-// Helper function to normalize trips response
+const paperStyle = {
+  p: { xs: 2, md: 4 },
+  borderRadius: 4,
+  bgcolor: "rgba(255, 255, 255, 0.95)",
+  backdropFilter: 'blur(10px)',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+  position: 'relative',
+  zIndex: 1
+};
+
+const guestUser = {
+  id: "",
+  firstName: "Guest",
+  lastName: "guest",
+  email: "",
+  avatar: ""
+};
+
 const normalizeTrips = (data: unknown): Trip[] => {
   if (Array.isArray(data)) return data;
   const trips = (data as { trips?: Trip[] })?.trips;
@@ -64,14 +77,15 @@ export default function Profile() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
-  // Collection modal state
   const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState<"my-trips" | "liked" | "saved" | "collections">("my-trips");
 
   const TRIPS_PER_PAGE = 12;
 
-  // Initial load
+  const [deleteCollectionId, setDeleteCollectionId] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
   useEffect(() => {
     let mounted = true;
     async function loadData() {
@@ -82,16 +96,15 @@ export default function Profile() {
       setLoading(true);
       try {
         const [userRes, tripsRes] = await Promise.all([
-          getProfile(profileId).catch((e) => ({ success: false, error: String(e) })),
-          getTrips(profileId as string, 1, TRIPS_PER_PAGE).catch((e) => ({ success: false, error: String(e) })),
+          getProfile(profileId).catch(() => ({ success: false })),
+          getTrips(profileId as string, 1, TRIPS_PER_PAGE).catch(() => ({ success: false })),
         ]);
 
         if (!mounted) return;
-        if (!userRes || !userRes.success) throw new Error(userRes?.error || t('general.error'));
+        if (!userRes || !userRes.success) throw new Error(t('general.error'));
 
         setUser(userRes.user);
 
-        // Handle pagination response
         const tripsData = normalizeTrips(tripsRes.trips || tripsRes);
         setTrips(tripsData);
         setPage(1);
@@ -99,8 +112,7 @@ export default function Profile() {
         setTotalTrips(tripsRes.pagination?.total ?? tripsData.length);
       } catch (e) {
         if (!mounted) return;
-        const errorMsg = String(e instanceof Error ? e.message : e);
-        toast.error(errorMsg);
+        toast.error(String(e));
       } finally {
         if (mounted) setLoading(false);
       }
@@ -114,7 +126,6 @@ export default function Profile() {
     if (!isOwner) setActiveTab("my-trips");
   }, [isOwner]);
 
-  // Fetch trips when tab changes
   useEffect(() => {
     let mounted = true;
     async function fetchForTab() {
@@ -128,16 +139,14 @@ export default function Profile() {
         if (activeTab === "saved" && !isOwner) return;
 
         if (activeTab === "collections") {
-          // load collections
           setCollectionsLoading(true);
           try {
             const res = await getCollectionsByUser(profileId as string);
             if (!mounted) return;
             const cols = res.collections || res;
             setCollections(cols || []);
-          } catch (e) {
-            console.error("failed to load collections", e);
-            toast.error(t('profilePage.failedToLoadCollections'));
+          } catch {
+            toast.error("Failed to load collections");
           } finally {
             if (mounted) setCollectionsLoading(false);
           }
@@ -160,9 +169,8 @@ export default function Profile() {
             setTotalTrips(response.pagination?.total ?? tripsData.length);
           }
         }
-      } catch (e) {
-        console.error("failed to load trips", e);
-        toast.error(t('profilePage.failedToLoadTrips'));
+      } catch {
+        toast.error("Failed to load trips");
       } finally {
         if (mounted) setTripsLoading(false);
       }
@@ -194,9 +202,8 @@ export default function Profile() {
       setTrips((prev) => [...prev, ...newTrips]);
       setPage(nextPage);
       setHasMore(response.pagination?.hasMore ?? false);
-    } catch (e) {
-      console.error("Failed to load more trips", e);
-      toast.error(t('profilePage.failedToLoadMoreTrips'));
+    } catch {
+      toast.error("Failed to load more trips");
     } finally {
       setLoadingMore(false);
     }
@@ -210,19 +217,14 @@ export default function Profile() {
 
   const handleDeleteTrip = async (tripId: string) => {
     try {
-      const userId = storeUser?._id;
-      if (!userId) throw new Error("Not authenticated");
-
       const res = await svcDeleteTrip(tripId);
-      const body = res as unknown as Record<string, unknown>;
-      if (!body || (body.success === false && body["error"])) throw new Error((body["error"] as string) || (body["message"] as string) || "Failed to delete trip");
+      const body = res as any;
+      if (!body || (body.success === false && body.error)) throw new Error(body.error || "Failed to delete trip");
 
       setTrips((prev) => prev.filter((t) => t.id !== tripId && t._id !== tripId));
       toast.success(t('profilePage.tripDeletedSuccessfully'));
     } catch (e) {
-      console.error("Failed to delete trip", e);
-      const errorMsg = String(e instanceof Error ? e.message : e);
-      toast.error(errorMsg);
+      toast.error(String(e));
     }
   };
 
@@ -239,22 +241,19 @@ export default function Profile() {
       setUserStore(userWithFullAvatar, storeToken || undefined);
     }
 
-    setUser((prev) => {
-      if (!prev) return userWithFullAvatar;
-      return { ...prev, ...userWithFullAvatar, followersCount: updatedUser.followersCount ?? prev.followersCount, followingCount: updatedUser.followingCount ?? prev.followingCount };
-    });
+    setUser((prev) => prev ? { ...prev, ...userWithFullAvatar } : userWithFullAvatar);
 
-    setTrips((prevTrips) => prevTrips.map((t) => {
-      if (t.user && (t.user._id === updatedUser.id || t.user._id === (updatedUser as any)._id)) {
-        return { ...t, user: { ...t.user, avatar: newAvatar } };
-      }
-      return t;
-    }));
+    setTrips((prevTrips) =>
+      prevTrips.map((t) =>
+        t.user && (t.user._id === updatedUser.id || t.user._id === (updatedUser as any)._id)
+          ? { ...t, user: { ...t.user, avatar: newAvatar } }
+          : t
+      )
+    );
 
     toast.success(t('profilePage.profileUpdatedSuccessfully'));
   };
 
-  // Collection Handlers
   const handleCreateCollectionClick = () => {
     setEditingCollection(null);
     setIsCollectionModalOpen(true);
@@ -267,67 +266,53 @@ export default function Profile() {
 
   const handleCollectionSaveSuccess = (savedCollection: any) => {
     setCollections((prev) => {
-      const exists = prev.find(c => c._id === savedCollection._id);
+      const exists = prev.find((c) => c._id === savedCollection._id);
       if (exists) {
-        return prev.map(c => c._id === savedCollection._id ? savedCollection : c);
+        return prev.map((c) => (c._id === savedCollection._id ? savedCollection : c));
       }
       return [savedCollection, ...prev];
     });
     setIsCollectionModalOpen(false);
   };
 
-  const handleDeleteCollection = async (collectionId: string) => {
-    toast.info(
-      <Box>
-        {t("collection.confirmDelete")} {/* "Are you sure you want to delete this collection?" */}
-        <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-          <Button
-            size="small"
-            variant="contained"
-            color="error"
-            onClick={async () => {
-              toast.dismiss(); // close the confirmation toast
-              try {
-                await deleteCollection(collectionId);
-                setCollections((prev: any[]) =>
-                  prev.filter((c) => c._id !== collectionId)
-                );
-                toast.success(t("collection.deleted")); // "Collection deleted"
-              } catch (e) {
-                console.error("Failed to delete collection", e);
-                toast.error(t("collection.deleteFailed")); // "Failed to delete collection"
-              }
-            }}
-          >
-            {t("general.delete")} {/* "Delete" */}
-          </Button>
-          <Button
-            size="small"
-            variant="outlined"
-            onClick={() => toast.dismiss()} // cancel
-          >
-            {t("general.cancel")} {/* "Cancel" */}
-          </Button>
-        </Box>
-      </Box>,
-      { autoClose: false } // keep it open until user clicks
-    );
+  const handleDeleteCollection = (collectionId: string) => {
+    setDeleteCollectionId(collectionId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteCollection = async () => {
+    if (!deleteCollectionId) return;
+    try {
+      await deleteCollection(deleteCollectionId);
+      setCollections((prev) => prev.filter((c) => c._id !== deleteCollectionId));
+      toast.success(t("collection.deleted"));
+    } catch {
+      toast.error(t("collection.deleteFailed"));
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setDeleteCollectionId(null);
+    }
   };
 
   return (
     <>
       <Box sx={containerStyle}>
         <Paper elevation={3} sx={paperStyle}>
-          <ProfileHeader user={user || guestUser} isOwner={isOwner} onEditClick={() => isOwner && setIsEditModalOpen(true)} loading={loading} />
+          <ProfileHeader
+            user={user || guestUser}
+            isOwner={isOwner}
+            onEditClick={() => isOwner && setIsEditModalOpen(true)}
+            loading={loading}
+          />
 
           <Box sx={{ mt: 4 }}>
             <TripsList
               trips={trips}
               collections={collections}
               collectionsLoading={collectionsLoading}
-              activeTab={activeTab as any}
+              activeTab={activeTab}
               onTabChange={setActiveTab}
-              onTripClick={() => { }}
+              onTripClick={() => {}}
               setTrips={setTrips}
               onEdit={(trip) => setEditingTrip(trip)}
               onDelete={(tripId) => handleDeleteTrip(tripId)}
@@ -342,8 +327,21 @@ export default function Profile() {
             />
           </Box>
         </Paper>
-        <ChangePasswordModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} user={user || guestUser} onAvatarSaved={handleAvatarSaved} />
-        <EditTripModal trip={editingTrip} isOpen={!!editingTrip} onClose={() => setEditingTrip(null)} onSave={handleSaveTrip} setTrips={setTrips} />
+
+        <ChangePasswordModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          user={user || guestUser}
+          onAvatarSaved={handleAvatarSaved}
+        />
+
+        <EditTripModal
+          trip={editingTrip}
+          isOpen={!!editingTrip}
+          onClose={() => setEditingTrip(null)}
+          onSave={handleSaveTrip}
+          setTrips={setTrips}
+        />
 
         <CreateCollectionModal
           isOpen={isCollectionModalOpen}
@@ -351,7 +349,15 @@ export default function Profile() {
           onSuccess={handleCollectionSaveSuccess}
           existingCollection={editingCollection}
         />
-      </Box >
+      </Box>
+
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={confirmDeleteCollection}
+        title="collection.deleteTitle"
+        message="collection.confirmDelete"
+      />
     </>
   );
 }
