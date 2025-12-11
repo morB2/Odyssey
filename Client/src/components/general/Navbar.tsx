@@ -227,7 +227,7 @@ const Navbar: FC = () => {
 
 
               {user?.role === "admin" && (
-                <Tooltip arrow>
+                <Tooltip arrow  title={undefined}>
                   <Box onClick={() => navigate('/admin/dashboard')} sx={navItemStyle}>
                     <LayoutDashboard size={22} />
                     <Typography variant="caption">{t('admin.admin')}</Typography>
