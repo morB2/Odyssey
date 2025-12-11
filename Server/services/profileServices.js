@@ -63,13 +63,22 @@ export async function getProfile(userId) {
 export async function listUserTripsForViewer(ownerId, viewerId, page = 1, limit = 12) {
   if (!ownerId) throw new Error("ownerId required");
 
+  // Build filter based on viewer permissions
+  const filter = { user: ownerId };
+
+  // If viewer is not the owner, only show public trips
+  const isOwner = viewerId && String(viewerId) === String(ownerId);
+  if (!isOwner) {
+    filter.visabilityStatus = "public";
+  }
+
   // Only cache first page with default limit
   const cacheKey = page === 1 && limit === 12
     ? `profile:${ownerId}:trips:${viewerId || "none"}`
     : null;
 
   return fetchTrips({
-    filter: { user: ownerId },
+    filter,
     viewerId,
     page,
     limit,

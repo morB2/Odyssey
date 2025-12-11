@@ -91,8 +91,8 @@ export default function UsersManagement() {
             },
           }}
         >
-          <Tab label="Users" />
-          <Tab label="Analytics" />
+          <Tab label={t('UsersManagement.usersTab')} />
+          <Tab label={t('UsersManagement.analyticsTab')} />
         </Tabs>
       </Box>
 

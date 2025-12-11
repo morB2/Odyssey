@@ -449,6 +449,97 @@
     "privacyPolicy": "Privacy Policy",
     "contact": "Contact"
   },
+  "profile": {
+    "editProfile": "Edit Profile",
+    "profilePicture": "Profile Picture",
+    "uploadNewAvatar": "Upload New Avatar",
+    "saveAvatar": "Save Avatar",
+    "saving": "Saving...",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "changePasswordButton": "Change Password",
+    "changing": "Changing...",
+    "close": "Close",
+    "mustBeSignedIn": "You must be signed in to change your avatar.",
+    "avatarUpdatedSuccessfully": "Avatar updated successfully",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "enterCurrentPassword": "Please enter your current password",
+    "passwordChangedSuccessfully": "Password changed successfully",
+    "failedToChangePassword": "Failed to change password",
+    "followers": "Followers",
+    "following": "Following",
+    "myTrips": "My Trips",
+    "likedTrips": "Liked",
+    "collections": "Collections",
+    "savedTrips": "Saved",
+    "noTripsYet": "No trips yet"
+  },
+  "editTrip": {
+    "title": "Edit Trip",
+    "tripTitle": "Title",
+    "enterTripTitle": "Enter trip title",
+    "description": "Description",
+    "describeYourTrip": "Describe your trip",
+    "mediaMax3": "Media (max 3)",
+    "upload": "Upload",
+    "noMediaYet": "No media yet. Click \"Upload\" to add images or videos.",
+    "activities": "Activities",
+    "addActivity": "Add an activity",
+    "notes": "Notes",
+    "addNotes": "Add any notes or tips for this trip",
+    "visibility": "Visibility",
+    "public": "Public",
+    "private": "Private",
+    "cancel": "Cancel",
+    "saveChanges": "Save Changes",
+    "changeVisibility": "Change Visibility",
+    "changeVisibilityMessage": "Are you sure you want to change the trip's visibility?",
+    "maxMediaError": "Maximum 3 media items allowed"
+  },
+  "profilePage": {
+    "failedToLoadCollections": "Failed to load collections",
+    "failedToLoadTrips": "Failed to load trips",
+    "failedToLoadMoreTrips": "Failed to load more trips",
+    "tripUpdatedSuccessfully": "Trip updated successfully!",
+    "tripDeletedSuccessfully": "Trip deleted successfully!",
+    "profileUpdatedSuccessfully": "Profile updated successfully!",
+    "confirmDeleteCollection": "Are you sure you want to delete this collection?",
+    "collectionDeleted": "Collection deleted",
+    "failedToDeleteCollection": "Failed to delete collection"
+  },
+  "tripPost": {
+    "unknown": "Unknown",
+    "user": "User",
+    "deleteTrip": "Delete Trip",
+    "deleteConfirmMessage": "Are you sure you want to delete this trip? This action cannot be undone."
+  },
+  "mediaEditor": {
+    "title": "Advanced Media Editor",
+    "error": "Error",
+    "invalidCloudinaryUrl": "Invalid Cloudinary URL",
+    "close": "Close",
+    "preview": "Preview",
+    "loading": "Loading...",
+    "ready": "Ready",
+    "ai": "AI",
+    "adjust": "Adjust",
+    "aiEnhance": "AI Enhance (Auto improve)",
+    "aiUpscale": "AI Upscale (Increase resolution)",
+    "removeBackground": "Remove Background",
+    "grayscale": "Grayscale",
+    "sepia": "Sepia",
+    "brightness": "Brightness",
+    "contrast": "Contrast",
+    "saturation": "Saturation",
+    "vibrance": "Vibrance",
+    "blur": "Blur",
+    "vignette": "Vignette",
+    "reset": "Reset",
+    "cancel": "Cancel",
+    "applyChanges": "Apply Changes"
+  },
   "report": {
     "title": "Report Trip",
     "selectReason": "Please select a reason for reporting this trip:",
@@ -514,6 +605,7 @@
     "failedToDeletePost": "Failed to delete post"
   },
   "admin": {
+    "admin": "Admin",
     "adminDashboard": "Admin Dashboard",
     "manageWebsiteContent": "Manage website content",
     "usersManagement": "Users Management",
@@ -555,7 +647,9 @@
     "reportDismissed": "Report dismissed.",
     "failedToFetchReports": "Failed to fetch reports.",
     "failedToDismissReport": "Failed to dismiss report.",
-    "failedToDeletePost": "Failed to delete post."
+    "failedToDeletePost": "Failed to delete post.",
+    "reportsTab": "Reports",
+    "analyticsTab": "Analytics"
   },
   "UsersManagement": {
     "searchPlaceholder": "Search by name or email...",
@@ -587,7 +681,9 @@
       "cancel": "Cancel",
       "saveChanges": "Save Changes",
       "addUser": "Add User"
-    }
+    },
+    "usersTab": "Users",
+    "analyticsTab": "Analytics"
   },
   "PostsManagement": {
     "search_placeholder": "Search posts...",
@@ -606,7 +702,20 @@
     "add_new_post": "Add New Post",
     "edit_post": "Edit Post",
     "cancel": "Cancel",
-    "save_changes": "Save Changes"
+    "save_changes": "Save Changes",
+    "postsTab": "Posts",
+    "analyticsTab": "Analytics",
+    "untitledTrip": "Untitled Trip",
+    "unknown": "Unknown",
+    "general": "General",
+    "loadError": "Failed to load posts",
+    "deleteSuccess": "Post deleted successfully",
+    "deleteError": "Failed to delete post",
+    "viewError": "Failed to view trip",
+    "noResults": "No results found",
+    "noPosts": "No posts available",
+    "deleteTitle": "Delete Trip",
+    "deleteMessage": "Are you sure you want to delete this trip? This action cannot be undone."
   },
   "createTrip": {
     "title": "Create a New Trip",
@@ -747,5 +856,32 @@
   },
   "feedErrors": {
     "failedToLoadTrips": "Failed to load trips"
+  },
+  "postsAnalytics": {
+    "title": "Posts Analytics Dashboard",
+    "topViewedPosts": "Top Viewed Posts",
+    "topLikedPosts": "Top Liked Posts",
+    "categoryDistribution": "Category Distribution"
+  },
+  "reportsAnalytics": {
+    "title": "Reports Analytics Dashboard",
+    "topReportedPosts": "Top Reported Posts",
+    "topReportedUsers": "Top Reported Users",
+    "topReporters": "Top Reporters",
+    "reportsTrend": "Reports Trend (Last 30 Days)",
+    "reasonDistribution": "Report Reason Distribution",
+    "reportCount": "Report Count",
+    "noData": "No reports data available",
+    "noDataAvailable": "No data available",
+    "noReportedPostsData": "No reported posts data available"
+  },
+  "usersAnalytics": {
+    "title": "Users Analytics Dashboard",
+    "topActiveUsersBreakdown": "Top Active Users Breakdown",
+    "weightedScore": "Weighted Score",
+    "noData": "No active users data available for last month",
+    "rawValue": "Raw Value",
+    "weighted": "Weighted",
+    "totalScore": "Total Score"
   }
 }

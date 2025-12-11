@@ -173,8 +173,8 @@ export default function ReportsManagement() {
                         },
                     }}
                 >
-                    <Tab label="Reports" />
-                    <Tab label="Analytics" />
+                    <Tab label={t('admin.reportsTab')} />
+                    <Tab label={t('admin.analyticsTab')} />
                 </Tabs>
             </Box>
 

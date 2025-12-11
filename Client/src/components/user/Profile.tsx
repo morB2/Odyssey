@@ -212,7 +212,7 @@ export default function Profile() {
   const handleSaveTrip = (updatedTrip: Trip) => {
     setTrips((prev) => prev.map((t) => t.id === updatedTrip.id || t._id === updatedTrip._id ? { ...t, ...updatedTrip } : t));
     setEditingTrip(null);
-    toast.success("Trip updated successfully!");
+    toast.success(t('profilePage.tripUpdatedSuccessfully'));
   };
 
   const handleDeleteTrip = async (tripId: string) => {
@@ -222,7 +222,7 @@ export default function Profile() {
       if (!body || (body.success === false && body.error)) throw new Error(body.error || "Failed to delete trip");
 
       setTrips((prev) => prev.filter((t) => t.id !== tripId && t._id !== tripId));
-      toast.success("Trip deleted successfully!");
+      toast.success(t('profilePage.tripDeletedSuccessfully'));
     } catch (e) {
       toast.error(String(e));
     }
@@ -251,7 +251,7 @@ export default function Profile() {
       )
     );
 
-    toast.success("Profile updated successfully!");
+    toast.success(t('profilePage.profileUpdatedSuccessfully'));
   };
 
   const handleCreateCollectionClick = () => {

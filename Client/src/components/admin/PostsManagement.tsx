@@ -190,7 +190,7 @@ export default function PostsManagement() {
             <Box sx={{ borderBottom: 1, borderColor: '#27272A', mb: 3 }}>
                 <Tabs
                     value={activeTab}
-                    onChange={handleTabChange}                    
+                    onChange={handleTabChange}
                     sx={{
                         '& .MuiTab-root': {
                             color: '#71717A',
@@ -208,8 +208,8 @@ export default function PostsManagement() {
                         },
                     }}
                 >
-                    <Tab label="Posts" />
-                    <Tab label="Analytics" />
+                    <Tab label={t('PostsManagement.postsTab')} />
+                    <Tab label={t('PostsManagement.analyticsTab')} />
                 </Tabs>
             </Box>
 
