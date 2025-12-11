@@ -38,7 +38,10 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
   const [images, setImages] = useState<string[]>(trip?.images || []); // Keep for backward compatibility
   const [activities, setActivities] = useState<string[]>(trip?.activities || []);
   const [newActivity, setNewActivity] = useState("");
-  const [visibility, setVisibility] = useState<"public" | "private">(trip?.visibility || "public");
+  // Handle both visibility (client) and visabilityStatus (server) fields
+  const [visibility, setVisibility] = useState<"public" | "private">(
+    trip?.visibility || ((trip as any)?.visabilityStatus === "public" ? "public" : "private")
+  );
   const [showVisibilityConfirm, setShowVisibilityConfirm] = useState(false);
   const [pendingVisibility, setPendingVisibility] = useState<"public" | "private">("public");
 
@@ -60,7 +63,10 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
     setNotes(trip.notes || "");
     setImages(trip.images || []);
     setActivities(trip.activities || []);
-    setVisibility(trip.visibility || "public");
+    // Handle both visibility (client) and visabilityStatus (server) fields
+    setVisibility(
+      trip.visibility || ((trip as any)?.visabilityStatus === "public" ? "public" : "private")
+    );
   }, [trip]);
 
   const handleSave = () => {
