@@ -496,7 +496,10 @@
     "saveChanges": "Save Changes",
     "changeVisibility": "Change Visibility",
     "changeVisibilityMessage": "Are you sure you want to change the trip's visibility?",
-    "maxMediaError": "Maximum 3 media items allowed"
+    "maxMediaError": "Maximum 3 media items allowed",
+    "cannotEditExternalImage": "Cannot edit external image",
+    "deleteMedia": "Delete Media",
+    "advancedEdit": "Advanced Edit"
   },
   "profilePage": {
     "failedToLoadCollections": "Failed to load collections",
