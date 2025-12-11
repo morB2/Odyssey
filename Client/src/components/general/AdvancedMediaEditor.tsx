@@ -17,7 +17,6 @@ const useDebounce = <T,>(value: T, delay: number): T => {
 };
 // Extract clean publicId from Cloudinary URL
 const getPublicIdFromUrl = (url: string): string => {
-  console.log("Extracting public ID from URL:\n", url);
   if (!url.includes("/upload/")) return "";
 
   try {
@@ -59,7 +58,7 @@ const getPublicIdFromUrl = (url: string): string => {
     // Remove file extension
     publicId = publicId.replace(/\.[^.]+$/, "");
 
-    console.log("Extracted publicId:", publicId, "from URL:", url);
+
 
     return publicId;
   } catch (error) {
@@ -150,7 +149,6 @@ export function AdvancedMediaEditor({
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const publicId = useMemo(() => getPublicIdFromUrl(mediaUrl), [mediaUrl]);
-  console.log("Public ID:", publicId);
   const cloudName = import.meta.env.VITE_CLOUD_NAME;
   const cld = useMemo(
     () => new Cloudinary({ cloud: { cloudName } }),
@@ -209,7 +207,6 @@ export function AdvancedMediaEditor({
     // Effects
     if (dBlur > 0) img = img.effect(blur(dBlur));
     if (dVignette > 0) img = img.effect(vignette(dVignette));
-    console.log("Transformed image:", img);
     return img;
   }, [cld, publicId, dAiEnhance, dAiUpscale, dRemoveBackground, dBrightness, dContrast, dSaturation, dVibrance, dBlur, dVignette, dGrayscale, dSepia]);
 

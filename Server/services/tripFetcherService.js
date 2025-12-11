@@ -358,7 +358,6 @@ export async function fetchTrips({
     // This prevents loading thousands of trips into memory for scoring
     trips = await query.limit(scoringWindow).lean();
     trips = trips.filter(trip => trip.user?.status !== false);
-    console.log("Trips after status filter:", trips);
     if (excludeSeen && viewerId && seenSet.size > 0) {
       trips = trips.filter((trip) => !seenSet.has(trip._id.toString()));
     }

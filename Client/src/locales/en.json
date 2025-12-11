@@ -709,6 +709,9 @@
     "noTrips": "No trips found",
     "emptyCollection": "This collection has no trips yet.",
     "privateTripsVisible": "Some of the selected trips are private and won't be visible to other users.",
+    "confirmDelete": "Are you sure you want to delete this collection?",
+    "deleted": "Collection deleted",
+    "deleteFailed": "Failed to delete collection",
     "success": {
       "created": "Collection created!",
       "updated": "Collection updated!"
@@ -739,7 +742,7 @@
     "confirmTitle": "Deactivate account?",
     "confirmMessage": "This action is irreversible. Your account will be permanently deactivated."
   },
-  "feedErrors":{
-    "failedToLoadTrips":"Failed to load trips"
+  "feedErrors": {
+    "failedToLoadTrips": "Failed to load trips"
   }
 }
