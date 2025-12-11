@@ -162,15 +162,16 @@ export default function UsersAnalytics() {
 
 
     return (
-        <Box sx={{ mb: 4, position: 'relative', direction: 'ltr' }}>
+        <Box sx={{ mb: 4, position: 'relative'}}>
             <Typography variant="h4" sx={{ mb: 2, fontWeight: 700, color: "white" }}>{t('usersAnalytics.title')}</Typography>
 
-            <Paper sx={{ p: 3, bgcolor: "#18181B", border: "1px solid #27272A", borderRadius: 2, position: 'relative', direction: 'ltr' }}>
+            <Paper sx={{ p: 3, bgcolor: "#18181B", border: "1px solid #27272A", borderRadius: 2, position: 'relative' }}>
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: "white" }}>{t('usersAnalytics.topActiveUsersBreakdown')}</Typography>
-                <ResponsiveContainer width="100%" height={400}>
+                <ResponsiveContainer width="100%" height={400} >
                     <BarChart
                         data={chartData}
                         margin={{ bottom: 50, left: 5, right: 5, top: 5 }}
+                        style={{ direction: 'ltr' }}
                     >
                         <CartesianGrid strokeDasharray="3 3" stroke="#27272A" />
                         <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} stroke="#71717A" tick={{ fill: '#A1A1AA', fontSize: 12 }} />
