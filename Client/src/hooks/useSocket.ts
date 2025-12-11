@@ -43,6 +43,21 @@ export const useTripRoom = (tripId: string | null) => {
     }, [socket, tripId]);
 };
 
+export const useUserRoom = (userId: string | null) => {
+  const socket = getSocket();
+
+  useEffect(() => {
+    if (!socket || !userId) return;
+
+    console.log("Joining USER ROOM:", `user:${userId}`);
+    socket.emit("joinUserRoom", userId);
+
+    return () => {
+      console.log("Leaving USER ROOM:", `user:${userId}`);
+      socket.emit("leaveUserRoom", userId);
+    };
+  }, [socket, userId]);
+};
 /**
  * Custom hook for subscribing to Socket.IO events
  * @param eventName - Name of the event to subscribe to
