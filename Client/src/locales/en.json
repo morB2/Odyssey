@@ -712,6 +712,9 @@
     "confirmDelete": "Are you sure you want to delete this collection?",
     "deleted": "Collection deleted",
     "deleteFailed": "Failed to delete collection",
+    "privateTripsWarningTitle": "Private Trips Included",
+    "privateTripsWarningMessage": "Some of the trips you selected are private. If you make this collection public, those private trips will not be visible to other users. Do you want to continue?",
+    "continueAnyway": "Continue",
     "success": {
       "created": "Collection created!",
       "updated": "Collection updated!"

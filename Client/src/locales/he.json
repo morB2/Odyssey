@@ -677,57 +677,59 @@
         "or": "או",
         "maybeLater": "אולי מאוחר יותר"
     },
-     "collection": {
-    "back": "חזרה",
-    "new": "אוסף חדש",
-    "edit": "עריכת אוסף",
-    "name": "שם",
-    "description": "תיאור",
-    "private": "פרטי",
-    "selectedTrips": "טיולים שנבחרו (ניתן לגרירה)",
-    "availableTrips": "טיולים זמינים",
-    "emptySelected": "בחרי טיולים מהרשימה כדי להוסיף כאן.",
-    "add": "הוסף",
-    "untitledTrip": "טיול ללא שם",
-    "allSelected": "כל הטיולים נבחרו",
-    "noTrips": "לא נמצאו טיולים",
-    "emptyCollection":"אין באוסף זה טיולים כרגע",
-    "privateTripsVisible":"חלק מהטיולים שנבחרו הם פרטיים ולא יהיו גלויים למשתמשים אחרים.",
-     "confirmDelete": "האם אתה בטוח שברצונך למחוק את האוסף?",
-    "deleted": "האוסף נמחק בהצלחה",
-    "deleteFailed": "מחיקת האוסף נכשלה",
-    "success": {
-      "created": "האוסף נוצר בהצלחה!",
-      "updated": "האוסף עודכן בהצלחה!"
+    "collection": {
+        "back": "חזרה",
+        "new": "אוסף חדש",
+        "edit": "עריכת אוסף",
+        "name": "שם",
+        "description": "תיאור",
+        "private": "פרטי",
+        "selectedTrips": "טיולים שנבחרו (ניתן לגרירה)",
+        "availableTrips": "טיולים זמינים",
+        "emptySelected": "בחרי טיולים מהרשימה כדי להוסיף כאן.",
+        "add": "הוסף",
+        "untitledTrip": "טיול ללא שם",
+        "allSelected": "כל הטיולים נבחרו",
+        "noTrips": "לא נמצאו טיולים",
+        "emptyCollection": "אין באוסף זה טיולים כרגע",
+        "privateTripsVisible": "חלק מהטיולים שנבחרו הם פרטיים ולא יהיו גלויים למשתמשים אחרים.",
+        "confirmDelete": "האם אתה בטוח שברצונך למחוק את האוסף?",
+        "deleted": "האוסף נמחק בהצלחה",
+        "deleteFailed": "מחיקת האוסף נכשלה",
+        "privateTripsWarningTitle": "יש טיולים פרטיים באוסף",
+        "privateTripsWarningMessage": "בחרת טיולים פרטיים. אם תהפוך את האוסף לפומבי, הטיולים הפרטיים לא יופיעו באוסף כאשר משתמשים אחרים יצפו בו. להמשיך?",
+        "continueAnyway": "להמשיך בכל זאת",
+        "success": {
+            "created": "האוסף נוצר בהצלחה!",
+            "updated": "האוסף עודכן בהצלחה!"
+        },
+        "errors": {
+            "notFound": "האוסף לא נמצא או שאין לך הרשאה לצפות בו",
+            "nameRequired": "חובה להזין שם",
+            "saveFailed": "שמירת האוסף נכשלה",
+            "loadTrips": "לא ניתן לטעון את הטיולים"
+        }
     },
-    "errors": {
-      "notFound": "האוסף לא נמצא או שאין לך הרשאה לצפות בו",
-       "nameRequired": "חובה להזין שם",
-      "saveFailed": "שמירת האוסף נכשלה",
-      "loadTrips": "לא ניתן לטעון את הטיולים"
+    "collections": {
+        "empty": "עדיין אין אוספים",
+        "create": "צור אוסף"
+    },
+    "route": {
+        "tripsCount": "{{count}} טיולים במסלול",
+        "clickToView": "לחץ לצפייה במסלול המלא"
+    },
+    "settings": {
+        "title": "הגדרות",
+        "display": "תצוגה",
+        "darkMode": "מצב כהה",
+        "on": "פעיל",
+        "off": "כבוי",
+        "dangerZone": "אזור מסוכן",
+        "deactivateAccount": "השבתת החשבון",
+        "confirmTitle": "להשבית את החשבון?",
+        "confirmMessage": "פעולה זו אינה ניתנת לביטול. החשבון יושבת לצמיתות."
+    },
+    "feedErrors": {
+        "failedToLoadTrips": "שגיאה בטעינת טיולים"
     }
-  },
-   "collections": {
-    "empty": "עדיין אין אוספים",
-    "create": "צור אוסף"
-  },
-  "route": {
-    "tripsCount": "{{count}} טיולים במסלול",
-    "clickToView": "לחץ לצפייה במסלול המלא"
-  },
-  "settings": {
-    "title": "הגדרות",
-    "display": "תצוגה",
-    "darkMode": "מצב כהה",
-    "on": "פעיל",
-    "off": "כבוי",
-    "dangerZone": "אזור מסוכן",
-    "deactivateAccount": "השבתת החשבון",
-    "confirmTitle": "להשבית את החשבון?",
-    "confirmMessage": "פעולה זו אינה ניתנת לביטול. החשבון יושבת לצמיתות."
-  },
-  "feedErrors":{
-    "failedToLoadTrips":"שגיאה בטעינת טיולים"
-  }
-
 }
