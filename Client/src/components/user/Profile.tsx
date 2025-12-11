@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Box, Paper } from "@mui/material";
+import { Box, Button, Paper } from "@mui/material";
 import { ProfileHeader } from "./ProfileHeader";
 import { TripsList } from "./TripsList";
 import { CollectionsList } from "../collections/CollectionsList";
@@ -277,15 +277,41 @@ export default function Profile() {
   };
 
   const handleDeleteCollection = async (collectionId: string) => {
-    if (!window.confirm(t('profilePage.confirmDeleteCollection'))) return;
-    try {
-      await deleteCollection(collectionId);
-      setCollections((prev) => prev.filter((c) => c._id !== collectionId));
-      toast.success(t('profilePage.collectionDeleted'));
-    } catch (e) {
-      console.error("Failed to delete collection", e);
-      toast.error(t('profilePage.failedToDeleteCollection'));
-    }
+    toast.info(
+      <Box>
+        {t("collection.confirmDelete")} {/* "Are you sure you want to delete this collection?" */}
+        <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+          <Button
+            size="small"
+            variant="contained"
+            color="error"
+            onClick={async () => {
+              toast.dismiss(); // close the confirmation toast
+              try {
+                await deleteCollection(collectionId);
+                setCollections((prev: any[]) =>
+                  prev.filter((c) => c._id !== collectionId)
+                );
+                toast.success(t("collection.deleted")); // "Collection deleted"
+              } catch (e) {
+                console.error("Failed to delete collection", e);
+                toast.error(t("collection.deleteFailed")); // "Failed to delete collection"
+              }
+            }}
+          >
+            {t("general.delete")} {/* "Delete" */}
+          </Button>
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={() => toast.dismiss()} // cancel
+          >
+            {t("general.cancel")} {/* "Cancel" */}
+          </Button>
+        </Box>
+      </Box>,
+      { autoClose: false } // keep it open until user clicks
+    );
   };
 
   return (

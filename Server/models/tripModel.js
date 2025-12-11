@@ -114,8 +114,6 @@ TripSchema.pre('findOneAndDelete', async function (next) {
 
       // Delete all reports for this trip
       await Report.deleteMany({ trip: tripId });
-
-      console.log(`Cleaned up related records for trip ${tripId}`);
     }
 
     next();

@@ -49,7 +49,6 @@ const Navbar: FC = () => {
       try {
         const data = await chatService.getUnreadCount();
         const count = typeof data === 'number' ? data : (data?.count ?? data?.unread ?? 0);
-        console.log('Fetched unread count:', count);
         if (mounted) setUnreadCount(count);
       } catch (err) {
         console.error('Failed to fetch unread count', err);

@@ -127,11 +127,6 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, onClose }) => {
                             !conv.lastMessage.read &&
                             conv.lastMessage.receiverId === user._id;
 
-                        console.log('Conv:', conv._id);
-                        console.log('LastMsg:', conv.lastMessage);
-                        console.log('User ID:', user._id);
-                        console.log('Is Unread:', isUnread);
-
                         return (
                             <ListItem
                                 key={conv._id}

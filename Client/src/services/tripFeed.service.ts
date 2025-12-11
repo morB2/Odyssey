@@ -5,7 +5,6 @@ const TRIPS_PATH = "/trips";
 export const fetchTrips = async (userId: string, page: number = 1, limit: number = 5) => {
     try {
         const url = userId ? `${TRIPS_PATH}/${userId}` : TRIPS_PATH;
-        console.log("url", url);
         const res = await api.get(url, {
             params: { page, limit }
         });
