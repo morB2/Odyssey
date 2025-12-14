@@ -493,7 +493,10 @@
         "saveChanges": "שמור שינויים",
         "changeVisibility": "שינוי נראות",
         "changeVisibilityMessage": "האם אתה בטוח שברצונך לשנות את נראות הטיול?",
-        "maxMediaError": "מותר מקסימום 3 פריטי מדיה"
+        "maxMediaError": "מותר מקסימום 3 פריטי מדיה",
+        "cannotEditExternalImage": "לא ניתן לערוך תמונה שלא הועלתה על ידך",
+        "deleteMedia": "מחק מדיה",
+        "advancedEdit": "עריכה מתקדמת"
     },
     "profilePage": {
         "failedToLoadCollections": "שגיאה בטעינת האוספים",
@@ -812,6 +815,11 @@
         "privateTripsWarningTitle": "יש טיולים פרטיים באוסף",
         "privateTripsWarningMessage": "בחרת טיולים פרטיים. אם תהפוך את האוסף לפומבי, הטיולים הפרטיים לא יופיעו באוסף כאשר משתמשים אחרים יצפו בו. להמשיך?",
         "continueAnyway": "להמשיך בכל זאת",
+        "generateTitle": "צור כותרת עם AI",
+        "generateDescription": "צור תיאור עם AI",
+        "selectTripsFirst": "בחר קודם טיולים לאוסף",
+        "aiTitleGenerated": "כותרת נוצרה בהצלחה!",
+        "aiDescriptionGenerated": "תיאור נוצר בהצלחה!",
         "success": {
             "created": "האוסף נוצר בהצלחה!",
             "updated": "האוסף עודכן בהצלחה!"
@@ -819,6 +827,8 @@
         "errors": {
             "notFound": "האוסף לא נמצא או שאין לך הרשאה לצפות בו",
             "nameRequired": "חובה להזין שם",
+            "selectTripsFirst": "בחר טיולים לפני יצירה עם AI",
+            "aiGenerationFailed": "יצירה עם AI נכשלה",
             "saveFailed": "שמירת האוסף נכשלה",
             "loadTrips": "לא ניתן לטעון את הטיולים"
         }
@@ -844,5 +854,32 @@
     },
     "feedErrors": {
         "failedToLoadTrips": "שגיאה בטעינת טיולים"
+    },
+    "postsAnalytics": {
+        "title": "לוח ניתוח פוסטים",
+        "topViewedPosts": "הפוסטים הנצפים ביותר",
+        "topLikedPosts": "הפוסטים המועדפים ביותר",
+        "categoryDistribution": "התפלגות קטגוריות"
+    },
+    "reportsAnalytics": {
+        "title": "לוח ניתוח דיווחים",
+        "topReportedPosts": "הפוסטים המדווחים ביותר",
+        "topReportedUsers": "המשתמשים המדווחים ביותר",
+        "topReporters": "המדווחים הפעילים ביותר",
+        "reportsTrend": "מגמת דיווחים (30 ימים אחרונים)",
+        "reasonDistribution": "התפלגות סיבות דיווח",
+        "reportCount": "מספר דיווחים",
+        "noData": "אין נתוני דיווחים זמינים",
+        "noDataAvailable": "אין נתונים זמינים",
+        "noReportedPostsData": "אין נתוני פוסטים מדווחים"
+    },
+    "usersAnalytics": {
+        "title": "לוח ניתוח משתמשים",
+        "topActiveUsersBreakdown": "פירוט משתמשים פעילים",
+        "weightedScore": "ציון משוקלל",
+        "noData": "אין נתוני משתמשים פעילים זמינים לחודש האחרון",
+        "rawValue": "ערך גולמי",
+        "weighted": "משוקלל",
+        "totalScore": "ציון כולל"
     }
 }

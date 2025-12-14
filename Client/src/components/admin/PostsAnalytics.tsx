@@ -138,7 +138,7 @@ export default function PostsAnalytics() {
                             {t('postsAnalytics.topViewedPosts')}
                         </Typography>
                         <ResponsiveContainer width="100%" height={350}>
-                            <BarChart data={topViewed} layout="vertical" margin={{ left: 10, right: 10, top: 5, bottom: 0 }}>
+                            <BarChart data={topViewed} layout="vertical" margin={{ left: 10, right: 10, top: 5, bottom: 0 }} style={{ direction: 'ltr' }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#27272A" />
                                 <XAxis type="number"
                                 // stroke="#71717A"
@@ -191,7 +191,7 @@ export default function PostsAnalytics() {
                             {t('postsAnalytics.topLikedPosts')}
                         </Typography>
                         <ResponsiveContainer width="100%" height={400}>
-                            <BarChart data={topLiked} margin={{ bottom: 0, left: 5, right: 5, top: 5 }}>
+                            <BarChart data={topLiked} margin={{ bottom: 0, left: 5, right: 5, top: 5 }} style={{ direction: 'ltr' }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#27272A" />
                                 <XAxis
                                     dataKey="_id"
@@ -318,6 +318,7 @@ export default function PostsAnalytics() {
                                     outerRadius={100}
                                     label={renderCustomLabel}
                                     labelLine={{ stroke: '#71717A' }}
+                                    style={{ direction: 'ltr' }}
                                 >
                                     {categories.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

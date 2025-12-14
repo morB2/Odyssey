@@ -2,6 +2,12 @@ import Collection from "../models/collectionModel.js";
 import Trip from "../models/tripModel.js";
 import { fetchTrips } from "./tripFetcherService.js";
 import redis from "../db/redisClient.js";
+import { generateCollectionTitleInstruction, generateCollectionDescriptionInstruction } from "./prompts.js";
+import { askGemini, sanitizeAIOutput } from "./geminiService.js";
+import dotenv from "dotenv";
+
+dotenv.config();
+
 export const createCollectionService = async (userId, data) => {
     const { name, description, trips, image, isPrivate } = data;
 
@@ -109,4 +115,77 @@ export const updateCollectionService = async (id, userId, updates) => {
 export const deleteCollectionService = async (id, userId) => {
     const result = await Collection.deleteOne({ _id: id, user: userId });
     return result.deletedCount > 0;
+};
+
+
+// ============================================
+// AI Generation Functions
+// ============================================
+
+export const generateCollectionTitle = async (tripIds) => {
+    if (!tripIds || tripIds.length === 0) {
+        throw new Error("At least one trip is required");
+    }
+
+    // Fetch the trips
+    const trips = await Trip.find({ _id: { $in: tripIds } })
+        .select("title description")
+        .lean();
+
+    if (trips.length === 0) {
+        throw new Error("No trips found");
+    }
+
+    // Build the prompt
+    const tripsData = trips.map(t => ({
+        title: t.title || "Untitled Trip",
+        description: t.description || ""
+    }));
+
+    const userPrompt = `Generate a collection title for these trips:\n${JSON.stringify(tripsData, null, 2)}`;
+
+    // Call Gemini
+    const out = await askGemini(generateCollectionTitleInstruction, userPrompt);
+    const sanitized = sanitizeAIOutput(out);
+
+    try {
+        const result = JSON.parse(sanitized);
+        return result.title;
+    } catch (e) {
+        throw new Error("AI returned invalid JSON for title generation");
+    }
+};
+
+export const generateCollectionDescription = async (tripIds) => {
+    if (!tripIds || tripIds.length === 0) {
+        throw new Error("At least one trip is required");
+    }
+
+    // Fetch the trips
+    const trips = await Trip.find({ _id: { $in: tripIds } })
+        .select("title description")
+        .lean();
+
+    if (trips.length === 0) {
+        throw new Error("No trips found");
+    }
+
+    // Build the prompt
+    const tripsData = trips.map(t => ({
+        title: t.title || "Untitled Trip",
+        description: t.description || ""
+    }));
+
+    const userPrompt = `Generate a collection description for these trips:\n${JSON.stringify(tripsData, null, 2)}`;
+
+    // Call Gemini
+    const out = await askGemini(generateCollectionDescriptionInstruction, userPrompt);
+    const sanitized = sanitizeAIOutput(out);
+
+    try {
+        const result = JSON.parse(sanitized);
+        return result.description;
+    } catch (e) {
+        throw new Error("AI returned invalid JSON for description generation");
+    }
 };

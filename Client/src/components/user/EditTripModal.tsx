@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import type { Trip, ServerTrip } from "./types";
 import { Modal } from "./Modal";
-import { Box, Button, TextField, Typography, Divider, Chip, IconButton } from "@mui/material";
+import { Box, Button, TextField, Typography, Divider, Chip, IconButton, Tooltip } from "@mui/material";
 import { Save, X, Trash2, Lock, Globe, Plus, Pencil } from "lucide-react";
 import { ConfirmDialog } from "../general/ConfirmDialog";
 import { useUserStore } from "../../store/userStore";
@@ -209,29 +209,64 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
               </Box>
             ) : (
               <Box sx={{ display: "grid", gap: 1.5, gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" } }}>
-                {images.map((mediaUrl, index) => (
-                  <Box key={index} sx={{ position: "relative", overflow: "hidden", borderRadius: 2, border: "1px solid #e5e5e5", "&:hover .overlay": { backgroundColor: "rgba(0, 0, 0, 0.4)" }, "&:hover .delete-btn": { opacity: 1 } }}>
-                    {isVideo(mediaUrl) ? (
-                      <Box
-                        component="video"
-                        src={mediaUrl}
-                        controls
-                        sx={{ aspectRatio: "16/9", width: "100%", objectFit: "cover", backgroundColor: "#000" }}
-                      />
-                    ) : (
-                      <Box component="img" src={mediaUrl} alt={`Trip media ${index + 1}`} sx={{ aspectRatio: "16/9", width: "100%", objectFit: "cover" }} />
-                    )}
-                    <Box className="overlay" sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5, backgroundColor: "rgba(0, 0, 0, 0)", transition: "background-color 0.2s", pointerEvents: "none" }}>
-                      <IconButton className="delete-btn" onClick={() => setShowAdvancedEditor(index)} sx={{ backgroundColor: "#f8893aff", opacity: 0, transition: "opacity 0.2s", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", "&:hover": { backgroundColor: "#d8885dff" }, pointerEvents: "auto", width: 32, height: 32 }} title="Advanced Edit">
-                        <Pencil size={14} color="#ffffff" />
-                      </IconButton>
-                      <IconButton className="delete-btn" onClick={() => handleRemoveImage(index)} sx={{ backgroundColor: "#ffffff", opacity: 0, transition: "opacity 0.2s", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", "&:hover": { backgroundColor: "#ffffff" }, pointerEvents: "auto", width: 32, height: 32 }} title="Delete">
-                        <Trash2 size={14} color="#dc2626" />
-                      </IconButton>
+                {images.map((mediaUrl, index) => {
+                  // Check if image is from Cloudinary (can be edited)
+                  const canEdit = mediaUrl && mediaUrl.includes('cloudinary.com');
+
+                  return (
+                    <Box key={index} sx={{ position: "relative", overflow: "hidden", borderRadius: 2, border: "1px solid #e5e5e5", "&:hover .overlay": { backgroundColor: "rgba(0, 0, 0, 0.4)" }, "&:hover .delete-btn": { opacity: 1 } }}>
+                      {isVideo(mediaUrl) ? (
+                        <Box
+                          component="video"
+                          src={mediaUrl}
+                          controls
+                          sx={{ aspectRatio: "16/9", width: "100%", objectFit: "cover", backgroundColor: "#000" }}
+                        />
+                      ) : (
+                        <Box component="img" src={mediaUrl} alt={`Trip media ${index + 1}`} sx={{ aspectRatio: "16/9", width: "100%", objectFit: "cover" }} />
+                      )}
+                      <Box className="overlay" sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5, backgroundColor: "rgba(0, 0, 0, 0)", transition: "background-color 0.2s", pointerEvents: "none" }}>
+                        <Tooltip
+                          title={canEdit ? t('editTrip.advancedEdit') : t('editTrip.cannotEditExternalImage')}
+                          arrow
+                          placement="top"
+                        >
+                          <span style={{ pointerEvents: "auto" }}>
+                            <IconButton
+                              className="delete-btn"
+                              onClick={() => canEdit ? setShowAdvancedEditor(index) : null}
+                              disabled={!canEdit}
+                              sx={{
+                                backgroundColor: "#f8893aff",
+                                opacity: 0,
+                                transition: "opacity 0.2s",
+                                boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                                "&:hover": { backgroundColor: "#d8885dff" },
+                                "&:disabled": { opacity: 0.8, cursor: "not-allowed" },
+                                "&:disabled:hover": { backgroundColor: "#f8893aff" },
+                                width: 32,
+                                height: 32,
+                                cursor: canEdit ? "pointer" : "not-allowed"
+                              }}
+                            >
+                              <Pencil size={14} color={canEdit ? "#ffffff" : "#6b7280"} />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                        <Tooltip
+                          title={t('editTrip.deleteMedia')}
+                          arrow
+                          placement="top"
+                        >
+                          <IconButton className="delete-btn" onClick={() => handleRemoveImage(index)} sx={{ backgroundColor: "#ffffff", opacity: 0, transition: "opacity 0.2s", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", "&:hover": { backgroundColor: "#ffffff" }, pointerEvents: "auto", width: 32, height: 32 }}>
+                            <Trash2 size={14} color="#dc2626" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                      <Box sx={{ position: "absolute", left: 8, top: 8, borderRadius: 1, backgroundColor: "rgba(0, 0, 0, 0.6)", backdropFilter: "blur(4px)", px: 1, py: 0.5, color: "#ffffff", fontSize: "0.75rem" }}>{index + 1}</Box>
                     </Box>
-                    <Box sx={{ position: "absolute", left: 8, top: 8, borderRadius: 1, backgroundColor: "rgba(0, 0, 0, 0.6)", backdropFilter: "blur(4px)", px: 1, py: 0.5, color: "#ffffff", fontSize: "0.75rem" }}>{index + 1}</Box>
-                  </Box>
-                ))}
+                  );
+                })}
               </Box>
             )}
           </Box>

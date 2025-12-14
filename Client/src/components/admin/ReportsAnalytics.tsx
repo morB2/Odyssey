@@ -61,7 +61,7 @@ export default function ReportsAnalytics() {
 
                 {/* Top Reported Posts Skeleton */}
                 <Box sx={{ mb: 3 }}>
-                    <Paper sx={{ p: 3, bgcolor: "#18181B", border: "2px solid #ef4444", borderRadius: 2 }}>
+                    <Paper sx={{ p: 3, bgcolor: "#18181B", borderRadius: 2 }}>
                         <Skeleton variant="text" width={300} height={35} sx={{ bgcolor: "#27272A", mb: 2 }} />
                         <Skeleton variant="rectangular" width="100%" height={400} sx={{ bgcolor: "#27272A", borderRadius: 1 }} />
                     </Paper>
@@ -155,7 +155,7 @@ export default function ReportsAnalytics() {
                         <Typography textAlign="center" color="#71717A" sx={{ py: 8 }}>{t('reportsAnalytics.noReportedPostsData')}</Typography>
                     ) : (
                         <ResponsiveContainer width="100%" height={400}>
-                            <BarChart data={reportedPostsData} margin={{ left: 5, right: 5, top: 5 }}>
+                            <BarChart data={reportedPostsData} margin={{ left: 5, right: 5, top: 5 }} style={{ direction: 'ltr' }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#27272A" />
                                 <XAxis
                                     dataKey="title"
@@ -201,7 +201,7 @@ export default function ReportsAnalytics() {
                             <Typography textAlign="center" color="#71717A" sx={{ py: 8 }}>{t('reportsAnalytics.noDataAvailable')}</Typography>
                         ) : (
                             <ResponsiveContainer width="100%" height={350}>
-                                <BarChart data={reportedUsersData} layout="vertical" margin={{ left: 10, right: 10, top: 5, bottom: 0 }}>
+                                <BarChart data={reportedUsersData} layout="vertical" margin={{ left: 10, right: 10, top: 5, bottom: 0 }} style={{ direction: 'ltr' }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#27272A" />
                                     <XAxis type="number" stroke="#71717A" tick={{ fill: '#A1A1AA' }} />
                                     <YAxis
@@ -234,7 +234,7 @@ export default function ReportsAnalytics() {
                             <Typography textAlign="center" color="#71717A" sx={{ py: 8 }}>{t('reportsAnalytics.noDataAvailable')}</Typography>
                         ) : (
                             <ResponsiveContainer width="100%" height={350}>
-                                <BarChart data={reportersData} margin={{ bottom: 0, left: 5, right: 5, top: 5 }}>
+                                <BarChart data={reportersData} margin={{ bottom: 0, left: 5, right: 5, top: 5 }} style={{ direction: 'ltr' }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#27272A" />
                                     <XAxis
                                         dataKey="name"
@@ -271,7 +271,7 @@ export default function ReportsAnalytics() {
                             <Typography textAlign="center" color="#71717A" sx={{ py: 8 }}>{t('reportsAnalytics.noDataAvailable')}</Typography>
                         ) : (
                             <ResponsiveContainer width="100%" height={350}>
-                                <LineChart data={reportsTrend} margin={{ bottom: 35, left: 5, right: 5, top: 5 }}>
+                                <LineChart data={reportsTrend} margin={{ bottom: 35, left: 5, right: 5, top: 5 }} style={{ direction: 'ltr' }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#27272A" />
                                     <XAxis
                                         dataKey="date"
@@ -322,6 +322,7 @@ export default function ReportsAnalytics() {
                                         outerRadius={100}
                                         label={renderCustomLabel}
                                         labelLine={{ stroke: '#71717A' }}
+                                        style={{ direction: 'ltr' }}
                                     >
                                         {reasonDistribution.map((_entry, index) => (
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

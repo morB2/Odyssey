@@ -3,7 +3,9 @@ import {
     getCollectionsByUserService,
     getCollectionByIdService,
     updateCollectionService,
-    deleteCollectionService
+    deleteCollectionService,
+    generateCollectionTitle,
+    generateCollectionDescription
 } from "../services/collectionService.js";
 
 export const createCollection = async (req, res) => {
@@ -88,5 +90,53 @@ export const deleteCollection = async (req, res) => {
     } catch (error) {
         console.error("Error deleting collection:", error);
         res.status(500).json({ success: false, error: "Failed to delete collection" });
+    }
+};
+
+// ============================================
+// AI Generation Controllers
+// ============================================
+
+export const generateCollectionTitleController = async (req, res) => {
+    try {
+        const { tripIds } = req.body;
+
+        if (!tripIds || !Array.isArray(tripIds) || tripIds.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: "Trip IDs array is required"
+            });
+        }
+
+        const title = await generateCollectionTitle(tripIds);
+        res.status(200).json({ success: true, title });
+    } catch (error) {
+        console.error("Error generating collection title:", error);
+        res.status(500).json({
+            success: false,
+            error: error.message || "Failed to generate title"
+        });
+    }
+};
+
+export const generateCollectionDescriptionController = async (req, res) => {
+    try {
+        const { tripIds } = req.body;
+
+        if (!tripIds || !Array.isArray(tripIds) || tripIds.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: "Trip IDs array is required"
+            });
+        }
+
+        const description = await generateCollectionDescription(tripIds);
+        res.status(200).json({ success: true, description });
+    } catch (error) {
+        console.error("Error generating collection description:", error);
+        res.status(500).json({
+            success: false,
+            error: error.message || "Failed to generate description"
+        });
     }
 };
