@@ -182,6 +182,7 @@ export const markMessagesAsRead = async (userId, otherUserId) => {
         // This is important for updating their own unread count/badge across multiple devices/tabs
         io.to(`user:${userId}`).emit('messagesRead', {
             byUserId: userId, // Reading their own received messages
+            chatWithUser: otherUserId, // EXPANDED: Tells frontend which conversation was read
             read: true
         });
 

@@ -311,11 +311,29 @@ const Navbar: FC = () => {
               )}
 
               <LanguageSwitcher />
-              {user ? <ProfileMenu /> : null}
+              {user ? (
+                <ProfileMenu />
+              ) : (
+                <Box sx={{ display: 'flex', gap: 1.5 }}>
+                  <Button
+                    onClick={() => navigate('/login?tab=login', { state: { backgroundLocation: location.pathname } })}
+                    sx={{ color: 'white' }}
+                  >
+                    {t('logIn')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => navigate('/login?tab=signup', { state: { backgroundLocation: location.pathname } })}
+                    sx={{ background: 'linear-gradient(135deg,#f97316,#ea580c)' }}
+                  >
+                    {t('signUp')}
+                  </Button>
+                </Box>
+              )}
             </Box>
           )}
-        </Toolbar>
-      </AppBar>
+        </Toolbar >
+      </AppBar >
 
       <Drawer
         anchor="right"
