@@ -12,6 +12,7 @@ import chat from './chatRoutes.js';
 import search from './searchRoutes.js';
 import admin from './adminRoutes.js';
 import collections from './collectionRoutes.js';
+import contact from './contactRoutes.js';
 import { authMiddleware as autoM } from '../middleware/authMiddleware.js';
 
 export function routesInit(app) {
@@ -20,6 +21,7 @@ export function routesInit(app) {
   app.use("/profile", autoM, profile);
   app.use('/trips', trip);
   app.use("/sendEmail", sendEmail);
+  app.use("/contact", contact);
 
   app.use('/likes', autoM, like);
   app.use('/saves', autoM, save);

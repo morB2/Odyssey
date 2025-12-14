@@ -172,23 +172,6 @@
     "needHelp": "Need help? Contact our",
     "contactSupport": "support team"
   },
-  "profile": {
-    "profile": "Profile",
-    "followers": "followers",
-    "following": "following",
-    "changePassword": "Change Password",
-    "editProfile": "Edit Profile",
-    "myTrips": "My Trips",
-    "likedTrips": "Liked",
-    "collections": "Collections",
-    "savedTrips": "Saved",
-    "noTripsYet": "No trips yet",
-    "changeProfilePicture": "Change Profile Picture",
-    "uploadNewAvatar": "Upload New Avatar",
-    "cancel": "Cancel",
-    "save": "Save",
-    "trips": "Trips"
-  },
   "chat": {
     "typeMessage": "Type a message...",
     "noMessagesYet": "No messages yet. Say hi!",
@@ -468,13 +451,18 @@
     "enterCurrentPassword": "Please enter your current password",
     "passwordChangedSuccessfully": "Password changed successfully",
     "failedToChangePassword": "Failed to change password",
-    "followers": "Followers",
-    "following": "Following",
+    "profile": "Profile",
+    "followers": "followers",
+    "following": "following",
     "myTrips": "My Trips",
     "likedTrips": "Liked",
     "collections": "Collections",
     "savedTrips": "Saved",
-    "noTripsYet": "No trips yet"
+    "noTripsYet": "No trips yet",
+    "changeProfilePicture": "Change Profile Picture",
+    "cancel": "Cancel",
+    "save": "Save",
+    "trips": "Trips"
   },
   "editTrip": {
     "title": "Edit Trip",
@@ -652,7 +640,25 @@
     "failedToDismissReport": "Failed to dismiss report.",
     "failedToDeletePost": "Failed to delete post.",
     "reportsTab": "Reports",
-    "analyticsTab": "Analytics"
+    "analyticsTab": "Analytics",
+    "contactMessages": "Contact Messages",
+    "messages": {
+      "errorLoading": "Error loading messages",
+      "confirmDelete": "Are you sure you want to delete this message?",
+      "deleteSuccess": "Message deleted",
+      "deleteError": "Error deleting message",
+      "noMessages": "No messages found",
+      "read": "Read",
+      "unread": "Unread",
+      "view": "View",
+      "delete": "Delete",
+      "close": "Close",
+      "from": "From",
+      "date": "Date",
+      "message": "Message",
+      "subject": "Subject",
+      "status": "Status"
+    }
   },
   "UsersManagement": {
     "searchPlaceholder": "Search by name or email...",

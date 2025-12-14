@@ -232,9 +232,23 @@ const isOwner = profileId === id;
         <Tabs
           value={availableTabs.findIndex(t => t.key === activeTab)}
           onChange={handleTabChange}
-          centered
-          sx={{ "& .MuiTabs-indicator": { backgroundColor: "#f97316", height: 2 } }}
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          sx={{
+
+            // 👇 center tabs when they don't overflow
+            "& .MuiTabs-flexContainer": {
+              justifyContent: "center",
+            },
+
+            "& .MuiTabs-indicator": {
+              backgroundColor: "#f97316",
+              height: 2
+            }
+          }}
         >
+
           {availableTabs.map(t => (
             <Tab key={t.key} label={t.label} icon={t.icon} iconPosition="start" sx={tabStyle} />
           ))}
