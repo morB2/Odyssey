@@ -260,6 +260,7 @@ export default function TripPost({ trip, maxLines, showDescription }: TripPostPr
     // --- Dialog Handlers ---
     const handleCardClick = (e: React.MouseEvent) => {
         // Prevent opening dialog when clicking on interactive elements
+        e.stopPropagation();
         if (
             e.target instanceof HTMLElement && (
                 e.target.closest('button') ||

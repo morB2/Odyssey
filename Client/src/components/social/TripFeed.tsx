@@ -8,7 +8,7 @@ import { useUserStore } from '../../store/userStore';
 import { GuestWelcomeCard } from './GuestWelcomeCard';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
-import PassportLoading from '../general/PassportLoading';
+import JourneyLoader from '../general/Loading';
 
 function adaptComments(apiComments: any[]): Comment[] {
   return apiComments.map((c) => {
@@ -163,7 +163,7 @@ export function TripFeed() {
 
             {loadingMore && (
               <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-                <PassportLoading />
+                <JourneyLoader />
               </Box>
             )}
 

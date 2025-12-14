@@ -157,7 +157,7 @@ export default function TripPostHeader({
                         onClose={handleMenuClose}
                         onClick={(e) => e.stopPropagation()}
                         disableScrollLock={true}
-
+                        sx={{ zIndex: 10001 }}
                         // Disable transition to prevent visual glitches
                         TransitionComponent={undefined}
                         transitionDuration={0}

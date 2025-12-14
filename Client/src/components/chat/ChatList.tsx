@@ -35,8 +35,9 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, onClose }) => {
 
     // Real-time updates for new messages
     useSocketEvent('newMessage', (message: any) => {
+        console.log('New message received:', message);
         if (!user) return;
-
+        console.log('New message received:', message);
         setConversations(prev => {
             // Check if conversation exists
             const existingConvIndex = prev.findIndex(c =>
