@@ -1,45 +1,42 @@
+import { useState, useEffect, useRef, useCallback } from "react";
 import type { Trip } from "./types";
 import type { Collection } from "./types";
-import TripPostAdapter from "./TripPostAdapter";
+import TripPost from "../social/TripPost";
 import { Box, Tabs, Tab, Typography, Grid, Skeleton, Card, CircularProgress } from "@mui/material";
 import { User, Heart, Bookmark, Layers } from "lucide-react";
 import { CollectionsList } from "../collections/CollectionsList";
-import { useEffect, useRef } from "react";
 import { useTranslation } from 'react-i18next';
+import { adaptCommentsForUI } from "../../utils/tripAdapters";
+import { getTrips, getLikedTrips, getSavedTrips } from "../../services/profile.service";
+import { getCollectionsByUser } from "../../services/collection.service";
+import { toast } from "react-toastify";
+import { useUserStore } from "../../store/userStore";
+import { EditTripModal } from "./EditTripModal";
 
 interface TripsListProps {
-  trips: Trip[];
-  collections?: Collection[];
-  collectionsLoading?: boolean;
+  profileId: string;
   activeTab: "my-trips" | "liked" | "saved" | "collections";
   onTabChange: (tab: "my-trips" | "liked" | "saved" | "collections") => void;
-  onTripClick: (trip: Trip) => void;
-  setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
-  onEdit: (trip: Trip) => void;
-  onDelete: (tripId: string) => void;
-  isOwner: boolean;
-  loading?: boolean;
-  loadingMore?: boolean;
-  onLoadMore?: () => void;
-  hasMore?: boolean;
+  onDelete: (tripId: string) => Promise<void>;
+  onTripUpdated?: (updatedTrip: Trip) => void; // NEW: callback when trip is updated
   onCollectionCreate?: () => void;
   onCollectionEdit?: (collection: Collection) => void;
-  onCollectionDelete?: (collectionId: string) => void;
+  onCollectionDelete?: (collectionId: string) => Promise<void>;
 }
 
+const TRIPS_PER_PAGE = 12;
+
+const normalizeTrips = (data: unknown): Trip[] => {
+  if (Array.isArray(data)) return data;
+  const trips = (data as { trips?: Trip[] })?.trips;
+  return Array.isArray(trips) ? trips : [];
+};
+
 export function TripsList({
-  trips = [],
-  collections = [],
-  collectionsLoading = false,
+  profileId,
   activeTab,
   onTabChange,
-  onEdit,
   onDelete,
-  isOwner,
-  loading = false,
-  loadingMore = false,
-  onLoadMore,
-  hasMore = true,
   onCollectionCreate,
   onCollectionEdit,
   onCollectionDelete
@@ -47,7 +44,21 @@ export function TripsList({
 
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
+  const storeUser = useUserStore((s) => s.user);
+  const id = storeUser?._id || "";
 
+  // Internal state for data management
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [collectionsLoading, setCollectionsLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+
+  // Edit modal state - managed internally
+  const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
+const isOwner = profileId === id;
   /** Tabs: include collections tab for all profiles; saved only for owner */
   const availableTabs = [
     { key: "my-trips", label: t('profile.myTrips'), icon: <User size={20} /> },
@@ -72,6 +83,121 @@ export function TripsList({
   const handleTabChange = (_: any, index: number) =>
     onTabChange(availableTabs[index].key as "my-trips" | "liked" | "saved" | "collections");
 
+  // Fetch data function - extracted so it can be called externally
+  const fetchForTab = useCallback(async () => {
+    if (!profileId) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setPage(1);
+
+    try {
+      if (activeTab === "saved" && !isOwner) return;
+
+      if (activeTab === "collections") {
+        setCollectionsLoading(true);
+        try {
+          const res = await getCollectionsByUser(profileId);
+          const cols = res.collections || res;
+          setCollections(cols || []);
+        } catch {
+          toast.error(t("collection.loadFailed") || "Failed to load collections");
+        } finally {
+          setCollectionsLoading(false);
+        }
+      } else {
+        let data: unknown = null;
+        if (activeTab === "my-trips") {
+          data = await getTrips(profileId, 1, TRIPS_PER_PAGE);
+        } else if (activeTab === "liked") {
+          data = await getLikedTrips(profileId, 1, TRIPS_PER_PAGE);
+        } else {
+          data = await getSavedTrips(profileId, 1, TRIPS_PER_PAGE);
+        }
+
+        const response = data as any;
+        const tripsData = normalizeTrips(response.trips || response);
+        setTrips(tripsData);
+        setPage(1);
+        setHasMore(response.pagination?.hasMore ?? true);
+      }
+    } catch (error) {
+      toast.error(t("profile.failedToLoadTrips") || "Failed to load trips");
+    } finally {
+      setLoading(false);
+    }
+  }, [activeTab, profileId, isOwner, t]);
+
+  // Fetch data when tab or profileId changes
+  useEffect(() => {
+    fetchForTab();
+  }, [fetchForTab]);
+
+  // Handle trip update - update in local state
+  const handleTripUpdate = (updatedTrip: Trip) => {
+    setTrips((prev) => prev.map((t) =>
+      (t.id === updatedTrip.id || t._id === updatedTrip._id)
+        ? { ...t, ...updatedTrip }
+        : t
+    ));
+  };
+
+  // Handle trip save from modal
+  const handleSaveTrip = (updatedTrip?: Trip) => {
+    setEditingTrip(null);
+    if (updatedTrip) {
+      handleTripUpdate(updatedTrip);
+    }
+    toast.success(t('profilePage.tripUpdatedSuccessfully'));
+  };
+
+  // Load more trips (infinite scroll)
+  const loadMoreTrips = async () => {
+    if (loadingMore || !hasMore || activeTab === "collections") return;
+
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      let data: unknown = null;
+
+      if (activeTab === "my-trips") {
+        data = await getTrips(profileId, nextPage, TRIPS_PER_PAGE);
+      } else if (activeTab === "liked") {
+        data = await getLikedTrips(profileId, nextPage, TRIPS_PER_PAGE);
+      } else {
+        data = await getSavedTrips(profileId, nextPage, TRIPS_PER_PAGE);
+      }
+
+      const response = data as any;
+      const newTrips = normalizeTrips(response.trips || response);
+
+      setTrips((prev) => [...prev, ...newTrips]);
+      setPage(nextPage);
+      setHasMore(response.pagination?.hasMore ?? false);
+    } catch {
+      toast.error(t("profile.failedToLoadMore") || "Failed to load more trips");
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  /** Infinite scroll observer */
+  useEffect(() => {
+    if (!hasMore || loadingMore || activeTab === "collections") return;
+
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting) loadMoreTrips();
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sentinelRef.current) observer.observe(sentinelRef.current);
+
+    return () => observer.disconnect();
+  }, [hasMore, loadingMore, activeTab, page]);
 
   /** Skeleton Loading Card */
   const SkeletonCard = () => (
@@ -91,22 +217,12 @@ export function TripsList({
     </Card>
   );
 
-  /** Infinite scroll observer */
-  useEffect(() => {
-    if (!onLoadMore || !hasMore || loadingMore) return;
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting) onLoadMore();
-      },
-      { threshold: 0.1 }
-    );
-
-    if (sentinelRef.current) observer.observe(sentinelRef.current);
-
-    return () => observer.disconnect();
-  }, [onLoadMore, hasMore, loadingMore]);
-
+  // Handle trip deletion
+  const handleDeleteTrip = async (tripId: string) => {
+    await onDelete(tripId);
+    // Remove from local state
+    setTrips((prev) => prev.filter((t) => t.id !== tripId && t._id !== tripId));
+  };
 
   return (
     <Box sx={{ backgroundColor: 'white' }}>
@@ -156,9 +272,6 @@ export function TripsList({
           onCreate={onCollectionCreate || (() => { })}
           onEdit={onCollectionEdit || (() => { })}
           onDelete={onCollectionDelete || (() => { })}
-          // Forward trip handlers so RouteViewer/TripPostAdapter can use them
-          onTripEdit={onEdit}
-          onTripDelete={onDelete}
           isOwner={isOwner}
           loading={collectionsLoading}
         />
@@ -173,15 +286,38 @@ export function TripsList({
         <>
           {/* Trip Grid */}
           <Grid container spacing={3}>
-            {trips.map(trip => (
-              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={trip._id ?? trip.id}>
-                <TripPostAdapter
-                  trip={trip}
-                  onEdit={() => onEdit(trip)}
-                  onDelete={() => onDelete(trip._id)}
-                />
-              </Grid>
-            ))}
+            {trips.map(trip => {
+              return (
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={trip._id ?? trip.id}>
+                  <TripPost
+                    trip={{
+                      currentUserId: id || '',
+                      _id: String(trip._id || trip.id || ''),
+                      user: {
+                        _id: trip.user._id,
+                        firstName: trip.user.firstName,
+                        lastName: trip.user.lastName,
+                        avatar: trip.user.avatar,
+                        isFollowing: trip.user.isFollowing,
+                      },
+                      title: trip.title,
+                      duration: '',
+                      description: trip.description,
+                      activities: trip.activities,
+                      images: trip.images,
+                      views: trip.views,
+                      likes: trip.likes,
+                      comments: adaptCommentsForUI(trip.comments || [], t),
+                      isLiked: trip.isLiked,
+                      isSaved: trip.isSaved,
+                      optimizedRoute: trip.optimizedRoute
+                    }}
+                    onEdit={() => setEditingTrip(trip)}
+                    onDelete={() => handleDeleteTrip(String(trip._id || trip.id))}
+                  />
+                </Grid>
+              );
+            })}
           </Grid>
 
           {/* Infinite scroll sentinel */}
@@ -195,6 +331,14 @@ export function TripsList({
           )}
         </>
       )}
+
+      {/* Edit Trip Modal */}
+      <EditTripModal
+        trip={editingTrip}
+        isOpen={!!editingTrip}
+        onClose={() => setEditingTrip(null)}
+        onSave={handleSaveTrip}
+      />
     </Box>
   );
 }
