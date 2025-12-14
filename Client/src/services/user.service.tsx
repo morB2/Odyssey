@@ -2,9 +2,9 @@ import api from "./httpService";
 
 const BASE_URL = "/users";
 
-export const getAllUsers = async () => {
+export const getAllUsers = async (params?: any) => {
   try {
-    const res = await api.get(`${BASE_URL}`);
+    const res = await api.get(`${BASE_URL}`, { params });
     return res.data;
   } catch (error) {
     console.error("Failed to fetch users", error);

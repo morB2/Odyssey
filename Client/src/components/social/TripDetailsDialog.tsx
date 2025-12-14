@@ -41,7 +41,7 @@ export default function TripDetailsDialog({
     }, [totalImages, setDialogImageIndex]);
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth sx={{ zIndex: 10001 }}>
+        <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth sx={{ zIndex: 10001 }} disableScrollLock={true}>
             <DialogTitle>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
                     <Typography variant="h5" fontWeight={600}>

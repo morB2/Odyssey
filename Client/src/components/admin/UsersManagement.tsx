@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   Box, Grid, Table, TableBody, TableCell, TableHead, TableRow, TableContainer, Paper, Typography,
   TextField, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, Chip,
-  Checkbox, Tabs, Tab,
+  Checkbox, Tabs, Tab, Pagination, Stack, CircularProgress
 } from "@mui/material";
 import { Search, Trash2, Edit } from "lucide-react";
 import { getAllUsers, updateUser } from "../../services/user.service";
@@ -17,24 +17,47 @@ export default function UsersManagement() {
   const [activeTab, setActiveTab] = useState(0); // 0 = Users, 1 = Analytics
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
 
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setPage(1); // Reset to first page
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const data = await getAllUsers({
+        page,
+        limit: 10,
+        search: debouncedSearch
+      });
+      // Handle response structure (object for paginated, array for fallback/backward compat)
+      if (Array.isArray(data)) {
+        setUsers(data);
+        setTotalPages(1);
+      } else {
+        setUsers(data.users || []);
+        setTotalPages(data.pages || 1);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      const allUers = await getAllUsers();
-      setUsers(allUers);
-    };
-
     fetchUsers();
-  }, []);
-
-
-  const filteredUsers = users.filter(
-    (user) =>
-      user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  }, [page, debouncedSearch]);
 
   const handleEditUser = async () => {
     if (editingUser) {
@@ -138,7 +161,13 @@ export default function UsersManagement() {
               </TableHead>
 
               <TableBody>
-                {filteredUsers.map((user) => (
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
+                      <CircularProgress />
+                    </TableCell>
+                  </TableRow>
+                ) : users.map((user) => (
                   <TableRow key={user._id} hover sx={{ color: "white" }}>
                     <TableCell sx={{ color: "white" }}>{user.firstName} {user.lastName}</TableCell>
                     <TableCell sx={{ color: "white" }}>{user.email}</TableCell>
@@ -169,10 +198,29 @@ export default function UsersManagement() {
             </Table>
           </TableContainer>
 
-          {filteredUsers.length === 0 && (
+          {!loading && users.length === 0 && (
             <Typography textAlign="center" color="text.secondary" sx={{ mt: 4 }}>
               {t('UsersManagement.noUsersFound')}
             </Typography>
+          )}
+
+          {/* Pagination */}
+          {!loading && users.length > 0 && (
+            <Stack spacing={2} sx={{ mt: 3, alignItems: "center" }}>
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={(_e, value) => setPage(value)}
+                color="primary"
+                sx={{
+                  "& .MuiPaginationItem-root": { color: "white" },
+                  "& .Mui-selected": {
+                    backgroundColor: "primary.main",
+                    color: "white"
+                  }
+                }}
+              />
+            </Stack>
           )}
         </>
       )}
