@@ -6,6 +6,7 @@ import { Box, IconButton } from "@mui/material";
 import type { Comment } from "../social/types";
 import { Trash2, Edit } from "lucide-react";
 import { ConfirmDialog } from "../general/ConfirmDialog";
+import { useTranslation } from 'react-i18next';
 
 interface AdapterProps {
   trip: Trip;
@@ -18,7 +19,7 @@ interface AdapterProps {
 // Shared styles
 const actionsContainerStyle = { position: "absolute", top: 16, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 1, zIndex: 10 };
 const iconButtonStyle = { color: "#6b7280", backgroundColor: "rgba(255, 255, 255, 0.9)", "&:hover": { backgroundColor: "rgba(255, 255, 255, 1)" } };
-function adaptComments(apiComments: any[]): Comment[] {
+function adaptComments(apiComments: any[], t: any): Comment[] {
   return apiComments.map((c) => {
     const date = new Date(c.timestamp);
     const time = date.toLocaleString([], {
@@ -30,8 +31,8 @@ function adaptComments(apiComments: any[]): Comment[] {
     });
 
     // Safety checks for user data
-    const firstName = c.user?.firstName || "Unknown";
-    const lastName = c.user?.lastName || "User";
+    const firstName = c.user?.firstName || t('tripPost.unknown');
+    const lastName = c.user?.lastName || t('tripPost.user');
 
     return {
       id: c.id || c._id,
@@ -45,11 +46,12 @@ function adaptComments(apiComments: any[]): Comment[] {
       text: c.text,
       timestamp: time, // use formatted time instead of raw timestamp
       reactionsAggregated: c.reactionsAggregated || {}, // Include aggregated reactions
-      replies: c.replies ? adaptComments(c.replies) : [], // Recursively adapt replies
+      replies: c.replies ? adaptComments(c.replies, t) : [], // Recursively adapt replies
     };
   });
 }
 export default function TripPostAdapter({ trip, onDelete, onEdit, maxLines, showDescription }: AdapterProps) {
+  const { t } = useTranslation();
   const storeUser = useUserStore((s) => s.user);
   const currentUserId = storeUser?._id || "";
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -78,7 +80,7 @@ export default function TripPostAdapter({ trip, onDelete, onEdit, maxLines, show
     isLiked: !!trip.isLiked,
     isSaved: !!trip.isSaved,
     optimizedRoute: trip.optimizedRoute,
-    comments: adaptComments(trip.comments || []),
+    comments: adaptComments(trip.comments || [], t),
   };
 
   const handleDeleteClick = () => setShowDeleteConfirm(true);
@@ -109,8 +111,8 @@ export default function TripPostAdapter({ trip, onDelete, onEdit, maxLines, show
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={handleDeleteConfirm}
-        title="Delete Trip"
-        message="Are you sure you want to delete this trip? This action cannot be undone."
+        title={t('tripPost.deleteTrip')}
+        message={t('tripPost.deleteConfirmMessage')}
       />
     </>
   );

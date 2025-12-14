@@ -14,7 +14,7 @@ interface ChangePasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
   user: UserProfile;
-  onAvatarSaved?: (user: UserProfile) => void;
+  onProfileUpdated?: () => void; // Optional callback to refresh parent data
 }
 
 // Shared styles
@@ -22,7 +22,7 @@ const labelStyle = { display: "block", mb: 1, fontSize: "0.875rem", fontWeight: 
 const dividerStyle = { backgroundColor: "#e5e5e5" };
 const sectionBoxStyle = { display: "flex", flexDirection: "column", gap: 2, borderRadius: 2, border: "1px solid #e5e5e5", backgroundColor: "#fafafa", p: 2 };
 
-export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: ChangePasswordModalProps) {
+export function ChangePasswordModal({ isOpen, onClose, user, onProfileUpdated }: ChangePasswordModalProps) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -52,6 +52,7 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
   }, [isOpen]);
 
   const storeToken = useUserStore((s) => s.token);
+  const setUserStore = useUserStore((s) => s.setUser);
 
   const handleChangePassword = async () => {
     setError(null);
@@ -100,7 +101,7 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
     setSavingAvatar(true);
     try {
       if (!storeToken) {
-        toast.error("You must be signed in to change your avatar.");
+        toast.error(t('profile.mustBeSignedIn'));
         setSavingAvatar(false);
         return;
       }
@@ -108,10 +109,15 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
       const result = await uploadAvatar(undefined, avatarUrl || undefined);
       const payload = result?.data ?? result;
       if (payload && payload.success && payload.user) {
-        if (typeof onAvatarSaved === "function") {
-          onAvatarSaved(payload.user as unknown as UserProfile);
+        // Update global user store
+        setUserStore(payload.user as unknown as UserProfile, storeToken);
+
+        // Notify parent to refresh if needed
+        if (typeof onProfileUpdated === "function") {
+          onProfileUpdated();
         }
-        setSuccess("Avatar updated successfully");
+
+        setSuccess(t('profile.avatarUpdatedSuccessfully'));
         setAvatarUrl("");
         setPreview(null);
 
@@ -139,7 +145,7 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
     setSavingAvatar(true);
     try {
       if (!storeToken) {
-        toast.error("You must be signed in to change your avatar.");
+        toast.error(t('profile.mustBeSignedIn'));
         setSavingAvatar(false);
         return;
       }
@@ -147,10 +153,15 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
       const result = await uploadAvatar(undefined, editedUrl || undefined);
       const payload = result?.data ?? result;
       if (payload && payload.success && payload.user) {
-        if (typeof onAvatarSaved === "function") {
-          onAvatarSaved(payload.user as unknown as UserProfile);
+        // Update global user store
+        setUserStore(payload.user as unknown as UserProfile, storeToken);
+
+        // Notify parent to refresh if needed
+        if (typeof onProfileUpdated === "function") {
+          onProfileUpdated();
         }
-        setSuccess("Avatar updated successfully");
+
+        setSuccess(t('profile.avatarUpdatedSuccessfully'));
         setAvatarUrl("");
         setPreview(null);
 
@@ -177,13 +188,13 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} title="Edit Profile" maxWidth="sm">
+      <Modal isOpen={isOpen} onClose={onClose} title={t('profile.editProfile')} maxWidth="sm">
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <Divider sx={dividerStyle} />
 
           {/* Avatar Section */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#171717" }}>Profile Picture</Typography>
+            <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#171717" }}>{t('profile.profilePicture')}</Typography>
             <Box sx={sectionBoxStyle}>
               <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
                 <Box sx={{ position: "relative", display: "inline-block" }}>
@@ -209,10 +220,10 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
                     </IconButton>
                   )}
                 </Box>
-                <CloudinaryUploadWidget onUpload={(url) => { setAvatarUrl(url); setPreview(url); }} folder="odyssey/avatars" buttonText="Upload New Avatar" />
+                <CloudinaryUploadWidget onUpload={(url) => { setAvatarUrl(url); setPreview(url); }} folder="odyssey/avatars" buttonText={t('profile.uploadNewAvatar')} />
                 {avatarUrl && (
                   <Button onClick={handleSaveAvatar} variant="outlined" fullWidth disabled={savingAvatar} sx={{ textTransform: "none" }}>
-                    {savingAvatar ? "Saving..." : "Save Avatar"}
+                    {savingAvatar ? t('profile.saving') : t('profile.saveAvatar')}
                   </Button>
                 )}
               </Box>
@@ -223,13 +234,13 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
 
           {/* Password Section */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#171717" }}>Change Password</Typography>
+            <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#171717" }}>{t('profile.changePassword')}</Typography>
             <Box sx={sectionBoxStyle}>
-              <PasswordField id="currentPassword" label="Current Password" value={currentPassword} onChange={setCurrentPassword} />
-              <PasswordField id="newPassword" label="New Password" value={newPassword} onChange={setNewPassword} />
-              <PasswordField id="confirmPassword" label="Confirm New Password" value={confirmPassword} onChange={setConfirmPassword} />
+              <PasswordField id="currentPassword" label={t('profile.currentPassword')} value={currentPassword} onChange={setCurrentPassword} />
+              <PasswordField id="newPassword" label={t('profile.newPassword')} value={newPassword} onChange={setNewPassword} />
+              <PasswordField id="confirmPassword" label={t('profile.confirmNewPassword')} value={confirmPassword} onChange={setConfirmPassword} />
               <Button onClick={handleChangePassword} variant="outlined" fullWidth disabled={loading || !currentPassword || !newPassword || !confirmPassword} sx={{ textTransform: "none" }}>
-                {loading ? "Changing..." : "Change Password"}
+                {loading ? t('profile.changing') : t('profile.changePasswordButton')}
               </Button>
             </Box>
           </Box>
@@ -251,7 +262,7 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
           )}
 
           <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
-            <Button variant="outlined" onClick={onClose} sx={{ textTransform: "none" }}>Close</Button>
+            <Button variant="outlined" onClick={onClose} sx={{ textTransform: "none" }}>{t('profile.close')}</Button>
           </Box>
         </Box>
       </Modal>

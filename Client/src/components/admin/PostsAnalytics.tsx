@@ -24,10 +24,12 @@ import {
     type ViewsTrendData,
     type CategoryData,
 } from "../../services/adminStatsService";
+import { useTranslation } from 'react-i18next';
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82CA9D", "#FFC658", "#FF6B9D", "#C084FC", "#34D399"];
 
 export default function PostsAnalytics() {
+    const { t } = useTranslation();
     const [topViewed, setTopViewed] = useState<TopPost[]>([]);
     const [topLiked, setTopLiked] = useState<TopPost[]>([]);
     const [viewsTrend, setViewsTrend] = useState<ViewsTrendData[]>([]);
@@ -62,7 +64,7 @@ export default function PostsAnalytics() {
         return (
             <Box sx={{ mb: 4 }}>
                 <Typography variant="h4" sx={{ mb: 4, fontWeight: 700, color: "white" }}>
-                    Posts Analytics Dashboard
+                    {t('postsAnalytics.title')}
                 </Typography>
 
                 {/* First Row Skeletons */}
@@ -114,13 +116,13 @@ export default function PostsAnalytics() {
     return (
         <Box sx={{ mb: 4 }}>
             <Typography variant="h4" sx={{ mb: 4, fontWeight: 700, color: "white", display: "flex", alignItems: "center", gap: 1 }}>
-                Posts Analytics Dashboard
+                {t('postsAnalytics.title')}
             </Typography>
 
             {/* First Row - Top Viewed and Top Liked */}
             <Box sx={{ display: "flex", gap: 3, mb: 3, flexWrap: "wrap" }}>
                 {/* Top Viewed Posts */}
-                <Box sx={{ flex: "1 1 calc(50% - 12px)", minWidth: "300px" }}>
+                <Box sx={{ flex: "1 1 calc(50% - 12px)", minWidth: "300px" }} >
                     <Paper
                         sx={{
                             p: 3,
@@ -128,14 +130,15 @@ export default function PostsAnalytics() {
                             bgcolor: "#18181B",
                             border: "1px solid #27272A",
                             borderRadius: 2,
-                            boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)"
+                            boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                        
                         }}
                     >
                         <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: "white", display: "flex", alignItems: "center", gap: 1 }}>
-                            Top Viewed Posts
+                            {t('postsAnalytics.topViewedPosts')}
                         </Typography>
                         <ResponsiveContainer width="100%" height={350}>
-                            <BarChart data={topViewed} layout="vertical" margin={{ left: 10, right: 10, top: 5, bottom: 0 }}>
+                            <BarChart data={topViewed} layout="vertical" margin={{ left: 10, right: 10, top: 5, bottom: 0 }} style={{ direction: 'ltr' }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#27272A" />
                                 <XAxis type="number"
                                 // stroke="#71717A"
@@ -180,14 +183,15 @@ export default function PostsAnalytics() {
                             bgcolor: "#18181B",
                             border: "1px solid #27272A",
                             borderRadius: 2,
-                            boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)"
+                            boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                            direction: 'ltr'
                         }}
                     >
                         <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: "white", display: "flex", alignItems: "center", gap: 1 }}>
-                            Top Liked Posts
+                            {t('postsAnalytics.topLikedPosts')}
                         </Typography>
                         <ResponsiveContainer width="100%" height={400}>
-                            <BarChart data={topLiked} margin={{ bottom: 0, left: 5, right: 5, top: 5 }}>
+                            <BarChart data={topLiked} margin={{ bottom: 0, left: 5, right: 5, top: 5 }} style={{ direction: 'ltr' }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#27272A" />
                                 <XAxis
                                     dataKey="_id"
@@ -295,12 +299,13 @@ export default function PostsAnalytics() {
                             bgcolor: "#18181B",
                             border: "1px solid #27272A",
                             borderRadius: 2,
-                            boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)"
+                            boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                            direction: 'ltr'
 
                         }}
                     >
                         <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: "white", display: "flex", alignItems: "center", gap: 1 }}>
-                            Category Distribution
+                            {t('postsAnalytics.categoryDistribution')}
                         </Typography>
                         <ResponsiveContainer width="100%" height={350}>
                             <PieChart>
@@ -313,6 +318,7 @@ export default function PostsAnalytics() {
                                     outerRadius={100}
                                     label={renderCustomLabel}
                                     labelLine={{ stroke: '#71717A' }}
+                                    style={{ direction: 'ltr' }}
                                 >
                                     {categories.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

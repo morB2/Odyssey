@@ -20,7 +20,7 @@ import {
   DialogActions,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Navigation, ExternalLink, Save } from "lucide-react";
+import { MapPin, Navigation, ExternalLink, Save, Check } from "lucide-react";
 import { AuthSaveDialog } from "./AuthSaveDialog";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
@@ -84,6 +84,7 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
   // Dialog state
   const [openDialog, setOpenDialog] = useState(false);
   const [openAuthDialog, setOpenAuthDialog] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   const handleSaveClick = () => {
     if (user) {
@@ -120,7 +121,8 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
       });
 
       if (result.success) {
-        toast.success('Trip saved successfully!');
+        toast.success(t('tripDisplay.saveTrip.success'));
+        setIsSaved(true);
       } else {
         toast.error('Failed to save trip.');
       }
@@ -294,17 +296,29 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
         </Button>
         <Button
           variant="outlined"
-          startIcon={<Save size={18} />}
+          startIcon={isSaved ? <Check size={18} /> : <Save size={18} />}
           onClick={handleSaveClick}
+          disabled={isSaved}
           sx={{
             borderColor: orange,
-            color: orange,
-            "&:hover": { borderColor: "#fb8c00", color: "#fb8c00" },
+            color: isSaved ? "#fff" : orange,
+            bgcolor: isSaved ? orange : "transparent",
+            "&:hover": {
+              borderColor: "#fb8c00",
+              color: isSaved ? "#fff" : "#fb8c00",
+              bgcolor: isSaved ? "#fb8c00" : "transparent" // Keep background if saved
+            },
             textTransform: "none",
             fontWeight: 600,
+            "&.Mui-disabled": { // Custom disabled styles to keep it looking "active/saved"
+              bgcolor: orange,
+              color: "#fff",
+              borderColor: orange,
+              opacity: 0.8
+            }
           }}
         >
-          {t('tripDisplay.save')}
+          {isSaved ? t('social.tripSaved') : t('tripDisplay.save')}
         </Button>
       </CardActions>
 

@@ -4,7 +4,7 @@ import { X } from 'lucide-react';
 import { Box, Typography, styled } from '@mui/material';
 import { createPortal } from 'react-dom';
 import type { Collection, Trip } from '../user/types';
-import {useTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
 // 2. DEFINE THE EXTENDED TYPE
 // This interface adds the timeline-specific 'offsetY' property to the shared Trip type.
 interface TimelineTrip extends Trip {
@@ -12,9 +12,11 @@ interface TimelineTrip extends Trip {
 }
 
 // ⚠️ IMPORTANT: Replace these with your actual component imports
-import TripPostAdapter from '../user/TripPostAdapter';
+import TripPost from '../social/TripPost';
 import { PathConnector } from './PathConnector';
 import { RoutePreview } from './RoutePreview';
+import { adaptCommentsForUI } from '../../utils/tripAdapters';
+import { useUserStore } from '../../store/userStore';
 
 // --- Styled Components (Retained) ---
 
@@ -69,10 +71,11 @@ interface AppProps {
 export default function RouteViewer({ collection, onEdit, onDelete }: AppProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [mounted, setMounted] = useState(false);
-const {t} = useTranslation();
+  const { t } = useTranslation();
+  const storeUser = useUserStore((s) => s.user);
   // Define the offsets used for the visual layout
   // You would typically calculate this dynamically based on screen size or card content height
-  const hardcodedOffsets = [0, -60, 80, -40, 20, -70, 50];
+  const hardcodedOffsets = [30, -60, 30, -40, 10, -65, 50];
 
   // 3. MAP THE TRIPS TO ADD THE OFFSETY PROPERTY
   const timelineTrips: TimelineTrip[] = collection.trips.map((trip, index) => ({
@@ -80,7 +83,7 @@ const {t} = useTranslation();
     // Add the timeline-specific property using the hardcoded offsets
     offsetY: hardcodedOffsets[index % hardcodedOffsets.length] || 0,
   }));
-
+  //timelineTrips[timelineTrips.length - 1].offsetY = -80;
   // Use the enhanced array for all rendering logic
   const trips = timelineTrips;
 
@@ -89,7 +92,7 @@ const {t} = useTranslation();
     return (
       <RootContainer>
         <Typography variant="h5" color="textSecondary" sx={{ textAlign: 'center', pt: 4 }}>
-{t("collection.emptyCollection")}</Typography>
+          {t("collection.emptyCollection")}</Typography>
       </RootContainer>
     );
   }
@@ -99,7 +102,7 @@ const {t} = useTranslation();
   const CARD_IMAGE_HEIGHT = 200;
   const CONNECTOR_WIDTH = 250;
   const TIMELINE_HEIGHT = 800;
-  const MIDLINE_Y = (TIMELINE_HEIGHT) / 10;
+  const MIDLINE_Y = 70;
   const MARKER_SIZE = 32;
 
   useEffect(() => {
@@ -118,13 +121,9 @@ const {t} = useTranslation();
       transition={{ duration: 0.4, ease: "easeOut" }}
       onClick={() => setIsExpanded(false)}
     >
-      <CloseButton onClick={() => setIsExpanded(false)}>
-        <X size={32} />
-      </CloseButton>
 
       <Box
-        sx={{ width: '100%', px: { xs: 2, md: 8 }, py: 6 }}
-        onClick={(e) => e.stopPropagation()}
+        sx={{ width: '100vw' }}
       >
         {/* Mobile: Vertical Stack */}
         <Box sx={{ display: { xs: 'block', md: 'none' } }}>
@@ -136,11 +135,12 @@ const {t} = useTranslation();
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15, duration: 0.4 }}
               >
-                {/* Trip is passed to the adapter. No edit/delete handlers here (preview handles collection-level actions). */}
-                <TripPostAdapter
-                  trip={trip as any}
-                  onDelete={() => { }}
-                  onEdit={() => { }}
+                <TripPost
+                  trip={{
+                    ...trip,
+                    currentUserId: storeUser?._id || '',
+                    comments: adaptCommentsForUI(trip.comments || [], t)
+                  } as any}
                   showDescription={false}
                 />
               </motion.div>
@@ -197,10 +197,12 @@ const {t} = useTranslation();
                         height: 500
                       }}
                     >
-                      <TripPostAdapter
-                        trip={trip as any}
-                        onDelete={() => { }}
-                        onEdit={() => { }}
+                      <TripPost
+                        trip={{
+                          ...trip,
+                          currentUserId: storeUser?._id || '',
+                          comments: adaptCommentsForUI(trip.comments || [], t)
+                        } as any}
                         showDescription={false}
                       />
                     </Box>
@@ -209,9 +211,9 @@ const {t} = useTranslation();
                     {nextTrip && (
                       <Box sx={{ flexShrink: 0, position: 'relative', height: TIMELINE_HEIGHT, width: CONNECTOR_WIDTH }}>
                         <PathConnector
-                          fromPosition={alignmentPointY}
+                          fromPosition={alignmentPointY + CARD_IMAGE_HEIGHT / 2}
                           // Safely access nextTrip.offsetY
-                          toPosition={MIDLINE_Y + nextTrip.offsetY + CARD_IMAGE_HEIGHT / 2}
+                          toPosition={MIDLINE_Y + nextTrip.offsetY + CARD_IMAGE_HEIGHT}
                           width={CONNECTOR_WIDTH}
                         />
                       </Box>

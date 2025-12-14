@@ -25,6 +25,7 @@ import userService from '../../services/user.service';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
+import { useSocketEvent } from '../../hooks/useSocket';
 import { useTranslation } from 'react-i18next';
 
 interface ChatSidebarProps {
@@ -62,6 +63,47 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectChat, activeChatUser 
             console.error('Error fetching conversations:', error);
         }
     };
+
+    // Real-time updates for new messages
+    useSocketEvent('newMessage', (message: any) => {
+        if (!user) return;
+        setConversations(prev => {
+            const existingConvIndex = prev.findIndex(c =>
+                c.participants.some((p: any) => p._id === message.senderId._id || p._id === message.receiverId._id) &&
+                c.participants.some((p: any) => p._id === user._id)
+            );
+
+            if (existingConvIndex !== -1) {
+                const updatedConv = { ...prev[existingConvIndex] };
+                updatedConv.lastMessage = message;
+                updatedConv.updatedAt = message.createdAt;
+
+                const newConvs = [...prev];
+                newConvs.splice(existingConvIndex, 1);
+                return [updatedConv, ...newConvs];
+            } else {
+                fetchConversations();
+                return prev;
+            }
+        });
+    });
+
+    // Real-time updates for read receipts
+    useSocketEvent('messagesRead', (data: any) => {
+        if (!user) return;
+        if (data.byUserId === user._id && data.chatWithUser) {
+            setConversations(prev => prev.map(conv => {
+                const isTargetConv = conv.participants.some((p: any) => p._id === data.chatWithUser);
+                if (isTargetConv && conv.lastMessage) {
+                    return {
+                        ...conv,
+                        lastMessage: { ...conv.lastMessage, read: true }
+                    };
+                }
+                return conv;
+            }));
+        }
+    });
 
     const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
         setTabValue(newValue);
@@ -160,6 +202,13 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectChat, activeChatUser 
                     filteredConversations.map((conv) => {
                         const otherParticipant = conv.participants.find((p: any) => p._id !== user._id);
                         const isActive = activeChatUser?._id === otherParticipant._id;
+
+                         // Calculate unread status
+                         const receiverId = conv.lastMessage?.receiverId?._id || conv.lastMessage?.receiverId;
+                         const isUnread = conv.lastMessage &&
+                             !conv.lastMessage.read &&
+                             String(receiverId) === user._id;
+
                         return (
                             <ListItem
                                 key={conv._id}
@@ -170,21 +219,41 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectChat, activeChatUser 
                                     onClick={() => onSelectChat(otherParticipant)}
                                     alignItems="flex-start"
                                     sx={{
+                                        borderLeft: isActive ? '4px solid #ff9800' : '4px solid transparent',
+                                        bgcolor: isActive 
+                                            ? '#fff3e0' 
+                                            : isUnread 
+                                                ? 'rgba(255, 152, 0, 0.08)' 
+                                                : 'transparent',
                                         '&.Mui-selected': {
-                                            bgcolor: '#fff3e0', // Light orange
+                                            bgcolor: '#fff3e0',
                                             '&:hover': { bgcolor: '#ffe0b2' },
-                                            borderLeft: '4px solid #ff9800'
+                                        },
+                                        '&:hover': {
+                                            bgcolor: isActive 
+                                                ? '#ffe0b2' 
+                                                : isUnread 
+                                                    ? 'rgba(255, 152, 0, 0.12)' 
+                                                    : 'rgba(0, 0, 0, 0.04)'
                                         }
                                     }}
                                 >
                                     <ListItemAvatar>
-                                        <Avatar src={otherParticipant.avatar} alt={otherParticipant.firstName}>
-                                            {otherParticipant.firstName[0]}
-                                        </Avatar>
+                                        <Badge
+                                            invisible={!isUnread}
+                                            color="error" // standard red dot, or we can customize 
+                                            variant="dot"
+                                            overlap="circular"
+                                            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                                        >
+                                            <Avatar src={otherParticipant.avatar} alt={otherParticipant.firstName}>
+                                                {otherParticipant.firstName[0]}
+                                            </Avatar>
+                                        </Badge>
                                     </ListItemAvatar>
                                     <ListItemText
                                         primary={
-                                            <Typography fontWeight={isActive ? 'bold' : 'normal'}>
+                                            <Typography fontWeight={isUnread || isActive ? 'bold' : 'normal'}>
                                                 {otherParticipant.firstName} {otherParticipant.lastName}
                                             </Typography>
                                         }
@@ -192,7 +261,8 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectChat, activeChatUser 
                                             <Typography
                                                 component="span"
                                                 variant="body2"
-                                                color="text.secondary"
+                                                color={isUnread ? "text.primary" : "text.secondary"}
+                                                fontWeight={isUnread ? 'bold' : 'normal'}
                                                 sx={{ display: 'inline', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}
                                             >
                                                 {conv.lastMessage ? conv.lastMessage.message : t('chat.noMessagesYet')}

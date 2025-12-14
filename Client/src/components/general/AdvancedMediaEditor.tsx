@@ -5,6 +5,7 @@ import { Cloudinary } from "@cloudinary/url-gen";
 import { AdvancedImage } from "@cloudinary/react";
 import { enhance, upscale, grayscale, sepia, blur, vignette, backgroundRemoval } from "@cloudinary/url-gen/actions/effect";
 import { brightness, contrast, saturation, vibrance } from "@cloudinary/url-gen/actions/adjust";
+import { useTranslation } from 'react-i18next';
 
 // Hook for debouncing
 const useDebounce = <T,>(value: T, delay: number): T => {
@@ -17,7 +18,6 @@ const useDebounce = <T,>(value: T, delay: number): T => {
 };
 // Extract clean publicId from Cloudinary URL
 const getPublicIdFromUrl = (url: string): string => {
-  console.log("Extracting public ID from URL:\n", url);
   if (!url.includes("/upload/")) return "";
 
   try {
@@ -59,7 +59,7 @@ const getPublicIdFromUrl = (url: string): string => {
     // Remove file extension
     publicId = publicId.replace(/\.[^.]+$/, "");
 
-    console.log("Extracted publicId:", publicId, "from URL:", url);
+
 
     return publicId;
   } catch (error) {
@@ -144,13 +144,13 @@ export function AdvancedMediaEditor({
   mediaUrl,
   onSave,
 }: AdvancedMediaEditorProps) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const publicId = useMemo(() => getPublicIdFromUrl(mediaUrl), [mediaUrl]);
-  console.log("Public ID:", publicId);
   const cloudName = import.meta.env.VITE_CLOUD_NAME;
   const cld = useMemo(
     () => new Cloudinary({ cloud: { cloudName } }),
@@ -209,7 +209,6 @@ export function AdvancedMediaEditor({
     // Effects
     if (dBlur > 0) img = img.effect(blur(dBlur));
     if (dVignette > 0) img = img.effect(vignette(dVignette));
-    console.log("Transformed image:", img);
     return img;
   }, [cld, publicId, dAiEnhance, dAiUpscale, dRemoveBackground, dBrightness, dContrast, dSaturation, dVibrance, dBlur, dVignette, dGrayscale, dSepia]);
 
@@ -242,15 +241,15 @@ export function AdvancedMediaEditor({
   if (!publicId) {
     return (
       <Dialog open={isOpen} onClose={onClose} maxWidth="sm">
-        <DialogTitle>Error</DialogTitle>
+        <DialogTitle>{t('mediaEditor.error')}</DialogTitle>
         <DialogContent>
-          <Typography>Invalid Cloudinary URL</Typography>
+          <Typography>{t('mediaEditor.invalidCloudinaryUrl')}</Typography>
           <Typography variant="caption" sx={{ mt: 1, display: "block" }}>
             URL: {mediaUrl}
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>Close</Button>
+          <Button onClick={onClose}>{t('mediaEditor.close')}</Button>
         </DialogActions>
       </Dialog>
     );
@@ -267,7 +266,7 @@ export function AdvancedMediaEditor({
           }}
         >
           <Typography variant="h6" fontWeight={600}>
-            Advanced Media Editor
+            {t('mediaEditor.title')}
           </Typography>
           <IconButton onClick={onClose} size="small">
             <Close />
@@ -286,7 +285,7 @@ export function AdvancedMediaEditor({
           {/* Preview */}
           <Box>
             <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
-              Preview
+              {t('mediaEditor.preview')}
             </Typography>
             <PreviewBox isLoading={isLoading}>
               {transformedImage && (
@@ -308,38 +307,38 @@ export function AdvancedMediaEditor({
               variant="caption"
               sx={{ mt: 1, display: "block", color: "text.secondary" }}
             >
-              {isLoading ? "Loading..." : "Ready"}
+              {isLoading ? t('mediaEditor.loading') : t('mediaEditor.ready')}
             </Typography>
           </Box>
 
           {/* Controls */}
           <Box>
             <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} sx={{ mb: 2 }}>
-              <Tab label="AI" sx={{ textTransform: "none", minWidth: 80 }} />
-              <Tab label="Adjust" sx={{ textTransform: "none", minWidth: 80 }} />
+              <Tab label={t('mediaEditor.ai')} sx={{ textTransform: "none", minWidth: 80 }} />
+              <Tab label={t('mediaEditor.adjust')} sx={{ textTransform: "none", minWidth: 80 }} />
             </Tabs>
 
             <Box sx={{ maxHeight: "400px", overflowY: "auto", pr: 1 }}>
               {/* AI Tab */}
               <TabPanel value={activeTab} index={0}>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  <FormControlLabel control={<Switch checked={aiEnhance} onChange={(e) => setAiEnhance(e.target.checked)} />} label="AI Enhance (Auto improve)" />
-                  <FormControlLabel control={<Switch checked={aiUpscale} onChange={(e) => setAiUpscale(e.target.checked)} />} label="AI Upscale (Increase resolution)" />
-                  <FormControlLabel control={<Switch checked={removeBackground} onChange={(e) => setRemoveBackground(e.target.checked)} />} label="Remove Background" />
+                  <FormControlLabel control={<Switch checked={aiEnhance} onChange={(e) => setAiEnhance(e.target.checked)} />} label={t('mediaEditor.aiEnhance')} />
+                  <FormControlLabel control={<Switch checked={aiUpscale} onChange={(e) => setAiUpscale(e.target.checked)} />} label={t('mediaEditor.aiUpscale')} />
+                  <FormControlLabel control={<Switch checked={removeBackground} onChange={(e) => setRemoveBackground(e.target.checked)} />} label={t('mediaEditor.removeBackground')} />
                 </Box>
               </TabPanel>
 
               {/* Adjust Tab */}
               <TabPanel value={activeTab} index={1}>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  <FormControlLabel control={<Switch checked={isGrayscale} onChange={(e) => setIsGrayscale(e.target.checked)} />} label="Grayscale" />
-                  <FormControlLabel control={<Switch checked={isSepia} onChange={(e) => setIsSepia(e.target.checked)} />} label="Sepia" />
-                  <SliderControl label="Brightness" value={manualBrightness} onChange={setManualBrightness} min={-99} max={100} />
-                  <SliderControl label="Contrast" value={manualContrast} onChange={setManualContrast} min={-100} max={100} />
-                  <SliderControl label="Saturation" value={manualSaturation} onChange={setManualSaturation} min={-100} max={100} />
-                  <SliderControl label="Vibrance" value={manualVibrance} onChange={setManualVibrance} min={-100} max={100} />
-                  <SliderControl label="Blur" value={manualBlur} onChange={setManualBlur} min={0} max={2000} />
-                  <SliderControl label="Vignette" value={manualVignette} onChange={setManualVignette} min={0} max={100} />
+                  <FormControlLabel control={<Switch checked={isGrayscale} onChange={(e) => setIsGrayscale(e.target.checked)} />} label={t('mediaEditor.grayscale')} />
+                  <FormControlLabel control={<Switch checked={isSepia} onChange={(e) => setIsSepia(e.target.checked)} />} label={t('mediaEditor.sepia')} />
+                  <SliderControl label={t('mediaEditor.brightness')} value={manualBrightness} onChange={setManualBrightness} min={-99} max={100} />
+                  <SliderControl label={t('mediaEditor.contrast')} value={manualContrast} onChange={setManualContrast} min={-100} max={100} />
+                  <SliderControl label={t('mediaEditor.saturation')} value={manualSaturation} onChange={setManualSaturation} min={-100} max={100} />
+                  <SliderControl label={t('mediaEditor.vibrance')} value={manualVibrance} onChange={setManualVibrance} min={-100} max={100} />
+                  <SliderControl label={t('mediaEditor.blur')} value={manualBlur} onChange={setManualBlur} min={0} max={2000} />
+                  <SliderControl label={t('mediaEditor.vignette')} value={manualVignette} onChange={setManualVignette} min={0} max={100} />
                 </Box>
               </TabPanel>
             </Box>
@@ -349,10 +348,10 @@ export function AdvancedMediaEditor({
 
       <DialogActions sx={{ p: 2, gap: 1 }}>
         <Button onClick={handleReset} variant="outlined">
-          Reset
+          {t('mediaEditor.reset')}
         </Button>
         <Button onClick={onClose} variant="outlined">
-          Cancel
+          {t('mediaEditor.cancel')}
         </Button>
         <Button
           onClick={handleSave}
@@ -363,7 +362,7 @@ export function AdvancedMediaEditor({
             "&:hover": { backgroundColor: "#ea580c" },
           }}
         >
-          {isProcessing ? <CircularProgress size={20} /> : "Apply Changes"}
+          {isProcessing ? <CircularProgress size={20} /> : t('mediaEditor.applyChanges')}
         </Button>
       </DialogActions>
     </Dialog>

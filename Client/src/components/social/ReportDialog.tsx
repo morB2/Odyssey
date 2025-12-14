@@ -85,6 +85,7 @@ export const ReportDialog = ({ open, onClose, tripId, userId }: ReportDialogProp
             onClose={handleClose}
             disableScrollLock={true}
             fullWidth
+            sx={{ zIndex: 10001 }}
             maxWidth="sm"
             onClick={(e) => e.stopPropagation()}
         >

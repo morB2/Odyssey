@@ -11,7 +11,7 @@ import {
     Chip,
 } from '@mui/material';
 import { Close, ChevronLeft, ChevronRight } from '@mui/icons-material';
-import { type Dispatch, type SetStateAction, useCallback } from 'react';
+import { type Dispatch, type MouseEventHandler, type SetStateAction, useCallback } from 'react';
 import { type Trip } from './types';
 import { isVideo } from '../../utils/mediaUtils';
 
@@ -41,13 +41,13 @@ export default function TripDetailsDialog({
     }, [totalImages, setDialogImageIndex]);
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth sx={{ zIndex: 10001 }}>
+        <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth sx={{ zIndex: 10001 }} disableScrollLock={true}>
             <DialogTitle>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
                     <Typography variant="h5" fontWeight={600}>
                         {trip.title || trip.location}
                     </Typography>
-                    <IconButton onClick={onClose} edge="end">
+                    <IconButton onClick={(e: React.MouseEvent<HTMLButtonElement>)=>{onClose(); e.stopPropagation()}} edge="end">
                         <Close />
                     </IconButton>
                 </Box>

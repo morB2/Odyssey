@@ -35,8 +35,9 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, onClose }) => {
 
     // Real-time updates for new messages
     useSocketEvent('newMessage', (message: any) => {
+        console.log('New message received:', message);
         if (!user) return;
-
+        console.log('New message received:', message);
         setConversations(prev => {
             // Check if conversation exists
             const existingConvIndex = prev.findIndex(c =>
@@ -65,17 +66,21 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, onClose }) => {
     useSocketEvent('messagesRead', (data: any) => {
         if (!user) return;
 
-        // If I read messages from someone, update that conversation to read
-        // if (data.byUserId === user._id) {
-        //     // We don't have the otherUserId directly in the event if it was emitted to me as 'byUserId'
-        //     // But usually we want to clear the unread status for the conversation I just read
-        //     // The event structure I added in backend: { byUserId: userId, read: true }
-        //     // Wait, I need to know WHICH conversation was read to update the list locally without refetching.
-        //     // The backend event didn't include otherUserId for the sender. 
-        //     // Let's just refetch for simplicity and correctness, or I can update the backend to send conversationId.
-        //     // For now, refetching is safest.
-        //     fetchConversations();
-        // }
+        // If I read messages from someone (data.byUserId === me), update that conversation to read locally
+        if (data.byUserId === user._id && data.chatWithUser) {
+            setConversations(prev => prev.map(conv => {
+                // Find the conversation with the user whose messages I just read
+                const isTargetConv = conv.participants.some((p: any) => p._id === data.chatWithUser);
+
+                if (isTargetConv && conv.lastMessage) {
+                    return {
+                        ...conv,
+                        lastMessage: { ...conv.lastMessage, read: true }
+                    };
+                }
+                return conv;
+            }));
+        }
     });
 
     const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -123,14 +128,11 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, onClose }) => {
                         const otherParticipant = conv.participants.find((p: any) => p._id !== user._id);
 
                         // Check if unread: last message exists, is NOT read, and I am the receiver
+                        // Handle receiverId being either a populated object (has _id) or a raw ObjectId
+                        const receiverId = conv.lastMessage?.receiverId?._id || conv.lastMessage?.receiverId;
                         const isUnread = conv.lastMessage &&
                             !conv.lastMessage.read &&
-                            conv.lastMessage.receiverId === user._id;
-
-                        console.log('Conv:', conv._id);
-                        console.log('LastMsg:', conv.lastMessage);
-                        console.log('User ID:', user._id);
-                        console.log('Is Unread:', isUnread);
+                            String(receiverId) === user._id;
 
                         return (
                             <ListItem

@@ -32,7 +32,7 @@ import { useSettings } from './context/SettingsContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
-
+import { useUserRoom } from './hooks/useSocket';
 import { ChatProvider } from './context/ChatContext';
 import ChatWidget from './components/chat/ChatWidget';
 import { Box } from '@mui/material';
@@ -42,10 +42,9 @@ import CreateTripLandingPage from './components/tripPlan/createTripLandingPage';
 import SinglePostPage from './components/social/SinglePostPage';
 import CollectionPage from './components/collections/CollectionPage';
 import Navbar from './components/general/Navbar';
-
 function App() {
   const location = useLocation();
-  const { token } = useUserStore();
+  const { token, user } = useUserStore();
   const { closeSearch } = useSearchStore();
 
   useEffect(() => {
@@ -68,7 +67,7 @@ function App() {
   }, [i18n.language]);
 
 
-
+  useUserRoom(user?._id || null);
   const state = location.state as { backgroundLocation?: string };
   const background = state?.backgroundLocation
     ? { pathname: state.backgroundLocation }

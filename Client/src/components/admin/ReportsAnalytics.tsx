@@ -16,11 +16,13 @@ import {
     type ReportReasonData,
     type ReportsTrendData
 } from "../../services/adminStatsService";
+import { useTranslation } from 'react-i18next';
 
 // Color palette matching admin theme
 const COLORS = ["#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16", "#22c55e", "#10b981", "#14b8a6", "#06b6d4", "#0ea5e9"];
 
 export default function ReportsAnalytics() {
+    const { t } = useTranslation();
     const [topReportedPosts, setTopReportedPosts] = useState<TopReportedPost[]>([]);
     const [topReportedUsers, setTopReportedUsers] = useState<TopReportedUser[]>([]);
     const [topReporters, setTopReporters] = useState<TopReporter[]>([]);
@@ -54,12 +56,12 @@ export default function ReportsAnalytics() {
         return (
             <Box sx={{ mb: 4 }}>
                 <Typography variant="h4" sx={{ mb: 4, fontWeight: 700, color: "white" }}>
-                    Reports Analytics Dashboard
+                    {t('reportsAnalytics.title')}
                 </Typography>
 
                 {/* Top Reported Posts Skeleton */}
                 <Box sx={{ mb: 3 }}>
-                    <Paper sx={{ p: 3, bgcolor: "#18181B", border: "2px solid #ef4444", borderRadius: 2 }}>
+                    <Paper sx={{ p: 3, bgcolor: "#18181B", borderRadius: 2 }}>
                         <Skeleton variant="text" width={300} height={35} sx={{ bgcolor: "#27272A", mb: 2 }} />
                         <Skeleton variant="rectangular" width="100%" height={400} sx={{ bgcolor: "#27272A", borderRadius: 1 }} />
                     </Paper>
@@ -101,7 +103,7 @@ export default function ReportsAnalytics() {
     }
 
     if (topReportedPosts.length === 0 && topReportedUsers.length === 0 && topReporters.length === 0 && reasonDistribution.length === 0 && reportsTrend.length === 0) {
-        return <Typography textAlign="center" color="#71717A" sx={{ mt: 4 }}>No reports data available</Typography>;
+        return <Typography textAlign="center" color="#71717A" sx={{ mt: 4 }}>{t('reportsAnalytics.noData')}</Typography>;
     }
 
     // Prepare data for top reported posts chart
@@ -140,20 +142,20 @@ export default function ReportsAnalytics() {
     return (
         <Box sx={{ mb: 4 }}>
             <Typography variant="h4" sx={{ mb: 4, fontWeight: 700, color: "white" }}>
-                Reports Analytics Dashboard
+                {t('reportsAnalytics.title')}
             </Typography>
 
             {/* Top Reported Posts - PROMINENT CHART */}
             <Box sx={{ mb: 4 }}>
-                <Paper sx={{ p: 3, bgcolor: "#18181B", borderRadius: 2, boxShadow: "0 8px 16px -4px rgb(239 68 68 / 0.3)" }}>
+                <Paper sx={{ p: 3, bgcolor: "#18181B", borderRadius: 2, boxShadow: "0 8px 16px -4px rgb(239 68 68 / 0.3)", direction: 'ltr' }}>
                     <Typography variant="h5" sx={{ mb: 3, fontWeight: 700, color: "white", display: "flex", alignItems: "center", gap: 1 }}>
-                        Top Reported Posts
+                        {t('reportsAnalytics.topReportedPosts')}
                     </Typography>
                     {reportedPostsData.length === 0 ? (
-                        <Typography textAlign="center" color="#71717A" sx={{ py: 8 }}>No reported posts data available</Typography>
+                        <Typography textAlign="center" color="#71717A" sx={{ py: 8 }}>{t('reportsAnalytics.noReportedPostsData')}</Typography>
                     ) : (
                         <ResponsiveContainer width="100%" height={400}>
-                            <BarChart data={reportedPostsData} margin={{ left: 5, right: 5, top: 5 }}>
+                            <BarChart data={reportedPostsData} margin={{ left: 5, right: 5, top: 5 }} style={{ direction: 'ltr' }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#27272A" />
                                 <XAxis
                                     dataKey="title"
@@ -164,7 +166,7 @@ export default function ReportsAnalytics() {
                                     tick={{ fill: '#A1A1AA', fontSize: 15 }}
                                     tickFormatter={(title) => truncateName(title, 20)}
                                 />
-                                <YAxis stroke="#71717A" tick={{ fill: '#A1A1AA' }} label={{ value: 'Report Count', angle: -90, position: 'insideLeft', fill: '#A1A1AA' }} />
+                                <YAxis stroke="#71717A" tick={{ fill: '#A1A1AA' }} label={{ value: t('reportsAnalytics.reportCount'), angle: -90, position: 'insideLeft', fill: '#A1A1AA' }} />
                                 <Tooltip
                                     contentStyle={{ backgroundColor: '#18181B', borderRadius: '8px', color: 'white', padding: '12px' }}
                                     labelStyle={{ color: '#ef4444', fontWeight: 700, marginBottom: '8px' }}
@@ -191,15 +193,15 @@ export default function ReportsAnalytics() {
             <Box sx={{ display: "flex", gap: 3, mb: 3, flexWrap: "wrap" }}>
                 {/* Top Reported Users */}
                 <Box sx={{ flex: "1 1 calc(50% - 12px)", minWidth: "300px" }}>
-                    <Paper sx={{ p: 3, height: "100%", bgcolor: "#18181B", border: "1px solid #27272A", borderRadius: 2, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}>
+                    <Paper sx={{ p: 3, height: "100%", bgcolor: "#18181B", border: "1px solid #27272A", borderRadius: 2, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", direction: 'ltr' }}>
                         <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: "white" }}>
-                            Top Reported Users
+                            {t('reportsAnalytics.topReportedUsers')}
                         </Typography>
                         {reportedUsersData.length === 0 ? (
-                            <Typography textAlign="center" color="#71717A" sx={{ py: 8 }}>No data available</Typography>
+                            <Typography textAlign="center" color="#71717A" sx={{ py: 8 }}>{t('reportsAnalytics.noDataAvailable')}</Typography>
                         ) : (
                             <ResponsiveContainer width="100%" height={350}>
-                                <BarChart data={reportedUsersData} layout="vertical" margin={{ left: 10, right: 10, top: 5, bottom: 0 }}>
+                                <BarChart data={reportedUsersData} layout="vertical" margin={{ left: 10, right: 10, top: 5, bottom: 0 }} style={{ direction: 'ltr' }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#27272A" />
                                     <XAxis type="number" stroke="#71717A" tick={{ fill: '#A1A1AA' }} />
                                     <YAxis
@@ -224,15 +226,15 @@ export default function ReportsAnalytics() {
 
                 {/* Top Reporters */}
                 <Box sx={{ flex: "1 1 calc(50% - 12px)", minWidth: "300px" }}>
-                    <Paper sx={{ p: 3, height: "100%", bgcolor: "#18181B", border: "1px solid #27272A", borderRadius: 2, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}>
+                    <Paper sx={{ p: 3, height: "100%", bgcolor: "#18181B", border: "1px solid #27272A", borderRadius: 2, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", direction: 'ltr' }}>
                         <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: "white" }}>
-                            Top Reporters
+                            {t('reportsAnalytics.topReporters')}
                         </Typography>
                         {reportersData.length === 0 ? (
-                            <Typography textAlign="center" color="#71717A" sx={{ py: 8 }}>No data available</Typography>
+                            <Typography textAlign="center" color="#71717A" sx={{ py: 8 }}>{t('reportsAnalytics.noDataAvailable')}</Typography>
                         ) : (
                             <ResponsiveContainer width="100%" height={350}>
-                                <BarChart data={reportersData} margin={{ bottom: 0, left: 5, right: 5, top: 5 }}>
+                                <BarChart data={reportersData} margin={{ bottom: 0, left: 5, right: 5, top: 5 }} style={{ direction: 'ltr' }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#27272A" />
                                     <XAxis
                                         dataKey="name"
@@ -261,15 +263,15 @@ export default function ReportsAnalytics() {
             <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
                 {/* Reports Trend */}
                 <Box sx={{ flex: "1 1 calc(100% - 12px)", minWidth: "300px" }}>
-                    <Paper sx={{ p: 3, height: "100%", bgcolor: "#18181B", border: "1px solid #27272A", borderRadius: 2, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}>
+                    <Paper sx={{ p: 3, height: "100%", bgcolor: "#18181B", border: "1px solid #27272A", borderRadius: 2, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", direction: 'ltr' }}>
                         <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: "white" }}>
-                            Reports Trend (Last 30 Days)
+                            {t('reportsAnalytics.reportsTrend')}
                         </Typography>
                         {reportsTrend.length === 0 ? (
-                            <Typography textAlign="center" color="#71717A" sx={{ py: 8 }}>No data available</Typography>
+                            <Typography textAlign="center" color="#71717A" sx={{ py: 8 }}>{t('reportsAnalytics.noDataAvailable')}</Typography>
                         ) : (
                             <ResponsiveContainer width="100%" height={350}>
-                                <LineChart data={reportsTrend} margin={{ bottom: 35, left: 5, right: 5, top: 5 }}>
+                                <LineChart data={reportsTrend} margin={{ bottom: 35, left: 5, right: 5, top: 5 }} style={{ direction: 'ltr' }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#27272A" />
                                     <XAxis
                                         dataKey="date"
@@ -302,12 +304,12 @@ export default function ReportsAnalytics() {
 
                 {/* Report Reason Distribution */}
                 <Box sx={{ flex: "1 1 calc(40% - 12px)", minWidth: "300px" }}>
-                    <Paper sx={{ p: 3, height: "100%", bgcolor: "#18181B", border: "1px solid #27272A", borderRadius: 2, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}>
+                    <Paper sx={{ p: 3, height: "100%", bgcolor: "#18181B", border: "1px solid #27272A", borderRadius: 2, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)", direction: 'ltr' }}>
                         <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: "white" }}>
-                            Report Reason Distribution
+                            {t('reportsAnalytics.reasonDistribution')}
                         </Typography>
                         {reasonDistribution.length === 0 ? (
-                            <Typography textAlign="center" color="#71717A" sx={{ py: 8 }}>No data available</Typography>
+                            <Typography textAlign="center" color="#71717A" sx={{ py: 8 }}>{t('reportsAnalytics.noDataAvailable')}</Typography>
                         ) : (
                             <ResponsiveContainer width="100%" height={350}>
                                 <PieChart>
@@ -320,6 +322,7 @@ export default function ReportsAnalytics() {
                                         outerRadius={100}
                                         label={renderCustomLabel}
                                         labelLine={{ stroke: '#71717A' }}
+                                        style={{ direction: 'ltr' }}
                                     >
                                         {reasonDistribution.map((_entry, index) => (
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

@@ -1,7 +1,7 @@
 import { getAllUsers, updateUser } from '../services/userService.js';
 
-export async function getAll() {
-    const data = await getAllUsers();
+export async function getAll(query) {
+    const data = await getAllUsers(query);
     return data;
 }
 

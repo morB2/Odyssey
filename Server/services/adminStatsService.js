@@ -759,7 +759,6 @@ export async function clearAnalyticsCache() {
 
         } while (cursor !== '0');
 
-        console.log('[Cache] Analytics cache cleared');
     } catch (error) {
         console.error('[Cache] Error clearing analytics cache:', error);
         throw error;
