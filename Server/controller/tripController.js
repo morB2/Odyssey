@@ -68,7 +68,16 @@ export async function addReaction(req, res) {
     const { emoji } = req.body;
     const userId = req.user.userId; // ✅ Use authenticated user from JWT
     // This logic assumes you have a function addReactionToComment in your service layer
-    const updatedReaction = await addReactionToComment(tripId, commentId, userId, emoji);
+    const updatedComment = await addReactionToComment(tripId, commentId, userId, emoji);
+
+    // Aggregate reactions
+    const reactionsAggregated = {};
+    if (updatedComment.reactions && updatedComment.reactions.length > 0) {
+      updatedComment.reactions.forEach((reaction) => {
+        reactionsAggregated[reaction.emoji] =
+          (reactionsAggregated[reaction.emoji] || 0) + 1;
+      });
+    }
 
     // Emit real-time event to all users in the trip room
     const io = getIO();
@@ -76,10 +85,10 @@ export async function addReaction(req, res) {
       tripId,
       commentId,
       emoji,
-      reactions: updatedReaction,
+      reactions: reactionsAggregated,
     });
 
-    res.status(200).json(updatedReaction);
+    res.status(200).json(reactionsAggregated);
   } catch (err) {
     console.error("Error adding reaction:", err);
     res.status(400).json({ error: err.message });
