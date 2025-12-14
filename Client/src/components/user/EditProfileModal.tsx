@@ -14,7 +14,7 @@ interface ChangePasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
   user: UserProfile;
-  onAvatarSaved?: (user: UserProfile) => void;
+  onProfileUpdated?: () => void; // Optional callback to refresh parent data
 }
 
 // Shared styles
@@ -22,7 +22,7 @@ const labelStyle = { display: "block", mb: 1, fontSize: "0.875rem", fontWeight: 
 const dividerStyle = { backgroundColor: "#e5e5e5" };
 const sectionBoxStyle = { display: "flex", flexDirection: "column", gap: 2, borderRadius: 2, border: "1px solid #e5e5e5", backgroundColor: "#fafafa", p: 2 };
 
-export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: ChangePasswordModalProps) {
+export function ChangePasswordModal({ isOpen, onClose, user, onProfileUpdated }: ChangePasswordModalProps) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -52,6 +52,7 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
   }, [isOpen]);
 
   const storeToken = useUserStore((s) => s.token);
+  const setUserStore = useUserStore((s) => s.setUser);
 
   const handleChangePassword = async () => {
     setError(null);
@@ -108,9 +109,14 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
       const result = await uploadAvatar(undefined, avatarUrl || undefined);
       const payload = result?.data ?? result;
       if (payload && payload.success && payload.user) {
-        if (typeof onAvatarSaved === "function") {
-          onAvatarSaved(payload.user as unknown as UserProfile);
+        // Update global user store
+        setUserStore(payload.user as unknown as UserProfile, storeToken);
+
+        // Notify parent to refresh if needed
+        if (typeof onProfileUpdated === "function") {
+          onProfileUpdated();
         }
+
         setSuccess(t('profile.avatarUpdatedSuccessfully'));
         setAvatarUrl("");
         setPreview(null);
@@ -147,9 +153,14 @@ export function ChangePasswordModal({ isOpen, onClose, user, onAvatarSaved }: Ch
       const result = await uploadAvatar(undefined, editedUrl || undefined);
       const payload = result?.data ?? result;
       if (payload && payload.success && payload.user) {
-        if (typeof onAvatarSaved === "function") {
-          onAvatarSaved(payload.user as unknown as UserProfile);
+        // Update global user store
+        setUserStore(payload.user as unknown as UserProfile, storeToken);
+
+        // Notify parent to refresh if needed
+        if (typeof onProfileUpdated === "function") {
+          onProfileUpdated();
         }
+
         setSuccess(t('profile.avatarUpdatedSuccessfully'));
         setAvatarUrl("");
         setPreview(null);

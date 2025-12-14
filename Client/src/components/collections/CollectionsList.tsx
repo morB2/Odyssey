@@ -8,9 +8,6 @@ interface CollectionsListProps {
     onCreate: () => void;
     onEdit: (collection: Collection) => void;
     onDelete: (collectionId: string) => void;
-    // Optional trip-level handlers forwarded to RouteViewer -> TripPostAdapter
-    onTripEdit?: (trip: any) => void;
-    onTripDelete?: (tripId: string) => void;
     isOwner: boolean;
     loading?: boolean;
 }
@@ -20,8 +17,6 @@ export function CollectionsList({
     onCreate,
     onEdit,
     onDelete,
-    onTripEdit,
-    onTripDelete,
     isOwner,
     loading = false
 }: CollectionsListProps) {

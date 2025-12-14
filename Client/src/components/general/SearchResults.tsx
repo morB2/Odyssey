@@ -1,9 +1,10 @@
 import React from 'react';
 import { Box, Typography, Divider, CircularProgress, Paper } from '@mui/material';
 import UserSearchResult from './UserSearchResult';
-import TripPostAdapter from '../user/TripPostAdapter';
+import TripPost from '../social/TripPost';
 import type { SearchResults } from '../../services/search.service';
 import type { Trip } from '../user/types';
+import { adaptCommentsForUI } from '../../utils/tripAdapters';
 
 interface SearchResultsProps {
     results: SearchResults | null;
@@ -181,10 +182,8 @@ const SearchResultsComponent: React.FC<SearchResultsProps> = ({
                                     },
                                 }}
                             >
-                                <TripPostAdapter
-                                    trip={convertToTrip(trip)}
-                                    onDelete={() => { }}
-                                    onEdit={() => { }}
+                                <TripPost
+                                    trip={{ ...convertToTrip(trip), comments: adaptCommentsForUI(convertToTrip(trip).comments || []) }}
                                 />
                             </Box>
                         ))}

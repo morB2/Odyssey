@@ -16,8 +16,7 @@ interface EditTripModalProps {
   trip: Trip | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (trip: Trip) => void;
-  setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
+  onSave: (trip?: Trip) => void;
 }
 
 // Shared styles
@@ -30,7 +29,7 @@ const textFieldStyle = {
 };
 const dividerStyle = { backgroundColor: "#e5e5e5" };
 
-export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditTripModalProps) {
+export function EditTripModal({ trip, isOpen, onClose, onSave }: EditTripModalProps) {
   const { t } = useTranslation();
   const [title, setTitle] = useState(trip?.title || "");
   const [description, setDescription] = useState(trip?.description || "");
@@ -120,7 +119,6 @@ export function EditTripModal({ trip, isOpen, onClose, onSave, setTrips }: EditT
 
         onSave(mapped);
         onClose();
-        setTrips((prevTrips) => prevTrips.map((t) => t.id === mapped.id || t._id === mapped._id ? { ...t, ...mapped } : t));
       } catch (e) {
         console.error("Failed to save trip", e);
         toast.error(String(e instanceof Error ? e.message : e));

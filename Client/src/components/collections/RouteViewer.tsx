@@ -12,9 +12,11 @@ interface TimelineTrip extends Trip {
 }
 
 // ⚠️ IMPORTANT: Replace these with your actual component imports
-import TripPostAdapter from '../user/TripPostAdapter';
+import TripPost from '../social/TripPost';
 import { PathConnector } from './PathConnector';
 import { RoutePreview } from './RoutePreview';
+import { adaptCommentsForUI } from '../../utils/tripAdapters';
+import { useUserStore } from '../../store/userStore';
 
 // --- Styled Components (Retained) ---
 
@@ -70,6 +72,7 @@ export default function RouteViewer({ collection, onEdit, onDelete }: AppProps) 
   const [isExpanded, setIsExpanded] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { t } = useTranslation();
+  const storeUser = useUserStore((s) => s.user);
   // Define the offsets used for the visual layout
   // You would typically calculate this dynamically based on screen size or card content height
   const hardcodedOffsets = [30, -60, 30, -40, 10, -65, 50];
@@ -132,11 +135,12 @@ export default function RouteViewer({ collection, onEdit, onDelete }: AppProps) 
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15, duration: 0.4 }}
               >
-                {/* Trip is passed to the adapter. No edit/delete handlers here (preview handles collection-level actions). */}
-                <TripPostAdapter
-                  trip={trip as any}
-                  onDelete={() => { }}
-                  onEdit={() => { }}
+                <TripPost
+                  trip={{
+                    ...trip,
+                    currentUserId: storeUser?._id || '',
+                    comments: adaptCommentsForUI(trip.comments || [], t)
+                  } as any}
                   showDescription={false}
                 />
               </motion.div>
@@ -193,10 +197,12 @@ export default function RouteViewer({ collection, onEdit, onDelete }: AppProps) 
                         height: 500
                       }}
                     >
-                      <TripPostAdapter
-                        trip={trip as any}
-                        onDelete={() => { }}
-                        onEdit={() => { }}
+                      <TripPost
+                        trip={{
+                          ...trip,
+                          currentUserId: storeUser?._id || '',
+                          comments: adaptCommentsForUI(trip.comments || [], t)
+                        } as any}
                         showDescription={false}
                       />
                     </Box>
@@ -205,9 +211,9 @@ export default function RouteViewer({ collection, onEdit, onDelete }: AppProps) 
                     {nextTrip && (
                       <Box sx={{ flexShrink: 0, position: 'relative', height: TIMELINE_HEIGHT, width: CONNECTOR_WIDTH }}>
                         <PathConnector
-                          fromPosition={alignmentPointY+CARD_IMAGE_HEIGHT/2}
+                          fromPosition={alignmentPointY + CARD_IMAGE_HEIGHT / 2}
                           // Safely access nextTrip.offsetY
-                          toPosition={MIDLINE_Y + nextTrip.offsetY+CARD_IMAGE_HEIGHT}
+                          toPosition={MIDLINE_Y + nextTrip.offsetY + CARD_IMAGE_HEIGHT}
                           width={CONNECTOR_WIDTH}
                         />
                       </Box>

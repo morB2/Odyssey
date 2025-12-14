@@ -4,15 +4,12 @@ import { Box, Paper } from "@mui/material";
 import { ProfileHeader } from "./ProfileHeader";
 import { TripsList } from "./TripsList";
 import { ChangePasswordModal } from "./EditProfileModal";
-import { EditTripModal } from "./EditTripModal";
-import type { Trip, UserProfile } from "./types";
-import { getProfile, getTrips, getLikedTrips, getSavedTrips, deleteTrip as svcDeleteTrip } from "../../services/profile.service.tsx";
-import { getCollectionsByUser, deleteCollection } from "../../services/collection.service.tsx";
+import type { UserProfile } from "./types";
+import { getProfile, deleteTrip as svcDeleteTrip } from "../../services/profile.service.tsx";
 import { CreateCollectionModal } from "../collections/CreateCollectionModal";
 import { useUserStore } from "../../store/userStore";
 import { toast } from "react-toastify";
 import { useTranslation } from 'react-i18next';
-import api from "../../services/httpService";
 import { ConfirmDialog } from "../general/ConfirmDialog";
 
 const containerStyle = {
@@ -48,67 +45,38 @@ const guestUser = {
   avatar: ""
 };
 
-const normalizeTrips = (data: unknown): Trip[] => {
-  if (Array.isArray(data)) return data;
-  const trips = (data as { trips?: Trip[] })?.trips;
-  return Array.isArray(trips) ? trips : [];
-};
-
 export default function Profile() {
   const { t } = useTranslation();
   const storeUser = useUserStore((s) => s.user);
-  const storeToken = useUserStore((s) => s.token);
-  const setUserStore = useUserStore((s) => s.setUser);
   const params = useParams();
   const viewedUserId = (params.userId as string) || undefined;
   const profileId = viewedUserId || storeUser?._id || "";
   const isOwner = Boolean(storeUser?._id && viewedUserId ? storeUser._id === viewedUserId : !viewedUserId);
 
+  // Simplified state - only user profile and modals
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [trips, setTrips] = useState<Trip[]>([]);
-  const [collections, setCollections] = useState<any[]>([]);
-  const [collectionsLoading, setCollectionsLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [totalTrips, setTotalTrips] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [tripsLoading, setTripsLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
   const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState<"my-trips" | "liked" | "saved" | "collections">("my-trips");
-
-  const TRIPS_PER_PAGE = 12;
-
   const [deleteCollectionId, setDeleteCollectionId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
+  // Fetch user profile only
   useEffect(() => {
     let mounted = true;
-    async function loadData() {
+    async function loadProfile() {
       if (!profileId) {
         setLoading(false);
         return;
       }
       setLoading(true);
       try {
-        const [userRes, tripsRes] = await Promise.all([
-          getProfile(profileId).catch(() => ({ success: false })),
-          getTrips(profileId as string, 1, TRIPS_PER_PAGE).catch(() => ({ success: false })),
-        ]);
-
+        const userRes = await getProfile(profileId);
         if (!mounted) return;
         if (!userRes || !userRes.success) throw new Error(t('general.error'));
-
         setUser(userRes.user);
-
-        const tripsData = normalizeTrips(tripsRes.trips || tripsRes);
-        setTrips(tripsData);
-        setPage(1);
-        setHasMore(tripsRes.pagination?.hasMore ?? true);
-        setTotalTrips(tripsRes.pagination?.total ?? tripsData.length);
       } catch (e) {
         if (!mounted) return;
         toast.error(String(e));
@@ -117,140 +85,39 @@ export default function Profile() {
       }
     }
 
-    loadData();
+    loadProfile();
     return () => { mounted = false; };
-  }, [storeUser, storeToken, profileId]);
+  }, [profileId, t]);
 
+  // Reset tab when switching between own/other profiles
   useEffect(() => {
     if (!isOwner) setActiveTab("my-trips");
   }, [isOwner]);
 
-  useEffect(() => {
-    let mounted = true;
-    async function fetchForTab() {
-      if (!profileId) {
-        setTripsLoading(false);
-        return;
-      }
-      setTripsLoading(true);
-      setPage(1);
-      try {
-        if (activeTab === "saved" && !isOwner) return;
 
-        if (activeTab === "collections") {
-          setCollectionsLoading(true);
-          try {
-            const res = await getCollectionsByUser(profileId as string);
-            if (!mounted) return;
-            const cols = res.collections || res;
-            setCollections(cols || []);
-          } catch {
-            toast.error("Failed to load collections");
-          } finally {
-            if (mounted) setCollectionsLoading(false);
-          }
-        } else {
-          let data: unknown = null;
-          if (activeTab === "my-trips") {
-            data = await getTrips(profileId as string, 1, TRIPS_PER_PAGE);
-          } else if (activeTab === "liked") {
-            data = await getLikedTrips(profileId as string, 1, TRIPS_PER_PAGE);
-          } else {
-            data = await getSavedTrips(profileId as string, 1, TRIPS_PER_PAGE);
-          }
-
-          if (mounted) {
-            const response = data as any;
-            const tripsData = normalizeTrips(response.trips || response);
-            setTrips(tripsData);
-            setPage(1);
-            setHasMore(response.pagination?.hasMore ?? true);
-            setTotalTrips(response.pagination?.total ?? tripsData.length);
-          }
-        }
-      } catch {
-        toast.error("Failed to load trips");
-      } finally {
-        if (mounted) setTripsLoading(false);
-      }
-    }
-
-    fetchForTab();
-    return () => { mounted = false; };
-  }, [activeTab, profileId, storeToken, isOwner]);
-
-  const loadMoreTrips = async () => {
-    if (loadingMore || !hasMore) return;
-
-    setLoadingMore(true);
-    try {
-      const nextPage = page + 1;
-      let data: unknown = null;
-
-      if (activeTab === "my-trips") {
-        data = await getTrips(profileId as string, nextPage, TRIPS_PER_PAGE);
-      } else if (activeTab === "liked") {
-        data = await getLikedTrips(profileId as string, nextPage, TRIPS_PER_PAGE);
-      } else {
-        data = await getSavedTrips(profileId as string, nextPage, TRIPS_PER_PAGE);
-      }
-
-      const response = data as any;
-      const newTrips = normalizeTrips(response.trips || response);
-
-      setTrips((prev) => [...prev, ...newTrips]);
-      setPage(nextPage);
-      setHasMore(response.pagination?.hasMore ?? false);
-    } catch {
-      toast.error("Failed to load more trips");
-    } finally {
-      setLoadingMore(false);
-    }
-  };
-
-  const handleSaveTrip = (updatedTrip: Trip) => {
-    setTrips((prev) => prev.map((t) => t.id === updatedTrip.id || t._id === updatedTrip._id ? { ...t, ...updatedTrip } : t));
-    setEditingTrip(null);
-    toast.success(t('profilePage.tripUpdatedSuccessfully'));
-  };
 
   const handleDeleteTrip = async (tripId: string) => {
     try {
       const res = await svcDeleteTrip(tripId);
       const body = res as any;
       if (!body || (body.success === false && body.error)) throw new Error(body.error || "Failed to delete trip");
-
-      setTrips((prev) => prev.filter((t) => t.id !== tripId && t._id !== tripId));
       toast.success(t('profilePage.tripDeletedSuccessfully'));
     } catch (e) {
       toast.error(String(e));
+      throw e; // Re-throw so TripsList knows it failed
     }
   };
 
-  const handleAvatarSaved = (updatedUser: UserProfile) => {
-    let newAvatar = updatedUser.avatar;
-    if (newAvatar && !newAvatar.startsWith("http") && !newAvatar.startsWith("data:")) {
-      const baseUrl = api.defaults.baseURL || "";
-      newAvatar = `${baseUrl}${newAvatar.startsWith("/") ? "" : "/"}${newAvatar}`;
+  const handleProfileUpdated = async () => {
+    // Refresh user profile after avatar/password change
+    try {
+      const userRes = await getProfile(profileId);
+      if (userRes && userRes.success) {
+        setUser(userRes.user);
+      }
+    } catch (e) {
+      console.error("Failed to refresh profile", e);
     }
-
-    const userWithFullAvatar = { ...updatedUser, avatar: newAvatar };
-
-    if (isOwner) {
-      setUserStore(userWithFullAvatar, storeToken || undefined);
-    }
-
-    setUser((prev) => prev ? { ...prev, ...userWithFullAvatar } : userWithFullAvatar);
-
-    setTrips((prevTrips) =>
-      prevTrips.map((t) =>
-        t.user && (t.user._id === updatedUser.id || t.user._id === (updatedUser as any)._id)
-          ? { ...t, user: { ...t.user, avatar: newAvatar } }
-          : t
-      )
-    );
-
-    toast.success(t('profilePage.profileUpdatedSuccessfully'));
   };
 
   const handleCreateCollectionClick = () => {
@@ -263,30 +130,23 @@ export default function Profile() {
     setIsCollectionModalOpen(true);
   };
 
-  const handleCollectionSaveSuccess = (savedCollection: any) => {
-    setCollections((prev) => {
-      const exists = prev.find((c) => c._id === savedCollection._id);
-      if (exists) {
-        return prev.map((c) => (c._id === savedCollection._id ? savedCollection : c));
-      }
-      return [savedCollection, ...prev];
-    });
+  const handleCollectionSaveSuccess = () => {
     setIsCollectionModalOpen(false);
+    // TripsList will handle its own refresh
   };
 
-  const handleDeleteCollection = (collectionId: string) => {
-    setDeleteCollectionId(collectionId);
-    setIsDeleteDialogOpen(true);
-  };
+
 
   const confirmDeleteCollection = async () => {
     if (!deleteCollectionId) return;
     try {
+      // Import deleteCollection service
+      const { deleteCollection } = await import("../../services/collection.service");
       await deleteCollection(deleteCollectionId);
-      setCollections((prev) => prev.filter((c) => c._id !== deleteCollectionId));
       toast.success(t("collection.deleted"));
     } catch {
       toast.error(t("collection.deleteFailed"));
+      throw new Error("Failed to delete collection");
     } finally {
       setIsDeleteDialogOpen(false);
       setDeleteCollectionId(null);
@@ -306,23 +166,13 @@ export default function Profile() {
 
           <Box sx={{ mt: 4 }}>
             <TripsList
-              trips={trips}
-              collections={collections}
-              collectionsLoading={collectionsLoading}
+              profileId={profileId}
               activeTab={activeTab}
               onTabChange={setActiveTab}
-              onTripClick={() => {}}
-              setTrips={setTrips}
-              onEdit={(trip) => setEditingTrip(trip)}
-              onDelete={(tripId) => handleDeleteTrip(tripId)}
+              onDelete={handleDeleteTrip}
               onCollectionCreate={handleCreateCollectionClick}
               onCollectionEdit={handleEditCollectionClick}
-              onCollectionDelete={handleDeleteCollection}
-              isOwner={isOwner}
-              loading={tripsLoading}
-              loadingMore={loadingMore}
-              onLoadMore={loadMoreTrips}
-              hasMore={hasMore}
+              onCollectionDelete={confirmDeleteCollection}
             />
           </Box>
         </Paper>
@@ -331,16 +181,10 @@ export default function Profile() {
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           user={user || guestUser}
-          onAvatarSaved={handleAvatarSaved}
+          onProfileUpdated={handleProfileUpdated}
         />
 
-        <EditTripModal
-          trip={editingTrip}
-          isOpen={!!editingTrip}
-          onClose={() => setEditingTrip(null)}
-          onSave={handleSaveTrip}
-          setTrips={setTrips}
-        />
+
 
         <CreateCollectionModal
           isOpen={isCollectionModalOpen}
