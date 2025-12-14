@@ -69,8 +69,8 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectChat, activeChatUser 
         if (!user) return;
         setConversations(prev => {
             const existingConvIndex = prev.findIndex(c =>
-                c.participants.some((p: any) => p._id === message.senderId._id || p._id === message.receiverId._id) &&
-                c.participants.some((p: any) => p._id === user._id)
+                c.participants.some((p: any) => p._id === message.senderId._id) &&
+                c.participants.some((p: any) => p._id === message.receiverId._id)
             );
 
             if (existingConvIndex !== -1) {
@@ -203,11 +203,11 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectChat, activeChatUser 
                         const otherParticipant = conv.participants.find((p: any) => p._id !== user._id);
                         const isActive = activeChatUser?._id === otherParticipant._id;
 
-                         // Calculate unread status
-                         const receiverId = conv.lastMessage?.receiverId?._id || conv.lastMessage?.receiverId;
-                         const isUnread = conv.lastMessage &&
-                             !conv.lastMessage.read &&
-                             String(receiverId) === user._id;
+                        // Calculate unread status
+                        const receiverId = conv.lastMessage?.receiverId?._id || conv.lastMessage?.receiverId;
+                        const isUnread = conv.lastMessage &&
+                            !conv.lastMessage.read &&
+                            String(receiverId) === user._id;
 
                         return (
                             <ListItem
@@ -220,20 +220,20 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectChat, activeChatUser 
                                     alignItems="flex-start"
                                     sx={{
                                         borderLeft: isActive ? '4px solid #ff9800' : '4px solid transparent',
-                                        bgcolor: isActive 
-                                            ? '#fff3e0' 
-                                            : isUnread 
-                                                ? 'rgba(255, 152, 0, 0.08)' 
+                                        bgcolor: isActive
+                                            ? '#fff3e0'
+                                            : isUnread
+                                                ? 'rgba(255, 152, 0, 0.08)'
                                                 : 'transparent',
                                         '&.Mui-selected': {
                                             bgcolor: '#fff3e0',
                                             '&:hover': { bgcolor: '#ffe0b2' },
                                         },
                                         '&:hover': {
-                                            bgcolor: isActive 
-                                                ? '#ffe0b2' 
-                                                : isUnread 
-                                                    ? 'rgba(255, 152, 0, 0.12)' 
+                                            bgcolor: isActive
+                                                ? '#ffe0b2'
+                                                : isUnread
+                                                    ? 'rgba(255, 152, 0, 0.12)'
                                                     : 'rgba(0, 0, 0, 0.04)'
                                         }
                                     }}
