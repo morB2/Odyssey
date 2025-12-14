@@ -1,7 +1,7 @@
 import Collection from "../models/collectionModel.js";
 import Trip from "../models/tripModel.js";
 import { fetchTrips } from "./tripFetcherService.js";
-
+import redis from "../db/redisClient.js";
 export const createCollectionService = async (userId, data) => {
     const { name, description, trips, image, isPrivate } = data;
 
@@ -27,6 +27,11 @@ export const createCollectionService = async (userId, data) => {
 };
 
 export const getCollectionsByUserService = async (userId, viewerId, options = {}) => {
+    const cacheKey = `collections:${userId}`;
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+        return JSON.parse(cached);
+    }
     const query = { user: userId };
 
     if (viewerId !== userId) {
@@ -50,7 +55,7 @@ export const getCollectionsByUserService = async (userId, viewerId, options = {}
         // Re-order trips to match the order in c.trips
         // Create a map for quick lookup
         console.log(fetchedTrips)
-        const filteredTrips=(viewerId===userId)? fetchedTrips : fetchedTrips.filter(trip=>trip.visabilityStatus==='public')
+        const filteredTrips = (viewerId === userId) ? fetchedTrips : fetchedTrips.filter(trip => trip.visabilityStatus === 'public')
         console.log(filteredTrips)
         const tripMap = new Map(filteredTrips.map(t => [t._id.toString(), t]));
 
@@ -66,7 +71,7 @@ export const getCollectionsByUserService = async (userId, viewerId, options = {}
             coverImage: c.image || (trips[0] && trips[0].images && trips[0].images[0]) || null,
         });
     }
-
+    await redis.setEx(cacheKey, 60, JSON.stringify(result));
     return result;
 };
 

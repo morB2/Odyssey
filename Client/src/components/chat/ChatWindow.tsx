@@ -77,6 +77,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
 
     // Listen for new messages
     useSocketEvent('newMessage', (message: ChatMessage) => {
+        console.log('New message received:', message);
         if (!currentUser?._id || !activeChatUser) return;
 
         // Only add if it belongs to the current conversation
