@@ -649,7 +649,25 @@
     "failedToDismissReport": "Failed to dismiss report.",
     "failedToDeletePost": "Failed to delete post.",
     "reportsTab": "Reports",
-    "analyticsTab": "Analytics"
+    "analyticsTab": "Analytics",
+    "contactMessages": "Contact Messages",
+    "messages": {
+      "errorLoading": "Error loading messages",
+      "confirmDelete": "Are you sure you want to delete this message?",
+      "deleteSuccess": "Message deleted",
+      "deleteError": "Error deleting message",
+      "noMessages": "No messages found",
+      "read": "Read",
+      "unread": "Unread",
+      "view": "View",
+      "delete": "Delete",
+      "close": "Close",
+      "from": "From",
+      "date": "Date",
+      "message": "Message",
+      "subject": "Subject",
+      "status": "Status"
+    }
   },
   "UsersManagement": {
     "searchPlaceholder": "Search by name or email...",

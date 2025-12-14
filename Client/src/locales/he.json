@@ -582,7 +582,25 @@
         "failedToDismissReport": "שגיאה בסימון הדיווח כטופל.",
         "failedToDeletePost": "שגיאה במחיקת הפוסט.",
         "reportsTab": "דיווחים",
-        "analyticsTab": "ניתוח נתונים"
+        "analyticsTab": "ניתוח נתונים",
+        "contactMessages": "הודעות צור קשר",
+        "messages": {
+            "errorLoading": "שגיאה בטעינת הודעות",
+            "confirmDelete": "האם אתה בטוח שברצונך למחוק הודעה זו?",
+            "deleteSuccess": "ההודעה נמחקה",
+            "deleteError": "שגיאה במחיקת ההודעה",
+            "noMessages": "לא נמצאו הודעות",
+            "read": "נקרא",
+            "unread": "לא נקרא",
+            "view": "צפייה",
+            "delete": "מחיקה",
+            "close": "סגור",
+            "from": "מאת",
+            "date": "תאריך",
+            "message": "הודעה",
+            "subject": "נושא",
+            "status": "סטטוס"
+        }
     },
     "social": {
         "like": "לייק",

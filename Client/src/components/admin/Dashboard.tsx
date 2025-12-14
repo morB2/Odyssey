@@ -4,6 +4,7 @@ import { Shield } from 'lucide-react';
 import UsersManagement from './UsersManagement';
 import PostsManagement from './PostsManagement';
 import ReportsManagement from './ReportsManagement';
+import ContactMessages from './ContactMessages';
 import { useTranslation } from 'react-i18next';
 
 export default function Dashboard() {
@@ -93,11 +94,25 @@ export default function Dashboard() {
                 }
               }}
             />
+            <Tab
+              label={t('admin.contactMessages') || 'Messages'}
+              sx={{
+                color: '#a1a1aa',
+                px: 3,
+                py: 1.5,
+                textTransform: 'none',
+                fontSize: '1rem',
+                '&.Mui-selected': {
+                  color: '#ea580c'
+                }
+              }}
+            />
           </Tabs>
 
           {activeTab === 0 && <UsersManagement />}
           {activeTab === 1 && <PostsManagement />}
           {activeTab === 2 && <ReportsManagement />}
+          {activeTab === 3 && <ContactMessages />}
         </Container>
       </Box>
     </>

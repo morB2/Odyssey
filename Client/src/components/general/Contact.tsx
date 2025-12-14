@@ -1,10 +1,51 @@
-import React from 'react';
-import { Box, Container, Typography, Paper, Grid, TextField, Button } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Container, Typography, Paper, Grid, TextField, Button, CircularProgress } from '@mui/material';
 import { Mail, MapPin, Phone, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
+import api from '../../services/httpService';
 
 const Contact: React.FC = () => {
     const { t } = useTranslation();
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        subject: '',
+        message: ''
+    });
+    const [loading, setLoading] = useState(false);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async () => {
+        const { firstName, lastName, email, subject, message } = formData;
+        if (!firstName || !lastName || !email || !subject || !message) {
+            toast.error(t('allFieldsRequired') || "All fields are required");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await api.post('/contact', formData);
+            toast.success(t('messageSentSuccess') || "Message sent successfully");
+            setFormData({
+                firstName: '',
+                lastName: '',
+                email: '',
+                subject: '',
+                message: ''
+            });
+        } catch (error) {
+            console.error("Error sending message:", error);
+            toast.error(t('messageSentFail') || "Failed to send message");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#f9fafb' }}>
             <Container maxWidth="lg" sx={{ py: 8 }}>
@@ -60,20 +101,60 @@ const Contact: React.FC = () => {
                             <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                                 <Grid container spacing={2}>
                                     <Grid size={{ xs: 12, sm: 6 }}>
-                                        <TextField fullWidth label={t('contact.firstName')} variant="outlined" />
+                                        <TextField
+                                            fullWidth
+                                            label={t('contact.firstName')}
+                                            variant="outlined"
+                                            name="firstName"
+                                            value={formData.firstName}
+                                            onChange={handleChange}
+                                        />
                                     </Grid>
                                     <Grid size={{ xs: 12, sm: 6 }}>
-                                        <TextField fullWidth label={t('contact.lastName')} variant="outlined" />
+                                        <TextField
+                                            fullWidth
+                                            label={t('contact.lastName')}
+                                            variant="outlined"
+                                            name="lastName"
+                                            value={formData.lastName}
+                                            onChange={handleChange}
+                                        />
                                     </Grid>
                                 </Grid>
-                                <TextField fullWidth label={t('contact.emailAddress')} variant="outlined" type="email" />
-                                <TextField fullWidth label={t('contact.subject')} variant="outlined" />
-                                <TextField fullWidth label={t('contact.message')} variant="outlined" multiline rows={4} />
+                                <TextField
+                                    fullWidth
+                                    label={t('contact.emailAddress')}
+                                    variant="outlined"
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                />
+                                <TextField
+                                    fullWidth
+                                    label={t('contact.subject')}
+                                    variant="outlined"
+                                    name="subject"
+                                    value={formData.subject}
+                                    onChange={handleChange}
+                                />
+                                <TextField
+                                    fullWidth
+                                    label={t('contact.message')}
+                                    variant="outlined"
+                                    multiline
+                                    rows={4}
+                                    name="message"
+                                    value={formData.message}
+                                    onChange={handleChange}
+                                />
 
                                 <Button
                                     variant="contained"
                                     size="large"
-                                    startIcon={<Send size={18} />}
+                                    onClick={handleSubmit}
+                                    disabled={loading}
+                                    startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <Send size={18} />}
                                     sx={{
                                         bgcolor: '#d97706',
                                         '&:hover': { bgcolor: '#b45309' },
@@ -82,7 +163,7 @@ const Contact: React.FC = () => {
                                         px: 4
                                     }}
                                 >
-                                    {t('contact.sendMessage')}
+                                    {loading ? t('sending') : t('contact.sendMessage')}
                                 </Button>
                             </Box>
                         </Paper>

@@ -25,4 +25,35 @@ export const deleteAdminTrip = async (tripId: String) => {
     }
 };
 
+// Contact messages
+export const fetchContactMessages = async (page: number = 1, limit: number = 10) => {
+    try {
+        const res = await api.get(`/contact`, { params: { page, limit } });
+        return res.data;
+    } catch (error) {
+        console.error("Error fetching contact messages:", error);
+        throw error;
+    }
+};
+
+export const markMessageAsRead = async (id: string) => {
+    try {
+        const res = await api.patch(`/contact/${id}/read`);
+        return res.data;
+    } catch (error) {
+        console.error("Error marking message as read:", error);
+        throw error;
+    }
+};
+
+export const deleteContactMessage = async (id: string) => {
+    try {
+        const res = await api.delete(`/contact/${id}`);
+        return res.data;
+    } catch (error) {
+        console.error("Error deleting contact message:", error);
+        throw error;
+    }
+};
+
 export default fetchAdminTrips;
