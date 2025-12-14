@@ -46,6 +46,9 @@ export default function Dashboard() {
           <Tabs
             value={activeTab}
             onChange={(_e, val) => setActiveTab(val)}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             sx={{
               mb: 4,
               borderBottom: '1px solid #27272a',

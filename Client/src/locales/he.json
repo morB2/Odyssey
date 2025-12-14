@@ -191,23 +191,6 @@
         "needHelp": "צריך/ה עזרה? פנה/י ל",
         "contactSupport": "צוות התמיכה שלנו"
     },
-    "profile": {
-        "profile": "פרופיל",
-        "followers": "עוקבים",
-        "following": "נעקבים",
-        "changePassword": "שינוי סיסמה",
-        "editProfile": "עריכת פרופיל",
-        "myTrips": "הטיולים שלי",
-        "likedTrips": "אהבתי",
-        "collections": "אוספים",
-        "savedTrips": "שמורים",
-        "noTripsYet": "אין עדיין טיולים",
-        "changeProfilePicture": "שינוי תמונת פרופיל",
-        "uploadNewAvatar": "העלה תמונה חדשה",
-        "cancel": "ביטול",
-        "save": "שמירה",
-        "trips": "טיולים"
-    },
     "chat": {
         "typeMessage": "הקלד הודעה...",
         "noMessagesYet": "אין עדיין הודעות. תגיד שלום!",
@@ -465,13 +448,18 @@
         "enterCurrentPassword": "אנא הזן את הסיסמה הנוכחית שלך",
         "passwordChangedSuccessfully": "הסיסמה שונתה בהצלחה",
         "failedToChangePassword": "שגיאה בשינוי הסיסמה",
+        "profile": "פרופיל",
         "followers": "עוקבים",
-        "following": "עוקב אחרי",
+        "following": "נעקבים",
         "myTrips": "הטיולים שלי",
         "likedTrips": "אהבתי",
         "collections": "אוספים",
         "savedTrips": "שמורים",
-        "noTripsYet": "אין טיולים עדיין"
+        "noTripsYet": "אין עדיין טיולים",
+        "changeProfilePicture": "שינוי תמונת פרופיל",
+        "cancel": "ביטול",
+        "save": "שמירה",
+        "trips": "טיולים"
     },
     "editTrip": {
         "title": "עריכת טיול",

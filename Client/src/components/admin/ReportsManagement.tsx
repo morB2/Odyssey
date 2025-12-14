@@ -156,6 +156,9 @@ export default function ReportsManagement() {
                 <Tabs
                     value={activeTab}
                     onChange={handleTabChange}
+                    variant="scrollable"
+                    scrollButtons="auto"
+                    allowScrollButtonsMobile
                     sx={{
                         '& .MuiTab-root': {
                             color: '#71717A',
@@ -194,6 +197,9 @@ export default function ReportsManagement() {
                         <Tabs
                             value={filterStatus}
                             onChange={(e, val) => setFilterStatus(val)}
+                            variant="scrollable"
+                            scrollButtons="auto"
+                            allowScrollButtonsMobile
                             sx={{
                                 '& .MuiTabs-indicator': { bgcolor: '#ea580c' },
                             }}
