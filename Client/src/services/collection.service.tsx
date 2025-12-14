@@ -31,3 +31,17 @@ export const deleteCollection = async (collectionId: string) => {
     const response = await api.delete(`/collections/${collectionId}`);
     return response.data;
 };
+
+// ============================================
+// AI Generation Functions
+// ============================================
+
+export const generateCollectionTitle = async (tripIds: string[]) => {
+    const response = await api.post('/collections/generate-title', { tripIds });
+    return response.data.title;
+};
+
+export const generateCollectionDescription = async (tripIds: string[]) => {
+    const response = await api.post('/collections/generate-description', { tripIds });
+    return response.data.description;
+};

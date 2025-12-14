@@ -293,16 +293,19 @@ import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, TextField, FormControlLabel, Switch, Box,
     Typography, Avatar, List, ListItem, ListItemButton,
-    ListItemAvatar, ListItemText, CircularProgress, IconButton, Divider
+    ListItemAvatar, ListItemText, CircularProgress, IconButton, Divider,
+    Tooltip,
+    InputAdornment
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import { getTrips } from '../../services/profile.service.tsx';
-import { createCollection, updateCollection } from '../../services/collection.service';
+import { createCollection, updateCollection, generateCollectionTitle, generateCollectionDescription } from '../../services/collection.service';
 import type { Collection, Trip } from '../user/types';
 import { useUserStore } from '../../store/userStore';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
 import {
     DndContext,
@@ -401,6 +404,8 @@ export function CreateCollectionModal({
     const [availableTrips, setAvailableTrips] = useState<Trip[]>([]);
     const [loadingTrips, setLoadingTrips] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [generatingTitle, setGeneratingTitle] = useState(false);
+    const [generatingDescription, setGeneratingDescription] = useState(false);
 
     // NEW: confirmation dialog state
     const [showPrivateWarning, setShowPrivateWarning] = useState(false);
@@ -466,6 +471,46 @@ export function CreateCollectionModal({
                 const newIndex = items.indexOf(over.id as string);
                 return arrayMove(items, oldIndex, newIndex);
             });
+        }
+    };
+
+    /* ------------------- AI Generation Handlers ------------------- */
+
+    const handleGenerateTitle = async () => {
+        if (selectedTrips.length === 0) {
+            toast.error(t('collection.errors.selectTripsFirst'));
+            return;
+        }
+
+        setGeneratingTitle(true);
+        try {
+            const title = await generateCollectionTitle(selectedTrips);
+            setName(title);
+            toast.success(t('collection.aiTitleGenerated'));
+        } catch (error) {
+            console.error('AI title generation error:', error);
+            toast.error(t('collection.errors.aiGenerationFailed'));
+        } finally {
+            setGeneratingTitle(false);
+        }
+    };
+
+    const handleGenerateDescription = async () => {
+        if (selectedTrips.length === 0) {
+            toast.error(t('collection.errors.selectTripsFirst'));
+            return;
+        }
+
+        setGeneratingDescription(true);
+        try {
+            const description = await generateCollectionDescription(selectedTrips);
+            setDescription(description);
+            toast.success(t('collection.aiDescriptionGenerated'));
+        } catch (error) {
+            console.error('AI description generation error:', error);
+            toast.error(t('collection.errors.aiGenerationFailed'));
+        } finally {
+            setGeneratingDescription(false);
         }
     };
 
@@ -540,15 +585,45 @@ export function CreateCollectionModal({
                 <DialogContent>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 1 }}>
 
-                        {/* Name + Private */}
-                        <Box sx={{ display: 'flex', gap: 2 }}>
+                        {/* Name + Private + AI Button */}
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
                             <TextField
                                 label={t("collection.name")}
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 fullWidth
                                 required
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <Tooltip
+                                                title={selectedTrips.length === 0 ? t('collection.selectTripsFirst') : t('collection.generateTitle')}
+                                                arrow
+                                            >
+                                                <span>
+                                                    <IconButton
+                                                        onClick={handleGenerateTitle}
+                                                        disabled={selectedTrips.length === 0 || generatingTitle}
+                                                        edge="end"
+                                                        sx={{
+                                                            color: '#f97316',
+                                                            '&:hover': { backgroundColor: '#fff7ed' },
+                                                            '&:disabled': { color: '#d1d5db' }
+                                                        }}
+                                                    >
+                                                        {generatingTitle ? (
+                                                            <CircularProgress size={20} />
+                                                        ) : (
+                                                            <AutoAwesomeIcon />
+                                                        )}
+                                                    </IconButton>
+                                                </span>
+                                            </Tooltip>
+                                        </InputAdornment>
+                                    )
+                                }}
                             />
+
 
                             <FormControlLabel
                                 control={
@@ -558,19 +633,50 @@ export function CreateCollectionModal({
                                     />
                                 }
                                 label={t("collection.private")}
-                                sx={{ whiteSpace: 'nowrap' }}
+                                sx={{ whiteSpace: 'nowrap', mt: 1 }}
                             />
                         </Box>
 
-                        {/* Description */}
-                        <TextField
-                            label={t("collection.description")}
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            fullWidth
-                            multiline
-                            rows={2}
-                        />
+                        {/* Description + AI Button */}
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                            <TextField
+                                label={t("collection.description")}
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                fullWidth
+                                multiline
+                                rows={2}
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <Tooltip
+                                                title={selectedTrips.length === 0 ? t('collection.selectTripsFirst') : t('collection.generateDescription')}
+                                                arrow
+                                            >
+                                                <span>
+                                                    <IconButton
+                                                        onClick={handleGenerateDescription}
+                                                        disabled={selectedTrips.length === 0 || generatingDescription}
+                                                        edge="end"
+                                                        sx={{
+                                                            color: '#f97316',
+                                                            '&:hover': { backgroundColor: '#fff7ed' },
+                                                            '&:disabled': { color: '#d1d5db' }
+                                                        }}
+                                                    >
+                                                        {generatingDescription ? (
+                                                            <CircularProgress size={20} />
+                                                        ) : (
+                                                            <AutoAwesomeIcon />
+                                                        )}
+                                                    </IconButton>
+                                                </span>
+                                            </Tooltip>
+                                        </InputAdornment>
+                                    )
+                                }}
+                            />
+                        </Box>
 
                         <Divider />
 

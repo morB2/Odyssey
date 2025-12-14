@@ -797,6 +797,11 @@
         "privateTripsWarningTitle": "יש טיולים פרטיים באוסף",
         "privateTripsWarningMessage": "בחרת טיולים פרטיים. אם תהפוך את האוסף לפומבי, הטיולים הפרטיים לא יופיעו באוסף כאשר משתמשים אחרים יצפו בו. להמשיך?",
         "continueAnyway": "להמשיך בכל זאת",
+        "generateTitle": "צור כותרת עם AI",
+        "generateDescription": "צור תיאור עם AI",
+        "selectTripsFirst": "בחר קודם טיולים לאוסף",
+        "aiTitleGenerated": "כותרת נוצרה בהצלחה!",
+        "aiDescriptionGenerated": "תיאור נוצר בהצלחה!",
         "success": {
             "created": "האוסף נוצר בהצלחה!",
             "updated": "האוסף עודכן בהצלחה!"
@@ -804,6 +809,8 @@
         "errors": {
             "notFound": "האוסף לא נמצא או שאין לך הרשאה לצפות בו",
             "nameRequired": "חובה להזין שם",
+            "selectTripsFirst": "בחר טיולים לפני יצירה עם AI",
+            "aiGenerationFailed": "יצירה עם AI נכשלה",
             "saveFailed": "שמירת האוסף נכשלה",
             "loadTrips": "לא ניתן לטעון את הטיולים"
         }

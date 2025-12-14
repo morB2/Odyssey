@@ -827,13 +827,20 @@
     "privateTripsWarningTitle": "Private Trips Included",
     "privateTripsWarningMessage": "Some of the trips you selected are private. If you make this collection public, those private trips will not be visible to other users. Do you want to continue?",
     "continueAnyway": "Continue",
+    "generateTitle": "Generate Title with AI",
+    "generateDescription": "Generate Description with AI",
+    "selectTripsFirst": "Select trips first",
+    "aiTitleGenerated": "Title generated successfully!",
+    "aiDescriptionGenerated": "Description generated successfully!",
     "success": {
       "created": "Collection created!",
       "updated": "Collection updated!"
     },
     "errors": {
-      "notFound": "Collection not found or access denied",
+      "notFound": "Collection not found or you don't have permission to view it",
       "nameRequired": "Name is required",
+      "selectTripsFirst": "Select trips before generating with AI",
+      "aiGenerationFailed": "AI generation failed",
       "saveFailed": "Failed to save collection",
       "loadTrips": "Could not load your trips"
     }
