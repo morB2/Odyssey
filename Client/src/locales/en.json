@@ -540,6 +540,7 @@
     "cancel": "Cancel",
     "success": "Report submitted successfully. Thank you.",
     "fail": "Failed to submit report. Please try again.",
+    "alreadyReported": "You have already reported this trip.",
     "errorNoReason": "Please select or enter a reason.",
     "reasons": {
       "Inappropriate content": "Inappropriate content",

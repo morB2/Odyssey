@@ -145,6 +145,7 @@
         "cancel": "ביטול",
         "success": "הדיווח נשלח בהצלחה. תודה.",
         "fail": "שליחת הדיווח נכשלה. אנא נסה שוב.",
+        "alreadyReported": "הדיווח כבר נשלח.",
         "errorNoReason": "אנא בחר/י או הזן סיבה.",
         "reasons": {
             "Inappropriate content": "תוכן בלתי הולם",
