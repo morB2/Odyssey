@@ -2,7 +2,7 @@ import * as followService from "../services/followService.js";
 
 export const followUserController = async (req, res) => {
   try {
-    const followerId = req.body.userId; // Ideally from JWT
+    const followerId = req.user.userId; // Ideally from JWT
     const followingId = req.params.userId;
 
     const follow = await followService.followUser(followerId, followingId);
@@ -14,7 +14,7 @@ export const followUserController = async (req, res) => {
 
 export const unfollowUserController = async (req, res) => {
   try {
-    const followerId = req.body.userId;
+    const followerId = req.user.userId;
     const followingId = req.params.userId;
 
     await followService.unfollowUser(followerId, followingId);

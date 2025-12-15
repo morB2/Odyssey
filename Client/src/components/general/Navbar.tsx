@@ -87,15 +87,14 @@ const Navbar: FC = () => {
   });
 
   useSocketEvent('messagesRead', (data: any) => {
+    // If I read messages (byUserId === me), update my count
     if (user && data.byUserId === user._id) {
-      chatService.getUnreadCount().then((data) => {
-        const count =
-          typeof data === 'number'
-            ? data
-            : data?.count ?? data?.unread ?? 0;
+       chatService.getUnreadCount().then((res) => {
+        const count = typeof res === 'number' ? res : res?.count ?? res?.unread ?? 0;
         setUnreadCount(count);
       });
     }
+    // If someone read MY messages (I am the sender), my unread count doesn't change, but I might want to know (read receipts) - not handled here
   });
 
   /* ---------------- handlers ---------------- */
@@ -311,11 +310,29 @@ const Navbar: FC = () => {
               )}
 
               <LanguageSwitcher />
-              {user ? <ProfileMenu /> : null}
+              {user ? (
+                <ProfileMenu />
+              ) : (
+                <Box sx={{ display: 'flex', gap: 1.5 }}>
+                  <Button
+                    onClick={() => navigate('/login?tab=login', { state: { backgroundLocation: location.pathname } })}
+                    sx={{ color: 'white' }}
+                  >
+                    {t('logIn')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => navigate('/login?tab=signup', { state: { backgroundLocation: location.pathname } })}
+                    sx={{ background: 'linear-gradient(135deg,#f97316,#ea580c)' }}
+                  >
+                    {t('signUp')}
+                  </Button>
+                </Box>
+              )}
             </Box>
           )}
-        </Toolbar>
-      </AppBar>
+        </Toolbar >
+      </AppBar >
 
       <Drawer
         anchor="right"

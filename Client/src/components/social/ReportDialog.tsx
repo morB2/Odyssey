@@ -62,9 +62,13 @@ export const ReportDialog = ({ open, onClose, tripId, userId }: ReportDialogProp
             onClose();
             // Ideally show a success toast here, but for now just close
             toast.success("Report submitted successfully. Thank you.");
-        } catch (err) {
+        } catch (err: any) {
             console.error("Failed to submit report:", err);
-            setError(t('report.fail'));
+            if(err.status === 409){
+                setError(t('report.alreadyReported'));
+            }else{
+                setError(t('report.fail'));
+            }
         } finally {
             setIsSubmitting(false);
             setReason('');
@@ -102,6 +106,9 @@ export const ReportDialog = ({ open, onClose, tripId, userId }: ReportDialogProp
                             value={reason}
                             label={t('report.reason')}
                             onChange={handleReasonChange}
+                            MenuProps={{
+                                disablePortal: true
+                            }}
                         >
                             {REPORT_REASONS.map((r) => (
                                 <MenuItem key={r} value={r}>{t(`report.reasons.${r}`)}</MenuItem>
