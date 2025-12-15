@@ -19,7 +19,7 @@ import { toggleLike, toggleSave, toggleFollow, addComment, addReaction, addReply
 import { useTripRealtime } from '../../hooks/useTripRealtime';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
-import { Trash2, Edit } from 'lucide-react';
+import { Trash2, Edit, Lock, Globe } from 'lucide-react';
 import { ConfirmDialog } from '../general/ConfirmDialog';
 
 const theme = createTheme({
@@ -296,7 +296,8 @@ export default function TripPost({ trip, maxLines, showDescription, onEdit, onDe
     };
 
     // Check if current user owns this trip
-    const isOwner =  trip.user._id && user?._id === trip.user._id;
+    const isOwner = trip.user._id && user?._id === trip.user._id;
+    console.log(trip)
     const showEditDeleteButtons = isOwner && (onEdit || onDelete);
 
 
@@ -325,14 +326,33 @@ export default function TripPost({ trip, maxLines, showDescription, onEdit, onDe
                         <Box
                             sx={{
                                 position: 'absolute',
-                                top: 16,
-                                left: '50%',
+                                top: 23,
+                                left: '70%',
                                 transform: 'translateX(-50%)',
                                 display: 'flex',
                                 gap: 1,
                                 zIndex: 10,
                             }}
                         >
+                            {/* Visibility Status Icon */}
+                            <IconButton
+                                size="small"
+                                sx={{
+                                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                    cursor: 'default',
+                                    '&:hover': {
+                                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                    },
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                {(trip as any)?.visabilityStatus == 'public' ? (
+                                    <Globe size={18} />
+                                ) : (
+                                    <Lock size={18} />
+                                )}
+                            </IconButton>
+
                             {onEdit && (
                                 <IconButton
                                     onClick={(e) => {
@@ -371,6 +391,7 @@ export default function TripPost({ trip, maxLines, showDescription, onEdit, onDe
                                     <Trash2 size={18} />
                                 </IconButton>
                             )}
+
                         </Box>
                     )}
                     {/* Header */}
