@@ -41,7 +41,7 @@ interface PostsTableProps {
     onDeleteClick: (id: string) => void;
 }
 
-export const PostsTable: React.FC<PostsTableProps> = ({
+const PostsTable: React.FC<PostsTableProps> = ({
     posts,
     isLoading,
     page,
@@ -175,3 +175,5 @@ export const PostsTable: React.FC<PostsTableProps> = ({
         </>
     );
 };
+
+export default PostsTable;

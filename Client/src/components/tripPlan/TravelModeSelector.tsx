@@ -2,7 +2,7 @@
 import { Paper, Stack, Button } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
-export const TravelModeSelector = ({ onSelectMode }: { onSelectMode: (mode: string) => void }) => {
+const TravelModeSelector = ({ onSelectMode }: { onSelectMode: (mode: string) => void }) => {
     const { t } = useTranslation();
 
     const travelModes = [
@@ -42,3 +42,5 @@ export const TravelModeSelector = ({ onSelectMode }: { onSelectMode: (mode: stri
         </Paper>
     );
 }
+
+export default TravelModeSelector;

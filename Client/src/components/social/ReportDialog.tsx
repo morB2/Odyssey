@@ -34,7 +34,7 @@ const REPORT_REASONS = [
     "Other"
 ];
 
-export const ReportDialog = ({ open, onClose, tripId, userId }: ReportDialogProps) => {
+const ReportDialog = ({ open, onClose, tripId, userId }: ReportDialogProps) => {
     const { t } = useTranslation();
     const [reason, setReason] = useState('');
     const [customReason, setCustomReason] = useState('');
@@ -64,9 +64,9 @@ export const ReportDialog = ({ open, onClose, tripId, userId }: ReportDialogProp
             toast.success("Report submitted successfully. Thank you.");
         } catch (err: any) {
             console.error("Failed to submit report:", err);
-            if(err.status === 409){
+            if (err.status === 409) {
                 setError(t('report.alreadyReported'));
-            }else{
+            } else {
                 setError(t('report.fail'));
             }
         } finally {
@@ -148,3 +148,5 @@ export const ReportDialog = ({ open, onClose, tripId, userId }: ReportDialogProp
         </Dialog>
     );
 }
+
+export default ReportDialog;

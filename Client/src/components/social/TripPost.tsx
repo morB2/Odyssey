@@ -20,7 +20,7 @@ import { useTripRealtime } from '../../hooks/useTripRealtime';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
 import { Trash2, Edit, Lock, Globe } from 'lucide-react';
-import { ConfirmDialog } from '../general/ConfirmDialog';
+import ConfirmDialog from '../general/ConfirmDialog';
 
 const theme = createTheme({
     palette: {
@@ -408,7 +408,7 @@ export default function TripPost({ trip, maxLines, showDescription, onEdit, onDe
                         images={trip.images}
                         currentImageIndex={currentImageIndex}
                         setCurrentImageIndex={setCurrentImageIndex}
-                        title={trip.title}
+                        title={trip.title||""}
                         onMouseEnter={() => setIsHoveringCarousel(true)}
                         onMouseLeave={() => setIsHoveringCarousel(false)}
                     />
@@ -429,7 +429,7 @@ export default function TripPost({ trip, maxLines, showDescription, onEdit, onDe
                     {/* Content */}
                     <CardContent>
                         <TripPostContent
-                            title={trip.title}
+                            title={trip.title||""}
                             duration={trip.duration || ''}
                             description={trip.description}
                             activities={trip.activities}

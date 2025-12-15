@@ -12,7 +12,7 @@ interface CollectionsListProps {
     loading?: boolean;
 }
 
-export function CollectionsList({
+export default function CollectionsList({
     collections = [],
     onCreate,
     onEdit,
@@ -21,7 +21,7 @@ export function CollectionsList({
     loading = false
 }: CollectionsListProps) {
 
-const { t } = useTranslation();
+    const { t } = useTranslation();
     if (loading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>

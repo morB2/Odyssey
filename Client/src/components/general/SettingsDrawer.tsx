@@ -14,7 +14,7 @@ import {
 import { X, Moon, Sun, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '../../context/SettingsContext';
-import { ConfirmDialog } from '../general/ConfirmDialog';
+import ConfirmDialog from '../general/ConfirmDialog';
 import { updateUser } from '../../services/user.service';
 import { useUserStore } from '../../store/userStore';
 

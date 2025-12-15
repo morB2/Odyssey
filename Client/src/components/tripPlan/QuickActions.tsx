@@ -7,8 +7,8 @@ interface QuickActionsProps {
     onQuickAction: (action: string) => void;
 }
 
-export const QuickActions: FC<QuickActionsProps> = ({ onQuickAction }: QuickActionsProps)=> {
-       const { t } = useTranslation();
+const QuickActions: FC<QuickActionsProps> = ({ onQuickAction }: QuickActionsProps) => {
+    const { t } = useTranslation();
 
     return (
         <Box sx={{ px: 3, py: 2, borderTop: '1px solid #f5f5f5', bgcolor: '#fffaf5' }}>
@@ -55,3 +55,5 @@ export const QuickActions: FC<QuickActionsProps> = ({ onQuickAction }: QuickActi
         </Box>
     );
 }
+
+export default QuickActions;

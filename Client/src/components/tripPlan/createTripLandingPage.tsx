@@ -1,6 +1,6 @@
 import { Plane, Map, Sparkles } from "lucide-react";
 import { Box, Typography, Grid, Container } from "@mui/material";
-import { CreateTripLandingCard } from "./createTripLandingCard";
+import CreateTripLandingCard from "./createTripLandingCard";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useUserStore } from "../../store/userStore";

@@ -4,14 +4,14 @@ import type { Collection } from "./types";
 import TripPost from "../social/TripPost";
 import { Box, Tabs, Tab, Typography, Grid, Skeleton, Card, CircularProgress } from "@mui/material";
 import { User, Heart, Bookmark, Layers } from "lucide-react";
-import { CollectionsList } from "../collections/CollectionsList";
+import CollectionsList from "../collections/CollectionsList";
 import { useTranslation } from 'react-i18next';
 import { adaptCommentsForUI } from "../../utils/tripAdapters";
 import { getTrips, getLikedTrips, getSavedTrips } from "../../services/profile.service";
 import { getCollectionsByUser } from "../../services/collection.service";
 import { toast } from "react-toastify";
 import { useUserStore } from "../../store/userStore";
-import { EditTripModal } from "./EditTripModal";
+import EditTripModal from "./EditTripModal";
 
 interface TripsListProps {
   profileId: string;
@@ -32,7 +32,7 @@ const normalizeTrips = (data: unknown): Trip[] => {
   return Array.isArray(trips) ? trips : [];
 };
 
-export function TripsList({
+export default function TripsList({
   profileId,
   activeTab,
   onTabChange,
@@ -58,7 +58,7 @@ export function TripsList({
 
   // Edit modal state - managed internally
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
-const isOwner = profileId === id;
+  const isOwner = profileId === id;
   /** Tabs: include collections tab for all profiles; saved only for owner */
   const availableTabs = [
     { key: "my-trips", label: t('profile.myTrips'), icon: <User size={20} /> },

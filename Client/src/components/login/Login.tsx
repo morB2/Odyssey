@@ -5,12 +5,12 @@ import { useNavigate, useSearchParams, Link as RouterLink, useLocation } from 'r
 import { useTranslation } from 'react-i18next';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useUserStore } from '../../store/userStore';
-import { GLogin } from './GoogleLogin';
+import GLogin from './GoogleLogin';
 import type { User } from '../../models/user.model';
 import { toast } from 'react-toastify';
 
 
-export const Login = () => {
+const Login = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -275,4 +275,6 @@ export const Login = () => {
     </Box>
   );
 }
+
+export default Login;
 

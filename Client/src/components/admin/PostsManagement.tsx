@@ -12,10 +12,10 @@ import { toast } from "react-toastify";
 import TripPost from "../social/TripPost";
 import type { Trip } from "../social/types";
 import { useUserStore } from "../../store/userStore";
-import { ConfirmDialog } from "../general/ConfirmDialog";
+import ConfirmDialog from "../general/ConfirmDialog";
 import PostsAnalytics from "./posts/PostsAnalytics";
-import { PostsTable } from "./posts/PostsTable"; // Import extracted component
-import { PostsFilterBar } from "./posts/PostsFilterBar"; // Import extracted component
+import PostsTable from "./posts/PostsTable"; // Import extracted component
+import PostsFilterBar from "./posts/PostsFilterBar"; // Import extracted component
 
 type Post = {
     id: string;
@@ -136,6 +136,7 @@ export default function PostsManagement() {
                 duration: tripData.duration || '',
                 notes: tripData.notes || '',
                 optimizedRoute: tripData.optimizedRoute || [],
+                visabilityStatus: tripData.visabilityStatus || '',
             };
             setViewingTrip(formattedTrip);
         } catch (error) {

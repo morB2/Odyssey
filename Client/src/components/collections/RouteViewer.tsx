@@ -13,8 +13,8 @@ interface TimelineTrip extends Trip {
 
 // ⚠️ IMPORTANT: Replace these with your actual component imports
 import TripPost from '../social/TripPost';
-import { PathConnector } from './PathConnector';
-import { RoutePreview } from './RoutePreview';
+import PathConnector from './PathConnector';
+import RoutePreview from './RoutePreview';
 import { adaptCommentsForUI } from '../../utils/tripAdapters';
 import { useUserStore } from '../../store/userStore';
 

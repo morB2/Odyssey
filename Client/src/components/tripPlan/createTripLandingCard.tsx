@@ -21,7 +21,7 @@ interface CreateTripLandingCardProps {
   onClick: () => void;
 }
 
-export function CreateTripLandingCard({
+export default function CreateTripLandingCard({
   icon,
   title,
   description,

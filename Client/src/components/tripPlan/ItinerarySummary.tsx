@@ -23,7 +23,7 @@ interface ItinerarySummaryProps {
     title?: string;
 }
 
-export const ItinerarySummary = ({
+const ItinerarySummary = ({
     items,
     discription,
     title,
@@ -141,3 +141,5 @@ export const ItinerarySummary = ({
         </Card>
     );
 }
+
+export default ItinerarySummary;

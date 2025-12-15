@@ -138,7 +138,7 @@ interface AdvancedMediaEditorProps {
   onSave: (editedUrl: string) => void;
 }
 
-export function AdvancedMediaEditor({
+export default function AdvancedMediaEditor({
   isOpen,
   onClose,
   mediaUrl,

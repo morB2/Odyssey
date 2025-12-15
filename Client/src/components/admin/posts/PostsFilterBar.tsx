@@ -9,7 +9,7 @@ interface PostsFilterBarProps {
     isLoading: boolean;
 }
 
-export const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
+const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
     searchQuery,
     onSearchChange,
     isLoading
@@ -45,3 +45,5 @@ export const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
         </Box>
     );
 };
+
+export default PostsFilterBar;

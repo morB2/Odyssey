@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Box, Paper } from "@mui/material";
-import { ProfileHeader } from "./ProfileHeader";
-import { TripsList } from "./TripsList";
-import { ChangePasswordModal } from "./EditProfileModal";
+import ProfileHeader from "./ProfileHeader";
+import TripsList from "./TripsList";
+import ChangePasswordModal from "./EditProfileModal";
 import type { UserProfile } from "./types";
 import { getProfile, deleteTrip as svcDeleteTrip } from "../../services/profile.service.tsx";
-import { CreateCollectionModal } from "../collections/CreateCollectionModal";
+import CreateCollectionModal from "../collections/CreateCollectionModal";
 import { useUserStore } from "../../store/userStore";
 import { toast } from "react-toastify";
 import { useTranslation } from 'react-i18next';
-import { ConfirmDialog } from "../general/ConfirmDialog";
+import ConfirmDialog from "../general/ConfirmDialog";
 
 const containerStyle = {
   minHeight: "100vh",

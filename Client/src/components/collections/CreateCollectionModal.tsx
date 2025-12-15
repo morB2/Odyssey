@@ -388,7 +388,7 @@ function SortableTripItem({ trip, onRemove }: SortableTripItemProps) {
 
 /* ------------------- Main Component ------------------- */
 
-export function CreateCollectionModal({
+export default function CreateCollectionModal({
     isOpen,
     onClose,
     onSuccess,

@@ -37,7 +37,7 @@ const BottomBar = styled(Box)(({ theme }) => ({
     background: 'linear-gradient(to bottom, #fff7ed, white)',
 }));
 
-export function RoutePreview({ title, description, tripCount, firstTripImage, onClick, onEdit, onDelete }: RoutePreviewProps) {
+export default function RoutePreview({ title, description, tripCount, firstTripImage, onClick, onEdit, onDelete }: RoutePreviewProps) {
     const { t } = useTranslation();
 
     return (

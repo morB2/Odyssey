@@ -18,7 +18,7 @@ interface AuthSaveDialogProps {
     onPrint: () => void;
 }
 
-export function AuthSaveDialog({ open, onClose, onLogin, onPrint }: AuthSaveDialogProps) {
+export default function AuthSaveDialog({ open, onClose, onLogin, onPrint }: AuthSaveDialogProps) {
     const { t } = useTranslation();
     return (
         <Dialog
@@ -60,7 +60,7 @@ export function AuthSaveDialog({ open, onClose, onLogin, onPrint }: AuthSaveDial
                                 fontSize: '1rem'
                             }}
                         >
-                           {t('saveWhenNotLoggedIn.login')}
+                            {t('saveWhenNotLoggedIn.login')}
                         </Button>
 
                         <Box sx={{ position: 'relative', my: 2 }}>
@@ -85,7 +85,7 @@ export function AuthSaveDialog({ open, onClose, onLogin, onPrint }: AuthSaveDial
                                 fontWeight: 600
                             }}
                         >
-                           {t('saveWhenNotLoggedIn.print')}
+                            {t('saveWhenNotLoggedIn.print')}
                         </Button>
                     </Stack>
                 </Box>

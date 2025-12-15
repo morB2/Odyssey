@@ -21,7 +21,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Navigation, ExternalLink, Save, Check } from "lucide-react";
-import { AuthSaveDialog } from "./AuthSaveDialog";
+import AuthSaveDialog from "./AuthSaveDialog";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import { useUserStore } from "../../store/userStore";
@@ -59,7 +59,7 @@ interface StoredUser {
   };
 }
 
-export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
+const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
   const { user } = useUserStore();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -348,3 +348,5 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
     </Card>
   );
 }
+
+export default TripDisplay;
