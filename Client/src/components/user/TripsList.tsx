@@ -307,6 +307,7 @@ const isOwner = profileId === id;
                       images: trip.images,
                       views: trip.views,
                       likes: trip.likes,
+                      visabilityStatus: trip.visabilityStatus,
                       comments: adaptCommentsForUI(trip.comments || [], t),
                       isLiked: trip.isLiked,
                       isSaved: trip.isSaved,
