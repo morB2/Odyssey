@@ -60,9 +60,7 @@ export const getCollectionsByUserService = async (userId, viewerId, options = {}
 
         // Re-order trips to match the order in c.trips
         // Create a map for quick lookup
-        console.log(fetchedTrips)
         const filteredTrips = (viewerId === userId) ? fetchedTrips : fetchedTrips.filter(trip => trip.visabilityStatus === 'public')
-        console.log(filteredTrips)
         const tripMap = new Map(filteredTrips.map(t => [t._id.toString(), t]));
 
         // Map c.trips to the fetched trip objects, filtering out any that might have been deleted/not found

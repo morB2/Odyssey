@@ -13,6 +13,7 @@ import search from './searchRoutes.js';
 import admin from './adminRoutes.js';
 import collections from './collectionRoutes.js';
 import contact from './contactRoutes.js';
+import timeline from './timelineRoutes.js';
 import { authMiddleware as autoM } from '../middleware/authMiddleware.js';
 
 export function routesInit(app) {
@@ -32,4 +33,5 @@ export function routesInit(app) {
   app.use('/search', search);        // Public: search stays accessible
   app.use('/admin', admin);          // Already has auth check in controller
   app.use('/collections', autoM, collections); // ✅ Protected: collections require auth
+  app.use('/timeline', autoM, timeline); // ✅ Protected: timeline requires auth
 }

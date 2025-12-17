@@ -297,7 +297,6 @@ export default function TripPost({ trip, maxLines, showDescription, onEdit, onDe
 
     // Check if current user owns this trip
     const isOwner = trip.user._id && user?._id === trip.user._id;
-    console.log(trip)
     const showEditDeleteButtons = isOwner && (onEdit || onDelete);
 
 
@@ -334,24 +333,27 @@ export default function TripPost({ trip, maxLines, showDescription, onEdit, onDe
                                 zIndex: 10,
                             }}
                         >
-                            {/* Visibility Status Icon */}
-                            <IconButton
-                                size="small"
+                            {/* Visibility Status Icon disabled*/}
+
+                            <Box
                                 sx={{
                                     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                                    cursor: 'default',
-                                    '&:hover': {
-                                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                                    },
+                                    borderRadius: '50%',
+                                    width: 28,
+                                    height: 28,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: '#6b7280',
                                 }}
-                                onClick={(e) => e.stopPropagation()}
                             >
-                                {(trip as any)?.visabilityStatus == 'public' ? (
+                                {(trip as any)?.visabilityStatus === 'public' ? (
                                     <Globe size={18} />
                                 ) : (
                                     <Lock size={18} />
                                 )}
-                            </IconButton>
+                            </Box>
+
 
                             {onEdit && (
                                 <IconButton

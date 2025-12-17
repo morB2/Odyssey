@@ -41,6 +41,7 @@ import { ResetPasswordPage } from './components/login/ResetPassword';
 import CreateTripLandingPage from './components/tripPlan/createTripLandingPage';
 import SinglePostPage from './components/social/SinglePostPage';
 import CollectionPage from './components/collections/CollectionPage';
+import TimelinePage from './components/timeline/TimelinePage';
 import Navbar from './components/general/Navbar';
 function App() {
   const location = useLocation();
@@ -91,6 +92,7 @@ function App() {
               <Route path="/createtripmanual" element={<CreateTrip />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/profile/:userId" element={<Profile />} />
+              <Route path="/timeline" element={<TimelinePage />} />
               <Route path="/feed" element={<TripFeed />} />
               <Route path="/post/:postId" element={<SinglePostPage />} />
               <Route path="/collection/:id" element={<CollectionPage />} />

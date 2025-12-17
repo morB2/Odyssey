@@ -462,7 +462,8 @@
     "changeProfilePicture": "Change Profile Picture",
     "cancel": "Cancel",
     "save": "Save",
-    "trips": "Trips"
+    "trips": "Trips",
+    "journey": "Journey"
   },
   "editTrip": {
     "title": "Edit Trip",

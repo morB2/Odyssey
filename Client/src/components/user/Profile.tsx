@@ -59,7 +59,7 @@ export default function Profile() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<any | null>(null);
-  const [activeTab, setActiveTab] = useState<"my-trips" | "liked" | "saved" | "collections">("my-trips");
+  const [activeTab, setActiveTab] = useState<"my-trips" | "liked" | "saved" | "collections" | "journey">("my-trips");
   const [deleteCollectionId, setDeleteCollectionId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
@@ -165,15 +165,15 @@ export default function Profile() {
           />
 
           <Box sx={{ mt: 4 }}>
-            <TripsList
-              profileId={profileId}
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              onDelete={handleDeleteTrip}
-              onCollectionCreate={handleCreateCollectionClick}
-              onCollectionEdit={handleEditCollectionClick}
-              onCollectionDelete={confirmDeleteCollection}
-            />
+              <TripsList
+                profileId={profileId}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                onDelete={handleDeleteTrip}
+                onCollectionCreate={handleCreateCollectionClick}
+                onCollectionEdit={handleEditCollectionClick}
+                onCollectionDelete={confirmDeleteCollection}
+              />
           </Box>
         </Paper>
 

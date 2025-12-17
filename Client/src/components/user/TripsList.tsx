@@ -2,8 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import type { Trip } from "./types";
 import type { Collection } from "./types";
 import TripPost from "../social/TripPost";
-import { Box, Tabs, Tab, Typography, Grid, Skeleton, Card, CircularProgress } from "@mui/material";
-import { User, Heart, Bookmark, Layers } from "lucide-react";
+import { Box, Tabs, Tab, Typography, Grid, Skeleton, Card, CircularProgress, Button } from "@mui/material";
+import { User, Heart, Bookmark, Layers, Map } from "lucide-react";
 import { CollectionsList } from "../collections/CollectionsList";
 import { useTranslation } from 'react-i18next';
 import { adaptCommentsForUI } from "../../utils/tripAdapters";
@@ -12,11 +12,12 @@ import { getCollectionsByUser } from "../../services/collection.service";
 import { toast } from "react-toastify";
 import { useUserStore } from "../../store/userStore";
 import { EditTripModal } from "./EditTripModal";
+import TimelinePage from "../timeline/TimelinePage";
 
 interface TripsListProps {
   profileId: string;
-  activeTab: "my-trips" | "liked" | "saved" | "collections";
-  onTabChange: (tab: "my-trips" | "liked" | "saved" | "collections") => void;
+  activeTab: "my-trips" | "liked" | "saved" | "collections" | "journey";
+  onTabChange: (tab: "my-trips" | "liked" | "saved" | "collections" | "journey") => void;
   onDelete: (tripId: string) => Promise<void>;
   onTripUpdated?: (updatedTrip: Trip) => void; // NEW: callback when trip is updated
   onCollectionCreate?: () => void;
@@ -58,12 +59,14 @@ export function TripsList({
 
   // Edit modal state - managed internally
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
-const isOwner = profileId === id;
+
+  const isOwner = profileId === id;
   /** Tabs: include collections tab for all profiles; saved only for owner */
   const availableTabs = [
     { key: "my-trips", label: t('profile.myTrips'), icon: <User size={20} /> },
     { key: "liked", label: t('profile.likedTrips'), icon: <Heart size={20} /> },
     { key: "collections", label: t('profile.collections') || 'Collections', icon: <Layers size={20} /> },
+    { key: "journey", label: t('profile.journey') || 'Journey', icon: <Map size={20} /> },
     ...(isOwner ? [{ key: "saved", label: t('profile.savedTrips'), icon: <Bookmark size={20} /> }] : []),
   ] as const;
 
@@ -80,8 +83,10 @@ const isOwner = profileId === id;
     "& .MuiTab-iconWrapper": { mr: 1 }
   };
 
-  const handleTabChange = (_: any, index: number) =>
-    onTabChange(availableTabs[index].key as "my-trips" | "liked" | "saved" | "collections");
+  const handleTabChange = (_: any, index: number) => {
+    const selectedTab = availableTabs[index].key as "my-trips" | "liked" | "saved" | "collections" | "journey";
+    onTabChange(selectedTab);
+  };
 
   // Fetch data function - extracted so it can be called externally
   const fetchForTab = useCallback(async () => {
@@ -95,6 +100,12 @@ const isOwner = profileId === id;
 
     try {
       if (activeTab === "saved" && !isOwner) return;
+
+      // Skip data fetching for journey and collections tabs
+      if (activeTab === "journey") {
+        setLoading(false);
+        return;
+      }
 
       if (activeTab === "collections") {
         setCollectionsLoading(true);
@@ -113,15 +124,17 @@ const isOwner = profileId === id;
           data = await getTrips(profileId, 1, TRIPS_PER_PAGE);
         } else if (activeTab === "liked") {
           data = await getLikedTrips(profileId, 1, TRIPS_PER_PAGE);
-        } else {
+        } else if (activeTab === "saved") {
           data = await getSavedTrips(profileId, 1, TRIPS_PER_PAGE);
         }
 
-        const response = data as any;
-        const tripsData = normalizeTrips(response.trips || response);
-        setTrips(tripsData);
-        setPage(1);
-        setHasMore(response.pagination?.hasMore ?? true);
+        if (data) {
+          const response = data as any;
+          const tripsData = normalizeTrips(response.trips || response);
+          setTrips(tripsData);
+          setPage(1);
+          setHasMore(response.pagination?.hasMore ?? true);
+        }
       }
     } catch (error) {
       toast.error(t("profile.failedToLoadTrips") || "Failed to load trips");
@@ -237,7 +250,6 @@ const isOwner = profileId === id;
           allowScrollButtonsMobile
           sx={{
 
-            // 👇 center tabs when they don't overflow
             "& .MuiTabs-flexContainer": {
               justifyContent: "center",
             },
@@ -276,6 +288,9 @@ const isOwner = profileId === id;
           loading={collectionsLoading}
         />
 
+      ) : activeTab === 'journey' ? (
+        <TimelinePage userId={profileId} />
+
       ) : trips.length === 0 ? (
 
         <Box sx={{ border: "1px solid #e5e5e5", backgroundColor: "#fff", p: 6, textAlign: "center", borderRadius: 3 }}>
@@ -290,29 +305,7 @@ const isOwner = profileId === id;
               return (
                 <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={trip._id ?? trip.id}>
                   <TripPost
-                    trip={{
-                      currentUserId: id || '',
-                      _id: String(trip._id || trip.id || ''),
-                      user: {
-                        _id: trip.user._id,
-                        firstName: trip.user.firstName,
-                        lastName: trip.user.lastName,
-                        avatar: trip.user.avatar,
-                        isFollowing: trip.user.isFollowing,
-                      },
-                      title: trip.title,
-                      duration: '',
-                      description: trip.description,
-                      activities: trip.activities,
-                      images: trip.images,
-                      views: trip.views,
-                      likes: trip.likes,
-                      visabilityStatus: trip.visabilityStatus,
-                      comments: adaptCommentsForUI(trip.comments || [], t),
-                      isLiked: trip.isLiked,
-                      isSaved: trip.isSaved,
-                      optimizedRoute: trip.optimizedRoute
-                    }}
+                    trip={{ ...trip ,currentUserId:id}}
                     onEdit={() => setEditingTrip(trip)}
                     onDelete={() => handleDeleteTrip(String(trip._id || trip.id))}
                   />

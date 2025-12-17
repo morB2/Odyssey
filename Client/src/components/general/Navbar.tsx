@@ -89,7 +89,7 @@ const Navbar: FC = () => {
   useSocketEvent('messagesRead', (data: any) => {
     // If I read messages (byUserId === me), update my count
     if (user && data.byUserId === user._id) {
-       chatService.getUnreadCount().then((res) => {
+      chatService.getUnreadCount().then((res) => {
         const count = typeof res === 'number' ? res : res?.count ?? res?.unread ?? 0;
         setUnreadCount(count);
       });
