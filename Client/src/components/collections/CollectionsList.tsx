@@ -1,30 +1,36 @@
 import { Box, Typography, Grid, Button, CircularProgress } from "@mui/material";
 import { Plus } from "lucide-react";
-import type { Collection } from "../user/types";
 import RouteViewer from "./RouteViewer";
 import { useTranslation } from "react-i18next";
+import { useCollectionsStore } from "../../store/collectionStore";
+import type { Collection } from "../user/types";
+
 interface CollectionsListProps {
-    collections: Collection[];
     onCreate: () => void;
-    onEdit: (collection: Collection) => void;
-    onDelete: (collectionId: string) => void;
     isOwner: boolean;
-    loading?: boolean;
+    onEdit?: (collection: any) => void;
+    onDelete?: (collectionId: string) => void;
 }
 
+
 export default function CollectionsList({
-    collections = [],
     onCreate,
+    isOwner,
     onEdit,
     onDelete,
-    isOwner,
-    loading = false
 }: CollectionsListProps) {
-
     const { t } = useTranslation();
+
+    const {
+        collections,
+        loading,
+        updateCollection,
+        removeCollection,
+    } = useCollectionsStore();
+
     if (loading) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+            <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
                 <CircularProgress />
             </Box>
         );
@@ -32,23 +38,25 @@ export default function CollectionsList({
 
     if (collections.length === 0) {
         return (
-            <Box sx={{
-                textAlign: 'center',
-                py: 8,
-                bgcolor: '#fff',
-                borderRadius: 3,
-                border: '1px solid #e5e5e5'
-            }}>
+            <Box
+                sx={{
+                    textAlign: "center",
+                    py: 8,
+                    bgcolor: "#fff",
+                    borderRadius: 3,
+                    border: "1px solid #e5e5e5",
+                }}
+            >
                 <Typography variant="h6" color="text.secondary" gutterBottom>
                     {t("collections.empty")}
                 </Typography>
+
                 {isOwner && (
                     <Button
                         variant="contained"
                         startIcon={<Plus size={18} />}
-                        onClick={() => onCreate()}
-
-                        sx={{ mt: 2, bgcolor: '#f97316', '&:hover': { bgcolor: '#ea580c' } }}
+                        onClick={onCreate}
+                        sx={{ mt: 2, bgcolor: "#f97316", "&:hover": { bgcolor: "#ea580c" } }}
                     >
                         {t("collections.create")}
                     </Button>
@@ -60,28 +68,36 @@ export default function CollectionsList({
     return (
         <Box>
             {isOwner && (
-                <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
+                <Box sx={{ mb: 3, display: "flex", justifyContent: "flex-end" }}>
                     <Button
                         variant="contained"
                         startIcon={<Plus size={18} />}
-                        onClick={() => onCreate()}
-
-                        sx={{ bgcolor: '#f97316', '&:hover': { bgcolor: '#ea580c' } }}
+                        onClick={onCreate}
+                        sx={{ bgcolor: "#f97316", "&:hover": { bgcolor: "#ea580c" } }}
                     >
                         {t("collections.create")}
                     </Button>
                 </Box>
             )}
 
-            <Grid container spacing={3} sx={{
-                width: "100%", px: 3, justifyContent: "space-between", // ✅ spreads evenly
-            }}>
-                {collections.map(collection => (
-                    <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={collection._id}>
+            <Grid
+                container
+                spacing={3}
+                sx={{
+                    width: "100%",
+                    px: 3,
+                    justifyContent: "space-between",
+                }}
+            >
+                {collections.map((collection) => (
+                    <Grid
+                        key={collection._id}
+                        size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+                    >
                         <RouteViewer
                             collection={collection}
-                            onEdit={(col) => onEdit(col)}
-                            onDelete={(id) => onDelete(id)}
+                            onEdit={(col:Collection) => { if (onEdit) onEdit(col); updateCollection(col); }}
+                            onDelete={(id:string) => { if (onDelete) onDelete(id); removeCollection(id); }}
                         />
                     </Grid>
                 ))}

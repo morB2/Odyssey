@@ -11,7 +11,7 @@ import { useUserStore } from "../../store/userStore";
 import { toast } from "react-toastify";
 import { useTranslation } from 'react-i18next';
 import ConfirmDialog from "../general/ConfirmDialog";
-
+import { useCollectionsStore } from "../../store/collectionStore";
 const containerStyle = {
   minHeight: "100vh",
   display: "flex",
@@ -62,7 +62,7 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState<"my-trips" | "liked" | "saved" | "collections">("my-trips");
   const [deleteCollectionId, setDeleteCollectionId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
+  const { removeCollection } = useCollectionsStore();
   // Fetch user profile only
   useEffect(() => {
     let mounted = true;
@@ -143,6 +143,7 @@ export default function Profile() {
       // Import deleteCollection service
       const { deleteCollection } = await import("../../services/collection.service");
       await deleteCollection(deleteCollectionId);
+      removeCollection(deleteCollectionId);
       toast.success(t("collection.deleted"));
     } catch {
       toast.error(t("collection.deleteFailed"));

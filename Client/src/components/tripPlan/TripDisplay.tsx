@@ -20,8 +20,9 @@ import {
   DialogActions,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Navigation, ExternalLink, Save, Check } from "lucide-react";
+import { MapPin, Navigation, ExternalLink, Save, Check, Wallet } from "lucide-react";
 import AuthSaveDialog from "./AuthSaveDialog";
+import BudgetEstimatorDialog from "./BudgetEstimatorDialog";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import { useUserStore } from "../../store/userStore";
@@ -84,6 +85,7 @@ const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
   // Dialog state
   const [openDialog, setOpenDialog] = useState(false);
   const [openAuthDialog, setOpenAuthDialog] = useState(false);
+  const [openBudgetDialog, setOpenBudgetDialog] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
   const handleSaveClick = () => {
@@ -293,9 +295,25 @@ const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
           }}
         >
           {t('tripDisplay.openInGoogleMaps')}
+
         </Button>
         <Button
           variant="outlined"
+          startIcon={<Wallet size={18} />}
+          onClick={() => setOpenBudgetDialog(true)}
+          sx={{
+            borderColor: orange,
+            color: orange,
+            ml: 1, // Margin left for spacing
+            mr: "auto", // Push other buttons to the right
+            "&:hover": { borderColor: "#fb8c00", bgcolor: "#fff3e0" }
+          }}
+        >
+          {t('budget.estimate') || "Estimate Cost"}
+        </Button>
+        <Button
+          variant="outlined"
+
           startIcon={isSaved ? <Check size={18} /> : <Save size={18} />}
           onClick={handleSaveClick}
           disabled={isSaved}
@@ -344,6 +362,12 @@ const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
         onClose={handleCloseAuthDialog}
         onLogin={handleLoginRedirect}
         onPrint={handlePrint}
+      />
+
+      <BudgetEstimatorDialog
+        open={openBudgetDialog}
+        onClose={() => setOpenBudgetDialog(false)}
+        tripData={data.route}
       />
     </Card>
   );

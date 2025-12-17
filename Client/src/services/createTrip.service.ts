@@ -82,6 +82,20 @@ export const parseTrip = async (text: string) => {
     }
 };
 
+
+export const calculateBudget = async (data: any) => {
+    try {
+        const res = await api.post(`${BASE_URL}/budget`, data);
+        return res.data;
+    } catch (error: any) {
+        if (error.response?.status === 503) {
+            throw new Error("AI_SERVICE_UNAVAILABLE");
+        }
+        console.error("Error calculating budget:", error);
+        throw error;
+    }
+};
+
 export default {
     createTrip,
     getSuggestions,
@@ -89,4 +103,6 @@ export default {
     findOptimalRoute,
     saveTrip,
     parseTrip,
+    calculateBudget,
 };
+

@@ -11,9 +11,11 @@ import {
     Chip,
 } from '@mui/material';
 import { Close, ChevronLeft, ChevronRight } from '@mui/icons-material';
-import { type Dispatch, type MouseEventHandler, type SetStateAction, useCallback } from 'react';
+import { type Dispatch, type MouseEventHandler, type SetStateAction, useCallback, useState } from 'react';
 import { type Trip } from './types';
 import { isVideo } from '../../utils/mediaUtils';
+import { Wallet } from 'lucide-react';
+import BudgetEstimatorDialog from '../tripPlan/BudgetEstimatorDialog';
 
 interface TripDetailsDialogProps {
     open: boolean;
@@ -31,6 +33,7 @@ export default function TripDetailsDialog({
     setDialogImageIndex,
 }: TripDetailsDialogProps) {
     const totalImages = trip.images?.length ?? 0;
+    const [openBudgetDialog, setOpenBudgetDialog] = useState(false);
 
     const nextDialogImage = useCallback(() => {
         setDialogImageIndex((prev) => (prev === totalImages - 1 ? 0 : prev + 1));
@@ -47,7 +50,7 @@ export default function TripDetailsDialog({
                     <Typography variant="h5" fontWeight={600}>
                         {trip.title || trip.location}
                     </Typography>
-                    <IconButton onClick={(e: React.MouseEvent<HTMLButtonElement>)=>{onClose(); e.stopPropagation()}} edge="end">
+                    <IconButton onClick={(e: React.MouseEvent<HTMLButtonElement>) => { onClose(); e.stopPropagation() }} edge="end">
                         <Close />
                     </IconButton>
                 </Box>
@@ -221,9 +224,24 @@ export default function TripDetailsDialog({
                                     Open in Google Maps
                                 </Button>
                             )}
+                             {/* Budget Estimate Button */}
+                             <Button
+                                variant="outlined"
+                                fullWidth
+                                onClick={() => setOpenBudgetDialog(true)}
+                                sx={{ mt: 2, color: '#ff9800', borderColor: '#ff9800', '&:hover': { borderColor: '#f57c00', bgcolor: '#fff3e0' } }}
+                                startIcon={<Wallet size={18} />}
+                            >
+                                Estimate Cost
+                            </Button>
                         </Box>
                     </Grid>
                 </Grid>
+                <BudgetEstimatorDialog
+                    open={openBudgetDialog}
+                    onClose={() => setOpenBudgetDialog(false)}
+                    tripData={trip.optimizedRoute}
+                />
             </DialogContent>
         </Dialog>
     );

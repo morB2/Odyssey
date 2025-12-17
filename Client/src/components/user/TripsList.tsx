@@ -12,7 +12,7 @@ import { getCollectionsByUser } from "../../services/collection.service";
 import { toast } from "react-toastify";
 import { useUserStore } from "../../store/userStore";
 import EditTripModal from "./EditTripModal";
-
+import { useCollectionsStore } from "../../store/collectionStore";
 interface TripsListProps {
   profileId: string;
   activeTab: "my-trips" | "liked" | "saved" | "collections";
@@ -49,13 +49,14 @@ export default function TripsList({
 
   // Internal state for data management
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(false);
-  const [collectionsLoading, setCollectionsLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-
+   const {
+     setCollections,
+     setLoading: setCollectionsLoading,
+   } = useCollectionsStore();
   // Edit modal state - managed internally
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
   const isOwner = profileId === id;
@@ -268,12 +269,10 @@ export default function TripsList({
 
       ) : activeTab === 'collections' ? (
         <CollectionsList
-          collections={collections || []}
           onCreate={onCollectionCreate || (() => { })}
           onEdit={onCollectionEdit || (() => { })}
           onDelete={onCollectionDelete || (() => { })}
           isOwner={isOwner}
-          loading={collectionsLoading}
         />
 
       ) : trips.length === 0 ? (

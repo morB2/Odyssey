@@ -77,7 +77,7 @@ function App() {
     <ChatProvider>
       <CacheProvider value={i18n.language === 'he' ? cacheRtl : cacheLtr}>
         <ThemeProvider theme={theme}>
-          <ToastContainer position="top-right" autoClose={3000} />
+          <ToastContainer position="top-right" autoClose={3000}  style={{ zIndex: 10005 }} />
           <ChatWidget />
 
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
