@@ -50,6 +50,7 @@ export default function WorldMap({ markers }: WorldMapProps) {
         return () => window.removeEventListener('resize', resize);
     }, []);
 
+    // Set auto-rotate
     useEffect(() => {
         if (globeEl.current) {
             const controls = globeEl.current.controls();

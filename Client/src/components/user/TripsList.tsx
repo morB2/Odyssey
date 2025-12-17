@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import type { Trip } from "./types";
 import type { Collection } from "./types";
 import TripPost from "../social/TripPost";
-import { Box, Tabs, Tab, Typography, Grid, Skeleton, Card, CircularProgress, Button } from "@mui/material";
+import { Box, Tabs, Tab, Typography, Grid, Skeleton, Card, CircularProgress } from "@mui/material";
 import { User, Heart, Bookmark, Layers, Map } from "lucide-react";
 import { CollectionsList } from "../collections/CollectionsList";
 import { useTranslation } from 'react-i18next';
@@ -12,7 +12,7 @@ import { getCollectionsByUser } from "../../services/collection.service";
 import { toast } from "react-toastify";
 import { useUserStore } from "../../store/userStore";
 import { EditTripModal } from "./EditTripModal";
-import TimelinePage from "../timeline/TimelinePage";
+import TimelinePage from "../journey/JourneyPage";
 
 interface TripsListProps {
   profileId: string;
@@ -305,7 +305,7 @@ export function TripsList({
               return (
                 <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={trip._id ?? trip.id}>
                   <TripPost
-                    trip={{ ...trip ,currentUserId:id}}
+                    trip={{ ...trip, currentUserId: id }}
                     onEdit={() => setEditingTrip(trip)}
                     onDelete={() => handleDeleteTrip(String(trip._id || trip.id))}
                   />

@@ -41,7 +41,7 @@ import { ResetPasswordPage } from './components/login/ResetPassword';
 import CreateTripLandingPage from './components/tripPlan/createTripLandingPage';
 import SinglePostPage from './components/social/SinglePostPage';
 import CollectionPage from './components/collections/CollectionPage';
-import TimelinePage from './components/timeline/TimelinePage';
+import TimelinePage from './components/journey/JourneyPage';
 import Navbar from './components/general/Navbar';
 function App() {
   const location = useLocation();
