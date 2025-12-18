@@ -98,7 +98,7 @@ export type ServerTrip = {
 
 export interface Collection {
   _id: string;
-  user: UserProfile | string;
+  user: string;
   name: string;
   description?: string;
   trips: Trip[];
