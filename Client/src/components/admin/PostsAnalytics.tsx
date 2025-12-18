@@ -3,8 +3,6 @@ import { Box, Paper, Typography, Skeleton } from "@mui/material";
 import {
     BarChart,
     Bar,
-    LineChart,
-    Line,
     PieChart,
     Pie,
     Cell,
@@ -12,16 +10,13 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip,
-    Legend,
     ResponsiveContainer,
 } from "recharts";
 import {
     getTopViewedPosts,
     getTopLikedPosts,
-    // getViewsTrend,
     getCategoryDistribution,
     type TopPost,
-    type ViewsTrendData,
     type CategoryData,
 } from "../../services/adminStatsService";
 import { useTranslation } from 'react-i18next';
@@ -32,7 +27,6 @@ export default function PostsAnalytics() {
     const { t } = useTranslation();
     const [topViewed, setTopViewed] = useState<TopPost[]>([]);
     const [topLiked, setTopLiked] = useState<TopPost[]>([]);
-    const [viewsTrend, setViewsTrend] = useState<ViewsTrendData[]>([]);
     const [categories, setCategories] = useState<CategoryData[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -46,12 +40,10 @@ export default function PostsAnalytics() {
             const [viewed, liked, cats] = await Promise.all([
                 getTopViewedPosts(),
                 getTopLikedPosts(),
-                // getViewsTrend(30),
                 getCategoryDistribution(),
             ]);
             setTopViewed(viewed);
             setTopLiked(liked);
-            // setViewsTrend(trend);
             setCategories(cats);
         } catch (error) {
             console.error("Error fetching analytics:", error);
@@ -228,68 +220,6 @@ export default function PostsAnalytics() {
 
             {/* Second Row - Views Trend and Category Distribution */}
             <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
-                {/* Views Trend */}
-                {/* <Box sx={{ flex: "2 1 calc(100% - 12px)", minWidth: "300px" }}>
-                    <Paper
-                        sx={{
-                            p: 3,
-                            height: "100%",
-                            bgcolor: "#18181B",
-                            border: "1px solid #27272A",
-                            borderRadius: 2,
-                            boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)"
-                        }}
-                    >
-                        <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: "white", display: "flex", alignItems: "center", gap: 1 }}>
-                            Views Trend (Last 30 Days)
-                        </Typography>
-                        <ResponsiveContainer width="100%" height={350}>
-                            <LineChart data={viewsTrend} margin={{ bottom: 35, left: 5, right: 5, top: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#27272A" />
-                                <XAxis
-                                    dataKey="date"
-                                    angle={-45}
-                                    textAnchor="end"
-                                    height={80}
-                                    stroke="#71717A"
-                                    tick={{ fill: '#A1A1AA', fontSize: 10 }}
-                                />
-                                <YAxis stroke="#71717A" tick={{ fill: '#A1A1AA' }} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: '#18181B',
-                                        border: '1px solid #27272A',
-                                        borderRadius: '8px',
-                                        color: 'white'
-                                    }}
-                                />
-                                <Legend
-                                    wrapperStyle={{ color: 'white' }}
-                                    iconType="line"
-                                />
-                                <Line
-                                    type="monotone"
-                                    dataKey="views"
-                                    stroke="#8884D8"
-                                    strokeWidth={3}
-                                    name="Total Views"
-                                    dot={{ fill: '#8884D8', r: 4 }}
-                                    activeDot={{ r: 6 }}
-                                />
-                                <Line
-                                    type="monotone"
-                                    dataKey="posts"
-                                    stroke="#82CA9D"
-                                    strokeWidth={3}
-                                    name="Posts Created"
-                                    dot={{ fill: '#82CA9D', r: 4 }}
-                                    activeDot={{ r: 6 }}
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </Paper>
-                </Box> */}
-
                 {/* Category Distribution */}
                 <Box sx={{ flex: "1 1 calc(37% - 12px)", minWidth: "300px" }}>
                     <Paper

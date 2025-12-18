@@ -1,12 +1,13 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { Trip } from "./types";
 import type { Collection } from "./types";
 import TripPost from "../social/TripPost";
-import { Box, Tabs, Tab, Typography, Grid, Skeleton, Card, CircularProgress } from "@mui/material";
+import { Box, Tabs, Tab, Typography, Grid, Card, Skeleton } from "@mui/material";
 import { User, Heart, Bookmark, Layers, Map } from "lucide-react";
 import { CollectionsList } from "../collections/CollectionsList";
 import { useTranslation } from 'react-i18next';
 import { adaptCommentsForUI } from "../../utils/tripAdapters";
+import JourneyLoader from '../general/Loading';
 import { getTrips, getLikedTrips, getSavedTrips } from "../../services/profile.service";
 import { getCollectionsByUser } from "../../services/collection.service";
 import { toast } from "react-toastify";
@@ -43,7 +44,6 @@ export function TripsList({
   onCollectionDelete
 }: TripsListProps) {
 
-  const sentinelRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
   const storeUser = useUserStore((s) => s.user);
   const id = storeUser?._id || "";
@@ -167,52 +167,102 @@ export function TripsList({
   };
 
   // Load more trips (infinite scroll)
-  const loadMoreTrips = async () => {
-    if (loadingMore || !hasMore || activeTab === "collections") return;
+  const loadMoreTrips = useCallback(async () => {
+    if (loadingMore || !hasMore || activeTab === "collections" || activeTab === "journey") return;
 
     setLoadingMore(true);
     try {
       const nextPage = page + 1;
-      let data: unknown = null;
+      let data: any = null;
 
       if (activeTab === "my-trips") {
         data = await getTrips(profileId, nextPage, TRIPS_PER_PAGE);
       } else if (activeTab === "liked") {
         data = await getLikedTrips(profileId, nextPage, TRIPS_PER_PAGE);
-      } else {
+      } else if (activeTab === "saved") {
         data = await getSavedTrips(profileId, nextPage, TRIPS_PER_PAGE);
       }
 
-      const response = data as any;
-      const newTrips = normalizeTrips(response.trips || response);
-
-      setTrips((prev) => [...prev, ...newTrips]);
-      setPage(nextPage);
-      setHasMore(response.pagination?.hasMore ?? false);
-    } catch {
+      if (data) {
+        const newTrips = normalizeTrips(data.trips || data);
+        if (newTrips.length === 0) {
+          setHasMore(false);
+        } else {
+          setTrips((prev) => [...prev, ...newTrips]);
+          setPage(nextPage);
+          setHasMore(data.pagination?.hasMore ?? newTrips.length === TRIPS_PER_PAGE);
+        }
+      }
+    } catch (error) {
       toast.error(t("profile.failedToLoadMore") || "Failed to load more trips");
     } finally {
       setLoadingMore(false);
     }
+  }, [loadingMore, hasMore, activeTab, page, profileId, t]);
+
+  /** Window scroll handler for infinite scroll */
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop >=
+        document.documentElement.offsetHeight - 100 &&
+        !loading &&
+        !loadingMore &&
+        hasMore &&
+        activeTab !== "collections" &&
+        activeTab !== "journey"
+      ) {
+        loadMoreTrips();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loading, loadingMore, hasMore, activeTab, loadMoreTrips]);
+
+  /** Fetch initial data when tab changes */
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      setLoading(true);
+      setPage(1);
+      setHasMore(true);
+      setTrips([]);
+
+      try {
+        if (activeTab === "collections") {
+          setCollectionsLoading(true);
+          const res = await getCollectionsByUser(profileId);
+          setCollections(res.collections || res || []);
+          setCollectionsLoading(false);
+        } else if (activeTab !== "journey") {
+          let data: any = null;
+          if (activeTab === "my-trips") data = await getTrips(profileId, 1, TRIPS_PER_PAGE);
+          else if (activeTab === "liked") data = await getLikedTrips(profileId, 1, TRIPS_PER_PAGE);
+          else if (activeTab === "saved") data = await getSavedTrips(profileId, 1, TRIPS_PER_PAGE);
+
+          if (data) {
+            const initialTrips = normalizeTrips(data.trips || data);
+            setTrips(initialTrips);
+            setHasMore(data.pagination?.hasMore ?? initialTrips.length === TRIPS_PER_PAGE);
+          }
+        }
+      } catch (err) {
+        toast.error(t("profile.failedToLoadTrips"));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, [activeTab, profileId, isOwner]);
+
+  // Handle trip deletion
+  const handleDeleteTrip = async (tripId: string) => {
+    await onDelete(tripId);
+    // Remove from local state
+    setTrips((prev) => prev.filter((t) => t.id !== tripId && t._id !== tripId));
   };
 
-  /** Infinite scroll observer */
-  useEffect(() => {
-    if (!hasMore || loadingMore || activeTab === "collections") return;
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting) loadMoreTrips();
-      },
-      { threshold: 0.1 }
-    );
-
-    if (sentinelRef.current) observer.observe(sentinelRef.current);
-
-    return () => observer.disconnect();
-  }, [hasMore, loadingMore, activeTab, page]);
-
-  /** Skeleton Loading Card */
   const SkeletonCard = () => (
     <Card sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
       <Skeleton variant="rectangular" height={300} />
@@ -229,13 +279,6 @@ export function TripsList({
       </Box>
     </Card>
   );
-
-  // Handle trip deletion
-  const handleDeleteTrip = async (tripId: string) => {
-    await onDelete(tripId);
-    // Remove from local state
-    setTrips((prev) => prev.filter((t) => t.id !== tripId && t._id !== tripId));
-  };
 
   return (
     <Box sx={{ backgroundColor: 'white' }}>
@@ -266,7 +309,6 @@ export function TripsList({
           ))}
         </Tabs>
       </Box>
-
 
       {/* Loading State */}
       {loading ? (
@@ -305,7 +347,7 @@ export function TripsList({
               return (
                 <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={trip._id ?? trip.id}>
                   <TripPost
-                    trip={{ ...trip, currentUserId: id }}
+                    trip={{ ...trip, currentUserId: id, comments: adaptCommentsForUI(trip.comments || []), }}
                     onEdit={() => setEditingTrip(trip)}
                     onDelete={() => handleDeleteTrip(String(trip._id || trip.id))}
                   />
@@ -314,13 +356,17 @@ export function TripsList({
             })}
           </Grid>
 
-          {/* Infinite scroll sentinel */}
-          {hasMore && <div ref={sentinelRef} style={{ height: 20, margin: "20px 0" }} />}
-
           {/* Bottom loader */}
           {loadingMore && (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-              <CircularProgress size={40} sx={{ color: "#f97316" }} />
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+              <JourneyLoader />
+            </Box>
+          )}
+
+          {/* No more trips message */}
+          {!hasMore && trips.length > 0 && (
+            <Box sx={{ textAlign: 'center', p: 2, color: '#737373' }}>
+              {t('noMoreTrips')}
             </Box>
           )}
         </>
