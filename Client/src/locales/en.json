@@ -726,7 +726,9 @@
     "noResults": "No results found",
     "noPosts": "No posts available",
     "deleteTitle": "Delete Trip",
-    "deleteMessage": "Are you sure you want to delete this trip? This action cannot be undone."
+    "deleteMessage": "Are you sure you want to delete this trip? This action cannot be undone.",
+    "viewPost": "View Post",
+    "deletePost": "Delete Post"
   },
   "createTrip": {
     "title": "Create a New Trip",
@@ -879,7 +881,9 @@
     "title": "Posts Analytics Dashboard",
     "topViewedPosts": "Top Viewed Posts",
     "topLikedPosts": "Top Liked Posts",
-    "categoryDistribution": "Category Distribution"
+    "categoryDistribution": "Category Distribution",
+    "errorLoading": "Failed to load analytics data",
+    "noData": "No data available"
   },
   "reportsAnalytics": {
     "title": "Reports Analytics Dashboard",

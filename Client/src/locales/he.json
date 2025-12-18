@@ -695,11 +695,13 @@
         "noResults": "לא נמצאו תוצאות",
         "noPosts": "אין פוסטים זמינים",
         "deleteTitle": "מחיקת טיול",
-        "deleteMessage": "האם אתה בטוח שברצונך למחוק טיול זה? לא ניתן לבטל פעולה זו."
+        "deleteMessage": "האם אתה בטוח שברצונך למחוק טיול זה? לא ניתן לבטל פעולה זו.",
+        "viewPost": "הצג פוסט",
+        "deletePost": "מחק פוסט"
     },
     "createTrip": {
         "title": "יצירת טיול חדש",
-        "subtitle": "תכננו את המסע ידנית",
+        "subtitle": "תכנון מסע ידנית",
         "basic": "מידע בסיסי",
         "tripTitle": "שם הטיול",
         "description": "תיאור",
@@ -848,7 +850,9 @@
         "title": "לוח ניתוח פוסטים",
         "topViewedPosts": "הפוסטים הנצפים ביותר",
         "topLikedPosts": "הפוסטים המועדפים ביותר",
-        "categoryDistribution": "התפלגות קטגוריות"
+        "categoryDistribution": "התפלגות קטגוריות",
+        "errorLoading": "שגיאה בטעינת הנתונים",
+        "noData": "אין נתונים זמינים"
     },
     "reportsAnalytics": {
         "title": "לוח ניתוח דיווחים",

@@ -45,6 +45,14 @@ export async function getAllTripsForAdmin(page = 1, limit = 10, search = "") {
                 path: "user",
                 select: "_id firstName lastName avatar",
             })
+            .populate({
+                path: "comments.user",
+                select: "_id firstName lastName avatar",
+            })
+            .populate({
+                path: "comments.replies.user",
+                select: "_id firstName lastName avatar",
+            })
             .lean(),
         Trip.countDocuments(filter),
     ]);

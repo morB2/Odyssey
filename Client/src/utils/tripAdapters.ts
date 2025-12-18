@@ -8,7 +8,9 @@ import type { Comment } from '../components/social/types';
  */
 export function adaptCommentsForUI(apiComments: any[], t?: (key: string) => string): Comment[] {
     return apiComments.map((c) => {
-        const date = new Date(c.timestamp);
+        // Handle both timestamp and createdAt fields
+        const timestamp = c.timestamp || c.createdAt;
+        const date = new Date(timestamp);
         const time = date.toLocaleString([], {
             year: "numeric",
             month: "short",
@@ -23,13 +25,13 @@ export function adaptCommentsForUI(apiComments: any[], t?: (key: string) => stri
 
         return {
             id: c.id || c._id,
-            userId: c.userId,
+            userId: c.userId || c.user?._id,
             user: {
                 name: `${firstName} ${lastName}`,
                 username: `@${firstName.toLowerCase()}${lastName.toLowerCase()}`,
                 avatar: c.user?.avatar || "/default-avatar.png"
             },
-            text: c.text,
+            text: c.text || c.comment || '', // Handle both text and comment fields
             timestamp: time,
             reactionsAggregated: c.reactionsAggregated || {},
             replies: c.replies ? adaptCommentsForUI(c.replies, t) : [],
