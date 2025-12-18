@@ -5,14 +5,14 @@ import { fetchTrips } from '../../services/tripFeed.service';
 import { type Trip } from './types';
 import TripFeedSkeleton from './TripFeedSkeleton';
 import { useUserStore } from '../../store/userStore';
-import { GuestWelcomeCard } from './GuestWelcomeCard';
+import GuestWelcomeCard from './GuestWelcomeCard';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
 import JourneyLoader from '../general/Loading';
 import { adaptCommentsForUI } from '../../utils/tripAdapters';
 
 
-export function TripFeed() {
+export default function TripFeed() {
   const { t } = useTranslation();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
@@ -125,7 +125,8 @@ export function TripFeed() {
                   comments: trip.comments,
                   isLiked: trip.isLiked,
                   isSaved: trip.isSaved,
-                  optimizedRoute: trip.optimizedRoute
+                  optimizedRoute: trip.optimizedRoute,
+                  visabilityStatus: trip.visabilityStatus,
                 }}
               />
             ))}

@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from "react";
-import { Modal } from "./Modal";
+import Modal from "./Modal";
 import { Box, Button, TextField, Typography, Divider, Avatar, IconButton } from "@mui/material";
 import { Edit } from "@mui/icons-material";
 import { useUserStore } from "../../store/userStore";
 import { changePassword, uploadAvatar } from "../../services/profile.service";
-import { CloudinaryUploadWidget } from "../general/CloudinaryUploadWidget";
+import CloudinaryUploadWidget from "../general/CloudinaryUploadWidget";
 import type { UserProfile } from "./types";
 import { useTranslation } from "react-i18next";
-import { AdvancedMediaEditor } from "../general/AdvancedMediaEditor";
+import AdvancedMediaEditor from "../general/AdvancedMediaEditor";
 import { toast } from 'react-toastify';
 
 interface ChangePasswordModalProps {
@@ -22,7 +22,7 @@ const labelStyle = { display: "block", mb: 1, fontSize: "0.875rem", fontWeight: 
 const dividerStyle = { backgroundColor: "#e5e5e5" };
 const sectionBoxStyle = { display: "flex", flexDirection: "column", gap: 2, borderRadius: 2, border: "1px solid #e5e5e5", backgroundColor: "#fafafa", p: 2 };
 
-export function ChangePasswordModal({ isOpen, onClose, user, onProfileUpdated }: ChangePasswordModalProps) {
+export default function ChangePasswordModal({ isOpen, onClose, user, onProfileUpdated }: ChangePasswordModalProps) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

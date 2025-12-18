@@ -1,34 +1,21 @@
 import { useState, useEffect, useCallback } from "react";
 import {
     Box,
-    TextField,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    Typography,
-    Chip,
-    IconButton,
-    Pagination,
-    Stack,
     Dialog,
     CircularProgress,
     Tabs,
     Tab
 } from "@mui/material";
-import { Search, Trash2, Eye } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { fetchAdminTrips, deleteAdminTrip } from "../../services/admin.service";
 import { toast } from "react-toastify";
 import TripPost from "../social/TripPost";
 import type { Trip } from "../social/types";
 import { useUserStore } from "../../store/userStore";
-import { ConfirmDialog } from "../general/ConfirmDialog";
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import PostsAnalytics from "./PostsAnalytics";
+import ConfirmDialog from "../general/ConfirmDialog";
+import PostsAnalytics from "./posts/PostsAnalytics";
+import PostsTable from "./posts/PostsTable"; // Import extracted component
+import PostsFilterBar from "./posts/PostsFilterBar"; // Import extracted component
 
 type Post = {
     id: string;
@@ -124,19 +111,6 @@ export default function PostsManagement() {
         }
     };
 
-    const getStatusChipColor = (status: Post["status"]): "success" | "warning" | "default" | "info" => {
-        switch (status) {
-            case "Published":
-                return "success";
-            case "Draft":
-                return "warning";
-            case "Archived":
-                return "default";
-            default:
-                return "info";
-        }
-    };
-
     const handleViewPost = async (tripData: any) => {
         setIsLoadingTrip(true);
         try {
@@ -162,6 +136,7 @@ export default function PostsManagement() {
                 duration: tripData.duration || '',
                 notes: tripData.notes || '',
                 optimizedRoute: tripData.optimizedRoute || [],
+                visabilityStatus: tripData.visabilityStatus || '',
             };
             setViewingTrip(formattedTrip);
         } catch (error) {
@@ -219,141 +194,22 @@ export default function PostsManagement() {
             {/* Posts Tab Content */}
             {activeTab === 0 && (
                 <>
-                    {/* Search Bar */}
-                    <Box sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        bgcolor: "#18181B",
-                        p: 1.5,
-                        borderRadius: 1,
-                        mb: 3
-                    }}>
-                        <Search size={20} color="gray" />
-                        <TextField
-                            fullWidth
-                            variant="outlined"
-                            size="small"
-                            placeholder={t('PostsManagement.search_placeholder') || 'Search by title, author, or category...'}
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            sx={{
-                                '& .MuiInputBase-input': { color: 'white' },
-                                '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-                            }}
-                        />
-                        {isLoadingPosts && searchQuery && (
-                            <CircularProgress size={20} sx={{ color: 'gray' }} />
-                        )}
-                    </Box>
+                    <PostsFilterBar
+                        searchQuery={searchQuery}
+                        onSearchChange={setSearchQuery}
+                        isLoading={isLoadingPosts}
+                    />
 
-
-
-                    {/* Table */}
-                    {isLoadingPosts ? (
-                        <CircularProgress size={30} />
-                    ) : posts.length === 0 ? (
-                        <Typography sx={{ color: "white" }}>
-                            {debouncedSearch
-                                ? t("PostsManagement.noResults") || "No results found"
-                                : t("PostsManagement.noPosts") || "No posts available"
-                            }
-                        </Typography>
-                    ) : (<TableContainer component={Paper} sx={{ bgcolor: "#18181B", color: "white" }}>
-                        <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell sx={{ color: "white", fontWeight: 600 }}>
-                                        {t("PostsManagement.title") || "Title"}
-                                    </TableCell>
-                                    <TableCell sx={{ color: "white", fontWeight: 600 }}>
-                                        {t("PostsManagement.author") || "Author"}
-                                    </TableCell>
-                                    <TableCell sx={{ color: "white", fontWeight: 600 }}>
-                                        {t("PostsManagement.category") || "Category"}
-                                    </TableCell>
-                                    <TableCell sx={{ color: "white", fontWeight: 600 }}>
-                                        {t("PostsManagement.status") || "Status"}
-                                    </TableCell>
-                                    <TableCell sx={{ color: "white", fontWeight: 600 }}>
-                                        {t("PostsManagement.date") || "Date"}
-                                    </TableCell>
-                                    <TableCell align="right" sx={{ color: "white", fontWeight: 600 }}>
-                                        {t("PostsManagement.actions") || "Actions"}
-                                    </TableCell>
-                                </TableRow>
-                            </TableHead>
-
-                            <TableBody>
-                                {
-                                    posts.map((post) => (
-                                        <TableRow
-                                            key={post.id}
-                                            sx={{
-                                                '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)' },
-                                                transition: 'background-color 0.2s'
-                                            }}
-                                        >
-                                            <TableCell sx={{ color: "white" }}>{post.title}</TableCell>
-                                            <TableCell sx={{ color: "white" }}>{post.author}</TableCell>
-                                            <TableCell sx={{ color: "white" }}>{post.category}</TableCell>
-                                            <TableCell>
-                                                <Chip
-                                                    label={t(`PostsManagement.${post.status.toLowerCase()}`) || post.status}
-                                                    color={getStatusChipColor(post.status)}
-                                                    size="small"
-                                                />
-                                            </TableCell>
-                                            <TableCell sx={{ color: "white" }}>{post.date}</TableCell>
-                                            <TableCell>
-                                                <Box display="flex" alignItems="center" gap={1}>
-                                                    <VisibilityOutlinedIcon style={{ color: "white" }} />
-                                                    <Typography sx={{ color: "white" }}>{post.views.toLocaleString()}</Typography>
-                                                </Box>
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                <IconButton
-                                                    color="primary"
-                                                    onClick={() => handleViewPost(post._fullData)}
-                                                    size="small"
-                                                    sx={{ mr: 1 }}
-                                                >
-                                                    <Eye size={18} />
-                                                </IconButton>
-                                                <IconButton
-                                                    color="error"
-                                                    onClick={() => handleDeleteClick(post.id)}
-                                                    size="small"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </IconButton>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                }
-                            </TableBody>
-                        </Table>
-                    </TableContainer>)}
-
-
-                    {/* Pagination */}
-                    {!isLoadingPosts && posts.length > 0 && (
-                        <Stack spacing={2} sx={{ mt: 3, alignItems: "center" }}>
-                            <Pagination
-                                count={totalPages}
-                                page={page}
-                                onChange={handlePageChange}
-                                color="primary"
-                                sx={{
-                                    "& .MuiPaginationItem-root": { color: "white" },
-                                    "& .Mui-selected": {
-                                        backgroundColor: "primary.main",
-                                        color: "white"
-                                    }
-                                }}
-                            />
-                        </Stack>
-                    )}
+                    <PostsTable
+                        posts={posts}
+                        isLoading={isLoadingPosts}
+                        page={page}
+                        totalPages={totalPages}
+                        searchQuery={debouncedSearch}
+                        onPageChange={handlePageChange}
+                        onViewPost={handleViewPost}
+                        onDeleteClick={handleDeleteClick}
+                    />
 
                     {/* View Trip Dialog */}
                     <Dialog

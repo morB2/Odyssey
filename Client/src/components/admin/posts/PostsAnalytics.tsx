@@ -18,7 +18,7 @@ import {
     getCategoryDistribution,
     type TopPost,
     type CategoryData,
-} from "../../services/adminStatsService";
+} from "../../../services/adminStatsService";
 import { useTranslation } from 'react-i18next';
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82CA9D", "#FFC658", "#FF6B9D", "#C084FC", "#34D399"];

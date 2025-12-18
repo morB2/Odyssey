@@ -10,7 +10,7 @@ interface ChatInputProps {
     isTyping: boolean;
 }
 
-export const ChatInput = ({
+const ChatInput = ({
     inputMessage,
     setInputMessage,
     handleSendMessage,
@@ -57,3 +57,5 @@ export const ChatInput = ({
         </Box>
     );
 }
+
+export default ChatInput;

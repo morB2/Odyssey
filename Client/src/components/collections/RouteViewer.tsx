@@ -13,11 +13,11 @@ interface TimelineTrip extends Trip {
 
 // ⚠️ IMPORTANT: Replace these with your actual component imports
 import TripPost from '../social/TripPost';
-import { PathConnector } from './PathConnector';
-import { RoutePreview } from './RoutePreview';
+import PathConnector from './PathConnector';
+import RoutePreview from './RoutePreview';
 import { adaptCommentsForUI } from '../../utils/tripAdapters';
 import { useUserStore } from '../../store/userStore';
-
+import { useCollectionsStore } from '../../store/collectionStore';
 // --- Styled Components (Retained) ---
 
 const RootContainer = styled(Box)(({ theme }) => ({
@@ -68,11 +68,12 @@ interface AppProps {
 
 // --- Component ---
 
-export default function RouteViewer({ collection, onEdit, onDelete }: AppProps) {
+export default function RouteViewer({ collection,onEdit,onDelete }: AppProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { t } = useTranslation();
   const storeUser = useUserStore((s) => s.user);
+
   // Define the offsets used for the visual layout
   // You would typically calculate this dynamically based on screen size or card content height
   const hardcodedOffsets = [30, -60, 30, -40, 10, -65, 50];

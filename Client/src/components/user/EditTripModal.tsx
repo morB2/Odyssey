@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
 import type { Trip, ServerTrip } from "./types";
-import { Modal } from "./Modal";
+import Modal from "./Modal";
 import { Box, Button, TextField, Typography, Divider, Chip, IconButton, Tooltip } from "@mui/material";
 import { Save, X, Trash2, Lock, Globe, Plus, Pencil } from "lucide-react";
-import { ConfirmDialog } from "../general/ConfirmDialog";
+import ConfirmDialog from "../general/ConfirmDialog";
 import { useUserStore } from "../../store/userStore";
 import { updateTrip } from "../../services/profile.service";
 import { toast } from "react-toastify";
 import { useTranslation } from 'react-i18next';
-import { CloudinaryUploadWidget } from "../general/CloudinaryUploadWidget";
+import CloudinaryUploadWidget from "../general/CloudinaryUploadWidget";
 import { isVideo } from "../../utils/mediaUtils";
-import { AdvancedMediaEditor } from "../general/AdvancedMediaEditor";
+import AdvancedMediaEditor from "../general/AdvancedMediaEditor";
 
 interface EditTripModalProps {
   trip: Trip | null;
@@ -29,7 +29,7 @@ const textFieldStyle = {
 };
 const dividerStyle = { backgroundColor: "#e5e5e5" };
 
-export function EditTripModal({ trip, isOpen, onClose, onSave }: EditTripModalProps) {
+export default function EditTripModal({ trip, isOpen, onClose, onSave }: EditTripModalProps) {
   const { t } = useTranslation();
   const [title, setTitle] = useState(trip?.title || "");
   const [description, setDescription] = useState(trip?.description || "");

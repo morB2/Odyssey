@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import type { Trip } from "./types";
 import type { Collection } from "./types";
 import TripPost from "../social/TripPost";
-import { Box, Tabs, Tab, Typography, Grid, Card, Skeleton } from "@mui/material";
+import { Box, Tabs, Tab, Typography, Grid, Skeleton, Card } from "@mui/material";
 import { User, Heart, Bookmark, Layers, Map } from "lucide-react";
-import { CollectionsList } from "../collections/CollectionsList";
+import CollectionsList from "../collections/CollectionsList";
 import { useTranslation } from 'react-i18next';
 import { adaptCommentsForUI } from "../../utils/tripAdapters";
 import JourneyLoader from '../general/Loading';
@@ -12,7 +12,8 @@ import { getTrips, getLikedTrips, getSavedTrips } from "../../services/profile.s
 import { getCollectionsByUser } from "../../services/collection.service";
 import { toast } from "react-toastify";
 import { useUserStore } from "../../store/userStore";
-import { EditTripModal } from "./EditTripModal";
+import EditTripModal from "./EditTripModal";
+import { useCollectionsStore } from "../../store/collectionStore";
 import TimelinePage from "../journey/JourneyPage";
 
 interface TripsListProps {
@@ -34,7 +35,7 @@ const normalizeTrips = (data: unknown): Trip[] => {
   return Array.isArray(trips) ? trips : [];
 };
 
-export function TripsList({
+export default function TripsList({
   profileId,
   activeTab,
   onTabChange,
@@ -50,16 +51,16 @@ export function TripsList({
 
   // Internal state for data management
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(false);
-  const [collectionsLoading, setCollectionsLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-
+   const {
+     setCollections,
+     setLoading: setCollectionsLoading,
+   } = useCollectionsStore();
   // Edit modal state - managed internally
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
-
   const isOwner = profileId === id;
   /** Tabs: include collections tab for all profiles; saved only for owner */
   const availableTabs = [
@@ -322,12 +323,10 @@ export function TripsList({
 
       ) : activeTab === 'collections' ? (
         <CollectionsList
-          collections={collections || []}
           onCreate={onCollectionCreate || (() => { })}
           onEdit={onCollectionEdit || (() => { })}
           onDelete={onCollectionDelete || (() => { })}
           isOwner={isOwner}
-          loading={collectionsLoading}
         />
 
       ) : activeTab === 'journey' ? (

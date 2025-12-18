@@ -17,6 +17,7 @@ export interface ViewsTrendData {
 export interface CategoryData {
     category: string;
     count: number;
+    [key: string]: any;
 }
 
 export interface TopActiveUser {

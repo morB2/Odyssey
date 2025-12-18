@@ -901,5 +901,20 @@
     "rawValue": "Raw Value",
     "weighted": "Weighted",
     "totalScore": "Total Score"
+  },
+   "budget": {
+    "title": "Smart Budget Estimator",
+    "subtitle": "Get a personalized cost estimate based on your location and travel style.",
+    "origin": "Where are you coming from?",
+    "originRequired": "Origin is required",
+    "travelers": "Travelers",
+    "style": "Travel Style",
+    "style": {
+      "budget": "Budget / Backpacker",
+      "standard": "Standard",
+      "luxury": "Luxury"
+    },
+    "calculate": "Calculate Estimate",
+    "recalculate": "Recalculate"
   }
 }

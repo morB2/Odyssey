@@ -2,12 +2,12 @@
 import { useEffect } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import Profile from './components/user/Profile';
-import { TripFeed } from './components/social/TripFeed';
+import TripFeed from './components/social/TripFeed';
 import ForgotPassword from './components/login/ForgotPassword';
 import Dashboard from './components/admin/Dashboard';
 import { useTranslation } from 'react-i18next';
-import { Login } from './components/login/Login';
-import { Home } from './components/general/Home';
+import Login from './components/login/Login';
+import Home from './components/general/Home';
 import { getTheme } from './theme/theme';
 import { CacheProvider } from '@emotion/react';
 import { cacheRtl, cacheLtr } from './theme/rtl';
@@ -20,9 +20,9 @@ import PrivacyPolicy from './components/general/PrivacyPolicy';
 import HelpCenter from './components/general/HelpCenter';
 import Contact from './components/general/Contact';
 import Footer from './components/general/Footer';
-import { MainPage } from './components/tripPlan/MainPage';
-import { CreateTrip } from './components/tripPlan/CreateTrip';
-import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import MainPage from './components/tripPlan/MainPage';
+import CreateTrip from './components/tripPlan/CreateTrip';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 import { initializeSocket } from './services/socketService';
 import { useUserStore } from './store/userStore';
@@ -37,7 +37,7 @@ import { ChatProvider } from './context/ChatContext';
 import ChatWidget from './components/chat/ChatWidget';
 import { Box } from '@mui/material';
 import AllChatsPage from './components/chat/AllChatsPage';
-import { ResetPasswordPage } from './components/login/ResetPassword';
+import ResetPasswordPage from './components/login/ResetPassword';
 import CreateTripLandingPage from './components/tripPlan/createTripLandingPage';
 import SinglePostPage from './components/social/SinglePostPage';
 import CollectionPage from './components/collections/CollectionPage';
@@ -78,7 +78,7 @@ function App() {
     <ChatProvider>
       <CacheProvider value={i18n.language === 'he' ? cacheRtl : cacheLtr}>
         <ThemeProvider theme={theme}>
-          <ToastContainer position="top-right" autoClose={3000} />
+          <ToastContainer position="top-right" autoClose={3000}  style={{ zIndex: 10005 }} />
           <ChatWidget />
 
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>

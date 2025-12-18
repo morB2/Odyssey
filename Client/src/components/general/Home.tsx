@@ -27,7 +27,7 @@ interface Feature {
   description: string;
 }
 
-export const Home: React.FC = () => {
+const Home: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -188,4 +188,6 @@ export const Home: React.FC = () => {
     </Box>
   );
 };
+
+export default Home;
 

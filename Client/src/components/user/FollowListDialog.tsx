@@ -11,7 +11,7 @@ interface FollowListDialogProps {
     list: SimpleFollow[];
 }
 
-export function FollowListDialog({ open, onClose, type, list }: FollowListDialogProps) {
+export default function FollowListDialog({ open, onClose, type, list }: FollowListDialogProps) {
     const { t } = useTranslation();
 
     return (

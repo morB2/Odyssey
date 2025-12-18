@@ -41,15 +41,6 @@ export async function getAllUsers(query = {}) {
     };
 }
 
-// export async function addUser(userData) {
-//     try {
-//         const newUser = new usersModel(userData);
-//         const savedUser = await newUser.save();
-//         return savedUser;
-//     } catch (err) {
-//         throw new Error('Failed to add user: ' + err.message);
-//     }
-// }
 
 export async function updateUser(userId, updateData) {
     try {

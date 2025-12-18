@@ -6,7 +6,7 @@ interface GuestWelcomeCardProps {
     onViewAsGuest: () => void;
 }
 
-export const GuestWelcomeCard = ({ onViewAsGuest }: GuestWelcomeCardProps) => {
+const GuestWelcomeCard = ({ onViewAsGuest }: GuestWelcomeCardProps) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
@@ -75,3 +75,5 @@ export const GuestWelcomeCard = ({ onViewAsGuest }: GuestWelcomeCardProps) => {
         </Card>
     );
 }
+
+export default GuestWelcomeCard;
