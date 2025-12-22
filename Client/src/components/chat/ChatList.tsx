@@ -40,9 +40,10 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, onClose }) => {
         console.log('New message received:', message);
         setConversations(prev => {
             // Check if conversation exists
+            // Check if conversation exists (must include both sender and receiver)
             const existingConvIndex = prev.findIndex(c =>
-                c.participants.some((p: any) => p._id === message.senderId._id || p._id === message.receiverId._id) &&
-                c.participants.some((p: any) => p._id === user._id)
+                c.participants.some((p: any) => p._id === message.senderId._id) &&
+                c.participants.some((p: any) => p._id === message.receiverId._id)
             );
 
             if (existingConvIndex !== -1) {
@@ -62,6 +63,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, onClose }) => {
         });
     });
 
+    // Real-time updates for read receipts
     // Real-time updates for read receipts
     useSocketEvent('messagesRead', (data: any) => {
         if (!user) return;

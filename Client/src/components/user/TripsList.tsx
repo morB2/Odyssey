@@ -1,22 +1,25 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { Trip } from "./types";
 import type { Collection } from "./types";
 import TripPost from "../social/TripPost";
-import { Box, Tabs, Tab, Typography, Grid, Skeleton, Card, CircularProgress } from "@mui/material";
-import { User, Heart, Bookmark, Layers } from "lucide-react";
-import { CollectionsList } from "../collections/CollectionsList";
+import { Box, Tabs, Tab, Typography, Grid, Skeleton, Card } from "@mui/material";
+import { User, Heart, Bookmark, Layers, Map } from "lucide-react";
+import CollectionsList from "../collections/CollectionsList";
 import { useTranslation } from 'react-i18next';
 import { adaptCommentsForUI } from "../../utils/tripAdapters";
+import JourneyLoader from '../general/Loading';
 import { getTrips, getLikedTrips, getSavedTrips } from "../../services/profile.service";
 import { getCollectionsByUser } from "../../services/collection.service";
 import { toast } from "react-toastify";
 import { useUserStore } from "../../store/userStore";
-import { EditTripModal } from "./EditTripModal";
+import EditTripModal from "./EditTripModal";
+import { useCollectionsStore } from "../../store/collectionStore";
+import TimelinePage from "../journey/JourneyPage";
 
 interface TripsListProps {
   profileId: string;
-  activeTab: "my-trips" | "liked" | "saved" | "collections";
-  onTabChange: (tab: "my-trips" | "liked" | "saved" | "collections") => void;
+  activeTab: "my-trips" | "liked" | "saved" | "collections" | "journey";
+  onTabChange: (tab: "my-trips" | "liked" | "saved" | "collections" | "journey") => void;
   onDelete: (tripId: string) => Promise<void>;
   onTripUpdated?: (updatedTrip: Trip) => void; // NEW: callback when trip is updated
   onCollectionCreate?: () => void;
@@ -32,7 +35,7 @@ const normalizeTrips = (data: unknown): Trip[] => {
   return Array.isArray(trips) ? trips : [];
 };
 
-export function TripsList({
+export default function TripsList({
   profileId,
   activeTab,
   onTabChange,
@@ -42,28 +45,29 @@ export function TripsList({
   onCollectionDelete
 }: TripsListProps) {
 
-  const sentinelRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
   const storeUser = useUserStore((s) => s.user);
   const id = storeUser?._id || "";
 
   // Internal state for data management
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(false);
-  const [collectionsLoading, setCollectionsLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-
+   const {
+     setCollections,
+     setLoading: setCollectionsLoading,
+   } = useCollectionsStore();
   // Edit modal state - managed internally
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
-const isOwner = profileId === id;
+  const isOwner = profileId === id;
   /** Tabs: include collections tab for all profiles; saved only for owner */
   const availableTabs = [
     { key: "my-trips", label: t('profile.myTrips'), icon: <User size={20} /> },
     { key: "liked", label: t('profile.likedTrips'), icon: <Heart size={20} /> },
     { key: "collections", label: t('profile.collections') || 'Collections', icon: <Layers size={20} /> },
+    { key: "journey", label: t('profile.journey') || 'Journey', icon: <Map size={20} /> },
     ...(isOwner ? [{ key: "saved", label: t('profile.savedTrips'), icon: <Bookmark size={20} /> }] : []),
   ] as const;
 
@@ -80,8 +84,10 @@ const isOwner = profileId === id;
     "& .MuiTab-iconWrapper": { mr: 1 }
   };
 
-  const handleTabChange = (_: any, index: number) =>
-    onTabChange(availableTabs[index].key as "my-trips" | "liked" | "saved" | "collections");
+  const handleTabChange = (_: any, index: number) => {
+    const selectedTab = availableTabs[index].key as "my-trips" | "liked" | "saved" | "collections" | "journey";
+    onTabChange(selectedTab);
+  };
 
   // Fetch data function - extracted so it can be called externally
   const fetchForTab = useCallback(async () => {
@@ -95,6 +101,12 @@ const isOwner = profileId === id;
 
     try {
       if (activeTab === "saved" && !isOwner) return;
+
+      // Skip data fetching for journey and collections tabs
+      if (activeTab === "journey") {
+        setLoading(false);
+        return;
+      }
 
       if (activeTab === "collections") {
         setCollectionsLoading(true);
@@ -113,15 +125,17 @@ const isOwner = profileId === id;
           data = await getTrips(profileId, 1, TRIPS_PER_PAGE);
         } else if (activeTab === "liked") {
           data = await getLikedTrips(profileId, 1, TRIPS_PER_PAGE);
-        } else {
+        } else if (activeTab === "saved") {
           data = await getSavedTrips(profileId, 1, TRIPS_PER_PAGE);
         }
 
-        const response = data as any;
-        const tripsData = normalizeTrips(response.trips || response);
-        setTrips(tripsData);
-        setPage(1);
-        setHasMore(response.pagination?.hasMore ?? true);
+        if (data) {
+          const response = data as any;
+          const tripsData = normalizeTrips(response.trips || response);
+          setTrips(tripsData);
+          setPage(1);
+          setHasMore(response.pagination?.hasMore ?? true);
+        }
       }
     } catch (error) {
       toast.error(t("profile.failedToLoadTrips") || "Failed to load trips");
@@ -154,52 +168,102 @@ const isOwner = profileId === id;
   };
 
   // Load more trips (infinite scroll)
-  const loadMoreTrips = async () => {
-    if (loadingMore || !hasMore || activeTab === "collections") return;
+  const loadMoreTrips = useCallback(async () => {
+    if (loadingMore || !hasMore || activeTab === "collections" || activeTab === "journey") return;
 
     setLoadingMore(true);
     try {
       const nextPage = page + 1;
-      let data: unknown = null;
+      let data: any = null;
 
       if (activeTab === "my-trips") {
         data = await getTrips(profileId, nextPage, TRIPS_PER_PAGE);
       } else if (activeTab === "liked") {
         data = await getLikedTrips(profileId, nextPage, TRIPS_PER_PAGE);
-      } else {
+      } else if (activeTab === "saved") {
         data = await getSavedTrips(profileId, nextPage, TRIPS_PER_PAGE);
       }
 
-      const response = data as any;
-      const newTrips = normalizeTrips(response.trips || response);
-
-      setTrips((prev) => [...prev, ...newTrips]);
-      setPage(nextPage);
-      setHasMore(response.pagination?.hasMore ?? false);
-    } catch {
+      if (data) {
+        const newTrips = normalizeTrips(data.trips || data);
+        if (newTrips.length === 0) {
+          setHasMore(false);
+        } else {
+          setTrips((prev) => [...prev, ...newTrips]);
+          setPage(nextPage);
+          setHasMore(data.pagination?.hasMore ?? newTrips.length === TRIPS_PER_PAGE);
+        }
+      }
+    } catch (error) {
       toast.error(t("profile.failedToLoadMore") || "Failed to load more trips");
     } finally {
       setLoadingMore(false);
     }
+  }, [loadingMore, hasMore, activeTab, page, profileId, t]);
+
+  /** Window scroll handler for infinite scroll */
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop >=
+        document.documentElement.offsetHeight - 100 &&
+        !loading &&
+        !loadingMore &&
+        hasMore &&
+        activeTab !== "collections" &&
+        activeTab !== "journey"
+      ) {
+        loadMoreTrips();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loading, loadingMore, hasMore, activeTab, loadMoreTrips]);
+
+  /** Fetch initial data when tab changes */
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      setLoading(true);
+      setPage(1);
+      setHasMore(true);
+      setTrips([]);
+
+      try {
+        if (activeTab === "collections") {
+          setCollectionsLoading(true);
+          const res = await getCollectionsByUser(profileId);
+          setCollections(res.collections || res || []);
+          setCollectionsLoading(false);
+        } else if (activeTab !== "journey") {
+          let data: any = null;
+          if (activeTab === "my-trips") data = await getTrips(profileId, 1, TRIPS_PER_PAGE);
+          else if (activeTab === "liked") data = await getLikedTrips(profileId, 1, TRIPS_PER_PAGE);
+          else if (activeTab === "saved") data = await getSavedTrips(profileId, 1, TRIPS_PER_PAGE);
+
+          if (data) {
+            const initialTrips = normalizeTrips(data.trips || data);
+            setTrips(initialTrips);
+            setHasMore(data.pagination?.hasMore ?? initialTrips.length === TRIPS_PER_PAGE);
+          }
+        }
+      } catch (err) {
+        toast.error(t("profile.failedToLoadTrips"));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, [activeTab, profileId, isOwner]);
+
+  // Handle trip deletion
+  const handleDeleteTrip = async (tripId: string) => {
+    await onDelete(tripId);
+    // Remove from local state
+    setTrips((prev) => prev.filter((t) => t.id !== tripId && t._id !== tripId));
   };
 
-  /** Infinite scroll observer */
-  useEffect(() => {
-    if (!hasMore || loadingMore || activeTab === "collections") return;
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting) loadMoreTrips();
-      },
-      { threshold: 0.1 }
-    );
-
-    if (sentinelRef.current) observer.observe(sentinelRef.current);
-
-    return () => observer.disconnect();
-  }, [hasMore, loadingMore, activeTab, page]);
-
-  /** Skeleton Loading Card */
   const SkeletonCard = () => (
     <Card sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
       <Skeleton variant="rectangular" height={300} />
@@ -217,13 +281,6 @@ const isOwner = profileId === id;
     </Card>
   );
 
-  // Handle trip deletion
-  const handleDeleteTrip = async (tripId: string) => {
-    await onDelete(tripId);
-    // Remove from local state
-    setTrips((prev) => prev.filter((t) => t.id !== tripId && t._id !== tripId));
-  };
-
   return (
     <Box sx={{ backgroundColor: 'white' }}>
 
@@ -237,7 +294,6 @@ const isOwner = profileId === id;
           allowScrollButtonsMobile
           sx={{
 
-            // 👇 center tabs when they don't overflow
             "& .MuiTabs-flexContainer": {
               justifyContent: "center",
             },
@@ -255,7 +311,6 @@ const isOwner = profileId === id;
         </Tabs>
       </Box>
 
-
       {/* Loading State */}
       {loading ? (
         <Grid container spacing={3}>
@@ -268,13 +323,14 @@ const isOwner = profileId === id;
 
       ) : activeTab === 'collections' ? (
         <CollectionsList
-          collections={collections || []}
           onCreate={onCollectionCreate || (() => { })}
           onEdit={onCollectionEdit || (() => { })}
           onDelete={onCollectionDelete || (() => { })}
           isOwner={isOwner}
-          loading={collectionsLoading}
         />
+
+      ) : activeTab === 'journey' ? (
+        <TimelinePage userId={profileId} />
 
       ) : trips.length === 0 ? (
 
@@ -290,28 +346,7 @@ const isOwner = profileId === id;
               return (
                 <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={trip._id ?? trip.id}>
                   <TripPost
-                    trip={{
-                      currentUserId: id || '',
-                      _id: String(trip._id || trip.id || ''),
-                      user: {
-                        _id: trip.user._id,
-                        firstName: trip.user.firstName,
-                        lastName: trip.user.lastName,
-                        avatar: trip.user.avatar,
-                        isFollowing: trip.user.isFollowing,
-                      },
-                      title: trip.title,
-                      duration: '',
-                      description: trip.description,
-                      activities: trip.activities,
-                      images: trip.images,
-                      views: trip.views,
-                      likes: trip.likes,
-                      comments: adaptCommentsForUI(trip.comments || [], t),
-                      isLiked: trip.isLiked,
-                      isSaved: trip.isSaved,
-                      optimizedRoute: trip.optimizedRoute
-                    }}
+                    trip={{ ...trip, currentUserId: id, comments: adaptCommentsForUI(trip.comments || []), }}
                     onEdit={() => setEditingTrip(trip)}
                     onDelete={() => handleDeleteTrip(String(trip._id || trip.id))}
                   />
@@ -320,13 +355,17 @@ const isOwner = profileId === id;
             })}
           </Grid>
 
-          {/* Infinite scroll sentinel */}
-          {hasMore && <div ref={sentinelRef} style={{ height: 20, margin: "20px 0" }} />}
-
           {/* Bottom loader */}
           {loadingMore && (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-              <CircularProgress size={40} sx={{ color: "#f97316" }} />
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+              <JourneyLoader />
+            </Box>
+          )}
+
+          {/* No more trips message */}
+          {!hasMore && trips.length > 0 && (
+            <Box sx={{ textAlign: 'center', p: 2, color: '#737373' }}>
+              {t('noMoreTrips')}
             </Box>
           )}
         </>

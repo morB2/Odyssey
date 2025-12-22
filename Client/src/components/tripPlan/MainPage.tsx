@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback, type FC } from 'react';
 import { Box, Card, CardContent, CardHeader, Typography, Stack } from '@mui/material';
 import { Sparkles, Calendar, MapPin } from 'lucide-react';
-import { ChatInput } from './ChatInput';
-import { FeatureCard } from './FeatureCard';
+import ChatInput from './ChatInput';
+import FeatureCard from './FeatureCard';
 import { type Message, type Itinerary } from './types';
 import { getSuggestions, customizeTrip, findOptimalRoute } from '../../services/createTrip.service';
 import { useTranslation } from 'react-i18next';
-import { QuickActions } from './QuickActions';
-import { ChatWindow } from './ChatWindow';
+import QuickActions from './QuickActions';
+import ChatWindow from './ChatWindow';
 
 
 export const MainPage: FC = () => {
@@ -246,3 +246,5 @@ export const MainPage: FC = () => {
         </Box>
     );
 }
+
+export default MainPage;

@@ -32,8 +32,6 @@ const Footer: React.FC = () => {
                         <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>{t('footer.explore')}</Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                             <Link href="/feed" underline="hover" sx={{ color: '#9ca3af' }}>{t('footer.feed')}</Link>
-                            <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>{t('footer.destinations')}</Link>
-                            <Link href="#" underline="hover" sx={{ color: '#9ca3af' }}>{t('footer.groups')}</Link>
                             <Link href="/createtrip" underline="hover" sx={{ color: '#9ca3af' }}>{t('footer.planTrip')}</Link>
                         </Box>
                     </Grid>

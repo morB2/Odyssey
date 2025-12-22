@@ -1,8 +1,10 @@
 import { Box, Typography, styled, IconButton } from '@mui/material';
 import { ChevronDown, MapPin, Edit, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useUserStore } from '../../store/userStore';
 
 interface RoutePreviewProps {
+    userId: string;
     title: string;
     description: string;
     tripCount: number;
@@ -37,9 +39,10 @@ const BottomBar = styled(Box)(({ theme }) => ({
     background: 'linear-gradient(to bottom, #fff7ed, white)',
 }));
 
-export function RoutePreview({ title, description, tripCount, firstTripImage, onClick, onEdit, onDelete }: RoutePreviewProps) {
+export default function RoutePreview({userId, title, description, tripCount, firstTripImage, onClick, onEdit, onDelete }: RoutePreviewProps) {
     const { t } = useTranslation();
-
+    const {user} = useUserStore();
+    const isOwner = user?._id === userId;
     return (
         <RootBox onClick={onClick}>
             <ImageContainer>
@@ -59,7 +62,7 @@ export function RoutePreview({ title, description, tripCount, firstTripImage, on
                 />
 
                 <Box sx={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 1, zIndex: 5 }}>
-                    {onEdit && (
+                    {(onEdit && isOwner) && (
                         <IconButton
                             size="small"
                             onClick={(e) => { e.stopPropagation(); onEdit(); }}
@@ -68,7 +71,7 @@ export function RoutePreview({ title, description, tripCount, firstTripImage, on
                             <Edit size={16} />
                         </IconButton>
                     )}
-                    {onDelete && (
+                    {(onDelete && isOwner) && (
                         <IconButton
                             size="small"
                             onClick={(e) => { e.stopPropagation(); onDelete(); }}
@@ -91,7 +94,7 @@ export function RoutePreview({ title, description, tripCount, firstTripImage, on
                         </Typography>
                     </Box>
 
-                    <Typography
+                {description && <Typography
                         variant="body1"
                         sx={{
                             backgroundColor: 'rgba(128, 128, 128, 0.86)',
@@ -100,8 +103,8 @@ export function RoutePreview({ title, description, tripCount, firstTripImage, on
                             display: 'inline-block',
                         }}
                     >
-                        {description || ''}
-                    </Typography>
+                        {description}
+                    </Typography>}
                 </Box>
             </ImageContainer>
 

@@ -5,13 +5,13 @@ import { Edit, Users, UserPlus, MessageCircle } from "lucide-react";
 import { getFollowers as svcGetFollowers, getFollowing as svcGetFollowing } from "../../services/profile.service";
 import { useTranslation } from 'react-i18next';
 import { useChat } from "../../context/ChatContext";
-import { FollowListDialog } from "./FollowListDialog";
+import FollowListDialog from "./FollowListDialog";
 
 type SimpleFollow = { _id?: string; id?: string; firstName?: string; lastName?: string; avatar?: string; email?: string; username?: string;[k: string]: unknown };
 
 interface ProfileHeaderProps { user: UserProfile; isOwner?: boolean; onEditClick?: () => void; loading?: boolean; }
 
-export function ProfileHeader({ user, isOwner = false, onEditClick, loading = false }: ProfileHeaderProps) {
+export default function ProfileHeader({ user, isOwner = false, onEditClick, loading = false }: ProfileHeaderProps) {
   const [openDialog, setOpenDialog] = useState<"followers" | "following" | null>(null);
   const [followers, setFollowers] = useState<SimpleFollow[]>([]);
   const [following, setFollowing] = useState<SimpleFollow[]>([]);

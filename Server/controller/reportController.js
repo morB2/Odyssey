@@ -18,7 +18,7 @@ export const createReport = async (req, res) => {
         res.status(201).json(newReport);
     } catch (error) {
         if (error.message === "You have already reported this trip.") {
-            return res.status(400).json({ error: error.message });
+            return res.status(409).json({ error: error.message });
         }
         console.error("Error creating report:", error);
         res.status(500).json({ error: "Failed to create report" });

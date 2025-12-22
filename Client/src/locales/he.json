@@ -145,6 +145,7 @@
         "cancel": "ביטול",
         "success": "הדיווח נשלח בהצלחה. תודה.",
         "fail": "שליחת הדיווח נכשלה. אנא נסה שוב.",
+        "alreadyReported": "הדיווח כבר נשלח.",
         "errorNoReason": "אנא בחר/י או הזן סיבה.",
         "reasons": {
             "Inappropriate content": "תוכן בלתי הולם",
@@ -694,11 +695,13 @@
         "noResults": "לא נמצאו תוצאות",
         "noPosts": "אין פוסטים זמינים",
         "deleteTitle": "מחיקת טיול",
-        "deleteMessage": "האם אתה בטוח שברצונך למחוק טיול זה? לא ניתן לבטל פעולה זו."
+        "deleteMessage": "האם אתה בטוח שברצונך למחוק טיול זה? לא ניתן לבטל פעולה זו.",
+        "viewPost": "הצג פוסט",
+        "deletePost": "מחק פוסט"
     },
     "createTrip": {
         "title": "יצירת טיול חדש",
-        "subtitle": "תכננו את המסע ידנית",
+        "subtitle": "תכנון מסע ידנית",
         "basic": "מידע בסיסי",
         "tripTitle": "שם הטיול",
         "description": "תיאור",
@@ -798,6 +801,7 @@
         "emptyCollection": "אין באוסף זה טיולים כרגע",
         "privateTripsVisible": "חלק מהטיולים שנבחרו הם פרטיים ולא יהיו גלויים למשתמשים אחרים.",
         "confirmDelete": "האם אתה בטוח שברצונך למחוק את האוסף?",
+        "deleteTitle": "מחיקת אוסף",
         "deleted": "האוסף נמחק בהצלחה",
         "deleteFailed": "מחיקת האוסף נכשלה",
         "privateTripsWarningTitle": "יש טיולים פרטיים באוסף",
@@ -847,7 +851,9 @@
         "title": "לוח ניתוח פוסטים",
         "topViewedPosts": "הפוסטים הנצפים ביותר",
         "topLikedPosts": "הפוסטים המועדפים ביותר",
-        "categoryDistribution": "התפלגות קטגוריות"
+        "categoryDistribution": "התפלגות קטגוריות",
+        "errorLoading": "שגיאה בטעינת הנתונים",
+        "noData": "אין נתונים זמינים"
     },
     "reportsAnalytics": {
         "title": "לוח ניתוח דיווחים",
@@ -869,5 +875,20 @@
         "rawValue": "ערך גולמי",
         "weighted": "משוקלל",
         "totalScore": "ציון כולל"
+    },
+    "budget": {
+        "title": "Smart Budget Estimator",
+        "subtitle": "Get a personalized cost estimate based on your location and travel style.",
+        "origin": "Where are you coming from?",
+        "originRequired": "Origin is required",
+        "travelers": "Travelers",
+        "style": "Travel Style",
+        "style": {
+            "budget": "Budget / Backpacker",
+            "standard": "Standard",
+            "luxury": "Luxury"
+        },
+        "calculate": "Calculate Estimate",
+        "recalculate": "Recalculate"
     }
 }

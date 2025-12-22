@@ -13,6 +13,7 @@ import search from './searchRoutes.js';
 import admin from './adminRoutes.js';
 import collections from './collectionRoutes.js';
 import contact from './contactRoutes.js';
+import journey from './journeyRoutes.js';
 import { authMiddleware as autoM } from '../middleware/authMiddleware.js';
 
 export function routesInit(app) {
@@ -25,11 +26,12 @@ export function routesInit(app) {
 
   app.use('/likes', autoM, like);
   app.use('/saves', autoM, save);
-  app.use('/follow', autoM, follow); // ✅ Protected: user actions require auth
-  app.use('/users', autoM, users);   // ✅ Protected: user data modification requires auth
-  app.use('/reports', autoM, reports); // ✅ Protected: reporting requires auth
-  app.use('/chat', autoM, chat);     // ✅ Protected: chat requires auth
-  app.use('/search', search);        // Public: search stays accessible
-  app.use('/admin', admin);          // Already has auth check in controller
-  app.use('/collections', autoM, collections); // ✅ Protected: collections require auth
+  app.use('/follow', autoM, follow);
+  app.use('/users', autoM, users);
+  app.use('/reports', autoM, reports);
+  app.use('/chat', autoM, chat);
+  app.use('/search', search);
+  app.use('/admin', admin);
+  app.use('/collections', autoM, collections);
+  app.use('/journey', autoM, journey);
 }

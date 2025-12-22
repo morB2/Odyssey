@@ -41,7 +41,6 @@ export const unSaveTrip = async (userId, tripId) => {
 export const getSavedTripsByUser = async (userId) => {
   const cacheKey = `saved:${userId}`;
 
-  // Check Redis cache first
   const cached = await redis.get(cacheKey);
   if (cached) {
 
@@ -50,7 +49,6 @@ export const getSavedTripsByUser = async (userId) => {
 
 
 
-  // return saved trips enriched similar to profile trips
   const saves = await Save.find({ user: userId })
     .populate({
       path: "trip",
@@ -66,8 +64,6 @@ export const getSavedTripsByUser = async (userId) => {
 
   const tripIds = trips.map((t) => t._id);
 
-  // all saved by this user -> isSaved = true
-  // compute follows for owners
   const ownerIds = Array.from(
     new Set(trips.map((t) => String(t.user?._id)).filter(Boolean))
   );
@@ -92,7 +88,6 @@ export const getSavedTripsByUser = async (userId) => {
     comments: trip.comments || [],
   }));
 
-  // Cache result for 60 seconds
   await redis.setEx(cacheKey, 60, JSON.stringify(tripsWithStatus));
 
   return tripsWithStatus;

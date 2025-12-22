@@ -4,7 +4,8 @@ import {
   oneDaySuggestInstruction,
   oneDayRouteInstruction,
   customizeInstruction,
-  parseTripFromPostInstruction
+  parseTripFromPostInstruction,
+  budgetEstimationInstruction
 } from "./prompts.js";
 import { validateAndDetectInjection } from "./promptInjectionDetector.js";
 import { clearUserFeedCache, clearUserProfileCache } from "../utils/cacheUtils.js";
@@ -166,3 +167,45 @@ export async function parseTripFromPost(userText) {
     throw err;
   }
 }
+
+  export async function calculateBudget(trip, origin, travelers, style) {
+    if (!trip || !origin || !travelers || !style) {
+      throw new Error("Missing required parameters for budget calculation");
+    }
+
+    // Validate inputs for injection
+    const inputs = [origin, style];
+    
+    for (const input of inputs) {
+      console.log(input);
+      
+      const check = validateAndDetectInjection(String(input));
+      if (!check.isValid) {
+        console.log("Prompt injection detected in budget parameters");
+        const err = new Error("Prompt injection detected in budget parameters");
+        err.type = "prompt_injection";
+        throw err;
+      }
+    }
+
+    const prompt = JSON.stringify({
+      trip,
+      origin,
+      travelers,
+      style
+    });
+
+    const out = await askGemini(budgetEstimationInstruction, prompt);
+    const sanitized = sanitizeAIOutput(out);
+
+    try {
+      return JSON.parse(sanitized);
+    } catch (e) {
+      const err = new Error("AI returned non-JSON");
+      err.type = "ai_non_json";
+      err.raw = out;
+      err.sanitized = sanitized;
+    }
+  }
+
+

@@ -11,7 +11,6 @@ export async function getAllTripsForAdmin(page = 1, limit = 10, search = "") {
     const skip = (page - 1) * limit;
 
     let filter = {};
-    let textSearchScore = {};
 
     if (search && search.trim()) {
         const searchTerm = search.trim();
@@ -27,26 +26,31 @@ export async function getAllTripsForAdmin(page = 1, limit = 10, search = "") {
 
         const userIds = matchingUsers.map(user => user._id);
 
-        // Use text search for title (faster with text index)
+        // Use regex search for title (supports partial matching)
         // and regex for activities, plus user ID matching
         filter.$or = [
-            { $text: { $search: searchTerm } }, // Uses text index on title
+            { title: searchRegex }, // Regex search - supports partial matching
             { activities: { $in: [searchRegex] } },
             { user: { $in: userIds } }
         ];
-
-        // Add text score for better sorting when using text search
-        textSearchScore = { score: { $meta: "textScore" } };
     }
 
     // Execute queries in parallel
     const [trips, total] = await Promise.all([
-        Trip.find(filter, textSearchScore)
-            .sort(search && search.trim() ? { score: { $meta: "textScore" }, createdAt: -1 } : { createdAt: -1 })
+        Trip.find(filter)
+            .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
             .populate({
                 path: "user",
+                select: "_id firstName lastName avatar",
+            })
+            .populate({
+                path: "comments.user",
+                select: "_id firstName lastName avatar",
+            })
+            .populate({
+                path: "comments.replies.user",
                 select: "_id firstName lastName avatar",
             })
             .lean(),

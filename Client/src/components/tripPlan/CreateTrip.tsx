@@ -22,7 +22,7 @@ import { Plus, Trash2, Save, MapPin, List as ListIcon, Image as ImageIcon, Link 
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../../store/userStore';
 import { toast } from 'react-toastify';
-import { CloudinaryUploadWidget } from '../general/CloudinaryUploadWidget';
+import CloudinaryUploadWidget from '../general/CloudinaryUploadWidget';
 import { useTranslation } from 'react-i18next';
 import { saveTrip, parseTrip } from '../../services/createTrip.service';
 
@@ -34,7 +34,7 @@ interface RouteStop {
     lon: number;
 }
 
-export const CreateTrip: React.FC = () => {
+const CreateTrip: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useUserStore();
     const { t } = useTranslation();
@@ -320,3 +320,5 @@ export const CreateTrip: React.FC = () => {
         </Container>
     );
 };
+
+export default CreateTrip;

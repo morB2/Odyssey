@@ -4,7 +4,7 @@ import {
   DialogTitle,
   DialogContent,
   IconButton,
-  
+
   Typography,
 } from '@mui/material';
 import { X } from 'lucide-react';
@@ -17,7 +17,7 @@ interface ModalProps {
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl';
 }
 
-export function Modal({ isOpen, onClose, title, children, maxWidth = 'lg' }: ModalProps) {
+export default function Modal({ isOpen, onClose, title, children, maxWidth = 'lg' }: ModalProps) {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {

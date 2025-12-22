@@ -17,6 +17,7 @@ const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
  */
 export async function askGemini(systemInstruction, userPrompt) {
     // Validate and detect prompt injection before calling Gemini
+    console.log(userPrompt);
     const validation = validateAndDetectInjection(userPrompt);
 
     if (!validation.isValid) {
@@ -46,7 +47,7 @@ export async function askGemini(systemInstruction, userPrompt) {
     for (let i = 0; i < 3; i++) {
         try {
             const r = await ai.models.generateContent({
-                model: "gemini-2.5-flash",
+                model: "gemini-2.5-flash-lite",//gemini-2.5-flash
                 contents: [{ text: safePrompt }],
                 config: { systemInstruction },
             });

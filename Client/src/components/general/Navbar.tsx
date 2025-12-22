@@ -87,15 +87,14 @@ const Navbar: FC = () => {
   });
 
   useSocketEvent('messagesRead', (data: any) => {
+    // If I read messages (byUserId === me), update my count
     if (user && data.byUserId === user._id) {
-      chatService.getUnreadCount().then((data) => {
-        const count =
-          typeof data === 'number'
-            ? data
-            : data?.count ?? data?.unread ?? 0;
+      chatService.getUnreadCount().then((res) => {
+        const count = typeof res === 'number' ? res : res?.count ?? res?.unread ?? 0;
         setUnreadCount(count);
       });
     }
+    // If someone read MY messages (I am the sender), my unread count doesn't change, but I might want to know (read receipts) - not handled here
   });
 
   /* ---------------- handlers ---------------- */
@@ -302,12 +301,10 @@ const Navbar: FC = () => {
               )}
 
               {user?.role === 'admin' && (
-                <Tooltip arrow title={t('admin.admin')}>
-                  <Box onClick={() => navigate('/admin/dashboard')} sx={navItemStyle}>
-                    <LayoutDashboard size={22} />
-                    <Typography variant="caption">{t('admin.admin')}</Typography>
-                  </Box>
-                </Tooltip>
+                <Box onClick={() => navigate('/admin/dashboard')} sx={navItemStyle}>
+                  <LayoutDashboard size={22} />
+                  <Typography variant="caption">{t('admin.admin')}</Typography>
+                </Box>
               )}
 
               <LanguageSwitcher />

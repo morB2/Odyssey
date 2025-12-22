@@ -18,7 +18,7 @@ declare global {
     }
 }
 
-export function CloudinaryUploadWidget({
+export default function CloudinaryUploadWidget({
     onUpload,
     buttonText = "Upload Media",
     folder = "odyssey",

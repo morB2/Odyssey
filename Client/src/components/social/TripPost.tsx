@@ -19,8 +19,8 @@ import { toggleLike, toggleSave, toggleFollow, addComment, addReaction, addReply
 import { useTripRealtime } from '../../hooks/useTripRealtime';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
-import { Trash2, Edit } from 'lucide-react';
-import { ConfirmDialog } from '../general/ConfirmDialog';
+import { Trash2, Edit, Lock, Globe } from 'lucide-react';
+import ConfirmDialog from '../general/ConfirmDialog';
 
 const theme = createTheme({
     palette: {
@@ -296,7 +296,7 @@ export default function TripPost({ trip, maxLines, showDescription, onEdit, onDe
     };
 
     // Check if current user owns this trip
-    const isOwner =  trip.user._id && user?._id === trip.user._id;
+    const isOwner = trip.user._id && user?._id === trip.user._id;
     const showEditDeleteButtons = isOwner && (onEdit || onDelete);
 
 
@@ -325,14 +325,36 @@ export default function TripPost({ trip, maxLines, showDescription, onEdit, onDe
                         <Box
                             sx={{
                                 position: 'absolute',
-                                top: 16,
-                                left: '50%',
+                                top: 23,
+                                left: '70%',
                                 transform: 'translateX(-50%)',
                                 display: 'flex',
                                 gap: 1,
                                 zIndex: 10,
                             }}
                         >
+                            {/* Visibility Status Icon disabled*/}
+
+                            <Box
+                                sx={{
+                                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                    borderRadius: '50%',
+                                    width: 28,
+                                    height: 28,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: '#6b7280',
+                                }}
+                            >
+                                {(trip as any)?.visabilityStatus === 'public' ? (
+                                    <Globe size={18} />
+                                ) : (
+                                    <Lock size={18} />
+                                )}
+                            </Box>
+
+
                             {onEdit && (
                                 <IconButton
                                     onClick={(e) => {
@@ -371,6 +393,7 @@ export default function TripPost({ trip, maxLines, showDescription, onEdit, onDe
                                     <Trash2 size={18} />
                                 </IconButton>
                             )}
+
                         </Box>
                     )}
                     {/* Header */}
@@ -387,7 +410,7 @@ export default function TripPost({ trip, maxLines, showDescription, onEdit, onDe
                         images={trip.images}
                         currentImageIndex={currentImageIndex}
                         setCurrentImageIndex={setCurrentImageIndex}
-                        title={trip.title}
+                        title={trip.title||""}
                         onMouseEnter={() => setIsHoveringCarousel(true)}
                         onMouseLeave={() => setIsHoveringCarousel(false)}
                     />
@@ -408,7 +431,7 @@ export default function TripPost({ trip, maxLines, showDescription, onEdit, onDe
                     {/* Content */}
                     <CardContent>
                         <TripPostContent
-                            title={trip.title}
+                            title={trip.title||""}
                             duration={trip.duration || ''}
                             description={trip.description}
                             activities={trip.activities}

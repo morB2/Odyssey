@@ -53,7 +53,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
             const fetchMessages = async () => {
                 setLoading(true);
                 try {
-                    const data = await chatService.getConversation(activeChatUser._id); // ✅ Removed currentUserId
+                    const data = await chatService.getConversation(activeChatUser._id);
                     setMessages(data.messages || data); // Handle both array and object response
                     if (data.conversation) {
                         setConversationStatus(data.conversation);
@@ -62,7 +62,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
                     }
 
                     // Mark as read
-                    await chatService.markAsRead(activeChatUser._id); // ✅ Removed currentUserId
+                    await chatService.markAsRead(activeChatUser._id);
                 } catch (error) {
                     console.error('Error fetching messages:', error);
                     toast.error(t('chat.failedToLoadChat'));
@@ -88,7 +88,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
             setMessages((prev) => [...prev, message]);
 
             // Mark as read immediately since window is open
-            chatService.markAsRead(activeChatUser._id).catch(console.error); // ✅ Removed currentUserId
+            chatService.markAsRead(activeChatUser._id).catch(() => { });
         }
     });
 
@@ -127,17 +127,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
         setNewMessage('');
 
         try {
-            const sentMessage = await chatService.sendMessage(activeChatUser._id, tempMessage.message); // ✅ Removed senderId
+            const sentMessage = await chatService.sendMessage(activeChatUser._id, tempMessage.message);
             // Replace temp message with real one
             setMessages((prev) => prev.map(m => m._id === tempMessage._id ? sentMessage : m));
 
             // Update conversation status if it was pending/null
             if (!conversationStatus) {
-                const data = await chatService.getConversation(activeChatUser._id); // ✅ Removed currentUserId
+                const data = await chatService.getConversation(activeChatUser._id);
                 if (data.conversation) setConversationStatus(data.conversation);
             }
         } catch (error: any) {
-            console.error('Error sending message:', error);
             toast.error(error.response?.data?.error || t('chat.failedToSendMessage'));
             // Remove failed message
             setMessages((prev) => prev.filter(m => m._id !== tempMessage._id));

@@ -60,21 +60,6 @@ export async function getTopLikedPostsController(req, res) {
     }
 }
 
-// export async function getViewsTrendController(req, res) {
-//     try {
-//         if (req.user.role !== "admin") {
-//             return res.status(403).json({ message: "Access denied. Admin only." });
-//         }
-
-//         const days = parseInt(req.query.days) || 30;
-//         const trend = await getViewsTrend(days);
-//         res.status(200).json(trend);
-//     } catch (error) {
-//         console.error("Error fetching views trend:", error);
-//         res.status(500).json({ message: "Internal server error" });
-//     }
-// }
-
 export async function getCategoryDistributionController(req, res) {
     try {
         if (req.user.role !== "admin") {

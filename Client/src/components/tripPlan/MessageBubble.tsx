@@ -1,9 +1,9 @@
 import React from 'react';
 import { Box, Paper, Typography, Stack } from '@mui/material';
 import { Sparkles } from 'lucide-react';
-import { ItinerarySummary } from './ItinerarySummary';
-import { TripDisplay } from './TripDisplay';
-import { TravelModeSelector } from './TravelModeSelector';
+import ItinerarySummary from './ItinerarySummary';
+import TripDisplay from './TripDisplay';
+import TravelModeSelector from './TravelModeSelector';
 import { type Message, type Itinerary } from './types';
 import { useTranslation } from 'react-i18next';
 

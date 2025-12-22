@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Box, Paper } from "@mui/material";
-import { ProfileHeader } from "./ProfileHeader";
-import { TripsList } from "./TripsList";
-import { ChangePasswordModal } from "./EditProfileModal";
+import ProfileHeader from "./ProfileHeader";
+import TripsList from "./TripsList";
+import ChangePasswordModal from "./EditProfileModal";
 import type { UserProfile } from "./types";
 import { getProfile, deleteTrip as svcDeleteTrip } from "../../services/profile.service.tsx";
-import { CreateCollectionModal } from "../collections/CreateCollectionModal";
+import CreateCollectionModal from "../collections/CreateCollectionModal";
 import { useUserStore } from "../../store/userStore";
 import { toast } from "react-toastify";
 import { useTranslation } from 'react-i18next';
-import { ConfirmDialog } from "../general/ConfirmDialog";
-
+import ConfirmDialog from "../general/ConfirmDialog";
+import { useCollectionsStore } from "../../store/collectionStore";
 const containerStyle = {
   minHeight: "100vh",
   display: "flex",
@@ -59,10 +59,8 @@ export default function Profile() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<any | null>(null);
-  const [activeTab, setActiveTab] = useState<"my-trips" | "liked" | "saved" | "collections">("my-trips");
-  const [deleteCollectionId, setDeleteCollectionId] = useState<string | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
+  const [activeTab, setActiveTab] = useState<"my-trips" | "liked" | "saved" | "collections" | "journey">("my-trips");
+  const { removeCollection } = useCollectionsStore();
   // Fetch user profile only
   useEffect(() => {
     let mounted = true;
@@ -137,19 +135,15 @@ export default function Profile() {
 
 
 
-  const confirmDeleteCollection = async () => {
-    if (!deleteCollectionId) return;
+  const handleCollectionDelete = async (id: string) => {
     try {
-      // Import deleteCollection service
       const { deleteCollection } = await import("../../services/collection.service");
-      await deleteCollection(deleteCollectionId);
+      await deleteCollection(id);
+      removeCollection(id);
       toast.success(t("collection.deleted"));
     } catch {
       toast.error(t("collection.deleteFailed"));
       throw new Error("Failed to delete collection");
-    } finally {
-      setIsDeleteDialogOpen(false);
-      setDeleteCollectionId(null);
     }
   };
 
@@ -172,7 +166,7 @@ export default function Profile() {
               onDelete={handleDeleteTrip}
               onCollectionCreate={handleCreateCollectionClick}
               onCollectionEdit={handleEditCollectionClick}
-              onCollectionDelete={confirmDeleteCollection}
+              onCollectionDelete={handleCollectionDelete}
             />
           </Box>
         </Paper>
@@ -194,13 +188,7 @@ export default function Profile() {
         />
       </Box>
 
-      <ConfirmDialog
-        isOpen={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
-        onConfirm={confirmDeleteCollection}
-        title="collection.deleteTitle"
-        message="collection.confirmDelete"
-      />
+
     </>
   );
 }

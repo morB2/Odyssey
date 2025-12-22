@@ -30,14 +30,28 @@ api.interceptors.response.use(
   (error) => {
     if (error.response) {
       if (error.response.status === 403) {
-        const clearUser = useUserStore.getState().clearUser;
-        clearUser();
+        // Log the error for debugging
+        console.error('403 Error:', {
+          url: error.config?.url,
+          message: error.response?.data?.message,
+          data: error.response?.data
+        });
 
-        // Show notification to user
-        toast.error('Your session has expired. Please log in again.');
+        // Only logout if it's an authentication error (invalid/expired token)
+        const errorMessage = error.response?.data?.message || '';
+        if (errorMessage.includes('token') || errorMessage.includes('expired') || errorMessage.includes('Invalid')) {
+          const clearUser = useUserStore.getState().clearUser;
+          clearUser();
 
-        // Redirect to home page
-        window.location.href = '/';
+          // Show notification to user
+          toast.error('Your session has expired. Please log in again.');
+
+          // Redirect to home page
+          window.location.href = '/';
+        } else {
+          // For other 403 errors (like authorization), just show a message
+          toast.error('You do not have permission to access this resource.');
+        }
       } else if (error.response.status === 429) {
         toast.error('Too many requests. Please try again later.');
       }

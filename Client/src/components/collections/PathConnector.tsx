@@ -31,7 +31,7 @@ const IconContainer = styled(Box)({
 
 // --- Component ---
 
-export function PathConnector({ fromPosition, toPosition, width }: PathConnectorProps) {
+export default function PathConnector({ fromPosition, toPosition, width }: PathConnectorProps) {
   const Icon = icons[Math.floor(Math.random() * icons.length)];
 
   // Curve path calculation
@@ -42,12 +42,12 @@ export function PathConnector({ fromPosition, toPosition, width }: PathConnector
   // Control points for cubic Bezier curve
   const controlPoint1X = midX * 0.3;
   const controlPoint1Y = startY;
-  const controlPoint2X = width - (midX * 0.3); 
+  const controlPoint2X = width - (midX * 0.3);
   const controlPoint2Y = endY;
 
   // SVG Path Data
   const pathD = `M 0 ${startY} C ${controlPoint1X} ${controlPoint1Y}, ${controlPoint2X} ${controlPoint2Y}, ${width} ${endY}`;
-  
+
   // Icon position calculation (middle of the line)
   const iconTop = (startY + endY) / 2;
 
@@ -83,7 +83,7 @@ export function PathConnector({ fromPosition, toPosition, width }: PathConnector
 
         {/* Start dot */}
         <circle cx="0" cy={startY} r="6" fill="#f97316" stroke="white" strokeWidth="3" />
-        
+
         {/* End dot */}
         <circle cx={width} cy={endY} r="6" fill="#f97316" stroke="white" strokeWidth="3" />
       </Box>
@@ -96,7 +96,7 @@ export function PathConnector({ fromPosition, toPosition, width }: PathConnector
           transform: 'translate(-50%, -50%)',
         }}
       >
-        <Icon 
+        <Icon
           size={16}
           color="#ea580c"
         />
