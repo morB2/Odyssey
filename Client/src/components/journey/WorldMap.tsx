@@ -27,7 +27,6 @@ export default function WorldMap({ markers }: WorldMapProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const theme = useTheme();
     const { user } = useUserStore();
-
     const [openDialog, setOpenDialog] = useState(false);
     const [selectedTripData, setSelectedTripData] = useState<Trip | null>(null);
     const [loadingTrip, setLoadingTrip] = useState(false);
@@ -110,8 +109,6 @@ export default function WorldMap({ markers }: WorldMapProps) {
                         globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
                         backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
 
-                        pointsData={[]}
-
                         htmlElementsData={markers}
                         htmlLat={(d: any) => d.lat}
                         htmlLng={(d: any) => d.lon}
@@ -121,7 +118,7 @@ export default function WorldMap({ markers }: WorldMapProps) {
                             const marker = d as MapMarker;
                             const el = document.createElement('div');
                             el.innerHTML = `
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="${theme.palette.primary.main}" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="${theme.palette.primary.main}" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); cursor: pointer;">
                                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                                 </svg>
                             `;
@@ -209,7 +206,7 @@ export default function WorldMap({ markers }: WorldMapProps) {
                         'scrollbarWidth': 'none',
                     }}
                 >
-                    {selectedTripData && <TripPost trip={{...selectedTripData, currentUserId: user?._id || ''}} showDescription={true} />}
+                    {selectedTripData && <TripPost trip={{ ...selectedTripData, currentUserId: user?._id || '' }} showDescription={true} />}
                 </DialogContent>
             </Dialog>
         </>

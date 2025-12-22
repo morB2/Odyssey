@@ -6,7 +6,7 @@ import Trip from "../models/tripModel.js";
  * @param {boolean} isOwner - Whether the requesting user is the owner
  * @returns {Array} Array of map markers with coordinates and trip info
  */
-export async function getMapData(userId, isOwner = true) {
+export async function getMapData(userId, isOwner = false) {
     const filter = { user: userId };
 
     // If not owner, only show public trips

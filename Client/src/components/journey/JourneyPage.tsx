@@ -51,7 +51,7 @@ export default function JourneyPage({ userId: propUserId }: JourneyPageProps = {
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
-            {mapMarkers.length > 0 && (
+            {mapMarkers.length >= 0 && (
                 <Box sx={{ mb: 4 }}>
                     <WorldMap markers={mapMarkers} />
                 </Box>
