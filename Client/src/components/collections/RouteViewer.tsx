@@ -235,11 +235,12 @@ export default function RouteViewer({ collection,onEdit,onDelete }: AppProps) {
       </Box>
     </ModalOverlay >
   );
-
+{console.log(collection)}
   // --- Main Render ---
   return (
     <RootContainer>
       <RoutePreview
+        userId={collection.user}
         title={collection.name}
         description={collection.description || ''}
         tripCount={trips.length}

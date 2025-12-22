@@ -832,6 +832,7 @@
     "emptyCollection": "This collection has no trips yet.",
     "privateTripsVisible": "Some of the selected trips are private and won't be visible to other users.",
     "confirmDelete": "Are you sure you want to delete this collection?",
+    "deleteTitle": "Delete Collection",
     "deleted": "Collection deleted",
     "deleteFailed": "Failed to delete collection",
     "privateTripsWarningTitle": "Private Trips Included",
@@ -906,7 +907,7 @@
     "weighted": "Weighted",
     "totalScore": "Total Score"
   },
-   "budget": {
+  "budget": {
     "title": "Smart Budget Estimator",
     "subtitle": "Get a personalized cost estimate based on your location and travel style.",
     "origin": "Where are you coming from?",
