@@ -60,8 +60,6 @@ export default function Profile() {
   const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState<"my-trips" | "liked" | "saved" | "collections" | "journey">("my-trips");
-  const [deleteCollectionId, setDeleteCollectionId] = useState<string | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { removeCollection } = useCollectionsStore();
   // Fetch user profile only
   useEffect(() => {
@@ -137,20 +135,15 @@ export default function Profile() {
 
 
 
-  const confirmDeleteCollection = async () => {
-    if (!deleteCollectionId) return;
+  const handleCollectionDelete = async (id: string) => {
     try {
-      // Import deleteCollection service
       const { deleteCollection } = await import("../../services/collection.service");
-      await deleteCollection(deleteCollectionId);
-      removeCollection(deleteCollectionId);
+      await deleteCollection(id);
+      removeCollection(id);
       toast.success(t("collection.deleted"));
     } catch {
       toast.error(t("collection.deleteFailed"));
       throw new Error("Failed to delete collection");
-    } finally {
-      setIsDeleteDialogOpen(false);
-      setDeleteCollectionId(null);
     }
   };
 
@@ -166,15 +159,15 @@ export default function Profile() {
           />
 
           <Box sx={{ mt: 4 }}>
-              <TripsList
-                profileId={profileId}
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                onDelete={handleDeleteTrip}
-                onCollectionCreate={handleCreateCollectionClick}
-                onCollectionEdit={handleEditCollectionClick}
-                onCollectionDelete={confirmDeleteCollection}
-              />
+            <TripsList
+              profileId={profileId}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              onDelete={handleDeleteTrip}
+              onCollectionCreate={handleCreateCollectionClick}
+              onCollectionEdit={handleEditCollectionClick}
+              onCollectionDelete={handleCollectionDelete}
+            />
           </Box>
         </Paper>
 
@@ -195,13 +188,7 @@ export default function Profile() {
         />
       </Box>
 
-      <ConfirmDialog
-        isOpen={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
-        onConfirm={confirmDeleteCollection}
-        title="collection.deleteTitle"
-        message="collection.confirmDelete"
-      />
+
     </>
   );
 }

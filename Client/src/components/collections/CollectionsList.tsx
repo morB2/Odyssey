@@ -1,9 +1,11 @@
 import { Box, Typography, Grid, Button, CircularProgress } from "@mui/material";
+import { useState } from "react";
 import { Plus } from "lucide-react";
 import RouteViewer from "./RouteViewer";
 import { useTranslation } from "react-i18next";
 import { useCollectionsStore } from "../../store/collectionStore";
 import type { Collection } from "../user/types";
+import ConfirmDialog from "../general/ConfirmDialog";
 
 interface CollectionsListProps {
     onCreate: () => void;
@@ -20,6 +22,8 @@ export default function CollectionsList({
     onDelete,
 }: CollectionsListProps) {
     const { t } = useTranslation();
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+    const [collectionToDelete, setCollectionToDelete] = useState<string | null>(null);
 
     const {
         collections,
@@ -27,6 +31,20 @@ export default function CollectionsList({
         updateCollection,
         removeCollection,
     } = useCollectionsStore();
+
+    const handleDeleteClick = (id: string) => {
+        setCollectionToDelete(id);
+        setConfirmDeleteOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (collectionToDelete) {
+            removeCollection(collectionToDelete);
+            if (onDelete) onDelete(collectionToDelete);
+        }
+        setConfirmDeleteOpen(false);
+        setCollectionToDelete(null);
+    };
 
     if (loading) {
         return (
@@ -96,12 +114,19 @@ export default function CollectionsList({
                     >
                         <RouteViewer
                             collection={collection}
-                            onEdit={(col:Collection) => { if (onEdit) onEdit(col); updateCollection(col); }}
-                            onDelete={(id:string) => { if (onDelete) onDelete(id); removeCollection(id); }}
+                            onEdit={(col: Collection) => { if (onEdit) onEdit(col); updateCollection(col); }}
+                            onDelete={(id: string) => handleDeleteClick(id)}
                         />
                     </Grid>
                 ))}
             </Grid>
+            <ConfirmDialog
+                isOpen={confirmDeleteOpen}
+                onClose={() => setConfirmDeleteOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="collection.deleteTitle"
+                message="collection.confirmDelete"
+            />
         </Box>
     );
 }
