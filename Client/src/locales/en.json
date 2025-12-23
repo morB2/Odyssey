@@ -914,7 +914,7 @@
     "originRequired": "Origin is required",
     "travelers": "Travelers",
     "style": "Travel Style",
-    "style": {
+    "styleTypes": {
       "budget": "Budget / Backpacker",
       "standard": "Standard",
       "luxury": "Luxury"

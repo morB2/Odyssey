@@ -15,7 +15,7 @@ export const useSearchStore = create<SearchState>((set) => ({
   searchTerm: "",
   shouldSearch: false,
   openSearch: (term = "") =>
-    set({ isOpen: true, searchTerm: term }),
+    set({ isOpen: true, searchTerm: term, shouldSearch: term.length > 0 }),
   closeSearch: () =>
     set({ isOpen: false, searchTerm: "" }),
   triggerSearch: (term: string) =>

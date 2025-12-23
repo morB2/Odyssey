@@ -148,9 +148,9 @@ const BudgetEstimatorDialog: React.FC<BudgetEstimatorDialogProps> = ({ open, onC
                                     MenuProps: { sx: { zIndex: 10003 } }
                                 }}
                             >
-                                <MenuItem value="budget">{t('budget.style.budget') || "Budget / Backpacker"}</MenuItem>
-                                <MenuItem value="standard">{t('budget.style.standard') || "Standard"}</MenuItem>
-                                <MenuItem value="luxury">{t('budget.style.luxury') || "Luxury"}</MenuItem>
+                                <MenuItem value="budget">{t('budget.styleTypes.budget') || "Budget / Backpacker"}</MenuItem>
+                                <MenuItem value="standard">{t('budget.styleTypes.standard') || "Standard"}</MenuItem>
+                                <MenuItem value="luxury">{t('budget.styleTypes.luxury') || "Luxury"}</MenuItem>
                             </TextField>
                         </Stack>
                     </Stack>

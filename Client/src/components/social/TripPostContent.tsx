@@ -10,9 +10,9 @@ interface TripPostContentProps {
 }
 
 export default function TripPostContent({ title, duration, description, activities, maxLines = 3, showDescription = true }: TripPostContentProps) {
-    const { openSearch } = useSearchStore();
+    const { triggerSearch } = useSearchStore();
     const handleActivityClick = (activity: string) => {
-        openSearch(activity)
+        triggerSearch(activity)
     };
     return (
         <>
