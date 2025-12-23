@@ -101,7 +101,7 @@ export default function WorldMap({ markers }: WorldMapProps) {
             <Card sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: 3, position: 'relative' }}>
                 <div
                     ref={containerRef}
-                    style={{ height: '500px', width: '100%' }}
+                    style={{ height: '500px', width: '100%', direction: 'ltr' }}
                     onMouseEnter={() => setRotationState(false)}
                     onMouseLeave={() => setRotationState(true)}
                 >
