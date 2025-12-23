@@ -7,7 +7,7 @@ export async function getJourneyMapData(req, res) {
     try {
         const userId = req.params.userId || req.user.userId;
         const requestingUserId = req.user.userId?.toString();
-        const isOwner = userId === requestingUserId;
+        const isOwner = userId?.toString() == requestingUserId || !requestingUserId;
 
         const markers = await getMapData(userId, isOwner);
 

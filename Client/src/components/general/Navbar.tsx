@@ -250,7 +250,7 @@ const Navbar: FC = () => {
       >
         <Toolbar sx={{ px: { xs: 2, md: 6 }, py: 1.5, justifyContent: 'space-between' }}>
           <Link component={RouterLink} to="/" sx={{ display: 'flex', alignItems: 'center' }}>
-            <img src="/logo-white.png" alt="Odyssey" style={{ height: 75 }} />
+            <img src="/logo_with_new_words.png" alt="Odyssey" style={{ height: 75 }} />
           </Link>
 
           {/* MOBILE */}
