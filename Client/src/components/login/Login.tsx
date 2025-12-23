@@ -44,7 +44,6 @@ const Login = () => {
     setLoading(true);
     try {
       const response = await loginUser(loginData);
-      toast.success('Login successful!');
       const userInfo = {
         _id: response.user._id,
         firstName: response.user.firstName,
@@ -76,7 +75,6 @@ const Login = () => {
       const response = await registerUser({
         ...signupData
       });
-      toast.success('Account created successfully!');
       const userInfo = {
         _id: response.user._id,
         firstName: response.user.firstName,

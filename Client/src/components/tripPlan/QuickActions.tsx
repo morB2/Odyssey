@@ -38,13 +38,6 @@ const QuickActions: FC<QuickActionsProps> = ({ onQuickAction }: QuickActionsProp
                     sx={{ borderColor: '#ffccaa', '&:hover': { bgcolor: '#fff2e6' } }}
                 />
                 <Chip
-                    label={t("quick_actions.quick_week_label")}
-                    icon={<Calendar size={14} />}
-                    variant="outlined"
-                    onClick={() => onQuickAction(t("quick_actions.quick_week_action"))}
-                    sx={{ borderColor: '#ffccaa', '&:hover': { bgcolor: '#fff2e6' } }}
-                />
-                <Chip
                     label={t("quick_actions.quick_budget_label")}
                     icon={<DollarSign size={14} />}
                     variant="outlined"
