@@ -647,6 +647,7 @@
     "messages": {
       "errorLoading": "Error loading messages",
       "confirmDelete": "Are you sure you want to delete this message?",
+      "confirmDeleteTitle": "Delete Message",
       "deleteSuccess": "Message deleted",
       "deleteError": "Error deleting message",
       "noMessages": "No messages found",
