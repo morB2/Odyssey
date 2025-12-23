@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Globe from 'react-globe.gl';
 import type { GlobeMethods } from 'react-globe.gl';
-import { Box, Typography, Card, Dialog, DialogContent, useTheme, CircularProgress } from '@mui/material';
+import { Box, Card, Dialog, DialogContent, useTheme, CircularProgress } from '@mui/material';
 import TripPost from '../social/TripPost';
 import { type Trip } from '../social/types';
 import { getTripById } from '../../services/tripPost.service';
@@ -34,6 +34,7 @@ export default function WorldMap({ markers }: WorldMapProps) {
 
     const [hoveredMarker, setHoveredMarker] = useState<MapMarker | null>(null);
     const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+    const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         const resize = () => {
@@ -56,6 +57,15 @@ export default function WorldMap({ markers }: WorldMapProps) {
             controls.autoRotate = true;
             controls.autoRotateSpeed = 0.5;
         }
+    }, []);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (hoverTimeoutRef.current) {
+                clearTimeout(hoverTimeoutRef.current);
+            }
+        };
     }, []);
 
     const setRotationState = (shouldRotate: boolean) => {
@@ -86,19 +96,12 @@ export default function WorldMap({ markers }: WorldMapProps) {
         fetchTripData(marker.tripId);
     };
 
-    const handleMouseMove = (e: React.MouseEvent) => {
-        if (hoveredMarker) {
-            setTooltipPosition({ x: e.clientX, y: e.clientY });
-        }
-    };
-
     return (
         <>
             <Card sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: 3, position: 'relative' }}>
                 <div
                     ref={containerRef}
                     style={{ height: '500px', width: '100%' }}
-                    onMouseMove={handleMouseMove}
                     onMouseEnter={() => setRotationState(false)}
                     onMouseLeave={() => setRotationState(true)}
                 >
@@ -117,18 +120,127 @@ export default function WorldMap({ markers }: WorldMapProps) {
                         htmlElement={(d: any) => {
                             const marker = d as MapMarker;
                             const el = document.createElement('div');
+
+                            // Container style
+                            el.style.position = 'relative';
+                            el.style.display = 'flex';
+                            el.style.justifyContent = 'center';
+                            el.style.alignItems = 'center';
+
+                            const tooltipId = `tooltip-${marker.tripId}`;
+
                             el.innerHTML = `
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="${theme.palette.primary.main}" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); cursor: pointer;">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="${theme.palette.primary.main}" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); cursor: pointer; transform: scale(1); transition: transform 0.2s;">
                                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                                 </svg>
+                                
+                                <div id="${tooltipId}" style="
+                                    position: absolute;
+                                    left: 50%;
+                                    transform: translateX(-50%);
+                                    background-color: ${theme.palette.background.paper};
+                                    color: ${theme.palette.text.primary};
+                                    padding: 12px;
+                                    border-radius: 8px;
+                                    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+                                    width: 220px;
+                                    pointer-events: none;
+                                    opacity: 0;
+                                    visibility: hidden;
+                                    transition: opacity 0.2s, visibility 0.2s;
+                                    z-index: 1000;
+                                    text-align: left;
+                                ">
+                                    <div style="font-weight: 600; margin-bottom: 4px; font-family: 'Roboto', sans-serif;">${marker.tripTitle.replace(/"/g, '&quot;')}</div>
+                                    <div style="color: ${theme.palette.text.secondary}; font-size: 0.75rem; margin-bottom: 4px;">${marker.name.replace(/"/g, '&quot;')}</div>
+                                    <div style="color: ${theme.palette.text.disabled}; font-size: 0.75rem; margin-bottom: 8px;">${new Date(marker.createdAt).toLocaleDateString()}</div>
+                                    ${marker.tripImage ? `<img src="${marker.tripImage}" style="width: 100%; height: 80px; object-fit: cover; border-radius: 4px; display: block;" />` : ''}
+                                    <div style="color: ${theme.palette.primary.main}; font-size: 0.75rem; margin-top: 8px; text-align: center;">Click to view details</div>
+                                    
+                                    <!-- Arrow -->
+                                    <div class="tooltip-arrow" style="
+                                        position: absolute;
+                                        left: 50%;
+                                        margin-left: -6px;
+                                        border-width: 6px;
+                                        border-style: solid;
+                                    "></div>
+                                </div>
                             `;
 
                             el.style.pointerEvents = 'auto';
                             el.style.cursor = 'pointer';
 
+                            // Event Listeners for Tooltip
+                            const showTooltip = () => {
+                                const tooltip = el.querySelector(`#${tooltipId}`) as HTMLElement;
+                                const arrow = el.querySelector('.tooltip-arrow') as HTMLElement;
+                                const icon = el.querySelector('svg') as SVGSVGElement;
+
+                                if (tooltip && containerRef.current) {
+                                    // Calculate position relative to container
+                                    const rect = el.getBoundingClientRect();
+                                    const containerRect = containerRef.current.getBoundingClientRect();
+                                    const topSpace = rect.top - containerRect.top;
+
+                                    // Default styles (Tooltip ABOVE)
+                                    let bottom = '100%';
+                                    let top = 'auto';
+                                    let transform = 'translateX(-50%) translateY(-10px)';
+
+                                    // Arrow styles (Pointing DOWN)
+                                    let arrowTop = '100%';
+                                    let arrowBottom = 'auto';
+                                    let arrowBorderColor = `${theme.palette.background.paper} transparent transparent transparent`;
+
+                                    // Check if too close to top (less than ~150px space)
+                                    if (topSpace < 160) {
+                                        // Position BELOW
+                                        bottom = 'auto';
+                                        top = '100%';
+                                        transform = 'translateX(-50%) translateY(10px)';
+
+                                        // Arrow pointing UP
+                                        arrowTop = 'auto';
+                                        arrowBottom = '100%';
+                                        arrowBorderColor = `transparent transparent ${theme.palette.background.paper} transparent`;
+                                    }
+
+                                    // Apply styles
+                                    tooltip.style.bottom = bottom;
+                                    tooltip.style.top = top;
+                                    tooltip.style.transform = transform;
+                                    tooltip.style.visibility = 'visible';
+                                    tooltip.style.opacity = '1';
+
+                                    if (arrow) {
+                                        arrow.style.top = arrowTop;
+                                        arrow.style.bottom = arrowBottom;
+                                        arrow.style.borderColor = arrowBorderColor;
+                                    }
+                                }
+
+                                if (icon) {
+                                    icon.style.transform = 'scale(1.2)';
+                                }
+                            };
+
+                            const hideTooltip = () => {
+                                const tooltip = el.querySelector(`#${tooltipId}`) as HTMLElement;
+                                const icon = el.querySelector('svg') as SVGSVGElement;
+
+                                if (tooltip) {
+                                    tooltip.style.visibility = 'hidden';
+                                    tooltip.style.opacity = '0';
+                                }
+                                if (icon) {
+                                    icon.style.transform = 'scale(1)';
+                                }
+                            };
+
                             el.onclick = () => handlePointClick(marker);
-                            el.onmouseenter = () => setHoveredMarker(marker);
-                            el.onmouseleave = () => setHoveredMarker(null);
+                            el.onmouseenter = showTooltip;
+                            el.onmouseleave = hideTooltip;
 
                             return el;
                         }}
@@ -142,50 +254,6 @@ export default function WorldMap({ markers }: WorldMapProps) {
                 )}
             </Card>
 
-            {/* Tooltip */}
-            {hoveredMarker && (
-                <Box
-                    sx={{
-                        position: 'fixed',
-                        left: tooltipPosition.x + 15,
-                        top: tooltipPosition.y + 15,
-                        zIndex: 9999,
-                        pointerEvents: 'none',
-                        bgcolor: 'background.paper',
-                        borderRadius: 2,
-                        boxShadow: 4,
-                        p: 1.5,
-                        maxWidth: 220,
-                        animation: 'fadeIn 0.2s ease-in-out',
-                        '@keyframes fadeIn': {
-                            '0%': { opacity: 0 },
-                            '100%': { opacity: 1 },
-                        },
-                    }}
-                >
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
-                        {hoveredMarker.tripTitle}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}>
-                        {hoveredMarker.name}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mb: 1 }}>
-                        {new Date(hoveredMarker.createdAt).toLocaleDateString()}
-                    </Typography>
-                    {hoveredMarker.tripImage && (
-                        <Box
-                            component="img"
-                            src={hoveredMarker.tripImage}
-                            alt={hoveredMarker.tripTitle}
-                            sx={{ width: '100%', height: 80, objectFit: 'cover', borderRadius: 1 }}
-                        />
-                    )}
-                    <Typography variant="caption" sx={{ color: 'primary.main', display: 'block', mt: 1, textAlign: 'center' }}>
-                        Click to view details
-                    </Typography>
-                </Box>
-            )}
-
             <Dialog
                 open={openDialog}
                 onClose={() => {
@@ -193,7 +261,6 @@ export default function WorldMap({ markers }: WorldMapProps) {
                     setSelectedTripData(null);
                 }}
                 maxWidth="md"
-                // fullWidth
                 PaperProps={{ sx: { borderRadius: 3 } }}
             >
                 <DialogContent
