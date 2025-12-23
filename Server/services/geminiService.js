@@ -47,7 +47,7 @@ export async function askGemini(systemInstruction, userPrompt) {
     for (let i = 0; i < 3; i++) {
         try {
             const r = await ai.models.generateContent({
-                model: "gemini-2.5-flash-lite",//gemini-2.5-flash
+                model: "gemini-2.5-flash",//gemini-2.5-flash
                 contents: [{ text: safePrompt }],
                 config: { systemInstruction },
             });
