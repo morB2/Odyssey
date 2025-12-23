@@ -7,8 +7,8 @@ interface QuickActionsProps {
     onQuickAction: (action: string) => void;
 }
 
-export const QuickActions: FC<QuickActionsProps> = ({ onQuickAction }: QuickActionsProps)=> {
-       const { t } = useTranslation();
+const QuickActions: FC<QuickActionsProps> = ({ onQuickAction }: QuickActionsProps) => {
+    const { t } = useTranslation();
 
     return (
         <Box sx={{ px: 3, py: 2, borderTop: '1px solid #f5f5f5', bgcolor: '#fffaf5' }}>
@@ -38,13 +38,6 @@ export const QuickActions: FC<QuickActionsProps> = ({ onQuickAction }: QuickActi
                     sx={{ borderColor: '#ffccaa', '&:hover': { bgcolor: '#fff2e6' } }}
                 />
                 <Chip
-                    label={t("quick_actions.quick_week_label")}
-                    icon={<Calendar size={14} />}
-                    variant="outlined"
-                    onClick={() => onQuickAction(t("quick_actions.quick_week_action"))}
-                    sx={{ borderColor: '#ffccaa', '&:hover': { bgcolor: '#fff2e6' } }}
-                />
-                <Chip
                     label={t("quick_actions.quick_budget_label")}
                     icon={<DollarSign size={14} />}
                     variant="outlined"
@@ -55,3 +48,5 @@ export const QuickActions: FC<QuickActionsProps> = ({ onQuickAction }: QuickActi
         </Box>
     );
 }
+
+export default QuickActions;

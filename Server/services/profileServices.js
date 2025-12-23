@@ -11,7 +11,7 @@ import fs from "fs";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinaryHelper.js";
 import { fetchTrips, normalizeAvatarUrl } from "./tripFetcherService.js";
 
-const SERVER_URL = process.env.SERVER_URL || " https://odyssey-dbdn.onrender.com";
+const SERVER_URL = process.env.VITE_API_URL;
 const uploadsDir = path.join(process.cwd(), "temp_uploads");
 
 // -----------------------------------------------------
@@ -44,11 +44,12 @@ export async function getProfile(userId) {
   if (!user) throw Object.assign(new Error("User not found"), { status: 404 });
 
   if (user.avatar) user.avatar = normalizeAvatarUrl(user.avatar);
-
+  if (user.status === false) {
+    throw Object.assign(new Error("This account has been deactivated"), { status: 404 });
+  }
   try {
     const followersCount = await Follow.countDocuments({ following: user._id });
     const followingCount = await Follow.countDocuments({ follower: user._id });
-
     return { ...user, followersCount, followingCount };
   } catch {
     return user;
@@ -62,13 +63,22 @@ export async function getProfile(userId) {
 export async function listUserTripsForViewer(ownerId, viewerId, page = 1, limit = 12) {
   if (!ownerId) throw new Error("ownerId required");
 
+  // Build filter based on viewer permissions
+  const filter = { user: ownerId };
+
+  // If viewer is not the owner, only show public trips
+  const isOwner = viewerId && String(viewerId) === String(ownerId);
+  if (!isOwner) {
+    filter.visabilityStatus = "public";
+  }
+
   // Only cache first page with default limit
   const cacheKey = page === 1 && limit === 12
     ? `profile:${ownerId}:trips:${viewerId || "none"}`
     : null;
 
   return fetchTrips({
-    filter: { user: ownerId },
+    filter,
     viewerId,
     page,
     limit,
@@ -384,4 +394,3 @@ export async function updateProfileAvatar(userId, authUser, file, avatarUrl) {
     .select("-password -__v")
     .lean();
 }
-

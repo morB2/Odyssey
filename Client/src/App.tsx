@@ -2,12 +2,12 @@
 import { useEffect } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import Profile from './components/user/Profile';
-import { TripFeed } from './components/social/TripFeed';
+import TripFeed from './components/social/TripFeed';
 import ForgotPassword from './components/login/ForgotPassword';
 import Dashboard from './components/admin/Dashboard';
 import { useTranslation } from 'react-i18next';
-import { Login } from './components/login/Login';
-import { Home } from './components/general/Home';
+import Login from './components/login/Login';
+import Home from './components/general/Home';
 import { getTheme } from './theme/theme';
 import { CacheProvider } from '@emotion/react';
 import { cacheRtl, cacheLtr } from './theme/rtl';
@@ -20,27 +20,33 @@ import PrivacyPolicy from './components/general/PrivacyPolicy';
 import HelpCenter from './components/general/HelpCenter';
 import Contact from './components/general/Contact';
 import Footer from './components/general/Footer';
-import { MainPage } from './components/tripPlan/MainPage';
-import { CreateTrip } from './components/tripPlan/CreateTrip';
-import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import MainPage from './components/tripPlan/MainPage';
+import CreateTrip from './components/tripPlan/CreateTrip';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 import { initializeSocket } from './services/socketService';
 import { useUserStore } from './store/userStore';
+import { useSearchStore } from './store/searchStore';
+import { useSettings } from './context/SettingsContext';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
-
+import { useUserRoom } from './hooks/useSocket';
 import { ChatProvider } from './context/ChatContext';
 import ChatWidget from './components/chat/ChatWidget';
 import { Box } from '@mui/material';
 import AllChatsPage from './components/chat/AllChatsPage';
-import { ResetPasswordPage } from './components/login/ResetPassword';
+import ResetPasswordPage from './components/login/ResetPassword';
 import CreateTripLandingPage from './components/tripPlan/createTripLandingPage';
 import SinglePostPage from './components/social/SinglePostPage';
+import CollectionPage from './components/collections/CollectionPage';
+import TimelinePage from './components/journey/JourneyPage';
+import Navbar from './components/general/Navbar';
 function App() {
   const location = useLocation();
-  const { token } = useUserStore();
+  const { token, user } = useUserStore();
+  const { closeSearch } = useSearchStore();
 
   useEffect(() => {
     if (token) {
@@ -48,15 +54,21 @@ function App() {
     }
   }, [token]);
 
+  useEffect(() => {
+    // Close search whenever the route pathname changes
+    closeSearch();
+  }, [location.pathname, closeSearch]);
+
   const { i18n } = useTranslation();
-  const theme = getTheme(i18n.language);
+  const { mode } = useSettings();
+  const theme = getTheme(i18n.language, mode);
 
   useEffect(() => {
     document.body.dir = i18n.language === 'he' ? 'rtl' : 'ltr';
   }, [i18n.language]);
 
 
-
+  useUserRoom(user?._id || null);
   const state = location.state as { backgroundLocation?: string };
   const background = state?.backgroundLocation
     ? { pathname: state.backgroundLocation }
@@ -66,10 +78,11 @@ function App() {
     <ChatProvider>
       <CacheProvider value={i18n.language === 'he' ? cacheRtl : cacheLtr}>
         <ThemeProvider theme={theme}>
-          <ToastContainer position="top-right" autoClose={3000} />
+          <ToastContainer position="top-right" autoClose={3000}  style={{ zIndex: 10005 }} />
           <ChatWidget />
 
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+            <Navbar />
             {/* Main Routes */}
             <Routes location={background}>
               <Route path="/" element={<Home />} />
@@ -79,8 +92,10 @@ function App() {
               <Route path="/createtripmanual" element={<CreateTrip />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/profile/:userId" element={<Profile />} />
+              <Route path="/timeline" element={<TimelinePage />} />
               <Route path="/feed" element={<TripFeed />} />
               <Route path="/post/:postId" element={<SinglePostPage />} />
+              <Route path="/collection/:id" element={<CollectionPage />} />
               <Route path="/forgotPassword" element={<ForgotPassword />} />
               <Route path="/resetPassword" element={<ResetPasswordPage />} />
               <Route path="/login" element={<Login />} />

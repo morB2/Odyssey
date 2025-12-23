@@ -4,15 +4,15 @@ import { Shield } from 'lucide-react';
 import UsersManagement from './UsersManagement';
 import PostsManagement from './PostsManagement';
 import ReportsManagement from './ReportsManagement';
+import ContactMessages from './ContactMessages';
 import { useTranslation } from 'react-i18next';
-import Navbar from '../general/Navbar';
 
 export default function Dashboard() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <><Navbar />
+    <>
       <Box sx={{ minHeight: '100vh', bgcolor: '#000' }}>
         {/* Header */}
         <Box sx={{ borderBottom: '1px solid #27272a', bgcolor: '#000' }}>
@@ -43,62 +43,17 @@ export default function Dashboard() {
 
         {/* Main Content */}
         <Container sx={{ py: 4 }}>
-          <Tabs
-            value={activeTab}
-            onChange={(_e, val) => setActiveTab(val)}
-            sx={{
-              mb: 4,
-              borderBottom: '1px solid #27272a',
-              '& .MuiTabs-indicator': {
-                bgcolor: '#ea580c',
-                height: 2
-              }
-            }}
-          >
-            <Tab
-              label={t('admin.usersManagement')}
-              sx={{
-                color: '#a1a1aa',
-                px: 3,
-                py: 1.5,
-                textTransform: 'none',
-                fontSize: '1rem',
-                '&.Mui-selected': {
-                  color: '#ea580c'
-                }
-              }}
-            />
-            <Tab
-              label={t('admin.postsManagement')}
-              sx={{
-                color: '#a1a1aa',
-                px: 3,
-                py: 1.5,
-                textTransform: 'none',
-                fontSize: '1rem',
-                '&.Mui-selected': {
-                  color: '#ea580c'
-                }
-              }}
-            />
-            <Tab
-              label={t('admin.reportsManagement')}
-              sx={{
-                color: '#a1a1aa',
-                px: 3,
-                py: 1.5,
-                textTransform: 'none',
-                fontSize: '1rem',
-                '&.Mui-selected': {
-                  color: '#ea580c'
-                }
-              }}
-            />
+          <Tabs value={activeTab} onChange={(_e, val) => setActiveTab(val)} variant="scrollable" scrollButtons="auto" allowScrollButtonsMobile sx={{ mb: 4, borderBottom: '1px solid #27272a', '& .MuiTabs-indicator': { bgcolor: '#ea580c', height: 2 } }}>
+            <Tab label={t('admin.usersManagement')} sx={{ color: '#a1a1aa', px: 3, py: 1.5, textTransform: 'none', fontSize: '1rem', '&.Mui-selected': { color: '#ea580c' } }} />
+            <Tab label={t('admin.postsManagement')} sx={{ color: '#a1a1aa', px: 3, py: 1.5, textTransform: 'none', fontSize: '1rem', '&.Mui-selected': { color: '#ea580c' } }} />
+            <Tab label={t('admin.reportsManagement')} sx={{ color: '#a1a1aa', px: 3, py: 1.5, textTransform: 'none', fontSize: '1rem', '&.Mui-selected': { color: '#ea580c' } }} />
+            <Tab label={t('admin.contactMessages') || 'Messages'} sx={{ color: '#a1a1aa', px: 3, py: 1.5, textTransform: 'none', fontSize: '1rem', '&.Mui-selected': { color: '#ea580c' } }} />
           </Tabs>
 
           {activeTab === 0 && <UsersManagement />}
           {activeTab === 1 && <PostsManagement />}
           {activeTab === 2 && <ReportsManagement />}
+          {activeTab === 3 && <ContactMessages />}
         </Container>
       </Box>
     </>

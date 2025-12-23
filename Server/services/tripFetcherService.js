@@ -5,8 +5,7 @@ import Follow from "../models/followModel.js";
 import User from "../models/userModel.js";
 import redis from "../db/redisClient.js";
 
-const SERVER_URL =
-  process.env.SERVER_URL || "https://odyssey-dbdn.onrender.com";
+const SERVER_URL = process.env.VITE_API_URL;
 
 // -----------------------------------------------------
 // Helper Functions
@@ -316,19 +315,19 @@ export async function fetchTrips({
   if (populateUser) {
     populate.push({
       path: "user",
-      select: "_id firstName lastName avatar",
+      select: "_id firstName lastName avatar status",
     });
   }
   if (populateComments) {
     populate.push({
       path: "comments.user",
-      select: "_id firstName lastName avatar",
+      select: "_id firstName lastName avatar status",
     });
   }
   if (populateReplies) {
     populate.push({
       path: "comments.replies.user",
-      select: "_id firstName lastName avatar",
+      select: "_id firstName lastName avatar status",
     });
   }
 
@@ -358,6 +357,7 @@ export async function fetchTrips({
     // Fetch trips up to scoringWindow limit for performance
     // This prevents loading thousands of trips into memory for scoring
     trips = await query.limit(scoringWindow).lean();
+    trips = trips.filter(trip => trip.user?.status !== false);
     if (excludeSeen && viewerId && seenSet.size > 0) {
       trips = trips.filter((trip) => !seenSet.has(trip._id.toString()));
     }
@@ -393,9 +393,7 @@ export async function fetchTrips({
         // ---------------------------------
         // SOFT REPEAT PENALTY ✅
         // ---------------------------------
-        console.log("Soft repeat flag:", softRepeat, seenSet, tripId);
         if (softRepeat && seenSet.has(tripId)) {
-          console.log("Applying soft repeat penalty for trip:", tripId);
           score *= 0.1; // 90% visibility drop
         }
 

@@ -54,9 +54,55 @@ export const findOptimalRoute = async (destinations: any[], mode: string) => {
     }
 };
 
+export const saveTrip = async (payload: {
+    userId: string;
+    title: string;
+    description?: string;
+    optimizedRoute: any;
+    activities?: string[];
+    visabilityStatus: "private" | "public";
+    image?: string;
+}) => {
+    try {
+        const res = await api.post(`${BASE_URL}/save`, payload);
+        return res.data;
+    } catch (error: any) {
+        console.error("Error saving trip:", error);
+        throw error;
+    }
+};
+
+export const parseTrip = async (text: string) => {
+    try {
+        const res = await api.post(`${BASE_URL}/parse`, { text });
+        return res.data;
+    } catch (error: any) {
+        console.error("Error parsing trip:", error);
+        throw error;
+    }
+};
+
+
+export const calculateBudget = async (data: any) => {
+    try {
+        const res = await api.post(`${BASE_URL}/budget`, data);
+        return res.data;
+    } catch (error: any) {
+        if (error.response?.status === 503) {
+            throw new Error("AI_SERVICE_UNAVAILABLE");
+        }
+        console.error("Error calculating budget:", error);
+        throw error;
+    }
+};
+
 export default {
     createTrip,
     getSuggestions,
     customizeTrip,
-    findOptimalRoute
+    findOptimalRoute,
+    saveTrip,
+    parseTrip,
+    calculateBudget,
 };
+

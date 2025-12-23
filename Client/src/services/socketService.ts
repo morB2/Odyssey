@@ -1,7 +1,7 @@
 import { io, Socket } from "socket.io-client";
 
 const SOCKET_URL =
-  import.meta.env.VITE_API_URL || "https://odyssey-dbdn.onrender.com";
+  import.meta.env.VITE_API_URL;
 
 let socket: Socket | null = null;
 

@@ -66,6 +66,7 @@ export interface Trip {
   title?: string;
   notes?: string;
   visibility?: "public" | "private";
+  visabilityStatus?: "public" | "private";
   route?: string[];
   routeInstructions?: RouteInstruction[];
   mode?: "car" | "walk" | "transit";
@@ -94,3 +95,16 @@ export type ServerTrip = {
   activities?: string[];
   notes?: string;
 };
+
+export interface Collection {
+  _id: string;
+  user: string;
+  name: string;
+  description?: string;
+  trips: Trip[];
+  coverImage?: string;
+  isPrivate: boolean;
+  tripCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}

@@ -53,7 +53,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
             const fetchMessages = async () => {
                 setLoading(true);
                 try {
-                    const data = await chatService.getConversation(activeChatUser._id, currentUser._id!);
+                    const data = await chatService.getConversation(activeChatUser._id);
                     setMessages(data.messages || data); // Handle both array and object response
                     if (data.conversation) {
                         setConversationStatus(data.conversation);
@@ -62,7 +62,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
                     }
 
                     // Mark as read
-                    await chatService.markAsRead(activeChatUser._id, currentUser._id!);
+                    await chatService.markAsRead(activeChatUser._id);
                 } catch (error) {
                     console.error('Error fetching messages:', error);
                     toast.error(t('chat.failedToLoadChat'));
@@ -77,6 +77,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
 
     // Listen for new messages
     useSocketEvent('newMessage', (message: ChatMessage) => {
+        console.log('New message received:', message);
         if (!currentUser?._id || !activeChatUser) return;
 
         // Only add if it belongs to the current conversation
@@ -87,7 +88,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
             setMessages((prev) => [...prev, message]);
 
             // Mark as read immediately since window is open
-            chatService.markAsRead(activeChatUser._id, currentUser._id!).catch(console.error);
+            chatService.markAsRead(activeChatUser._id).catch(() => { });
         }
     });
 
@@ -126,17 +127,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
         setNewMessage('');
 
         try {
-            const sentMessage = await chatService.sendMessage(currentUser._id, activeChatUser._id, tempMessage.message);
+            const sentMessage = await chatService.sendMessage(activeChatUser._id, tempMessage.message);
             // Replace temp message with real one
             setMessages((prev) => prev.map(m => m._id === tempMessage._id ? sentMessage : m));
 
             // Update conversation status if it was pending/null
             if (!conversationStatus) {
-                const data = await chatService.getConversation(activeChatUser._id, currentUser._id!);
+                const data = await chatService.getConversation(activeChatUser._id);
                 if (data.conversation) setConversationStatus(data.conversation);
             }
         } catch (error: any) {
-            console.error('Error sending message:', error);
             toast.error(error.response?.data?.error || t('chat.failedToSendMessage'));
             // Remove failed message
             setMessages((prev) => prev.filter(m => m._id !== tempMessage._id));
@@ -146,7 +146,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ activeChatUser }) => {
     const handleRequestAction = async (action: 'accept' | 'block') => {
         if (!conversationStatus?._id || !currentUser?._id) return;
         try {
-            const updatedConv = await chatService.handleRequest(conversationStatus._id, action, currentUser._id);
+            const updatedConv = await chatService.handleRequest(conversationStatus._id, action); // ✅ Removed currentUserId
             setConversationStatus(updatedConv);
             toast.success(action === 'accept' ? t('chat.chatRequestAccepted') : t('chat.userBlocked'));
         } catch (error) {

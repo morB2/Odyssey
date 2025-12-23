@@ -20,11 +20,14 @@ import {
   DialogActions,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Navigation, ExternalLink, Save } from "lucide-react";
-import { AuthSaveDialog } from "./AuthSaveDialog";
+import { MapPin, Navigation, ExternalLink, Save, Check, Wallet } from "lucide-react";
+import AuthSaveDialog from "./AuthSaveDialog";
+import BudgetEstimatorDialog from "./BudgetEstimatorDialog";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import { useUserStore } from "../../store/userStore";
+import { searchTravelImage } from "../../services/image.service";
+import { saveTrip } from "../../services/createTrip.service";
 
 interface Location {
   name: string;
@@ -57,7 +60,7 @@ interface StoredUser {
   };
 }
 
-export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
+const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
   const { user } = useUserStore();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -67,22 +70,9 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
   useEffect(() => {
     const fetchImage = async () => {
       const query = title ? title : t('tripDisplay.defaultTravel');
-      try {
-        const response = await fetch(
-          `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)} travel landscape&orientation=landscape&per_page=1`,
-          {
-            headers: {
-              Authorization: import.meta.env.VITE_PEXELS_KEY
-            }
-          }
-        );
-        const data = await response.json();
-        if (data.photos && data.photos.length > 0) {
-          setImageUrl(data.photos[0].src.large);
-        }
-      } catch (error) {
-        console.error("Failed to fetch image:", error);
-        // Optional: toast.error("Failed to load trip image"); - might be too noisy for a background image
+      const url = await searchTravelImage(query);
+      if (url) {
+        setImageUrl(url);
       }
     };
 
@@ -95,6 +85,8 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
   // Dialog state
   const [openDialog, setOpenDialog] = useState(false);
   const [openAuthDialog, setOpenAuthDialog] = useState(false);
+  const [openBudgetDialog, setOpenBudgetDialog] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   const handleSaveClick = () => {
     if (user) {
@@ -120,16 +112,19 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
   const handleSaveOption = async (type: "private" | "public") => {
     setOpenDialog(false);
     try {
-      const response = await fetch('https://odyssey-dbdn.onrender.com/createTrip/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(
-          { userId: user?._id, title, description, optimizedRoute: { ordered_route, mode, instructions, google_maps_url }, activities, visabilityStatus: type, image: imageUrl }
-        ),
+      const result = await saveTrip({
+        userId: user?._id || "",
+        title: title || "",
+        description,
+        optimizedRoute: { ordered_route, mode, instructions, google_maps_url },
+        activities,
+        visabilityStatus: type,
+        image: imageUrl,
       });
-      const result = await response.json();
+
       if (result.success) {
-        toast.success('Trip saved successfully!');
+        toast.success(t('tripDisplay.saveTrip.success'));
+        setIsSaved(true);
       } else {
         toast.error('Failed to save trip.');
       }
@@ -176,7 +171,7 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
             </Box>
             <Chip
               icon={<Navigation size={16} color={orange} />}
-              label={t(`tripDisplay.travelModes.${mode.toLowerCase()}`)}
+              label={t(`createTrip.modes.${mode.toLowerCase()}`)}
               sx={{
                 borderColor: orange,
                 color: orange,
@@ -300,25 +295,53 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
           }}
         >
           {t('tripDisplay.openInGoogleMaps')}
+
         </Button>
-        <Button
+        {/* <Button
           variant="outlined"
-          startIcon={<Save size={18} />}
-          onClick={handleSaveClick}
+          startIcon={<Wallet size={18} />}
+          onClick={() => setOpenBudgetDialog(true)}
           sx={{
             borderColor: orange,
             color: orange,
-            "&:hover": { borderColor: "#fb8c00", color: "#fb8c00" },
-            textTransform: "none",
-            fontWeight: 600,
+            ml: 1, // Margin left for spacing
+            mr: "auto", // Push other buttons to the right
+            "&:hover": { borderColor: "#fb8c00", bgcolor: "#fff3e0" }
           }}
         >
-          {t('tripDisplay.save')}
+          {t('budget.estimate') || "Estimate Cost"}
+        </Button> */}
+        <Button
+          variant="outlined"
+
+          startIcon={isSaved ? <Check size={18} /> : <Save size={18} />}
+          onClick={handleSaveClick}
+          disabled={isSaved}
+          sx={{
+            borderColor: orange,
+            color: isSaved ? "#fff" : orange,
+            bgcolor: isSaved ? orange : "transparent",
+            "&:hover": {
+              borderColor: "#fb8c00",
+              color: isSaved ? "#fff" : "#fb8c00",
+              bgcolor: isSaved ? "#fb8c00" : "transparent" // Keep background if saved
+            },
+            textTransform: "none",
+            fontWeight: 600,
+            "&.Mui-disabled": { // Custom disabled styles to keep it looking "active/saved"
+              bgcolor: orange,
+              color: "#fff",
+              borderColor: orange,
+              opacity: 0.8
+            }
+          }}
+        >
+          {isSaved ? t('social.tripSaved') : t('tripDisplay.save')}
         </Button>
       </CardActions>
 
       {/* Save Dialog */}
-      <Dialog open={openDialog} onClose={handleCloseDialog}>
+      <Dialog open={openDialog} onClose={handleCloseDialog} disableScrollLock={true}>
         <DialogTitle sx={{ color: orange, fontWeight: "bold" }}>{t('tripDisplay.saveTrip.title')}</DialogTitle>
         <DialogContent>
           <Typography>{t('tripDisplay.saveTrip.prompt')}</Typography>
@@ -340,6 +363,14 @@ export const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
         onLogin={handleLoginRedirect}
         onPrint={handlePrint}
       />
+
+      <BudgetEstimatorDialog
+        open={openBudgetDialog}
+        onClose={() => setOpenBudgetDialog(false)}
+        tripData={data.route}
+      />
     </Card>
   );
 }
+
+export default TripDisplay;

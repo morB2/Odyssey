@@ -24,7 +24,7 @@ export interface TripUser {            // unified id
 export interface Trip {
   _id: string;
   user: TripUser;
-  title: string;          // optional for TripPost
+  title?: string | "";          // optional for TripPost
   location?: string;       // optional for TripFeed
   duration?: string;
   description: string;
@@ -39,4 +39,5 @@ export interface Trip {
   detailedData?: any;
   optimizedRoute?: any;
   currentUserId: string;
+  visabilityStatus: string | undefined;
 }

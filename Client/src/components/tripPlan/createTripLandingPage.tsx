@@ -1,19 +1,17 @@
 import { Plane, Map, Sparkles } from "lucide-react";
 import { Box, Typography, Grid, Container } from "@mui/material";
-import { CreateTripLandingCard } from "./createTripLandingCard";
+import CreateTripLandingCard from "./createTripLandingCard";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../general/Navbar";
 import { useTranslation } from "react-i18next";
-import {useUserStore} from "../../store/userStore";
+import { useUserStore } from "../../store/userStore";
 
 export default function CreateTripLandingPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const {user} = useUserStore();
+  const { user } = useUserStore();
 
   return (
     <Box sx={{ bgcolor: "white", minHeight: "100vh" }}>
-      <Navbar />
 
       {/* Hero */}
       <Box
@@ -82,24 +80,24 @@ export default function CreateTripLandingPage() {
               onClick={() => navigate("/createtripAI")}
             />
           </Grid>
-         
-          {user&&
-          <Grid size={{ xs: 12, md: 6 }}>
-            <CreateTripLandingCard
-              icon={<Map size={50} />}
-              title={t("tripLanding.manual.title")}
-              description={t("tripLanding.manual.subtitle")}
-              features={[
-                t("tripLanding.manual.features.0"),
-                t("tripLanding.manual.features.1"),
-                t("tripLanding.manual.features.2"),
-                t("tripLanding.manual.features.3"),
-              ]}
-              accentColor="black"
-              buttonText={t("tripLanding.manual.button")}
-              onClick={() => navigate("/createtripmanual")}
-            />
-          </Grid>
+
+          {user &&
+            <Grid size={{ xs: 12, md: 6 }}>
+              <CreateTripLandingCard
+                icon={<Map size={50} />}
+                title={t("tripLanding.manual.title")}
+                description={t("tripLanding.manual.subtitle")}
+                features={[
+                  t("tripLanding.manual.features.0"),
+                  t("tripLanding.manual.features.1"),
+                  t("tripLanding.manual.features.2"),
+                  t("tripLanding.manual.features.3"),
+                ]}
+                accentColor="black"
+                buttonText={t("tripLanding.manual.button")}
+                onClick={() => navigate("/createtripmanual")}
+              />
+            </Grid>
           }
         </Grid>
       </Container>

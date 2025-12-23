@@ -19,4 +19,11 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// -----------------------------------------------------
+// Indexes for Performance Optimization
+// -----------------------------------------------------
+
+// Compound index for name-based search (used in admin search)
+userSchema.index({ firstName: 1, lastName: 1 });
+
 export default mongoose.model("User", userSchema);

@@ -34,7 +34,7 @@ const REPORT_REASONS = [
     "Other"
 ];
 
-export const ReportDialog = ({ open, onClose, tripId, userId }: ReportDialogProps) => {
+const ReportDialog = ({ open, onClose, tripId, userId }: ReportDialogProps) => {
     const { t } = useTranslation();
     const [reason, setReason] = useState('');
     const [customReason, setCustomReason] = useState('');
@@ -62,10 +62,13 @@ export const ReportDialog = ({ open, onClose, tripId, userId }: ReportDialogProp
             onClose();
             // Ideally show a success toast here, but for now just close
             toast.success("Report submitted successfully. Thank you.");
-            alert(t('report.success'));
-        } catch (err) {
+        } catch (err: any) {
             console.error("Failed to submit report:", err);
-            setError(t('report.fail'));
+            if (err.status === 409) {
+                setError(t('report.alreadyReported'));
+            } else {
+                setError(t('report.fail'));
+            }
         } finally {
             setIsSubmitting(false);
             setReason('');
@@ -84,7 +87,9 @@ export const ReportDialog = ({ open, onClose, tripId, userId }: ReportDialogProp
         <Dialog
             open={open}
             onClose={handleClose}
+            disableScrollLock={true}
             fullWidth
+            sx={{ zIndex: 10001 }}
             maxWidth="sm"
             onClick={(e) => e.stopPropagation()}
         >
@@ -101,6 +106,9 @@ export const ReportDialog = ({ open, onClose, tripId, userId }: ReportDialogProp
                             value={reason}
                             label={t('report.reason')}
                             onChange={handleReasonChange}
+                            MenuProps={{
+                                disablePortal: true
+                            }}
                         >
                             {REPORT_REASONS.map((r) => (
                                 <MenuItem key={r} value={r}>{t(`report.reasons.${r}`)}</MenuItem>
@@ -140,3 +148,5 @@ export const ReportDialog = ({ open, onClose, tripId, userId }: ReportDialogProp
         </Dialog>
     );
 }
+
+export default ReportDialog;

@@ -14,7 +14,7 @@ export const initializeSocket = (server) => {
 
     io = new Server(server, {
         cors: {
-            origin: '*',
+            origin: allowedOrigins,
             methods: ['GET', 'POST'],
             credentials: true,
         },
@@ -44,23 +44,27 @@ export const initializeSocket = (server) => {
     io.on('connection', (socket) => {
 
         // Log all connected users whenever someone connects
-        logConnectedUsers();
+        // logConnectedUsers();
 
-        // Join user-specific room for direct messaging
-        if (socket.userId) {
-            socket.join(`user:${socket.userId}`);
-        }
+        // ✅ Join user-specific room ONLY if authenticated
+        socket.on('joinUserRoom', (userId) => {
+            // Only authenticated users can join user-specific rooms (chat, notifications)
+            if (!socket.userId || socket.userId !== userId) {
+                return socket.emit('error', { message: 'Authentication required for user rooms' });
+            }
+            socket.join(`user:${userId}`);
+        });
 
-        // Join a trip-specific room
+        // ✅ Public trip rooms - anyone can join to see real-time updates
         socket.on('joinTrip', (tripId) => {
             socket.join(`trip:${tripId}`);
-            logConnectedUsers();
+            // logConnectedUsers();
         });
 
         // Leave a trip-specific room
         socket.on('leaveTrip', (tripId) => {
             socket.leave(`trip:${tripId}`);
-            logConnectedUsers();
+            // logConnectedUsers();
         });
 
         // Typing indicator
@@ -82,7 +86,7 @@ export const initializeSocket = (server) => {
 
         socket.on('disconnect', () => {
             // Log remaining connected users after disconnect
-            setTimeout(() => logConnectedUsers(), 100); // Small delay to ensure disconnect is processed
+            // setTimeout(() => logConnectedUsers(), 100); // Small delay to ensure disconnect is processed
         });
     });
 
@@ -104,21 +108,21 @@ export const getIO = () => {
  * Log all currently connected users
  * Useful for debugging and monitoring active connections
  */
-export const logConnectedUsers = () => {
-    if (!io) {
-        return;
-    }
+// export const logConnectedUsers = () => {
+//     if (!io) {
+//         return;
+//     }
 
-    const sockets = io.sockets.sockets;
-    const connectedUsers = [];
+//     const sockets = io.sockets.sockets;
+//     const connectedUsers = [];
 
-    sockets.forEach((socket) => {
-        connectedUsers.push({
-            socketId: socket.id,
-            userId: socket.userId || 'anonymous',
-            rooms: Array.from(socket.rooms).filter(room => room !== socket.id), // Exclude default room
-        });
-    });
+//     sockets.forEach((socket) => {
+//         connectedUsers.push({
+//             socketId: socket.id,
+//             userId: socket.userId || 'anonymous',
+//             rooms: Array.from(socket.rooms).filter(room => room !== socket.id), // Exclude default room
+//         });
+//     });
 
-    return connectedUsers;
-};
+//     return connectedUsers;
+// };

@@ -80,3 +80,16 @@ export async function clearUserSavedCache(userId) {
         throw error;
     }
 }
+
+export async function clearUserCollectionCache(userId) {
+    const cacheKey = `collection:${userId}`;
+    ('[Cache] Clearing collection cache for user:', userId);
+
+    try {
+        await redis.del(cacheKey);
+        ('[Cache] Collection cache cleared for user:', userId);
+    } catch (error) {
+        console.error('[Cache] Error clearing collection cache:', error);
+        throw error;
+    }
+}

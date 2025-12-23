@@ -1,7 +1,6 @@
 import React from 'react';
 import { Box, Container, Typography, Paper, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import { ChevronDown, HelpCircle } from 'lucide-react';
-import Navbar from './Navbar';
 import { useTranslation } from 'react-i18next';
 
 const HelpCenter: React.FC = () => {
@@ -9,7 +8,6 @@ const HelpCenter: React.FC = () => {
     const faqs = t('HelpCenter.faqs', { returnObjects: true }) as Array<{ question: string, answer: string }>;
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#f9fafb' }}>
-            <Navbar />
             <Container maxWidth="md" sx={{ py: 8 }}>
                 <Box sx={{ textAlign: 'center', mb: 8 }}>
                     <HelpCircle size={48} color="#d97706" style={{ marginBottom: '1rem' }} />

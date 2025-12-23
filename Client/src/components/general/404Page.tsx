@@ -10,7 +10,7 @@ const ODYSSEY_DARK_TEXT = '#1A1A1A';
  * Renders the 404 Not Found error page for the Odyssey website.
  * This component is exported by name.
  */
-export const Page404: React.FC = () => {
+const Page404: React.FC = () => {
   const { t } = useTranslation();
 
   return (

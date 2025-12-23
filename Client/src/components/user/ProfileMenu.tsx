@@ -7,10 +7,11 @@ import {
     Typography,
     Box,
 } from '@mui/material';
-import { AccountCircle, Logout } from '@mui/icons-material';
+import { AccountCircle, Logout, Settings } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../../store/userStore';
 import { useTranslation } from 'react-i18next';
+import SettingsDrawer from '../general/SettingsDrawer';
 
 interface ProfileMenuProps {
     size?: number;
@@ -18,6 +19,7 @@ interface ProfileMenuProps {
 
 export default function ProfileMenu({ size = 50 }: ProfileMenuProps) {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [settingsOpen, setSettingsOpen] = useState(false);
     const open = Boolean(anchorEl);
     const navigate = useNavigate();
     const { t } = useTranslation();
@@ -33,6 +35,11 @@ export default function ProfileMenu({ size = 50 }: ProfileMenuProps) {
     const handleMyAccount = () => {
         handleClose();
         navigate('/profile');
+    };
+
+    const handleSettings = () => {
+        handleClose();
+        setSettingsOpen(true);
     };
 
     const handleLogout = () => {
@@ -68,7 +75,7 @@ export default function ProfileMenu({ size = 50 }: ProfileMenuProps) {
                 }}
             >
                 <Avatar
-                    src={user.avatar||avatarUrl}
+                    src={user.avatar || avatarUrl}
                     alt={user.firstName || 'User'}
                     sx={{
                         width: size,
@@ -119,11 +126,16 @@ export default function ProfileMenu({ size = 50 }: ProfileMenuProps) {
                     <AccountCircle fontSize="small" />
                     <Typography variant="body2">{t('profileMenu.myAccount')}</Typography>
                 </MenuItem>
+                <MenuItem onClick={handleSettings}>
+                    <Settings fontSize="small" />
+                    <Typography variant="body2">{t('settings.title')}</Typography>
+                </MenuItem>
                 <MenuItem onClick={handleLogout}>
                     <Logout fontSize="small" />
                     <Typography variant="body2">{t('profileMenu.logout')}</Typography>
                 </MenuItem>
             </Menu>
+            <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
         </Box>
     );
 }

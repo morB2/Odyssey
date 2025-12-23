@@ -8,7 +8,10 @@ import redis from '../db/redisClient.js';
 export const likeTrip = async (userId, tripId) => {
   // Check if the like already exists
   const existingLike = await Like.findOne({ user: userId, trip: tripId });
-  if (existingLike) throw new Error("You have already liked this trip.");
+  if (existingLike) {
+    const trip = await Trip.findById(tripId);
+    return trip.likes;
+  }
 
   // Add like
   const like = new Like({ user: userId, trip: tripId });
@@ -38,7 +41,10 @@ export const likeTrip = async (userId, tripId) => {
 export const unlikeTrip = async (userId, tripId) => {
   // Check if the like exists
   const existingLike = await Like.findOne({ user: userId, trip: tripId });
-  if (!existingLike) throw new Error("You have not liked this trip yet.");
+  if (!existingLike) {
+    const trip = await Trip.findById(tripId);
+    return trip.likes;
+  }
 
   // Remove like
   await Like.deleteOne({ _id: existingLike._id });

@@ -2,12 +2,7 @@ import axios, { type AxiosInstance } from 'axios';
 import { useUserStore } from '../store/userStore';
 import { toast } from 'react-toastify';
 
-const baseURL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.trim() : '';;
-console.log("import.meta.env.VITE_API_URL:", import.meta.env.VITE_API_URL);
-console.log("typeof VITE_API_URL:", typeof import.meta.env.VITE_API_URL);
-console.log("All env vars:", import.meta.env);
-const BASE_URL = `https://odyssey-dbdn.onrender.com`;
-console.log("Final BASE_URL:", BASE_URL);
+const BASE_URL = import.meta.env.VITE_API_URL;
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   headers: {
@@ -33,15 +28,33 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 403) {
-      const clearUser = useUserStore.getState().clearUser;
-      clearUser();
+    if (error.response) {
+      if (error.response.status === 403) {
+        // Log the error for debugging
+        console.error('403 Error:', {
+          url: error.config?.url,
+          message: error.response?.data?.message,
+          data: error.response?.data
+        });
 
-      // Show notification to user
-      toast.error('Your session has expired. Please log in again.');
+        // Only logout if it's an authentication error (invalid/expired token)
+        const errorMessage = error.response?.data?.message || '';
+        if (errorMessage.includes('token') || errorMessage.includes('expired') || errorMessage.includes('Invalid')) {
+          const clearUser = useUserStore.getState().clearUser;
+          clearUser();
 
-      // Redirect to home page
-      window.location.href = '/';
+          // Show notification to user
+          toast.error('Your session has expired. Please log in again.');
+
+          // Redirect to home page
+          window.location.href = '/';
+        } else {
+          // For other 403 errors (like authorization), just show a message
+          toast.error('You do not have permission to access this resource.');
+        }
+      } else if (error.response.status === 429) {
+        toast.error('Too many requests. Please try again later.');
+      }
     }
     return Promise.reject(error);
   }

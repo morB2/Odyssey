@@ -22,9 +22,10 @@ import { Plus, Trash2, Save, MapPin, List as ListIcon, Image as ImageIcon, Link 
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../../store/userStore';
 import { toast } from 'react-toastify';
-import { CloudinaryUploadWidget } from '../general/CloudinaryUploadWidget';
+import CloudinaryUploadWidget from '../general/CloudinaryUploadWidget';
 import { useTranslation } from 'react-i18next';
-import Navbar from '../general/Navbar';
+import { saveTrip, parseTrip } from '../../services/createTrip.service';
+
 
 interface RouteStop {
     name: string;
@@ -33,7 +34,7 @@ interface RouteStop {
     lon: number;
 }
 
-export const CreateTrip: React.FC = () => {
+const CreateTrip: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useUserStore();
     const { t } = useTranslation();
@@ -47,9 +48,11 @@ export const CreateTrip: React.FC = () => {
     const [googleMapsUrl, setGoogleMapsUrl] = useState('');
     const [imageUrl, setImageUrl] = useState('');
     const [visibility, setVisibility] = useState<'private' | 'public'>('private');
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [aiInput, setAiInput] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
+
     const handleStopChange = (index: number, field: keyof RouteStop, value: string) => {
         const newStops = [...stops];
         newStops[index] = { ...newStops[index], [field]: value };
@@ -60,19 +63,28 @@ export const CreateTrip: React.FC = () => {
     const removeStop = (i: number) => setStops(stops.filter((_, x) => x !== i));
 
     const handleActivityChange = (i: number, v: string) => {
-        const x = [...activities]; x[i] = v; setActivities(x);
+        const x = [...activities];
+        x[i] = v;
+        setActivities(x);
     };
+
     const addActivity = () => setActivities([...activities, '']);
     const removeActivity = (i: number) => setActivities(activities.filter((_, x) => x !== i));
 
     const handleInstructionChange = (i: number, v: string) => {
-        const x = [...instructions]; x[i] = v; setInstructions(x);
+        const x = [...instructions];
+        x[i] = v;
+        setInstructions(x);
     };
+
     const addInstruction = () => setInstructions([...instructions, '']);
     const removeInstruction = (i: number) => setInstructions(instructions.filter((_, x) => x !== i));
 
+    // ✅ FIXED SAVE FUNCTION
     const handleSave = async () => {
-        if (!user) return toast.error(t("createTrip.errors.login"));
+        if (isSubmitting) return;
+
+        if (!user || !user._id) return toast.error(t("createTrip.errors.login"));
         if (!title.trim()) return toast.error(t("createTrip.errors.noTitle"));
 
         const validStops = stops.filter(s => s.name.trim());
@@ -82,6 +94,7 @@ export const CreateTrip: React.FC = () => {
         if (!validStops.length) return toast.error(t("createTrip.errors.noStops"));
 
         setIsSubmitting(true);
+
         try {
             const payload = {
                 userId: user._id,
@@ -98,42 +111,36 @@ export const CreateTrip: React.FC = () => {
                 image: imageUrl,
             };
 
-            const res = await fetch("https://odyssey-dbdn.onrender.com/createTrip/save", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-            const result = await res.json();
+            const result = await saveTrip(payload);
 
             if (result.success) {
                 toast.success(t("createTrip.success"));
                 navigate("/profile");
-            } else toast.error(t("createTrip.errors.fail"));
-        } catch {
+            } else {
+                toast.error(t("createTrip.errors.fail"));
+            }
+
+        } catch (err) {
+            console.error(err);
             toast.error(t("createTrip.errors.exception"));
+        } finally {
+            setIsSubmitting(false);
         }
-        setIsSubmitting(false);
     };
+
     const handleGenerateFromAI = async () => {
         if (!aiInput.trim()) return;
 
         setIsGenerating(true);
 
         try {
-            const res = await fetch(" https://odyssey-dbdn.onrender.com/createTrip/parse", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text: aiInput }),
-            });
-
-            const data = await res.json();
+            const data = await parseTrip(aiInput);
 
             if (!data.success) {
                 toast.error(t("createTrip.errors.aiFailed"));
                 return;
             }
 
-            // ✅ AUTO-FILL FORM FROM AI
             const trip = data.trip;
 
             setTitle(trip.title || "");
@@ -146,9 +153,9 @@ export const CreateTrip: React.FC = () => {
             setImageUrl(trip.image || "");
 
             toast.success(t("createTrip.aiSuccess"));
-            console.log(trip);
 
         } catch (err) {
+            console.error(err);
             toast.error(t("createTrip.errors.exception"));
         } finally {
             setIsGenerating(false);
@@ -156,9 +163,9 @@ export const CreateTrip: React.FC = () => {
     };
 
 
+
     return (
         <Container maxWidth="md" sx={{ py: 4 }}>
-            <Navbar />
             <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
                 <CardHeader
                     title={t("createTrip.title")}
@@ -313,3 +320,5 @@ export const CreateTrip: React.FC = () => {
         </Container>
     );
 };
+
+export default CreateTrip;

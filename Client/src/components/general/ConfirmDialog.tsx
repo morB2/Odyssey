@@ -20,7 +20,7 @@ const messageStyle = { color: '#525252', fontSize: '0.875rem' };
 const cancelButtonStyle = { borderColor: '#d4d4d4', color: '#171717', textTransform: 'none', '&:hover': { borderColor: '#a3a3a3', backgroundColor: '#fafafa' } };
 const confirmButtonStyle = { backgroundColor: '#f97316', textTransform: 'none', '&:hover': { backgroundColor: '#ea580c' } };
 
-export const ConfirmDialog: FC<ConfirmDialogProps> = ({ isOpen, onClose, onConfirm, title, message }) => {
+const ConfirmDialog: FC<ConfirmDialogProps> = ({ isOpen, onClose, onConfirm, title, message }) => {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -54,9 +54,11 @@ export const ConfirmDialog: FC<ConfirmDialogProps> = ({ isOpen, onClose, onConfi
         </Box>
       </DialogContent>
       <DialogActions sx={{ p: 0, gap: 1.5 }}>
-        <Button onClick={onClose} variant="outlined" sx={cancelButtonStyle}>{t('Cancel')}</Button>
-        <Button onClick={handleConfirm} variant="contained" sx={confirmButtonStyle}>{t('Confirm')}</Button>
+        <Button type="button" onClick={onClose} variant="outlined" sx={cancelButtonStyle}>{t('Cancel')}</Button>
+        <Button type="button" onClick={handleConfirm} variant="contained" sx={confirmButtonStyle}>{t('Confirm')}</Button>
       </DialogActions>
     </Dialog>
   );
 }
+
+export default ConfirmDialog;

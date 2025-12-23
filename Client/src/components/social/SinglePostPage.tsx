@@ -4,10 +4,9 @@ import { Box, CircularProgress, Typography, Button, Container } from '@mui/mater
 import { ArrowBack } from '@mui/icons-material';
 import TripPost from './TripPost';
 import { getTripById } from '../../services/tripPost.service';
-import {type Trip } from './types';
+import { type Trip } from './types';
 import { useUserStore } from '../../store/userStore';
 import { useTranslation } from 'react-i18next';
-import Navbar from '../general/Navbar';
 
 export default function SinglePostPage() {
     const { postId } = useParams<{ postId: string }>();
@@ -46,23 +45,17 @@ export default function SinglePostPage() {
 
     if (error || !trip) {
         return (
-            <>
-            <Navbar />
             <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="80vh" gap={2}>
                 <Typography variant="h6" color="error">
                     {error || t('social.postNotFound')}
                 </Typography>
             </Box>
-            </>
         );
     }
 
     return (
-        <>
-        <Navbar />
         <Container maxWidth="md" sx={{ py: 4 }}>
             <TripPost trip={trip} />
         </Container>
-        </>
     );
 }

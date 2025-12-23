@@ -6,7 +6,7 @@ interface ProtectedRouteProps {
     requireAdmin?: boolean;
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     children,
     requireAdmin = false
 }) => {
@@ -24,3 +24,5 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
     return <>{children}</>;
 };
+
+export default ProtectedRoute;

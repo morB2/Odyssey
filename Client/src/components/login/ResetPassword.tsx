@@ -21,7 +21,7 @@ import {
 import { useSearchParams } from "react-router-dom";
 import { resetPassword } from "../../services/login.service";
 
-export const ResetPasswordPage = () => {
+const ResetPasswordPage = () => {
     const [searchParams] = useSearchParams();
     const token = searchParams.get("token");
     const id = searchParams.get("id");
@@ -380,3 +380,5 @@ export const ResetPasswordPage = () => {
         </Grid>
     );
 }
+
+export default ResetPasswordPage;

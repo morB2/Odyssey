@@ -19,19 +19,15 @@ import {
   Users,
   Globe,
 } from 'lucide-react';
-import Navbar from './Navbar';
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
-
-
-
 interface Feature {
   icon: React.ReactNode;
   title: string;
   description: string;
 }
 
-export const Home: React.FC = () => {
+const Home: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -54,7 +50,6 @@ export const Home: React.FC = () => {
       margin: 0,
       padding: 0,
     }}>
-      <Navbar />
 
       {/* Hero Section */}
       <Box sx={{
@@ -193,4 +188,6 @@ export const Home: React.FC = () => {
     </Box>
   );
 };
+
+export default Home;
 

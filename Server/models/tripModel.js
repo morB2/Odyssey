@@ -84,6 +84,12 @@ TripSchema.index({ views: -1 });
 // Index for activity-based filtering and recommendations
 TripSchema.index({ activities: 1 });
 
+// Text index for fast title search (used in admin search)
+TripSchema.index({ title: 'text' });
+
+// Compound index for user-based queries with date sorting (admin panel)
+TripSchema.index({ user: 1, createdAt: -1 });
+
 // -----------------------------------------------------
 // Middleware
 // -----------------------------------------------------
@@ -108,8 +114,6 @@ TripSchema.pre('findOneAndDelete', async function (next) {
 
       // Delete all reports for this trip
       await Report.deleteMany({ trip: tripId });
-
-      console.log(`Cleaned up related records for trip ${tripId}`);
     }
 
     next();

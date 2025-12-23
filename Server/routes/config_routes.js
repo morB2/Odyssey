@@ -11,6 +11,9 @@ import reports from './reportRoutes.js';
 import chat from './chatRoutes.js';
 import search from './searchRoutes.js';
 import admin from './adminRoutes.js';
+import collections from './collectionRoutes.js';
+import contact from './contactRoutes.js';
+import journey from './journeyRoutes.js';
 import { authMiddleware as autoM } from '../middleware/authMiddleware.js';
 
 export function routesInit(app) {
@@ -19,13 +22,16 @@ export function routesInit(app) {
   app.use("/profile", autoM, profile);
   app.use('/trips', trip);
   app.use("/sendEmail", sendEmail);
+  app.use("/contact", contact);
 
   app.use('/likes', autoM, like);
   app.use('/saves', autoM, save);
-  app.use('/follow', follow);
-  app.use('/users', users);
-  app.use('/reports', reports);
-  app.use('/chat', chat);
+  app.use('/follow', autoM, follow);
+  app.use('/users', autoM, users);
+  app.use('/reports', autoM, reports);
+  app.use('/chat', autoM, chat);
   app.use('/search', search);
   app.use('/admin', admin);
+  app.use('/collections', autoM, collections);
+  app.use('/journey', autoM, journey);
 }

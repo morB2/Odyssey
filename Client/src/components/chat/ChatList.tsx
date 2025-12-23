@@ -4,6 +4,7 @@ import { useUserStore } from '../../store/userStore';
 import chatService from '../../services/chat.service';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from 'react-i18next';
+import { useSocketEvent } from '../../hooks/useSocket';
 
 interface ChatListProps {
     onSelectChat: (user: any) => void;
@@ -25,12 +26,64 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, onClose }) => {
     const fetchConversations = async () => {
         if (!user) return;
         try {
-            const data = await chatService.getConversations(user._id || '');
+            const data = await chatService.getConversations(); // ✅ Removed userId
             setConversations(data);
         } catch (error) {
             console.error('Error fetching conversations:', error);
         }
     };
+
+    // Real-time updates for new messages
+    useSocketEvent('newMessage', (message: any) => {
+        console.log('New message received:', message);
+        if (!user) return;
+        console.log('New message received:', message);
+        setConversations(prev => {
+            // Check if conversation exists
+            // Check if conversation exists (must include both sender and receiver)
+            const existingConvIndex = prev.findIndex(c =>
+                c.participants.some((p: any) => p._id === message.senderId._id) &&
+                c.participants.some((p: any) => p._id === message.receiverId._id)
+            );
+
+            if (existingConvIndex !== -1) {
+                // Move to top and update last message
+                const updatedConv = { ...prev[existingConvIndex] };
+                updatedConv.lastMessage = message;
+                updatedConv.updatedAt = message.createdAt;
+
+                const newConvs = [...prev];
+                newConvs.splice(existingConvIndex, 1);
+                return [updatedConv, ...newConvs];
+            } else {
+                // New conversation - re-fetch to get full details properly populated
+                fetchConversations();
+                return prev;
+            }
+        });
+    });
+
+    // Real-time updates for read receipts
+    // Real-time updates for read receipts
+    useSocketEvent('messagesRead', (data: any) => {
+        if (!user) return;
+
+        // If I read messages from someone (data.byUserId === me), update that conversation to read locally
+        if (data.byUserId === user._id && data.chatWithUser) {
+            setConversations(prev => prev.map(conv => {
+                // Find the conversation with the user whose messages I just read
+                const isTargetConv = conv.participants.some((p: any) => p._id === data.chatWithUser);
+
+                if (isTargetConv && conv.lastMessage) {
+                    return {
+                        ...conv,
+                        lastMessage: { ...conv.lastMessage, read: true }
+                    };
+                }
+                return conv;
+            }));
+        }
+    });
 
     const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
         setTabValue(newValue);
@@ -75,6 +128,14 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, onClose }) => {
                 ) : (
                     filteredConversations.map((conv) => {
                         const otherParticipant = conv.participants.find((p: any) => p._id !== user._id);
+
+                        // Check if unread: last message exists, is NOT read, and I am the receiver
+                        // Handle receiverId being either a populated object (has _id) or a raw ObjectId
+                        const receiverId = conv.lastMessage?.receiverId?._id || conv.lastMessage?.receiverId;
+                        const isUnread = conv.lastMessage &&
+                            !conv.lastMessage.read &&
+                            String(receiverId) === user._id;
+
                         return (
                             <ListItem
                                 key={conv._id}
@@ -83,6 +144,12 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, onClose }) => {
                                 <ListItemButton
                                     onClick={() => onSelectChat(otherParticipant)}
                                     alignItems="flex-start"
+                                    sx={{
+                                        bgcolor: isUnread ? 'rgba(255, 152, 0, 0.08)' : 'transparent',
+                                        '&:hover': {
+                                            bgcolor: isUnread ? 'rgba(255, 152, 0, 0.12)' : 'rgba(0, 0, 0, 0.04)'
+                                        }
+                                    }}
                                 >
                                     <ListItemAvatar>
                                         <Avatar src={otherParticipant.avatar} alt={otherParticipant.firstName}>
@@ -90,18 +157,37 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, onClose }) => {
                                         </Avatar>
                                     </ListItemAvatar>
                                     <ListItemText
-                                        primary={`${otherParticipant.firstName} ${otherParticipant.lastName}`}
+                                        primary={
+                                            <Typography
+                                                variant="subtitle1"
+                                                component="span"
+                                                fontWeight={isUnread ? 'bold' : 'normal'}
+                                            >
+                                                {`${otherParticipant.firstName} ${otherParticipant.lastName}`}
+                                            </Typography>
+                                        }
                                         secondary={
                                             <Typography
                                                 component="span"
                                                 variant="body2"
-                                                color="text.primary"
+                                                color={isUnread ? "text.primary" : "text.secondary"}
+                                                fontWeight={isUnread ? 'bold' : 'normal'}
                                                 sx={{ display: 'inline', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                                             >
                                                 {conv.lastMessage ? conv.lastMessage.message : t('chat.noMessagesYet')}
                                             </Typography>
                                         }
                                     />
+                                    {isUnread && (
+                                        <Box sx={{
+                                            width: 10,
+                                            height: 10,
+                                            bgcolor: '#ff9800',
+                                            borderRadius: '50%',
+                                            ml: 1,
+                                            alignSelf: 'center'
+                                        }} />
+                                    )}
                                 </ListItemButton>
                             </ListItem>
                         );

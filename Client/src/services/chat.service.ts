@@ -19,11 +19,10 @@ export interface ChatMessage {
     createdAt: string;
 }
 
-const getConversation = async (userId: string, currentUserId: string) => {
+// ✅ Removed currentUserId - backend now uses JWT authentication
+const getConversation = async (userId: string) => {
     try {
-        const response = await httpService.get(`/chat/${userId}`, {
-            params: { currentUserId }
-        });
+        const response = await httpService.get(`/chat/${userId}`);
         return response.data;
     } catch (error) {
         console.error('Error fetching conversation:', error);
@@ -31,11 +30,10 @@ const getConversation = async (userId: string, currentUserId: string) => {
     }
 };
 
-const getConversations = async (currentUserId: string) => {
+// ✅ Removed currentUserId - backend now uses JWT authentication
+const getConversations = async () => {
     try {
-        const response = await httpService.get('/chat/conversations', {
-            params: { currentUserId }
-        });
+        const response = await httpService.get('/chat/conversations');
         return response.data;
     } catch (error) {
         console.error('Error fetching conversations:', error);
@@ -43,10 +41,10 @@ const getConversations = async (currentUserId: string) => {
     }
 };
 
-const sendMessage = async (senderId: string, receiverId: string, message: string) => {
+// ✅ Removed senderId - backend now uses JWT authentication
+const sendMessage = async (receiverId: string, message: string) => {
     try {
         const response = await httpService.post('/chat/send', {
-            senderId,
             receiverId,
             message
         });
@@ -57,11 +55,11 @@ const sendMessage = async (senderId: string, receiverId: string, message: string
     }
 };
 
-const handleRequest = async (conversationId: string, action: 'accept' | 'block', currentUserId: string) => {
+// ✅ Removed currentUserId - backend now uses JWT authentication
+const handleRequest = async (conversationId: string, action: 'accept' | 'block') => {
     try {
         const response = await httpService.put(`/chat/request/${conversationId}`, {
-            action,
-            currentUserId
+            action
         });
         return response.data;
     } catch (error) {
@@ -70,11 +68,10 @@ const handleRequest = async (conversationId: string, action: 'accept' | 'block',
     }
 };
 
-const markAsRead = async (userId: string, currentUserId: string) => {
+// ✅ Removed currentUserId - backend now uses JWT authentication
+const markAsRead = async (userId: string) => {
     try {
-        const response = await httpService.put(`/chat/read/${userId}`, {
-            currentUserId
-        });
+        const response = await httpService.put(`/chat/read/${userId}`);
         return response.data;
     } catch (error) {
         console.error('Error marking messages as read:', error);
@@ -82,11 +79,10 @@ const markAsRead = async (userId: string, currentUserId: string) => {
     }
 };
 
-const getUnreadCount = async (userId: string) => {
+// ✅ Removed userId - backend now uses JWT authentication
+const getUnreadCount = async () => {
     try {
-        const response = await httpService.post('/chat/unread', {
-            userId
-        });
+        const response = await httpService.post('/chat/unread');
         return response.data;
     } catch (error) {
         console.error('Error getting unread count:', error);

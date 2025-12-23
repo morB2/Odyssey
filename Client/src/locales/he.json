@@ -145,6 +145,7 @@
         "cancel": "ביטול",
         "success": "הדיווח נשלח בהצלחה. תודה.",
         "fail": "שליחת הדיווח נכשלה. אנא נסה שוב.",
+        "alreadyReported": "הדיווח כבר נשלח.",
         "errorNoReason": "אנא בחר/י או הזן סיבה.",
         "reasons": {
             "Inappropriate content": "תוכן בלתי הולם",
@@ -190,21 +191,6 @@
         "tryAgain": "נסה/י שוב",
         "needHelp": "צריך/ה עזרה? פנה/י ל",
         "contactSupport": "צוות התמיכה שלנו"
-    },
-    "profile": {
-        "profile": "פרופיל",
-        "followers": "עוקבים",
-        "following": "נעקבים",
-        "changePassword": "שינוי סיסמה",
-        "editProfile": "עריכת פרופיל",
-        "myTrips": "הטיולים שלי",
-        "likedTrips": "אהבתי",
-        "savedTrips": "שמורים",
-        "noTripsYet": "אין עדיין טיולים",
-        "changeProfilePicture": "שינוי תמונת פרופיל",
-        "uploadNewAvatar": "העלה תמונה חדשה",
-        "cancel": "ביטול",
-        "save": "שמירה"
     },
     "chat": {
         "typeMessage": "הקלד הודעה...",
@@ -267,10 +253,12 @@
         "failedToReact": "נכשל בהוספת התגובה.",
         "followingUser": "עוקב אחרי",
         "unfollowedUser": "הפסקת לעקוב אחרי",
-        "chat": "צ'אט"
+        "chat": "צ'אט",
+        "selectChat": "בחר צ'אט כדי להתחיל לשלוח הודעות"
     },
     "general": {
         "saving": "שומר...",
+        "save": "שמור",
         "cancel": "ביטול",
         "search": "חיפוש",
         "searchPlaceholder": "חפש...",
@@ -288,18 +276,6 @@
         "loading": "טוען...",
         "error": "שגיאה",
         "generating": "מייצר..."
-    },
-    "PostsManagement": {
-        "search_placeholder": "חפש פוסטים לפי כותרת, מחבר או קטגוריה...",
-        "add_post": "הוסף פוסט",
-        "no_results": "לא נמצאו פוסטים התואמים את החיפוש שלך.",
-        "add_new_post": "הוסף פוסט חדש",
-        "cancel": "ביטול",
-        "save_changes": "שמור שינויים",
-        "edit_post": "ערוך פוסט",
-        "status": "סטטוס",
-        "joinDate": "תאריך הצטרפות",
-        "actions": "פעולות"
     },
     "UsersManagement": {
         "noUsersFound": "לא נמצאו משתמשים התואמים לחיפוש שלך.",
@@ -454,21 +430,107 @@
         "privacyPolicy": "מדיניות פרטיות",
         "contact": "צור קשר"
     },
-    "editProfile": {
-        "title": "עריכת פרופיל",
+    "profile": {
+        "editProfile": "עריכת פרופיל",
         "profilePicture": "תמונת פרופיל",
-        "uploadAvatar": "העלה תמונת פרופיל חדשה",
+        "uploadNewAvatar": "העלה תמונת פרופיל חדשה",
         "saveAvatar": "שמור תמונת פרופיל",
+        "saving": "שומר...",
         "changePassword": "שנה סיסמה",
         "currentPassword": "סיסמה נוכחית",
         "newPassword": "סיסמה חדשה",
-        "confirmPassword": "אשר סיסמה חדשה",
+        "confirmNewPassword": "אשר סיסמה חדשה",
         "changePasswordButton": "שנה סיסמה",
-        "changingPassword": "משנה...",
-        "savingAvatar": "שומר...",
-        "close": "סגור"
+        "changing": "משנה...",
+        "close": "סגור",
+        "mustBeSignedIn": "עליך להיות מחובר כדי לשנות את תמונת הפרופיל.",
+        "avatarUpdatedSuccessfully": "תמונת הפרופיל עודכנה בהצלחה",
+        "passwordsDoNotMatch": "הסיסמאות אינן תואמות",
+        "enterCurrentPassword": "אנא הזן את הסיסמה הנוכחית שלך",
+        "passwordChangedSuccessfully": "הסיסמה שונתה בהצלחה",
+        "failedToChangePassword": "שגיאה בשינוי הסיסמה",
+        "profile": "פרופיל",
+        "followers": "עוקבים",
+        "following": "נעקבים",
+        "myTrips": "הטיולים שלי",
+        "likedTrips": "אהבתי",
+        "collections": "אוספים",
+        "savedTrips": "שמורים",
+        "noTripsYet": "אין עדיין טיולים",
+        "changeProfilePicture": "שינוי תמונת פרופיל",
+        "cancel": "ביטול",
+        "save": "שמירה",
+        "trips": "טיולים"
+    },
+    "editTrip": {
+        "title": "עריכת טיול",
+        "tripTitle": "כותרת",
+        "enterTripTitle": "הזן כותרת לטיול",
+        "description": "תיאור",
+        "describeYourTrip": "תאר את הטיול שלך",
+        "mediaMax3": "מדיה (מקסימום 3)",
+        "upload": "העלה",
+        "noMediaYet": "אין מדיה עדיין. לחץ על \\\"העלה\\\" כדי להוסיף תמונות או סרטונים.",
+        "activities": "פעילויות",
+        "addActivity": "הוסף פעילות",
+        "notes": "הערות",
+        "addNotes": "הוסף הערות או טיפים לטיול זה",
+        "visibility": "נראות",
+        "public": "ציבורי",
+        "private": "פרטי",
+        "cancel": "ביטול",
+        "saveChanges": "שמור שינויים",
+        "changeVisibility": "שינוי נראות",
+        "changeVisibilityMessage": "האם אתה בטוח שברצונך לשנות את נראות הטיול?",
+        "maxMediaError": "מותר מקסימום 3 פריטי מדיה",
+        "cannotEditExternalImage": "לא ניתן לערוך תמונה שלא הועלתה על ידך",
+        "deleteMedia": "מחק מדיה",
+        "advancedEdit": "עריכה מתקדמת"
+    },
+    "profilePage": {
+        "failedToLoadCollections": "שגיאה בטעינת האוספים",
+        "failedToLoadTrips": "שגיאה בטעינת הטיולים",
+        "failedToLoadMoreTrips": "שגיאה בטעינת טיולים נוספים",
+        "tripUpdatedSuccessfully": "הטיול עודכן בהצלחה!",
+        "tripDeletedSuccessfully": "הטיול נמחק בהצלחה!",
+        "profileUpdatedSuccessfully": "הפרופיל עודכן בהצלחה!",
+        "confirmDeleteCollection": "האם אתה בטוח שברצונך למחוק את האוסף הזה?",
+        "collectionDeleted": "האוסף נמחק",
+        "failedToDeleteCollection": "שגיאה במחיקת האוסף"
+    },
+    "tripPost": {
+        "unknown": "לא ידוע",
+        "user": "משתמש",
+        "deleteTrip": "מחיקת טיול",
+        "deleteConfirmMessage": "האם אתה בטוח שברצונך למחוק את הטיול הזה? לא ניתן לבטל פעולה זו."
+    },
+    "mediaEditor": {
+        "title": "עורך מדיה מתקדם",
+        "error": "שגיאה",
+        "invalidCloudinaryUrl": "כתובת Cloudinary לא תקינה",
+        "close": "סגור",
+        "preview": "תצוגה מקדימה",
+        "loading": "טוען...",
+        "ready": "מוכן",
+        "ai": "בינה מלאכותית",
+        "adjust": "התאמות",
+        "aiEnhance": "שיפור AI (שיפור אוטומטי)",
+        "aiUpscale": "הגדלת רזולוציה AI",
+        "removeBackground": "הסרת רקע",
+        "grayscale": "גווני אפור",
+        "sepia": "ספיה",
+        "brightness": "בהירות",
+        "contrast": "ניגודיות",
+        "saturation": "רוויה",
+        "vibrance": "חיוניות",
+        "blur": "טשטוש",
+        "vignette": "וינייט",
+        "reset": "איפוס",
+        "cancel": "ביטול",
+        "applyChanges": "החל שינויים"
     },
     "admin": {
+        "admin": "מנהל",
         "adminDashboard": "לוח ניהול",
         "manageWebsiteContent": "ניהול תוכן האתר",
         "usersManagement": "ניהול משתמשים",
@@ -510,7 +572,27 @@
         "reportDismissed": "הדיווח סומן כטופל.",
         "failedToFetchReports": "שגיאה בטעינת הדיווחים.",
         "failedToDismissReport": "שגיאה בסימון הדיווח כטופל.",
-        "failedToDeletePost": "שגיאה במחיקת הפוסט."
+        "failedToDeletePost": "שגיאה במחיקת הפוסט.",
+        "reportsTab": "דיווחים",
+        "analyticsTab": "ניתוח נתונים",
+        "contactMessages": "הודעות צור קשר",
+        "messages": {
+            "errorLoading": "שגיאה בטעינת הודעות",
+            "confirmDelete": "האם אתה בטוח שברצונך למחוק הודעה זו?",
+            "deleteSuccess": "ההודעה נמחקה",
+            "deleteError": "שגיאה במחיקת ההודעה",
+            "noMessages": "לא נמצאו הודעות",
+            "read": "נקרא",
+            "unread": "לא נקרא",
+            "view": "צפייה",
+            "delete": "מחיקה",
+            "close": "סגור",
+            "from": "מאת",
+            "date": "תאריך",
+            "message": "הודעה",
+            "subject": "נושא",
+            "status": "סטטוס"
+        }
     },
     "social": {
         "like": "לייק",
@@ -578,10 +660,12 @@
             "cancel": "בטל",
             "saveChanges": "שמור שינויים",
             "addUser": "הוסף משתמש"
-        }
+        },
+        "usersTab": "משתמשים",
+        "analyticsTab": "ניתוח נתונים"
     },
     "PostsManagement": {
-        "search_placeholder": "חפש פוסטים...",
+        "search_placeholder": "חפש פוסטים לפי כותרת, מחבר או קטגוריה...",
         "add_post": "הוסף פוסט",
         "title": "כותרת",
         "author": "מחבר",
@@ -593,15 +677,31 @@
         "draft": "טיוטה",
         "published": "פורסם",
         "archived": "בארכיון",
-        "no_results": "לא נמצאו פוסטים.",
         "add_new_post": "הוסף פוסט חדש",
         "edit_post": "ערוך פוסט",
         "cancel": "ביטול",
-        "save_changes": "שמור שינויים"
+        "save_changes": "שמור שינויים",
+        "no_results": "לא נמצאו פוסטים התואמים את החיפוש שלך.",
+        "joinDate": "תאריך הצטרפות",
+        "postsTab": "פוסטים",
+        "analyticsTab": "ניתוח נתונים",
+        "untitledTrip": "טיול ללא שם",
+        "unknown": "לא ידוע",
+        "general": "כללי",
+        "loadError": "שגיאה בטעינת הפוסטים",
+        "deleteSuccess": "הפוסט נמחק בהצלחה",
+        "deleteError": "שגיאה במחיקת הפוסט",
+        "viewError": "שגיאה בצפייה בטיול",
+        "noResults": "לא נמצאו תוצאות",
+        "noPosts": "אין פוסטים זמינים",
+        "deleteTitle": "מחיקת טיול",
+        "deleteMessage": "האם אתה בטוח שברצונך למחוק טיול זה? לא ניתן לבטל פעולה זו.",
+        "viewPost": "הצג פוסט",
+        "deletePost": "מחק פוסט"
     },
     "createTrip": {
         "title": "יצירת טיול חדש",
-        "subtitle": "תכננו את המסע ידנית",
+        "subtitle": "תכנון מסע ידנית",
         "basic": "מידע בסיסי",
         "tripTitle": "שם הטיול",
         "description": "תיאור",
@@ -675,5 +775,120 @@
             "button": "תכנון ידני"
         },
         "footer": "מוכן לצאת להרפתקה? בחר שיטה והתחל לתכנן."
+    },
+    "saveWhenNotLoggedIn": {
+        "title": "שמור את הטיול שלך",
+        "description": "התחבר כדי לשמור את הטיול בפרופיל שלך ולגשת אליו בכל זמן, או להדפיס אותו עכשיו לשמירת עותק.",
+        "login": "התחברות / הרשמה",
+        "print": "הדפס טיול",
+        "or": "או",
+        "maybeLater": "אולי מאוחר יותר"
+    },
+    "collection": {
+        "back": "חזרה",
+        "new": "אוסף חדש",
+        "edit": "עריכת אוסף",
+        "name": "שם",
+        "description": "תיאור",
+        "private": "פרטי",
+        "selectedTrips": "טיולים שנבחרו (ניתן לגרירה)",
+        "availableTrips": "טיולים זמינים",
+        "emptySelected": "בחרי טיולים מהרשימה כדי להוסיף כאן.",
+        "add": "הוסף",
+        "untitledTrip": "טיול ללא שם",
+        "allSelected": "כל הטיולים נבחרו",
+        "noTrips": "לא נמצאו טיולים",
+        "emptyCollection": "אין באוסף זה טיולים כרגע",
+        "privateTripsVisible": "חלק מהטיולים שנבחרו הם פרטיים ולא יהיו גלויים למשתמשים אחרים.",
+        "confirmDelete": "האם אתה בטוח שברצונך למחוק את האוסף?",
+        "deleteTitle": "מחיקת אוסף",
+        "deleted": "האוסף נמחק בהצלחה",
+        "deleteFailed": "מחיקת האוסף נכשלה",
+        "privateTripsWarningTitle": "יש טיולים פרטיים באוסף",
+        "privateTripsWarningMessage": "בחרת טיולים פרטיים. אם תהפוך את האוסף לפומבי, הטיולים הפרטיים לא יופיעו באוסף כאשר משתמשים אחרים יצפו בו. להמשיך?",
+        "continueAnyway": "להמשיך בכל זאת",
+        "generateTitle": "צור כותרת עם AI",
+        "generateDescription": "צור תיאור עם AI",
+        "selectTripsFirst": "בחר קודם טיולים לאוסף",
+        "aiTitleGenerated": "כותרת נוצרה בהצלחה!",
+        "aiDescriptionGenerated": "תיאור נוצר בהצלחה!",
+        "success": {
+            "created": "האוסף נוצר בהצלחה!",
+            "updated": "האוסף עודכן בהצלחה!"
+        },
+        "errors": {
+            "notFound": "האוסף לא נמצא או שאין לך הרשאה לצפות בו",
+            "nameRequired": "חובה להזין שם",
+            "selectTripsFirst": "בחר טיולים לפני יצירה עם AI",
+            "aiGenerationFailed": "יצירה עם AI נכשלה",
+            "saveFailed": "שמירת האוסף נכשלה",
+            "loadTrips": "לא ניתן לטעון את הטיולים"
+        }
+    },
+    "collections": {
+        "empty": "עדיין אין אוספים",
+        "create": "צור אוסף"
+    },
+    "route": {
+        "tripsCount": "{{count}} טיולים במסלול",
+        "clickToView": "לחץ לצפייה במסלול המלא"
+    },
+    "settings": {
+        "title": "הגדרות",
+        "display": "תצוגה",
+        "darkMode": "מצב כהה",
+        "on": "פעיל",
+        "off": "כבוי",
+        "dangerZone": "אזור מסוכן",
+        "deactivateAccount": "השבתת החשבון",
+        "confirmTitle": "להשבית את החשבון?",
+        "confirmMessage": "פעולה זו אינה ניתנת לביטול. החשבון יושבת לצמיתות."
+    },
+    "feedErrors": {
+        "failedToLoadTrips": "שגיאה בטעינת טיולים"
+    },
+    "postsAnalytics": {
+        "title": "לוח ניתוח פוסטים",
+        "topViewedPosts": "הפוסטים הנצפים ביותר",
+        "topLikedPosts": "הפוסטים המועדפים ביותר",
+        "categoryDistribution": "התפלגות קטגוריות",
+        "errorLoading": "שגיאה בטעינת הנתונים",
+        "noData": "אין נתונים זמינים"
+    },
+    "reportsAnalytics": {
+        "title": "לוח ניתוח דיווחים",
+        "topReportedPosts": "הפוסטים המדווחים ביותר",
+        "topReportedUsers": "המשתמשים המדווחים ביותר",
+        "topReporters": "המדווחים הפעילים ביותר",
+        "reportsTrend": "מגמת דיווחים (30 ימים אחרונים)",
+        "reasonDistribution": "התפלגות סיבות דיווח",
+        "reportCount": "מספר דיווחים",
+        "noData": "אין נתוני דיווחים זמינים",
+        "noDataAvailable": "אין נתונים זמינים",
+        "noReportedPostsData": "אין נתוני פוסטים מדווחים"
+    },
+    "usersAnalytics": {
+        "title": "לוח ניתוח משתמשים",
+        "topActiveUsersBreakdown": "פירוט משתמשים פעילים",
+        "weightedScore": "ציון משוקלל",
+        "noData": "אין נתוני משתמשים פעילים זמינים לחודש האחרון",
+        "rawValue": "ערך גולמי",
+        "weighted": "משוקלל",
+        "totalScore": "ציון כולל"
+    },
+    "budget": {
+        "title": "Smart Budget Estimator",
+        "subtitle": "Get a personalized cost estimate based on your location and travel style.",
+        "origin": "Where are you coming from?",
+        "originRequired": "Origin is required",
+        "travelers": "Travelers",
+        "style": "Travel Style",
+        "style": {
+            "budget": "Budget / Backpacker",
+            "standard": "Standard",
+            "luxury": "Luxury"
+        },
+        "calculate": "Calculate Estimate",
+        "recalculate": "Recalculate"
     }
 }

@@ -26,9 +26,10 @@ export async function getAllTripsForAdmin(page = 1, limit = 10, search = "") {
 
         const userIds = matchingUsers.map(user => user._id);
 
-        // Build filter to search in title, activities, OR matching user IDs
+        // Use regex search for title (supports partial matching)
+        // and regex for activities, plus user ID matching
         filter.$or = [
-            { title: searchRegex },
+            { title: searchRegex }, // Regex search - supports partial matching
             { activities: { $in: [searchRegex] } },
             { user: { $in: userIds } }
         ];
@@ -42,6 +43,14 @@ export async function getAllTripsForAdmin(page = 1, limit = 10, search = "") {
             .limit(limit)
             .populate({
                 path: "user",
+                select: "_id firstName lastName avatar",
+            })
+            .populate({
+                path: "comments.user",
+                select: "_id firstName lastName avatar",
+            })
+            .populate({
+                path: "comments.replies.user",
                 select: "_id firstName lastName avatar",
             })
             .lean(),

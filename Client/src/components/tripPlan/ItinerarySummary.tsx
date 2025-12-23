@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Card,
     CardContent,
@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import RoomIcon from "@mui/icons-material/Room";
 import { useTranslation } from "react-i18next";
+import { searchTravelImage } from "../../services/image.service";
 
 interface ItineraryItem {
     name: string;
@@ -22,7 +23,7 @@ interface ItinerarySummaryProps {
     title?: string;
 }
 
-export const ItinerarySummary = ({
+const ItinerarySummary = ({
     items,
     discription,
     title,
@@ -35,21 +36,9 @@ export const ItinerarySummary = ({
     useEffect(() => {
         const fetchImage = async () => {
             const query = items.length > 0 ? items[0].name : title;
-            try {
-                const response = await fetch(
-                    `https://api.pexels.com/v1/search?query=${encodeURIComponent(query || "Travel")} travel landscape&orientation=landscape&per_page=1`,
-                    {
-                        headers: {
-                            Authorization: import.meta.env.VITE_PEXELS_KEY
-                        }
-                    }
-                );
-                const data = await response.json();
-                if (data.photos && data.photos.length > 0) {
-                    setImageUrl(data.photos[0].src.large);
-                }
-            } catch (error) {
-                console.error("Failed to fetch image:", error);
+            const url = await searchTravelImage(query || "Travel");
+            if (url) {
+                setImageUrl(url);
             }
         };
 
@@ -152,3 +141,5 @@ export const ItinerarySummary = ({
         </Card>
     );
 }
+
+export default ItinerarySummary;

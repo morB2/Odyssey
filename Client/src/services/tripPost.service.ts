@@ -1,9 +1,10 @@
 import api from "./httpService";
 
-export const toggleLike = async (tripId: string, userId: string, isLiked: boolean) => {
+// ✅ Removed userId - backend now uses JWT authentication
+export const toggleLike = async (tripId: string, isLiked: boolean) => {
     try {
         const endpoint = isLiked ? `/likes/${tripId}/unlike` : `/likes/${tripId}/like`;
-        const res = await api.post(endpoint, { userId });
+        const res = await api.post(endpoint);
         return res.data;
     } catch (error) {
         console.error("Error toggling like:", error);
@@ -11,10 +12,11 @@ export const toggleLike = async (tripId: string, userId: string, isLiked: boolea
     }
 };
 
-export const toggleSave = async (tripId: string, userId: string, isSaved: boolean) => {
+// ✅ Removed userId - backend now uses JWT authentication
+export const toggleSave = async (tripId: string, isSaved: boolean) => {
     try {
         const endpoint = isSaved ? `/saves/${tripId}/unsave` : `/saves/${tripId}/save`;
-        const res = await api.post(endpoint, { userId });
+        const res = await api.post(endpoint);
         return res.data;
     } catch (error) {
         console.error("Error toggling save:", error);
@@ -22,10 +24,11 @@ export const toggleSave = async (tripId: string, userId: string, isSaved: boolea
     }
 };
 
-export const toggleFollow = async (targetUserId: string, currentUserId: string, isFollowing: boolean) => {
+// ✅ Removed currentUserId - backend now uses JWT authentication
+export const toggleFollow = async (targetUserId: string, isFollowing: boolean) => {
     try {
         const action = isFollowing ? 'unfollow' : 'follow';
-        const res = await api.post(`/follow/${targetUserId}/${action}`, { userId: currentUserId });
+        const res = await api.post(`/follow/${targetUserId}/${action}`);
         return res.data;
     } catch (error) {
         console.error("Error toggling follow:", error);
@@ -33,10 +36,10 @@ export const toggleFollow = async (targetUserId: string, currentUserId: string, 
     }
 };
 
-export const addComment = async (tripId: string, userId: string, comment: string) => {
+// ✅ Removed userId - backend now uses JWT authentication
+export const addComment = async (tripId: string, comment: string) => {
     try {
         const res = await api.post(`/trips/${tripId}/comment`, {
-            userId,
             comment
         });
         return res.data;
@@ -46,10 +49,10 @@ export const addComment = async (tripId: string, userId: string, comment: string
     }
 };
 
-export const addReaction = async (tripId: string, commentId: string, userId: string, emoji: string) => {
+// ✅ Removed userId - backend now uses JWT authentication
+export const addReaction = async (tripId: string, commentId: string, emoji: string) => {
     try {
         const res = await api.post(`/trips/${tripId}/comment/${commentId}/react`, {
-            userId,
             emoji
         });
         return res.data;
@@ -59,10 +62,10 @@ export const addReaction = async (tripId: string, commentId: string, userId: str
     }
 };
 
-export const addReply = async (tripId: string, commentId: string, userId: string, reply: string) => {
+// ✅ Removed userId - backend now uses JWT authentication
+export const addReply = async (tripId: string, commentId: string, reply: string) => {
     try {
         const res = await api.post(`/trips/${tripId}/comment/${commentId}/reply`, {
-            userId,
             reply
         });
         return res.data;
@@ -72,9 +75,9 @@ export const addReply = async (tripId: string, commentId: string, userId: string
     }
 };
 
-export const incrementView = async (tripId: string, userId:string) => {
+export const incrementView = async (tripId: string, userId: string) => {
     try {
-        const res = await api.post(`/trips/${tripId}/views`,{
+        const res = await api.post(`/trips/${tripId}/views`, {
             userId
         });
         return res.data;
@@ -84,11 +87,10 @@ export const incrementView = async (tripId: string, userId:string) => {
     }
 };
 
-export const deleteComment = async (tripId: string, commentId: string, userId: string) => {
+// ✅ Removed userId - backend now uses JWT authentication
+export const deleteComment = async (tripId: string, commentId: string) => {
     try {
-        const res = await api.delete(`/trips/${tripId}/comment/${commentId}`, {
-            data: { userId }
-        });
+        const res = await api.delete(`/trips/${tripId}/comment/${commentId}`);
         return res.data;
     } catch (error) {
         console.error("Error deleting comment:", error);

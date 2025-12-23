@@ -8,7 +8,7 @@ interface GLoginProps {
   onSuccess?: () => void;
 }
 
-export const GLogin: FC<GLoginProps> = ({ onSuccess }) => {
+const GLogin: FC<GLoginProps> = ({ onSuccess }) => {
 
   const handleSuccess = async (credentialResponse: any) => {
     if (!credentialResponse.credential) return;
@@ -40,5 +40,7 @@ export const GLogin: FC<GLoginProps> = ({ onSuccess }) => {
 
   );
 };
+
+export default GLogin;
 
 
