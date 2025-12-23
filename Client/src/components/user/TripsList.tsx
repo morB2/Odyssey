@@ -346,7 +346,7 @@ export default function TripsList({
               return (
                 <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={trip._id ?? trip.id}>
                   <TripPost
-                    trip={{ ...trip, currentUserId: id, comments: adaptCommentsForUI(trip.comments || []), }}
+                    trip={{ ...trip, currentUserId: id, comments: adaptCommentsForUI(trip.comments || []),visabilityStatus:trip.visabilityStatus }}
                     onEdit={() => setEditingTrip(trip)}
                     onDelete={() => handleDeleteTrip(String(trip._id || trip.id))}
                   />

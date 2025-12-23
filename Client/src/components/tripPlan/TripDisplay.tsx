@@ -297,7 +297,7 @@ const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
           {t('tripDisplay.openInGoogleMaps')}
 
         </Button>
-        <Button
+        {/* <Button
           variant="outlined"
           startIcon={<Wallet size={18} />}
           onClick={() => setOpenBudgetDialog(true)}
@@ -310,7 +310,7 @@ const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
           }}
         >
           {t('budget.estimate') || "Estimate Cost"}
-        </Button>
+        </Button> */}
         <Button
           variant="outlined"
 
