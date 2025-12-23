@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import {Box,Typography,Table,TableBody,TableCell,TableContainer,TableHead,TableRow,Paper,IconButton,Tooltip,Chip,
-    Dialog,DialogTitle,DialogContent,DialogActions,Button,CircularProgress
+import {
+    Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip, Chip,
+    Dialog, DialogTitle, DialogContent, DialogActions, Button, CircularProgress
 } from '@mui/material';
-import { Trash2, MailOpen, Eye } from 'lucide-react';
+import { Trash2, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
 import { fetchContactMessages, markMessageAsRead, deleteContactMessage } from '../../services/admin.service';
+import ConfirmDialog from '../general/ConfirmDialog';
 
 interface ContactMessage {
     _id: string;
@@ -25,6 +27,8 @@ export default function ContactMessages() {
     const [loading, setLoading] = useState(true);
     const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
     const [openDialog, setOpenDialog] = useState(false);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [messageToDeleteId, setMessageToDeleteId] = useState<string | null>(null);
 
     useEffect(() => {
         loadMessages();
@@ -56,19 +60,27 @@ export default function ContactMessages() {
         }
     };
 
-    const handleDelete = async (id: string, e: React.MouseEvent) => {
+    const handleDeleteClick = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (window.confirm(t('admin.messages.confirmDelete'))) {
-            try {
-                await deleteContactMessage(id);
-                setMessages(prev => prev.filter(m => m._id !== id));
-                toast.success(t('admin.messages.deleteSuccess'));
-                if (selectedMessage?._id === id) {
-                    setOpenDialog(false);
-                }
-            } catch (error) {
-                toast.error(t('admin.messages.deleteError'));
+        setMessageToDeleteId(id);
+        setDeleteConfirmOpen(true);
+    };
+
+    const executeDelete = async () => {
+        if (!messageToDeleteId) return;
+
+        try {
+            await deleteContactMessage(messageToDeleteId);
+            setMessages(prev => prev.filter(m => m._id !== messageToDeleteId));
+            toast.success(t('admin.messages.deleteSuccess'));
+            if (selectedMessage?._id === messageToDeleteId) {
+                setOpenDialog(false);
             }
+        } catch (error) {
+            toast.error(t('admin.messages.deleteError'));
+        } finally {
+            setDeleteConfirmOpen(false);
+            setMessageToDeleteId(null);
         }
     };
 
@@ -156,7 +168,7 @@ export default function ContactMessages() {
                                             <Tooltip title={t('admin.messages.delete')}>
                                                 <IconButton
                                                     size="small"
-                                                    onClick={(e) => handleDelete(msg._id, e)}
+                                                    onClick={(e) => handleDeleteClick(msg._id, e)}
                                                     sx={{ color: '#ef4444' }}
                                                 >
                                                     <Trash2 size={18} />
@@ -209,7 +221,7 @@ export default function ContactMessages() {
                 <DialogActions sx={{ borderTop: '1px solid #27272a', p: 2 }}>
                     <Button onClick={() => setOpenDialog(false)} sx={{ color: '#a1a1aa' }}>{t('admin.messages.close')}</Button>
                     <Button
-                        onClick={(e) => selectedMessage && handleDelete(selectedMessage._id, e as any)}
+                        onClick={(e) => selectedMessage && handleDeleteClick(selectedMessage._id, e as any)}
                         color="error"
                         startIcon={<Trash2 size={16} />}
                     >
@@ -217,6 +229,14 @@ export default function ContactMessages() {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            <ConfirmDialog
+                isOpen={deleteConfirmOpen}
+                onClose={() => setDeleteConfirmOpen(false)}
+                onConfirm={executeDelete}
+                title={t('admin.messages.confirmDeleteTitle') || t('Delete Message')}
+                message={t('admin.messages.confirmDelete') || t('Are you sure you want to delete this message?')}
+            />
         </Box>
     );
 }
