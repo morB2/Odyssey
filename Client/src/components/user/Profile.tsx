@@ -178,8 +178,6 @@ export default function Profile() {
           onProfileUpdated={handleProfileUpdated}
         />
 
-
-
         <CreateCollectionModal
           isOpen={isCollectionModalOpen}
           onClose={() => setIsCollectionModalOpen(false)}
@@ -187,8 +185,6 @@ export default function Profile() {
           existingCollection={editingCollection}
         />
       </Box>
-
-
     </>
   );
 }

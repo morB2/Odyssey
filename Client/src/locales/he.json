@@ -460,7 +460,8 @@
         "changeProfilePicture": "שינוי תמונת פרופיל",
         "cancel": "ביטול",
         "save": "שמירה",
-        "trips": "טיולים"
+        "trips": "טיולים",
+        "journey": "גלובוס"
     },
     "editTrip": {
         "title": "עריכת טיול",
