@@ -171,7 +171,7 @@ const TripDisplay: React.FC<TripDisplayProps> = ({ data }) => {
             </Box>
             <Chip
               icon={<Navigation size={16} color={orange} />}
-              label={t(`tripDisplay.travelModes.${mode.toLowerCase()}`)}
+              label={t(`createTrip.modes.${mode.toLowerCase()}`)}
               sx={{
                 borderColor: orange,
                 color: orange,
