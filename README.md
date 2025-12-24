@@ -1,120 +1,205 @@
-**Odyssey**
+<h1 align="center">Odyssey</h1>
+<p align="center">
+  <strong>A Full-Stack Social Travel Platform for Planning, Exploration, and Sharing</strong>
+</p>
 
-- **Project**: Full-stack social/trip planning application (React + Vite front-end, Express + Node back-end).
+<p align="center">
+  🌍 Plan • 🧭 Explore • 🤝 Share
+</p>
 
-**Project Overview**:
-- **Client**: A TypeScript React app (Vite) in `Client/` providing UI, authentication, real-time chat, and trip planning features.
-- **Server**: An Express-based API in `Server/` implementing auth, file uploads, sockets (Socket.IO), and persistence via MongoDB. Redis is used for caching/real-time features.
+<hr/>
 
-**Website Description**:
-- Odyssey is a social-first trip planning platform that helps users discover, create, and collaborate on travel experiences.
-- Core features:
-  - **User accounts & profiles**: Sign up / log in (including Google OAuth), editable profiles with avatars and bio.
-  - **Social feed**: Create posts with text and images, follow other users, like and save posts, and explore a personalized feed.
-  - **Trip creation & planning**: Create trips with titles, dates, locations, and optional itineraries. Share trips publicly or keep them private.
-  - **Search & discovery**: Search trips, users, and posts; filter by destination, date, and tags.
-  - **Real-time chat & notifications**: One-on-one and group messaging using Socket.IO, plus live updates for actions like messages and likes.
-  - **Media uploads**: Upload images/files (local `uploads/` and Cloudinary integration supported).
-  - **Moderation & reporting**: Report content or users; admin tools to review and act on reports.
-  - **Internationalization**: UI translations (English, Hebrew) and RTL support for Hebrew.
+<h2>Overview</h2>
 
-**Typical user flows**:
-- Sign up, complete a profile, and follow other travelers.
-- Create a trip, add itinerary items and images, then publish the trip to your feed.
-- Discover trips via search or the feed, like/save them, and message the author for more details.
-- Report inappropriate content; admins can review reports via server-side tools.
+<p>
+<strong>Odyssey</strong> is a full-stack social travel platform that enables users to plan trips,
+share travel experiences, and explore destinations through both interactive and data-driven tools.
+</p>
 
-**Repo Structure**:
-- **`Client/`**: front-end app (React, TypeScript, MUI, Zustand, Socket.IO client)
-- **`Server/`**: back-end API (Express, Mongoose, Socket.IO, Cloudinary integration)
+<p>
+The platform combines modern web technologies, real-time communication, AI-powered features,
+and advanced visualizations to deliver a rich and engaging user experience.
+It supports multilingual usage (English and Hebrew) and includes both user-facing and administrative systems.
+</p>
 
-**Prerequisites**:
-- **Node.js** 18+ (use a current LTS)
-- **npm** (or a compatible package manager)
-- **MongoDB** running (Atlas or local)
-- **Redis** if you use caching/real-time features (optional for basic run)
+<hr/>
 
-**Environment**
-Create a `.env` file in `Server/` (don't commit it). Example variables used by the server (from `Server/config/secret.js`):
+<h2>System Architecture</h2>
 
-```
-FRONTEND_URL=https://odyssey-v1nq-git-main-mors-projects-49250beb.vercel.app
-DB_CONNECTION=mongodb+srv://<user>:<pass>@cluster0/yourdbname
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-JWT_SECRET=your_jwt_secret
-SALT_ROUNDS=12
-GMAIL_USER=your@gmail.com
-GMAIL_APP_PASS=app-password
-APP_NAME=Odyssey
-PORT=3000
-```
+<h3>Client (Front-End)</h3>
+<ul>
+  <li>React with TypeScript (Vite)</li>
+  <li>Component-based architecture</li>
+  <li>Multilingual support (English & Hebrew)</li>
+  <li>Dynamic UI with real-time updates</li>
+</ul>
 
-Add any Cloudinary-related env vars if you configure Cloudinary (see `Server/config/cloudinary.js`).
+<h3>Server (Back-End)</h3>
+<ul>
+  <li>Node.js with Express</li>
+  <li>RESTful API architecture</li>
+  <li>JWT-based authentication and authorization</li>
+  <li>Socket.IO for real-time communication</li>
+</ul>
 
-**Client: Installation & Run**
-1. Open a terminal and change to the client folder:
+<h3>Database & Services</h3>
+<ul>
+  <li>MongoDB for persistent data storage</li>
+  <li>Cloudinary for image management</li>
+  <li>Redis for caching and real-time optimizations (optional)</li>
+  <li>AI services for content generation and trip planning</li>
+</ul>
 
-```pwsh
-cd Client
-npm install
-```
+<hr/>
 
-2. Run development server (Vite):
+<h2>Main Features</h2>
 
-```pwsh
-npm run dev
-```
+<h3>User Management & Social Network</h3>
+<ul>
+  <li>User registration and login</li>
+  <li>Google OAuth authentication</li>
+  <li>User profiles with personal information and activity</li>
+  <li>Followers and following system</li>
+  <li>Personalized content feed</li>
+</ul>
 
-3. Build for production:
+<h3>Trip Creation & Planning</h3>
+<ul>
+  <li>Manual trip creation with full control over details</li>
+  <li>AI-powered trip planning based on user preferences</li>
+  <li>Trip cost estimation based on destinations and duration</li>
+  <li>Public and private trip visibility</li>
+</ul>
 
-```pwsh
-npm run build
-```
+<h3>AI-Powered Features</h3>
+<ul>
+  <li>AI-assisted trip planning</li>
+  <li>AI-generated titles and descriptions for collections</li>
+</ul>
 
-**Server: Installation & Run**
-1. Open a terminal and change to the server folder:
+<h3>Collections</h3>
+<ul>
+  <li>Create and manage custom collections of trips</li>
+  <li>Add titles and descriptions manually or using AI</li>
+  <li>Organize saved trips into meaningful groups</li>
+</ul>
 
-```pwsh
-cd Server
-npm install
-```
+<h3>Interactive Globe</h3>
+<ul>
+  <li>3D interactive globe visualization</li>
+  <li>Display visited destinations on a global map</li>
+  <li>Clickable locations linked to specific trips</li>
+</ul>
 
-2. Create `Server/.env` with the variables from the example above.
+<h3>Real-Time Communication</h3>
+<ul>
+  <li>Private messaging between users</li>
+  <li>Live updates using Socket.IO</li>
+</ul>
 
-3. Start the server:
+<h3>Social Interaction & Moderation</h3>
+<ul>
+  <li>Like and save trips and posts</li>
+  <li>Report posts for inappropriate content</li>
+  <li>Content moderation handled through the admin system</li>
+</ul>
 
-```pwsh
-npm start
-# or for live reload during development (nodemon is a devDependency):
-npx nodemon app.js
-```
+<h3>Media Upload</h3>
+<ul>
+  <li>Upload images for trips and posts</li>
+  <li>Secure media handling via server and Cloudinary</li>
+</ul>
 
-4. The server serves uploads at `/uploads` and starts Socket.IO on the same HTTP server.
+<hr/>
 
-**Useful Scripts**
-- Client (`Client/package.json`):
-  - `npm run dev`: Start Vite dev server
-  - `npm run build`: Build client
-  - `npm run lint`: Run ESLint
-  - `npm run preview`: Preview built app
-- Server (`Server/package.json`):
-  - `npm start`: Start server (`node app.js`)
+<h2>Admin Panel</h2>
 
-**Notes & Implementation Details**
-- Real-time features use Socket.IO (see `Server/config/socket.js` and `Client` socket hooks).
-- Authentication uses JWT (`jsonwebtoken`) and password hashing with `bcrypt`.
--images are uploaded to Cloudinary (see `Server/config/cloudinary.js`).
+<p>
+The system includes a comprehensive <strong>Admin Panel</strong> designed for efficient
+management and monitoring of platform activity.
+</p>
 
-**Troubleshooting**
-- If the client can't reach the API, ensure `FRONTEND_URL` and `DB_CONNECTION` are set correctly and CORS is configured.
-- If uploads are failing, check `uploads/` permissions and Cloudinary credentials.
+<ul>
+  <li>Secure admin authentication and protected routes</li>
+  <li>User management (view, block, remove users)</li>
+  <li>Post management and moderation</li>
+  <li>Handling and reviewing reported posts</li>
+  <li>Separate management sections for users, posts, and reports</li>
+  <li>Interactive graphs and dashboards for each category</li>
+  <li>Data visualization to support informed administrative decisions</li>
+</ul>
 
-**Contributing**
-- Pull requests are welcome. For major changes, open an issue first to discuss.
+<hr/>
 
-**License**
-- Add a license to the repo as needed (no license included by default).
+<h2>Screenshots</h2>
 
-**Contact**
-- For questions about this repo contact the maintainer or open an issue.
+| Homepage | User Profile |
+|----------|--------------|
+| ![Homepage](screenshots/homepage.png) | ![User Profile](screenshots/profile.png) |
+
+| Collections | Interactive Globe |
+|-------------|-----------------|
+| ![Collections](screenshots/collections.png) | ![Globe](screenshots/globe.png) |
+
+
+
+<hr/>
+
+<h2>Live Demo</h2>
+
+<p>
+<em>Link to the deployed application:</em><br/>
+<a href="https://odyssey-client.onrender.com" target="_blank">
+  https://odyssey-client.onrender.com
+</a>
+</p>
+
+<hr/>
+
+<h2>Technologies</h2>
+
+<ul>
+  <li><strong>Frontend:</strong> React, TypeScript, Vite</li>
+  <li><strong>Backend:</strong> Node.js, Express</li>
+  <li><strong>Database:</strong> MongoDB</li>
+  <li><strong>Real-Time:</strong> Socket.IO</li>
+  <li><strong>Authentication:</strong> JWT, Google OAuth</li>
+</ul>
+
+<hr/>
+
+<h2>Project Structure</h2>
+
+<pre>
+Odyssey/
+├── Client/    # React front-end
+├── Server/    # Express back-end
+└── README.md
+</pre>
+
+<hr/>
+
+<h2>Acknowledgments</h2>
+
+<p>
+Special thanks to my project partners for their collaboration, commitment,
+and teamwork throughout the development of this project.
+</p>
+
+<ul>
+  <li>
+    <a href="https://github.com/michalHanau" target="_blank">
+      Michal Hanau
+    </a>
+  </li>
+  <li>
+    <a href="https://github.com/MiriamSanders" target="_blank">
+      Miriam Sanders
+    </a>
+  </li>
+</ul>
+
+<p>
+This project would not have been possible without the shared effort,
+open communication, and mutual support of the entire team.
+</p>
